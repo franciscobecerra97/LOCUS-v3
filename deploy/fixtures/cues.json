@@ -1,0 +1,18 @@
+{
+  "cues": [
+    {
+      "location": {"latitude": "49.59875", "longitude": "6.13445"},
+      "person": {"type": "phone", "value": "+352621123456"}
+    },
+    {
+      "location": {"latitude": "49.61160", "longitude": "6.13190"},
+      "person": {"type": "email", "value": "fixture.friend@example.org"}
+    },
+    {
+      "location": {"latitude": "49.62610", "longitude": "6.12750"},
+      "person": {"type": "phone", "value": "+33123456789"}
+    }
+  ],
+  "version": "LOCUS-resolver-fixture-v1"
+}
+

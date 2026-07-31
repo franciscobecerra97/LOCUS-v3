@@ -1,0 +1,143 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:performance-paper-inputs:v1",
+  "title": "LOCUS generated performance paper inputs v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact", "format", "outputs", "processing", "source"],
+  "properties": {
+    "artifact": {"const": "LOCUS-performance-paper-inputs-v1"},
+    "format": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["decimal_places", "version"],
+      "properties": {
+        "decimal_places": {"const": 3},
+        "version": {"const": "LOCUS-performance-latex-rows-v1"}
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "prefixItems": [
+        {
+          "$ref": "#/$defs/latencyOutput"
+        },
+        {
+          "$ref": "#/$defs/phaseOutput"
+        },
+        {
+          "$ref": "#/$defs/trafficOutput"
+        },
+        {
+          "$ref": "#/$defs/storageOutput"
+        }
+      ],
+      "items": false
+    },
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bootstrap_algorithm",
+        "bootstrap_resamples",
+        "bootstrap_seed",
+        "quantile_method"
+      ],
+      "properties": {
+        "bootstrap_algorithm": {"const": "sha256-counter-index-v1"},
+        "bootstrap_resamples": {
+          "type": "integer",
+          "minimum": 1000,
+          "maximum": 100000
+        },
+        "bootstrap_seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 18446744073709551615
+        },
+        "quantile_method": {"const": "linear-type-7"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "artifact",
+        "experiment_id",
+        "git_commit",
+        "host_id",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "artifact": {"const": "LOCUS-performance-processed-v1"},
+        "experiment_id": {"$ref": "#/$defs/identifier"},
+        "git_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "host_id": {
+          "allOf": [
+            {"$ref": "#/$defs/identifier"},
+            {"not": {"const": "unlabeled-local-host"}}
+          ]
+        },
+        "path": {
+          "type": "string",
+          "pattern": "^experiments/processed/performance-v1/[a-z0-9][a-z0-9._-]{0,63}\\.json$"
+        },
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    }
+  },
+  "$defs": {
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "identifier": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"
+    },
+    "latencyOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "const": "paper/generated/performance-v1/latency_rows.tex"
+        },
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "phaseOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "const": "paper/generated/performance-v1/phase_rows.tex"
+        },
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "storageOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "const": "paper/generated/performance-v1/storage_rows.tex"
+        },
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "trafficOutput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "const": "paper/generated/performance-v1/traffic_rows.tex"
+        },
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    }
+  }
+}

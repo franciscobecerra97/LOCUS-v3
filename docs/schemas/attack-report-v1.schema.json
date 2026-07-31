@@ -1,0 +1,396 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:attack-report:v1",
+  "title": "LOCUS attack report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "expected_result",
+    "interpretation",
+    "observed_result",
+    "parameters",
+    "prerequisites",
+    "procedure",
+    "profile",
+    "scenario_id",
+    "status",
+    "version"
+  ],
+  "properties": {
+    "version": {"const": "LOCUS-attack-report-v1"},
+    "profile": {"const": "attack"},
+    "scenario_id": {
+      "enum": [
+        "cloud-snapshot-no-offline-predicate-v1",
+        "cloud-plus-t-minus-one-party-snapshot-no-offline-predicate-v1",
+        "cross-epoch-runtime-mix-v1",
+        "resolver-unavailable-v1",
+        "t-minus-one-party-snapshot-no-offline-predicate-v1"
+      ]
+    },
+    "status": {"enum": ["passed", "failed"]},
+    "parameters": {"type": "object"},
+    "prerequisites": {"type": "array", "items": {"type": "string"}},
+    "procedure": {"type": "array", "items": {"type": "string"}},
+    "expected_result": {"type": "object"},
+    "observed_result": {"type": "object"},
+    "interpretation": {"type": "string"}
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "scenario_id": {"const": "cloud-snapshot-no-offline-predicate-v1"}
+        }
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "const": {
+              "candidate_count": 2,
+              "execution_boundary": "network-none-read-only-snapshot-v1",
+              "snapshot_version": "LOCUS-cloud-snapshot-input-v1"
+            }
+          },
+          "prerequisites": {
+            "const": [
+              "one canonical synthetic backup published through the S3-compatible adapter",
+              "exact two-file cloud-only snapshot with no client or party state",
+              "network-disabled runner with a read-only snapshot mount"
+            ]
+          },
+          "procedure": {
+            "const": [
+              "validate the canonical object, manifest, locator, digest, size, and TPASS public metadata",
+              "reject excluded files, prohibited fields, malformed input, and object substitution",
+              "exercise two fixed synthetic attacker candidates under filesystem and network guards",
+              "emit only aggregate boundary counts through the versioned attack-report contract"
+            ]
+          },
+          "expected_result": {
+            "const": {
+              "candidate_count": 2,
+              "candidate_signals": 0,
+              "excluded_path_accesses": 0,
+              "network_attempts": 0,
+              "prohibited_material": "absent",
+              "snapshot_validation": "passed"
+            }
+          },
+          "observed_result": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "candidate_count",
+              "candidate_signals",
+              "excluded_path_accesses",
+              "network_attempts",
+              "prohibited_material",
+              "snapshot_validation"
+            ],
+            "properties": {
+              "candidate_count": {"type": "integer", "minimum": 0},
+              "candidate_signals": {"type": "integer", "minimum": 0},
+              "excluded_path_accesses": {"type": "integer", "minimum": 0},
+              "network_attempts": {"type": "integer", "minimum": 0},
+              "prohibited_material": {"type": "string"},
+              "snapshot_validation": {"type": "string"}
+            }
+          },
+          "interpretation": {
+            "const": "The exact current S3-compatible cloud snapshot and the registered offline candidate path exposed no local candidate-correctness predicate or prohibited role material. This is implementation evidence for this bounded surface, not a cryptographic proof, real-provider forensic result, or statement about cue strength."
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scenario_id": {
+            "const": "cloud-plus-t-minus-one-party-snapshot-no-offline-predicate-v1"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "const": {
+              "candidate_count": 2,
+              "compromised_parties": 1,
+              "execution_boundary": "network-none-read-only-cloud-plus-one-party-snapshot-v1",
+              "snapshot_version": "LOCUS-combined-snapshot-input-v1",
+              "threshold": 2
+            }
+          },
+          "prerequisites": {
+            "const": [
+              "one canonical synthetic cloud snapshot after a completed recovery",
+              "one matching stopped post-recovery synthetic party1 snapshot",
+              "network-disabled credential-free runner with only the manifest-bound union mounted read-only"
+            ]
+          },
+          "procedure": {
+            "const": [
+              "validate both frozen sub-snapshots and their top-level canonical manifest",
+              "require matching backup identifier, epoch, digest, and TPASS public parameters across roles",
+              "exercise two fixed synthetic attacker candidates over both loaded surfaces under file and network guards",
+              "emit only aggregate boundary counts through the versioned attack-report contract"
+            ]
+          },
+          "expected_result": {
+            "const": {
+              "candidate_count": 2,
+              "candidate_signals": 0,
+              "cloud_snapshot_validation": "passed",
+              "combined_binding": "matched",
+              "compromised_parties": 1,
+              "excluded_path_accesses": 0,
+              "network_attempts": 0,
+              "party_snapshot_validation": "passed",
+              "party_snapshots": 1,
+              "secret_output_exposures": 0,
+              "threshold": 2
+            }
+          },
+          "observed_result": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "candidate_count",
+              "candidate_signals",
+              "cloud_snapshot_validation",
+              "combined_binding",
+              "compromised_parties",
+              "excluded_path_accesses",
+              "network_attempts",
+              "party_snapshot_validation",
+              "party_snapshots",
+              "secret_output_exposures",
+              "threshold"
+            ],
+            "properties": {
+              "candidate_count": {"type": "integer", "minimum": 0},
+              "candidate_signals": {"type": "integer", "minimum": 0},
+              "cloud_snapshot_validation": {"type": "string"},
+              "combined_binding": {"type": "string"},
+              "compromised_parties": {"type": "integer", "minimum": 0},
+              "excluded_path_accesses": {"type": "integer", "minimum": 0},
+              "network_attempts": {"type": "integer", "minimum": 0},
+              "party_snapshot_validation": {"type": "string"},
+              "party_snapshots": {"type": "integer", "minimum": 0},
+              "secret_output_exposures": {"type": "integer", "minimum": 0},
+              "threshold": {"type": "integer", "minimum": 1}
+            }
+          },
+          "interpretation": {
+            "const": "The exact manifest-bound union of the current synthetic cloud snapshot and one matching stopped party snapshot exposed no local candidate-correctness predicate in the registered offline path. Secret-bearing party state and ciphertext remained confined to the read-only input. This is bounded implementation evidence, not a compromise mechanism, cryptographic proof, live-role result, or statement about cue strength."
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scenario_id": {
+            "const": "t-minus-one-party-snapshot-no-offline-predicate-v1"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "const": {
+              "candidate_count": 2,
+              "compromised_parties": 1,
+              "execution_boundary": "network-none-read-only-one-party-snapshot-v1",
+              "snapshot_version": "LOCUS-party-snapshot-input-v1",
+              "threshold": 2
+            }
+          },
+          "prerequisites": {
+            "const": [
+              "one stopped post-recovery synthetic party1 persistent volume",
+              "exact one-party snapshot with no cloud, client, resolver, or other-party state",
+              "network-disabled credential-free runner with a read-only snapshot mount"
+            ]
+          },
+          "procedure": {
+            "const": [
+              "validate the canonical manifest and every persistent file in the stopped party volume",
+              "validate the one-party authorizer, TLS, native TPASS, and SQLite checkpoint bindings",
+              "exercise two fixed synthetic attacker candidates under filesystem and network guards",
+              "emit only aggregate boundary counts through the versioned attack-report contract"
+            ]
+          },
+          "expected_result": {
+            "const": {
+              "candidate_count": 2,
+              "candidate_signals": 0,
+              "cloud_material": "absent",
+              "compromised_parties": 1,
+              "excluded_path_accesses": 0,
+              "network_attempts": 0,
+              "secret_output_exposures": 0,
+              "snapshot_validation": "passed",
+              "threshold": 2
+            }
+          },
+          "observed_result": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "candidate_count",
+              "candidate_signals",
+              "cloud_material",
+              "compromised_parties",
+              "excluded_path_accesses",
+              "network_attempts",
+              "secret_output_exposures",
+              "snapshot_validation",
+              "threshold"
+            ],
+            "properties": {
+              "candidate_count": {"type": "integer", "minimum": 0},
+              "candidate_signals": {"type": "integer", "minimum": 0},
+              "cloud_material": {"type": "string"},
+              "compromised_parties": {"type": "integer", "minimum": 0},
+              "excluded_path_accesses": {"type": "integer", "minimum": 0},
+              "network_attempts": {"type": "integer", "minimum": 0},
+              "secret_output_exposures": {"type": "integer", "minimum": 0},
+              "snapshot_validation": {"type": "string"},
+              "threshold": {"type": "integer", "minimum": 1}
+            }
+          },
+          "interpretation": {
+            "const": "The complete stopped persistent snapshot of one synthetic party in the deployed two-of-three TPASS profile and the registered offline candidate path exposed no local candidate-correctness predicate. Secret-bearing party state remained confined to the read-only input. This is bounded implementation evidence, not a compromise mechanism, cryptographic proof, live-party result, or statement about cue strength."
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {"scenario_id": {"const": "resolver-unavailable-v1"}}
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "const": {"resolver_path": "/v1/attack-unavailable"}
+          },
+          "prerequisites": {
+            "const": [
+              "provisioned synthetic deployment",
+              "healthy cloud and recovery parties",
+              "deterministic resolver service"
+            ]
+          },
+          "procedure": {
+            "const": [
+              "read the redacted attempt count through party status interfaces",
+              "request recovery through a nonexistent resolver resource",
+              "read the redacted attempt count again",
+              "compare the observed failure category and attempt delta"
+            ]
+          },
+          "expected_result": {
+            "const": {
+              "attempt_delta": 0,
+              "failure_category": "resolver-unavailable"
+            }
+          },
+          "observed_result": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["attempt_delta", "failure_category"],
+            "properties": {
+              "attempt_delta": {"type": "integer"},
+              "failure_category": {
+                "enum": [
+                  "resolver-unavailable",
+                  "unexpected-error",
+                  "unexpected-success"
+                ]
+              }
+            }
+          },
+          "interpretation": {
+            "const": "A resolver availability failure stops before attempt authorization; this is failure-boundary evidence, not an offline-oracle result."
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "scenario_id": {"const": "cross-epoch-runtime-mix-v1"}
+        }
+      },
+      "then": {
+        "properties": {
+          "parameters": {
+            "const": {
+              "activation_order": [1, 2, 3, 4, 5],
+              "predecessor_epoch": 1,
+              "successor_epoch": 2
+            }
+          },
+          "prerequisites": {
+            "const": [
+              "provisioned synthetic deployment",
+              "healthy cloud and five authenticated recovery parties",
+              "same authorizer membership across two epochs"
+            ]
+          },
+          "procedure": {
+            "const": [
+              "publish an immutable successor backup and obtain old-quorum approvals",
+              "prepare each exact party runtime package and retry party one with predecessor-context party state",
+              "activate parties one through three and count active old/new parties",
+              "activate the remaining parties and restart activated party one",
+              "probe a retired-epoch vote after party one becomes healthy",
+              "recover through the successor and verify both final epoch states"
+            ]
+          },
+          "expected_result": {
+            "const": {
+              "cross_epoch_mix": "rejected",
+              "old_epoch_refusal": "rejected",
+              "old_epoch_status": "retired",
+              "party_restart": "verified",
+              "partial_new_active": 3,
+              "partial_old_active": 2,
+              "successor_epoch_status": "active",
+              "successor_recovery": "verified"
+            }
+          },
+          "observed_result": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "cross_epoch_mix",
+              "old_epoch_refusal",
+              "old_epoch_status",
+              "party_restart",
+              "partial_new_active",
+              "partial_old_active",
+              "successor_epoch_status",
+              "successor_recovery"
+            ],
+            "properties": {
+              "cross_epoch_mix": {"type": "string"},
+              "old_epoch_refusal": {"type": "string"},
+              "old_epoch_status": {"type": "string"},
+              "party_restart": {"type": "string"},
+              "partial_new_active": {"type": "integer"},
+              "partial_old_active": {"type": "integer"},
+              "successor_epoch_status": {"type": "string"},
+              "successor_recovery": {"type": "string"}
+            }
+          },
+          "interpretation": {
+            "const": "After the correct successor package is prepared, its binding rejects substitution with predecessor-context party state. A 3/2 partial activation exposes neither epoch quorum; full activation retires the predecessor, reconstructs one party after restart, and recovers through the successor. This is one same-host execution, not first-delivery validation, rollback resistance, or a global attempt-bound proof."
+          }
+        }
+      }
+    }
+  ]
+}

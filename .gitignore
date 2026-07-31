@@ -1,0 +1,56 @@
+# Local tooling and temporary outputs
+tmp/
+extra/
+.venv/
+.env
+.env.*
+!.env.example
+
+# Python generated files
+__pycache__/
+*.py[cod]
+*.pyd
+*.pdb
+*.so
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+prototype/.benchmarks/
+.coverage
+coverage.xml
+htmlcov/
+build/
+
+# New raw JSON stays ignored while a multi-file evidence corpus is collected so
+# every record binds the same clean source commit. The exact inherited v1/v2
+# records below are frozen baseline material and must remain tracked.
+experiments/raw/**/*.json
+!experiments/raw/attacks-v1/*.json
+!experiments/raw/attacks-v2/*.json
+!experiments/raw/performance-v1/**/*.json
+!experiments/raw/performance-v2/**/*.json
+
+# Rust generated files
+target/
+**/target/
+
+# Active manuscript source and the intentional review PDF are tracked. Only
+# LaTeX build byproducts are ignored.
+paper/*.aux
+paper/*.bbl
+paper/*.blg
+paper/*.fdb_latexmk
+paper/*.fls
+paper/*.log
+paper/*.out
+paper/*.synctex.gz
+paper/*.toc
+paper/_build/
+
+# Credentials and private keys
+*.pem
+*.key
+*.p12
+*.pfx
+credentials/
+secrets/

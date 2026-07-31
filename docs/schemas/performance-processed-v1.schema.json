@@ -1,0 +1,486 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:performance-processed:v1",
+  "title": "LOCUS processed performance corpus v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "enrollment_latency_ms",
+    "processing",
+    "scenarios",
+    "source"
+  ],
+  "properties": {
+    "artifact": {"const": "LOCUS-performance-processed-v1"},
+    "enrollment_latency_ms": {"$ref": "#/$defs/latency30"},
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocks",
+        "bootstrap",
+        "quantile_method",
+        "samples_per_scenario",
+        "scenarios"
+      ],
+      "properties": {
+        "blocks": {"const": 10},
+        "bootstrap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algorithm", "confidence", "resamples", "seed"],
+          "properties": {
+            "algorithm": {"const": "sha256-counter-index-v1"},
+            "confidence": {"const": 0.95},
+            "resamples": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 100000
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          }
+        },
+        "quantile_method": {"const": "linear-type-7"},
+        "samples_per_scenario": {"const": 30},
+        "scenarios": {
+          "const": [
+            "enroll-recover-success-v1",
+            "recover-one-party-unavailable-v1",
+            "recover-wrong-input-v1"
+          ]
+        }
+      }
+    },
+    "scenarios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enroll-recover-success-v1",
+        "recover-one-party-unavailable-v1",
+        "recover-wrong-input-v1"
+      ],
+      "properties": {
+        "enroll-recover-success-v1": {
+          "$ref": "#/$defs/successScenario"
+        },
+        "recover-one-party-unavailable-v1": {
+          "$ref": "#/$defs/unavailableScenario"
+        },
+        "recover-wrong-input-v1": {"$ref": "#/$defs/wrongScenario"}
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "experiment_id",
+        "git_commit",
+        "host",
+        "inputs",
+        "locks",
+        "runtime"
+      ],
+      "properties": {
+        "experiment_id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"
+        },
+        "git_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "host": {"$ref": "#/$defs/host"},
+        "inputs": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "items": {"$ref": "#/$defs/input"}
+        },
+        "locks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tpass-core/Cargo.lock",
+            "tpass-python/Cargo.lock",
+            "uv.lock"
+          ],
+          "properties": {
+            "tpass-core/Cargo.lock": {"$ref": "#/$defs/digest"},
+            "tpass-python/Cargo.lock": {"$ref": "#/$defs/digest"},
+            "uv.lock": {"$ref": "#/$defs/digest"}
+          }
+        },
+        "runtime": {"$ref": "#/$defs/runtime"}
+      }
+    }
+  },
+  "$defs": {
+    "applicationBytes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorization", "cloud", "resolver", "tpass"],
+      "properties": {
+        "authorization": {"$ref": "#/$defs/directions"},
+        "cloud": {"$ref": "#/$defs/directions"},
+        "resolver": {"$ref": "#/$defs/directions"},
+        "tpass": {"$ref": "#/$defs/directions"}
+      }
+    },
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "directions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["received", "sent"],
+      "properties": {
+        "received": {"$ref": "#/$defs/integer30"},
+        "sent": {"$ref": "#/$defs/integer30"}
+      }
+    },
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "machine", "processor", "python", "release", "system"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$",
+          "not": {"const": "unlabeled-local-host"}
+        },
+        "machine": {"type": "string", "minLength": 1, "maxLength": 256},
+        "processor": {"type": "string", "maxLength": 256},
+        "python": {"type": "string", "minLength": 1, "maxLength": 256},
+        "release": {"type": "string", "minLength": 1, "maxLength": 256},
+        "system": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    },
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^experiments/raw/performance-v1/(0[1-9]|10)/(enroll-recover-success-v1|recover-one-party-unavailable-v1|recover-wrong-input-v1)\\.json$"
+        },
+        "sha256": {"$ref": "#/$defs/digest"}
+      }
+    },
+    "integer10": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["series", "summary"],
+      "properties": {
+        "series": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "summary": {"$ref": "#/$defs/integerSummary10"}
+      }
+    },
+    "integer30": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["series", "summary"],
+      "properties": {
+        "series": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "summary": {"$ref": "#/$defs/integerSummary30"}
+      }
+    },
+    "integerSummary10": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "distinct", "max", "min"],
+      "properties": {
+        "count": {"const": 10},
+        "distinct": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 10,
+          "uniqueItems": true,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "max": {"type": "integer", "minimum": 0},
+        "min": {"type": "integer", "minimum": 0}
+      }
+    },
+    "integerSummary30": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["count", "distinct", "max", "min"],
+      "properties": {
+        "count": {"const": 30},
+        "distinct": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 30,
+          "uniqueItems": true,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "max": {"type": "integer", "minimum": 0},
+        "min": {"type": "integer", "minimum": 0}
+      }
+    },
+    "latency10": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["series", "summary"],
+      "properties": {
+        "series": {
+          "type": "array",
+          "minItems": 10,
+          "maxItems": 10,
+          "items": {"type": "number", "minimum": 0}
+        },
+        "summary": {"$ref": "#/$defs/latencySummary10"}
+      }
+    },
+    "latency30": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["series", "summary"],
+      "properties": {
+        "series": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "items": {"type": "number", "minimum": 0}
+        },
+        "summary": {"$ref": "#/$defs/latencySummary30"}
+      }
+    },
+    "latencySummary10": {
+      "allOf": [
+        {"$ref": "#/$defs/latencySummaryBase"},
+        {"properties": {"count": {"const": 10}}}
+      ]
+    },
+    "latencySummary30": {
+      "allOf": [
+        {"$ref": "#/$defs/latencySummaryBase"},
+        {"properties": {"count": {"const": 30}}}
+      ]
+    },
+    "latencySummaryBase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "count",
+        "max",
+        "mean",
+        "median",
+        "median_ci95",
+        "min",
+        "p05",
+        "p25",
+        "p75",
+        "p95"
+      ],
+      "properties": {
+        "count": {"type": "integer", "minimum": 1},
+        "max": {"type": "number", "minimum": 0},
+        "mean": {"type": "number", "minimum": 0},
+        "median": {"type": "number", "minimum": 0},
+        "median_ci95": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["lower", "upper"],
+          "properties": {
+            "lower": {"type": "number", "minimum": 0},
+            "upper": {"type": "number", "minimum": 0}
+          }
+        },
+        "min": {"type": "number", "minimum": 0},
+        "p05": {"type": "number", "minimum": 0},
+        "p25": {"type": "number", "minimum": 0},
+        "p75": {"type": "number", "minimum": 0},
+        "p95": {"type": "number", "minimum": 0}
+      }
+    },
+    "latencies": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization",
+        "client_setup",
+        "cloud",
+        "commitment",
+        "finalization",
+        "resolver",
+        "response",
+        "status_check",
+        "total",
+        "unclassified"
+      ],
+      "properties": {
+        "authorization": {"$ref": "#/$defs/latency30"},
+        "client_setup": {"$ref": "#/$defs/latency30"},
+        "cloud": {"$ref": "#/$defs/latency30"},
+        "commitment": {"$ref": "#/$defs/latency30"},
+        "finalization": {"$ref": "#/$defs/latency30"},
+        "resolver": {"$ref": "#/$defs/latency30"},
+        "response": {"$ref": "#/$defs/latency30"},
+        "status_check": {"$ref": "#/$defs/latency30"},
+        "total": {"$ref": "#/$defs/latency30"},
+        "unclassified": {"$ref": "#/$defs/latency30"}
+      }
+    },
+    "partyStorage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["party", "values"],
+      "properties": {
+        "party": {"type": "integer", "minimum": 1, "maximum": 5},
+        "values": {"$ref": "#/$defs/integer10"}
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compose_version",
+        "docker_engine_version",
+        "reference_image_id",
+        "s3_image"
+      ],
+      "properties": {
+        "compose_version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.+_-]{1,64}$"
+        },
+        "docker_engine_version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.+_-]{1,64}$"
+        },
+        "reference_image_id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "s3_image": {
+          "const": "chrislusf/seaweedfs:4.29@sha256:d47c7ee99fcb951351d7194915f4e3a5ea604a8e8871183d713907dec4fb9bf5"
+        }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application_bytes",
+        "latency_ms",
+        "orchestration_latency_ms",
+        "outcome",
+        "sample_count",
+        "selected",
+        "storage"
+      ],
+      "properties": {
+        "application_bytes": {"$ref": "#/$defs/applicationBytes"},
+        "latency_ms": {"$ref": "#/$defs/latencies"},
+        "orchestration_latency_ms": {"$ref": "#/$defs/latency10"},
+        "outcome": {"enum": ["generic-rejection", "success"]},
+        "sample_count": {"const": 30},
+        "selected": {
+          "oneOf": [{"const": [1, 3]}, {"const": [2, 3]}]
+        },
+        "storage": {"$ref": "#/$defs/storage"}
+      }
+    },
+    "successScenario": {
+      "allOf": [
+        {"$ref": "#/$defs/scenario"},
+        {
+          "properties": {
+            "outcome": {"const": "success"},
+            "selected": {"const": [1, 3]}
+          }
+        }
+      ]
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["after", "before", "cloud_object_bytes"],
+      "properties": {
+        "after": {"$ref": "#/$defs/storagePhase"},
+        "before": {"$ref": "#/$defs/storagePhase"},
+        "cloud_object_bytes": {"$ref": "#/$defs/integer10"}
+      }
+    },
+    "storagePhase": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["client_bytes", "party_bytes"],
+      "properties": {
+        "client_bytes": {"$ref": "#/$defs/integer10"},
+        "party_bytes": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "prefixItems": [
+            {
+              "allOf": [
+                {"$ref": "#/$defs/partyStorage"},
+                {"properties": {"party": {"const": 1}}}
+              ]
+            },
+            {
+              "allOf": [
+                {"$ref": "#/$defs/partyStorage"},
+                {"properties": {"party": {"const": 2}}}
+              ]
+            },
+            {
+              "allOf": [
+                {"$ref": "#/$defs/partyStorage"},
+                {"properties": {"party": {"const": 3}}}
+              ]
+            },
+            {
+              "allOf": [
+                {"$ref": "#/$defs/partyStorage"},
+                {"properties": {"party": {"const": 4}}}
+              ]
+            },
+            {
+              "allOf": [
+                {"$ref": "#/$defs/partyStorage"},
+                {"properties": {"party": {"const": 5}}}
+              ]
+            }
+          ],
+          "items": false
+        }
+      }
+    },
+    "unavailableScenario": {
+      "allOf": [
+        {"$ref": "#/$defs/scenario"},
+        {
+          "properties": {
+            "outcome": {"const": "success"},
+            "selected": {"const": [2, 3]}
+          }
+        }
+      ]
+    },
+    "wrongScenario": {
+      "allOf": [
+        {"$ref": "#/$defs/scenario"},
+        {
+          "properties": {
+            "outcome": {"const": "generic-rejection"},
+            "selected": {"const": [1, 3]}
+          }
+        }
+      ]
+    }
+  }
+}

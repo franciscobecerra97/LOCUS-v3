@@ -1,0 +1,12 @@
+*.md text eol=lf diff
+*.py text eol=lf
+*.pyi text eol=lf
+*.rs text eol=lf
+*.toml text eol=lf
+*.lock text eol=lf
+*.yml text eol=lf
+.python-version text eol=lf
+/experiments/raw/**/*.json text eol=lf
+/experiments/processed/**/*.json text eol=lf
+/paper/generated/**/*.json text eol=lf
+/paper/generated/**/*.tex text eol=lf

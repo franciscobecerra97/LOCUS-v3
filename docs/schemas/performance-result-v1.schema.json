@@ -1,0 +1,264 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:compose-performance-result:v1",
+  "title": "LOCUS Compose performance result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "block",
+    "cleanup",
+    "configuration",
+    "enrollment_latency_ms",
+    "orchestration_latency_ms",
+    "orchestration_seed",
+    "output_scan",
+    "profile",
+    "runtime",
+    "samples",
+    "scenario_position",
+    "scenario_id",
+    "status",
+    "storage"
+  ],
+  "properties": {
+    "artifact": {"const": "LOCUS-compose-performance-result-v1"},
+    "block": {"type": "integer", "minimum": 1, "maximum": 10},
+    "cleanup": {"const": "passed"},
+    "configuration": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alternate_selected",
+        "authorization_membership",
+        "authorization_quorum",
+        "baseline_selected",
+        "measurements",
+        "threshold",
+        "topology",
+        "tpass_parties",
+        "warmups"
+      ],
+      "properties": {
+        "alternate_selected": {"const": [2, 3]},
+        "authorization_membership": {"const": 5},
+        "authorization_quorum": {"const": 4},
+        "baseline_selected": {"const": [1, 3]},
+        "measurements": {"const": 3},
+        "threshold": {"const": 2},
+        "topology": {"const": "same-host-compose-5-party-v1"},
+        "tpass_parties": {"const": 3},
+        "warmups": {"const": 1}
+      }
+    },
+    "enrollment_latency_ms": {"type": "number", "exclusiveMinimum": 0},
+    "orchestration_latency_ms": {"type": "number", "exclusiveMinimum": 0},
+    "orchestration_seed": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 18446744073709551615
+    },
+    "output_scan": {"const": "passed"},
+    "profile": {"const": "performance"},
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "compose_version",
+        "docker_engine_version",
+        "reference_image_id",
+        "s3_image"
+      ],
+      "properties": {
+        "compose_version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.+_-]{1,64}$"
+        },
+        "docker_engine_version": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9.+_-]{1,64}$"
+        },
+        "reference_image_id": {
+          "type": "string",
+          "pattern": "^sha256:[0-9a-f]{64}$"
+        },
+        "s3_image": {
+          "const": "chrislusf/seaweedfs:4.29@sha256:d47c7ee99fcb951351d7194915f4e3a5ea604a8e8871183d713907dec4fb9bf5"
+        }
+      }
+    },
+    "samples": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"$ref": "#/$defs/sample"}
+    },
+    "scenario_position": {"type": "integer", "minimum": 1, "maximum": 3},
+    "scenario_id": {
+      "enum": [
+        "enroll-recover-success-v1",
+        "recover-one-party-unavailable-v1",
+        "recover-wrong-input-v1"
+      ]
+    },
+    "status": {"const": "ok"},
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["after", "before", "cloud_object_bytes"],
+      "properties": {
+        "after": {"$ref": "#/$defs/storageMetric"},
+        "before": {"$ref": "#/$defs/storageMetric"},
+        "cloud_object_bytes": {"type": "integer", "minimum": 1}
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "scenario_id": {"const": "recover-one-party-unavailable-v1"}
+        }
+      },
+      "then": {
+        "properties": {
+          "samples": {
+            "items": {
+              "allOf": [
+                {"$ref": "#/$defs/sample"},
+                {"properties": {"outcome": {"const": "success"}, "selected": {"const": [2, 3]}}}
+              ]
+            }
+          }
+        }
+      },
+      "else": {
+        "if": {
+          "properties": {
+            "scenario_id": {"const": "recover-wrong-input-v1"}
+          }
+        },
+        "then": {
+          "properties": {
+            "samples": {
+              "items": {
+                "allOf": [
+                  {"$ref": "#/$defs/sample"},
+                  {"properties": {"outcome": {"const": "generic-rejection"}, "selected": {"const": [1, 3]}}}
+                ]
+              }
+            }
+          }
+        },
+        "else": {
+          "properties": {
+            "samples": {
+              "items": {
+                "allOf": [
+                  {"$ref": "#/$defs/sample"},
+                  {"properties": {"outcome": {"const": "success"}, "selected": {"const": [1, 3]}}}
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "byteCounts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["received", "sent"],
+      "properties": {
+        "received": {"type": "integer", "minimum": 0},
+        "sent": {"type": "integer", "minimum": 0}
+      }
+    },
+    "sample": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "application_bytes",
+        "artifact",
+        "attempts",
+        "latency_ms",
+        "measurement",
+        "outcome",
+        "selected",
+        "status"
+      ],
+      "properties": {
+        "application_bytes": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["authorization", "cloud", "resolver", "tpass"],
+          "properties": {
+            "authorization": {"$ref": "#/$defs/byteCounts"},
+            "cloud": {"$ref": "#/$defs/byteCounts"},
+            "resolver": {"$ref": "#/$defs/byteCounts"},
+            "tpass": {"$ref": "#/$defs/byteCounts"}
+          }
+        },
+        "artifact": {"const": "LOCUS-performance-client-samples-v1"},
+        "attempts": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["after", "before"],
+          "properties": {
+            "after": {"type": "integer", "minimum": 2, "maximum": 4},
+            "before": {"type": "integer", "minimum": 1, "maximum": 3}
+          }
+        },
+        "latency_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authorization",
+            "client_setup",
+            "cloud",
+            "commitment",
+            "finalization",
+            "resolver",
+            "response",
+            "status_check",
+            "total",
+            "unclassified"
+          ],
+          "properties": {
+            "authorization": {"type": "number", "minimum": 0},
+            "client_setup": {"type": "number", "minimum": 0},
+            "cloud": {"type": "number", "minimum": 0},
+            "commitment": {"type": "number", "minimum": 0},
+            "finalization": {"type": "number", "minimum": 0},
+            "resolver": {"type": "number", "minimum": 0},
+            "response": {"type": "number", "minimum": 0},
+            "status_check": {"type": "number", "minimum": 0},
+            "total": {"type": "number", "exclusiveMinimum": 0},
+            "unclassified": {"type": "number", "minimum": 0}
+          }
+        },
+        "measurement": {"type": "integer", "minimum": 1, "maximum": 3},
+        "outcome": {"enum": ["generic-rejection", "success"]},
+        "selected": {"oneOf": [{"const": [1, 3]}, {"const": [2, 3]}]},
+        "status": {"const": "ok"}
+      }
+    },
+    "storageMetric": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["artifact", "client_bytes", "party_bytes", "status"],
+      "properties": {
+        "artifact": {"const": "LOCUS-storage-metric-v1"},
+        "client_bytes": {"type": "integer", "minimum": 0},
+        "party_bytes": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {"type": "integer", "minimum": 0}
+        },
+        "status": {"const": "ok"}
+      }
+    }
+  }
+}

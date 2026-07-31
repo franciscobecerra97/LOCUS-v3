@@ -1,0 +1,17 @@
+.git
+.github
+.venv
+.mypy_cache
+.ruff_cache
+extra
+paper
+prototype/.benchmarks
+prototype/scripts
+prototype/tests
+tpass-core/target
+tpass-python/target
+**/__pycache__
+*.pyc
+*.pyd
+*.pdb
+

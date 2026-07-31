@@ -1,0 +1,1547 @@
+{
+    "version":  "LOCUS-improvement-portable-contents-v4",
+    "generated_date":  "2026-07-31",
+    "upstream_commit":  "771fccd14d918b697bfb48fd24a0202c52c7f7ac",
+    "scope":  "integrated-implementation-evidence-manuscript-artifact-continuation",
+    "file_count":  307,
+    "manifest_excludes":  [
+                              "PORTABLE-CONTENTS.json"
+                          ],
+    "files":  [
+                  {
+                      "path":  ".dockerignore",
+                      "size":  183,
+                      "sha256":  "f150bd591716b9ec365c8a5a182c2ee16f6bc518e984c0bf40d9b6069a9c6f28"
+                  },
+                  {
+                      "path":  ".gitattributes",
+                      "size":  319,
+                      "sha256":  "74aa7ef22fda65009f3d1a28944098f2f16d228a6e0b318191dde83612b4073c"
+                  },
+                  {
+                      "path":  ".github/workflows/ci.yml",
+                      "size":  1643,
+                      "sha256":  "10e85b0789ef66c7593c4f2aff57826632f7e21d2c7f02db5ceeb2ab2bfdfe9b"
+                  },
+                  {
+                      "path":  ".gitignore",
+                      "size":  1033,
+                      "sha256":  "83c5214edfd34009c2ab7963e8faa9a0db2c19075694c26de5b69f7695780d6c"
+                  },
+                  {
+                      "path":  ".python-version",
+                      "size":  8,
+                      "sha256":  "aa0d6581054e6e4ff3f91839deca7a854ad37221b8784d060b42d0f847ff1a3b"
+                  },
+                  {
+                      "path":  "AGENT.md",
+                      "size":  883,
+                      "sha256":  "6eadcbb32fb30d364c6ed63777c4715d6473cecacc14493997b633b12c46d451"
+                  },
+                  {
+                      "path":  "AGENTS.md",
+                      "size":  13979,
+                      "sha256":  "66d24a217e6431a014933dd1aca363b160a8ea9fe83e0eb8dfea730488b1d22f"
+                  },
+                  {
+                      "path":  "artifact/EVALUATION.md",
+                      "size":  1314,
+                      "sha256":  "4a536e4ddb40a667e335445aa87ed8bb80d7d7df1dc94184a7a9400097646885"
+                  },
+                  {
+                      "path":  "artifact/INSTALL.md",
+                      "size":  433,
+                      "sha256":  "40553c1f656a3e3aaf830734ccafbe464c2e50f7edb010fa62117b0e9f88cf40"
+                  },
+                  {
+                      "path":  "artifact/MANIFEST.md",
+                      "size":  954,
+                      "sha256":  "f959e268177547fabf35a9eb6efae88da8e89f828989f9a2371e31f9a9d79274"
+                  },
+                  {
+                      "path":  "artifact/README.md",
+                      "size":  1164,
+                      "sha256":  "567d01276b3f49d29a95dee5ec6996c0a01d72a122ce14cc13992c77bf8476c0"
+                  },
+                  {
+                      "path":  "artifact/RELEASE-CHECKLIST.md",
+                      "size":  1041,
+                      "sha256":  "179b144832e1c364eb5d9e81fede5a316754190d3761f58934a4cb4611c58d7d"
+                  },
+                  {
+                      "path":  "BASELINE.md",
+                      "size":  7790,
+                      "sha256":  "7a9afd0169b48893e4fcd52d3c8d15ce5853b690ad17436f48926e2adabaf5dd"
+                  },
+                  {
+                      "path":  "CLAIM-EVIDENCE-MATRIX.md",
+                      "size":  4737,
+                      "sha256":  "05c1baf34bc400e3cd63db8f88f4a79dc5df1f1dd06ab2f684b5c0411f21f5d3"
+                  },
+                  {
+                      "path":  "DECISIONS.md",
+                      "size":  14841,
+                      "sha256":  "d1194c3ef908573d03290b3767ab343c948391c97b2c069e920bf35efece3e37"
+                  },
+                  {
+                      "path":  "deploy/compose.s3.yaml",
+                      "size":  773,
+                      "sha256":  "ab6eace4aa15f7cc4f6f2834286ddb76363d36288fb276a97b49dfcb5a23db3c"
+                  },
+                  {
+                      "path":  "deploy/compose.yaml",
+                      "size":  12153,
+                      "sha256":  "b621c85bf1eddbc91efce93767a365252ee9651427bc106e42eea7469d6b4538"
+                  },
+                  {
+                      "path":  "deploy/Dockerfile",
+                      "size":  1544,
+                      "sha256":  "2cc3e3c45e08dadcea50fe58f1e7909e5300e9f452dfd06f010ef3ade301c5d7"
+                  },
+                  {
+                      "path":  "deploy/fixtures/cues.json",
+                      "size":  497,
+                      "sha256":  "b6a32ea11ef9ba6c44c5ab28933c9139e07e25d6d06760d8f7177ee6b3eec10a"
+                  },
+                  {
+                      "path":  "dist/LOCUS-anonymous-artifact-v1.manifest.json",
+                      "size":  21028,
+                      "sha256":  "1505d7bb28720c8bf876fd66121276fc3f2e2581e37c09f6c13af7cad32ceef7"
+                  },
+                  {
+                      "path":  "dist/LOCUS-anonymous-artifact-v1.zip",
+                      "size":  398836,
+                      "sha256":  "6170b81ec86f60a8adfdfb2fc53e5c88e07b00f5128dbe8c3552ada8fe214c0c"
+                  },
+                  {
+                      "path":  "dist/README.md",
+                      "size":  820,
+                      "sha256":  "39b7d0f2e32bb702cfd10614f882e4fa988e7bcddfee6c5c558be9a10068d000"
+                  },
+                  {
+                      "path":  "docs/architecture.md",
+                      "size":  4812,
+                      "sha256":  "44c43873effee83ae5160860766228081e34ca16883453ca91b1697e99691186"
+                  },
+                  {
+                      "path":  "docs/attack-report.md",
+                      "size":  9952,
+                      "sha256":  "1f2a9c54caac1edb8b68ebdbc72972af841826664d003f11ab5a80b74628e875"
+                  },
+                  {
+                      "path":  "docs/attempt-control.md",
+                      "size":  20777,
+                      "sha256":  "f2eca276f793d823ae0f23c10f7225720024c43cd0984af370774b7f8a2ab886"
+                  },
+                  {
+                      "path":  "docs/attempt-control-model.md",
+                      "size":  8206,
+                      "sha256":  "09e347cc1653c3ddb38efd05d33a9322a7d2a052977a6c360ec7059474c09d48"
+                  },
+                  {
+                      "path":  "docs/attempt-control-selection.md",
+                      "size":  19051,
+                      "sha256":  "63615d503a240ed0b26e05cb0edab37aa2ae24094fc0c743c05128aca53fddeb"
+                  },
+                  {
+                      "path":  "docs/attempt-control-state-machine.md",
+                      "size":  33586,
+                      "sha256":  "f7407f10459d8d2c353d0f31b2eea100e2f2e247448e0e1cc24f825ed7239358"
+                  },
+                  {
+                      "path":  "docs/backup-cryptography.md",
+                      "size":  10408,
+                      "sha256":  "b4f2c141691629614ed03ced286150de57ffbd2e7dd5eb1dca8e40884e1e20c5"
+                  },
+                  {
+                      "path":  "docs/claim-evidence-matrix.md",
+                      "size":  31493,
+                      "sha256":  "e89ea4504bf793b8e8cea7d572fe77b09366e1a99f4dbb103258b9e35cfac061"
+                  },
+                  {
+                      "path":  "docs/cloud-snapshot-attack.md",
+                      "size":  11598,
+                      "sha256":  "16592b278b8cba3088ef253aa6a21baa33a6b0878c345f6c273da66e5ae7da95"
+                  },
+                  {
+                      "path":  "docs/combined-snapshot-attack.md",
+                      "size":  9770,
+                      "sha256":  "66e17955093e17adc72366eddbfad8b10a03eafd5e36cc0b02ed9c5c9693b451"
+                  },
+                  {
+                      "path":  "docs/crypto-design.md",
+                      "size":  13483,
+                      "sha256":  "3cbb1d669502cb1ff56fce0b8a2fa694cbf7601cd60dc49d05b5c8c2c76c432d"
+                  },
+                  {
+                      "path":  "docs/cue-data-flow.md",
+                      "size":  3761,
+                      "sha256":  "745f9a93cebcf6b6fe7e41fc7623a0889c099d624be7144547b8159c53b9d67f"
+                  },
+                  {
+                      "path":  "docs/cue-policy.md",
+                      "size":  14548,
+                      "sha256":  "2fcb0e16cdf99fa38ccb2f64ee43a85f672d677f200e3606fb7ddab2d465d4d6"
+                  },
+                  {
+                      "path":  "docs/CUE-POLICY-REGISTRY.md",
+                      "size":  5890,
+                      "sha256":  "e03f9b7f913f2638000d25fdbabcfc51afdae3c2d8430bddf62399f931c179cb"
+                  },
+                  {
+                      "path":  "docs/deployment.md",
+                      "size":  16416,
+                      "sha256":  "60a5e5b1b41d12be7ee1fbcb940d7a25a7084c5b352bc1867ce45a1e46ef6926"
+                  },
+                  {
+                      "path":  "docs/educational-walkthrough.md",
+                      "size":  3129,
+                      "sha256":  "eab96f998e5ffe8d91bec7a971323372e40d96a82b14ffe78fea84737ae8526b"
+                  },
+                  {
+                      "path":  "docs/epoch-lifecycle.md",
+                      "size":  11139,
+                      "sha256":  "b277d9a988d4922a672cddba02ef1a647fac454ce5cbd411ca0c6e1c51d4e745"
+                  },
+                  {
+                      "path":  "docs/experiment-metadata.md",
+                      "size":  3383,
+                      "sha256":  "6aae85bacf17eccb5c965dae235b5c75c12fffddd2678cdcb00adffd8b58d4a5"
+                  },
+                  {
+                      "path":  "docs/experiment-methodology.md",
+                      "size":  16372,
+                      "sha256":  "23686af992d9b4d4813478a3a784a1d4d9e6dfbbdbe4bfddf3560b2660051528"
+                  },
+                  {
+                      "path":  "docs/INFORMATION-FLOW.md",
+                      "size":  5914,
+                      "sha256":  "aac38e966a3a8f4d478b6984f52294c23157d8712bbd4f083e7e9dfb3c0b432e"
+                  },
+                  {
+                      "path":  "docs/limitations-and-assumptions.md",
+                      "size":  11200,
+                      "sha256":  "e6c0b6332df6c6045216181289dbc9d3c7cbc97607dfc5dcce578b45d11959d1"
+                  },
+                  {
+                      "path":  "docs/output-safety.md",
+                      "size":  4196,
+                      "sha256":  "a28845ae6debabf32408c399569c6a9cc528b7f35bb5b640558f7305691c1c01"
+                  },
+                  {
+                      "path":  "docs/paper-protocol-mapping.md",
+                      "size":  9031,
+                      "sha256":  "af5af46bad8668734ec1f8c26d8b8c9ea40988469c15d0626a6c67407d940ec2"
+                  },
+                  {
+                      "path":  "docs/party-failure-policy.md",
+                      "size":  7158,
+                      "sha256":  "8391ee4ca586c01fb2cdcec83ca1f8b5a76b98b1ec2ba408d0f71a040f3fd740"
+                  },
+                  {
+                      "path":  "docs/party-snapshot-attack.md",
+                      "size":  7159,
+                      "sha256":  "22ca26bc1f900a7a7392d50084f64ac5011410d6cc7c06ac17944dfe49fb5995"
+                  },
+                  {
+                      "path":  "docs/README.md",
+                      "size":  1264,
+                      "sha256":  "8d90795c0cecfb7110a57e52a80842f33c9bb0cf53515b767ee8106a513ce9e9"
+                  },
+                  {
+                      "path":  "docs/recovery-authorization.md",
+                      "size":  23891,
+                      "sha256":  "42304245bf485338f7c5ffacf80c30555a4ba31145793f85126f189316f90c5a"
+                  },
+                  {
+                      "path":  "docs/RECOVERY-DESCRIPTOR.md",
+                      "size":  12389,
+                      "sha256":  "30b42c1a06b28708530aa9330b1132bbdc756d10c5f300c8847f599cda8cf865"
+                  },
+                  {
+                      "path":  "docs/recovery-party-api.md",
+                      "size":  28437,
+                      "sha256":  "3aa5205316ba696b9bbbd273b54a58f47ad904177bff5ebb2b444940b9916793"
+                  },
+                  {
+                      "path":  "docs/reference-audit.md",
+                      "size":  4791,
+                      "sha256":  "e3a54b9bd88ed5e0b86ca57dabe8beb25dadba3f908118bdb52282f6510b0c5e"
+                  },
+                  {
+                      "path":  "docs/related-work-comparison.md",
+                      "size":  17059,
+                      "sha256":  "d135df88da40b60d32c8532d9c93dcd7e6aa10a05db92cd52995818844a56378"
+                  },
+                  {
+                      "path":  "docs/repository-hygiene.md",
+                      "size":  4091,
+                      "sha256":  "6617dadfe9cb8b79711fb8fec1f92e81234549ad29a81fbd323b9f97dfa1e582"
+                  },
+                  {
+                      "path":  "docs/research-question.md",
+                      "size":  10155,
+                      "sha256":  "338d5643b1a35448933b823d6ed30a2a60460b97dcc83b67dd1a1581e9316a32"
+                  },
+                  {
+                      "path":  "docs/resolver-behavior.md",
+                      "size":  4429,
+                      "sha256":  "055b21f58d46897739ee9d4de9b369f20b1ebfe6843c93a971d57b1b91c8959a"
+                  },
+                  {
+                      "path":  "docs/retained-profile-evidence.md",
+                      "size":  5534,
+                      "sha256":  "c091ae03d1afa2ec8b39c6812591ea1a404bd6d2143e70f219f4664a4048de8f"
+                  },
+                  {
+                      "path":  "docs/schemas/attack-report-v1.schema.json",
+                      "size":  15982,
+                      "sha256":  "ec3f0d62dea0785aeb863acdce686b44362c95d7ae07c4a4c3329ef882c25eab"
+                  },
+                  {
+                      "path":  "docs/schemas/attempt-model-report-v1.schema.json",
+                      "size":  4239,
+                      "sha256":  "80f0e87bb523dcd2a282313f9161a1866fadbd2d148063045714765b70fdc428"
+                  },
+                  {
+                      "path":  "docs/schemas/benchmark-result-v1.schema.json",
+                      "size":  1488,
+                      "sha256":  "28a93eb5f2e89d85633a82a70f9c689d267480e2acb2a5e971701f2c9a1c6cf1"
+                  },
+                  {
+                      "path":  "docs/schemas/experiment-metadata-v1.schema.json",
+                      "size":  2938,
+                      "sha256":  "d3aaf1e7426dd422376773092991e79b642fcf2a4340289f1f01d6250bd6adb4"
+                  },
+                  {
+                      "path":  "docs/schemas/performance-paper-inputs-v1.schema.json",
+                      "size":  3886,
+                      "sha256":  "16dc4703fcd3e835021f00c24a0b7bf7669384679b22e0d4a9575f84f85579e3"
+                  },
+                  {
+                      "path":  "docs/schemas/performance-paper-inputs-v2.schema.json",
+                      "size":  3811,
+                      "sha256":  "29a050219141f0203fd90fa9f5de7f50d69eb4e782788052a91734e87248856c"
+                  },
+                  {
+                      "path":  "docs/schemas/performance-processed-v1.schema.json",
+                      "size":  14074,
+                      "sha256":  "230ec38110f3e1565165152f5ecb30146820d80d203a5ce1ecca8b665fbaa87e"
+                  },
+                  {
+                      "path":  "docs/schemas/performance-processed-v2.schema.json",
+                      "size":  4247,
+                      "sha256":  "1e7985acb94cb299c601591ef3b91d1c646c6e40488225b52d327218e5a96485"
+                  },
+                  {
+                      "path":  "docs/schemas/performance-result-v1.schema.json",
+                      "size":  7873,
+                      "sha256":  "3b9fefa4073756c724f9a471d68d4f80f72bdb36a539772e57c49591d330b2b1"
+                  },
+                  {
+                      "path":  "docs/schemas/profile-evidence-v1.schema.json",
+                      "size":  1280,
+                      "sha256":  "193d0fc89bd930048802a55bcd70f091d5246895637ea1e1d4b89e5a338f41d9"
+                  },
+                  {
+                      "path":  "docs/TARGET-ARCHITECTURE.md",
+                      "size":  7082,
+                      "sha256":  "8f3316b70921aecf6575f771501ec7d631035a88a7cf94777f6aad0e6af2551d"
+                  },
+                  {
+                      "path":  "docs/threat-model.md",
+                      "size":  37306,
+                      "sha256":  "29a62cf7e083d876a834cf52e601fc73916a2db46d51f9b9da05b04ce8b5af6b"
+                  },
+                  {
+                      "path":  "docs/tpass-wire-format.md",
+                      "size":  5508,
+                      "sha256":  "7ddbe98a75afcb5aeb097fef441a0df99af94a7e1a3df02122b0220159cfa86b"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/architecture.md",
+                      "size":  4812,
+                      "sha256":  "44c43873effee83ae5160860766228081e34ca16883453ca91b1697e99691186"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/artifact-v1/EVALUATION.md",
+                      "size":  3490,
+                      "sha256":  "954432938d531a752ff2fa4bd91354003ec5a584dfdd7df90d2ce2c6cbcd7183"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/artifact-v1/INSTALL.md",
+                      "size":  1483,
+                      "sha256":  "1103abf259d2ecbab25d2dbd13ec0081526a979b25fc95e3c7a8b7d8159ddf31"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/artifact-v1/MANIFEST.md",
+                      "size":  1855,
+                      "sha256":  "30e344c20e3a9cd9f10b56bd6d34d5fa01f13df7333c19cbd848a4d84118b017"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/artifact-v1/README.md",
+                      "size":  1116,
+                      "sha256":  "b804bb09a5126961040b57d41b3720d6387fc9d5fa78d39a42deefd6169c1120"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/artifact-v1/RELEASE-CHECKLIST.md",
+                      "size":  2070,
+                      "sha256":  "6ff0612c69271d8fbe1f269e68c1826483feec2338dcf7dfff41e8c6bbf1fc9a"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/attack-report.md",
+                      "size":  9952,
+                      "sha256":  "1f2a9c54caac1edb8b68ebdbc72972af841826664d003f11ab5a80b74628e875"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/attempt-control.md",
+                      "size":  20777,
+                      "sha256":  "f2eca276f793d823ae0f23c10f7225720024c43cd0984af370774b7f8a2ab886"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/attempt-control-model.md",
+                      "size":  8206,
+                      "sha256":  "09e347cc1653c3ddb38efd05d33a9322a7d2a052977a6c360ec7059474c09d48"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/attempt-control-selection.md",
+                      "size":  19051,
+                      "sha256":  "63615d503a240ed0b26e05cb0edab37aa2ae24094fc0c743c05128aca53fddeb"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/attempt-control-state-machine.md",
+                      "size":  33586,
+                      "sha256":  "f7407f10459d8d2c353d0f31b2eea100e2f2e247448e0e1cc24f825ed7239358"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/backup-cryptography.md",
+                      "size":  10408,
+                      "sha256":  "b4f2c141691629614ed03ced286150de57ffbd2e7dd5eb1dca8e40884e1e20c5"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/claim-evidence-matrix.md",
+                      "size":  31493,
+                      "sha256":  "e89ea4504bf793b8e8cea7d572fe77b09366e1a99f4dbb103258b9e35cfac061"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/cloud-snapshot-attack.md",
+                      "size":  11598,
+                      "sha256":  "16592b278b8cba3088ef253aa6a21baa33a6b0878c345f6c273da66e5ae7da95"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/combined-snapshot-attack.md",
+                      "size":  9770,
+                      "sha256":  "66e17955093e17adc72366eddbfad8b10a03eafd5e36cc0b02ed9c5c9693b451"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/crypto-design.md",
+                      "size":  13483,
+                      "sha256":  "3cbb1d669502cb1ff56fce0b8a2fa694cbf7601cd60dc49d05b5c8c2c76c432d"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/cue-data-flow.md",
+                      "size":  3761,
+                      "sha256":  "745f9a93cebcf6b6fe7e41fc7623a0889c099d624be7144547b8159c53b9d67f"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/cue-policy.md",
+                      "size":  14548,
+                      "sha256":  "2fcb0e16cdf99fa38ccb2f64ee43a85f672d677f200e3606fb7ddab2d465d4d6"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/deployment.md",
+                      "size":  16416,
+                      "sha256":  "60a5e5b1b41d12be7ee1fbcb940d7a25a7084c5b352bc1867ce45a1e46ef6926"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/educational-walkthrough.md",
+                      "size":  3129,
+                      "sha256":  "eab96f998e5ffe8d91bec7a971323372e40d96a82b14ffe78fea84737ae8526b"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/epoch-lifecycle.md",
+                      "size":  11139,
+                      "sha256":  "b277d9a988d4922a672cddba02ef1a647fac454ce5cbd411ca0c6e1c51d4e745"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/experiment-metadata.md",
+                      "size":  3383,
+                      "sha256":  "6aae85bacf17eccb5c965dae235b5c75c12fffddd2678cdcb00adffd8b58d4a5"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/experiment-methodology.md",
+                      "size":  16372,
+                      "sha256":  "23686af992d9b4d4813478a3a784a1d4d9e6dfbbdbe4bfddf3560b2660051528"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/limitations-and-assumptions.md",
+                      "size":  11200,
+                      "sha256":  "e6c0b6332df6c6045216181289dbc9d3c7cbc97607dfc5dcce578b45d11959d1"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/output-safety.md",
+                      "size":  4196,
+                      "sha256":  "a28845ae6debabf32408c399569c6a9cc528b7f35bb5b640558f7305691c1c01"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/paper-protocol-mapping.md",
+                      "size":  9031,
+                      "sha256":  "af5af46bad8668734ec1f8c26d8b8c9ea40988469c15d0626a6c67407d940ec2"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/party-failure-policy.md",
+                      "size":  7158,
+                      "sha256":  "8391ee4ca586c01fb2cdcec83ca1f8b5a76b98b1ec2ba408d0f71a040f3fd740"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/party-snapshot-attack.md",
+                      "size":  7159,
+                      "sha256":  "22ca26bc1f900a7a7392d50084f64ac5011410d6cc7c06ac17944dfe49fb5995"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/project-state/PROPOSAL-AGENT2.md",
+                      "size":  28892,
+                      "sha256":  "7392e10def6bc301202fb56d6a6a6c1e81989598eb9ae2202b77cba51c4f8597"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/project-state/PROPOSAL-PLAN2.md",
+                      "size":  38749,
+                      "sha256":  "3646cddc3a7c12428982617916b9cb9b53cc63f483d0af4988f5538c1e1ef024"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/project-state/README.md",
+                      "size":  485,
+                      "sha256":  "2e6dc8885f21ace22cf9e3a21b2734dbbede5408c3a5a3302e615a03193228ae"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/project-state/UPSTREAM-AGENTS.md",
+                      "size":  48602,
+                      "sha256":  "1d5072f7f9d2934958c0d03bb1c8730d0d98900a845d7011d821259eda4b5038"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/project-state/UPSTREAM-PLAN.md",
+                      "size":  162511,
+                      "sha256":  "5a5b7ab95debb9f5b4f94d4e5a9776173f21b023d1b58146b7f74b2aa6582d08"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/README.md",
+                      "size":  1019,
+                      "sha256":  "7325eac199cb603f3472b3bd619a58b93124f5d36221cbb62d50c8ad869c5531"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/recovery-authorization.md",
+                      "size":  23891,
+                      "sha256":  "42304245bf485338f7c5ffacf80c30555a4ba31145793f85126f189316f90c5a"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/recovery-party-api.md",
+                      "size":  28437,
+                      "sha256":  "3aa5205316ba696b9bbbd273b54a58f47ad904177bff5ebb2b444940b9916793"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/reference-audit.md",
+                      "size":  4791,
+                      "sha256":  "e3a54b9bd88ed5e0b86ca57dabe8beb25dadba3f908118bdb52282f6510b0c5e"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/related-work-comparison.md",
+                      "size":  17059,
+                      "sha256":  "d135df88da40b60d32c8532d9c93dcd7e6aa10a05db92cd52995818844a56378"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/repository-hygiene.md",
+                      "size":  4091,
+                      "sha256":  "6617dadfe9cb8b79711fb8fec1f92e81234549ad29a81fbd323b9f97dfa1e582"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/research-question.md",
+                      "size":  10155,
+                      "sha256":  "338d5643b1a35448933b823d6ed30a2a60460b97dcc83b67dd1a1581e9316a32"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/resolver-behavior.md",
+                      "size":  4429,
+                      "sha256":  "055b21f58d46897739ee9d4de9b369f20b1ebfe6843c93a971d57b1b91c8959a"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/retained-profile-evidence.md",
+                      "size":  5534,
+                      "sha256":  "c091ae03d1afa2ec8b39c6812591ea1a404bd6d2143e70f219f4664a4048de8f"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/threat-model.md",
+                      "size":  37306,
+                      "sha256":  "29a62cf7e083d876a834cf52e601fc73916a2db46d51f9b9da05b04ce8b5af6b"
+                  },
+                  {
+                      "path":  "docs/upstream-baseline/tpass-wire-format.md",
+                      "size":  5508,
+                      "sha256":  "7ddbe98a75afcb5aeb097fef441a0df99af94a7e1a3df02122b0220159cfa86b"
+                  },
+                  {
+                      "path":  "EVIDENCE-POLICY.md",
+                      "size":  4002,
+                      "sha256":  "ea8554b662d048f459c7c96c2ae08cb2172033317e8d8a90f113549303a83a06"
+                  },
+                  {
+                      "path":  "experiments/processed/performance-v1/summary.json",
+                      "size":  46946,
+                      "sha256":  "7c43963619c7e56a4c8716da19b11aeb06ccfa736b750a496caf37ee613cb2f5"
+                  },
+                  {
+                      "path":  "experiments/processed/performance-v2/summary.json",
+                      "size":  46920,
+                      "sha256":  "462e492795fafdd90a4f39851a612275193603d816f761728afe05e97a470a6b"
+                  },
+                  {
+                      "path":  "experiments/processed/README.md",
+                      "size":  1143,
+                      "sha256":  "2f043cef0946ba53cd54a90cc23a544bc3d5816e0397d86e65f0a1563361a16e"
+                  },
+                  {
+                      "path":  "experiments/raw/attacks-v1/cloud-plus-t-minus-one-party-snapshot-no-offline-predicate-v1.json",
+                      "size":  3455,
+                      "sha256":  "68f1f21c5eaf28c064b2eec5429e1372436a978c9639b0f80ca512a97ca42397"
+                  },
+                  {
+                      "path":  "experiments/raw/attacks-v1/cloud-snapshot-no-offline-predicate-v1.json",
+                      "size":  2932,
+                      "sha256":  "a40b2da1c60cddd962238c8128e6e9dc4e9bf647c15a0f2a4d92e8118f00f23a"
+                  },
+                  {
+                      "path":  "experiments/raw/attacks-v1/t-minus-one-party-snapshot-no-offline-predicate-v1.json",
+                      "size":  3246,
+                      "sha256":  "865d15eb4024ed7aa4fc524e1e7813131fb0ae939b9669a8878710472143e6ad"
+                  },
+                  {
+                      "path":  "experiments/raw/attacks-v2/cloud-plus-t-minus-one-party-snapshot-no-offline-predicate-v1.json",
+                      "size":  3461,
+                      "sha256":  "9244dc0cfe7797749d3251fea6c16d165070ecc98c743abcae3d7222342046a6"
+                  },
+                  {
+                      "path":  "experiments/raw/attacks-v2/cloud-snapshot-no-offline-predicate-v1.json",
+                      "size":  2938,
+                      "sha256":  "1a8f4cbb2cd14171eecaf7540fd6aeb9b29f500aa1eb50e3f6ac91baeaa91b9c"
+                  },
+                  {
+                      "path":  "experiments/raw/attacks-v2/t-minus-one-party-snapshot-no-offline-predicate-v1.json",
+                      "size":  3252,
+                      "sha256":  "f7798ae0da23557457d08efed3517fbc63e8ef66fec5436d7b0226d7eaf58c8e"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/01/enroll-recover-success-v1.json",
+                      "size":  4597,
+                      "sha256":  "b6596c6eb97d49cf6e300725e4134dd6b4211e6dcb1b331acd922765214ecdcd"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/01/recover-one-party-unavailable-v1.json",
+                      "size":  4615,
+                      "sha256":  "d615731c9d791de5eb5e5c8e0f8dc4f8305a08aa0696d2ac9dfd457c89d505f6"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/01/recover-wrong-input-v1.json",
+                      "size":  4615,
+                      "sha256":  "a5b095bccf69b5ac0c84ac89d1192173507b3ce7cd9e4e6917d3d8e211172d16"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/02/enroll-recover-success-v1.json",
+                      "size":  4605,
+                      "sha256":  "2da5d7f2ce3d9f412b16718512e736851d016844d62f099c5b65586a5581d057"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/02/recover-one-party-unavailable-v1.json",
+                      "size":  4617,
+                      "sha256":  "d1767fceceb8947b233c59a7f8bf90bbdec66896e92f3fc220f8e1413370170d"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/02/recover-wrong-input-v1.json",
+                      "size":  4621,
+                      "sha256":  "601f2e2a29e7314d6fd90ef0443c6e1a5297bc09ddece5afb505fc48ec0038bd"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/03/enroll-recover-success-v1.json",
+                      "size":  4594,
+                      "sha256":  "b4341d5713c6017b83d84309c18869b9cc8df5ea9f3e90929fadf8d4a8f36e8a"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/03/recover-one-party-unavailable-v1.json",
+                      "size":  4615,
+                      "sha256":  "b19ebcb3fad417bb721131f5a491e7fd7a694c10ffba0090c4e388a18e34e0b4"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/03/recover-wrong-input-v1.json",
+                      "size":  4620,
+                      "sha256":  "deec0accf4419680679aca7ae7355dd7e8794b148f99f206d740a431e845f24d"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/04/enroll-recover-success-v1.json",
+                      "size":  4601,
+                      "sha256":  "dad823dbac41fd2c4b6e9cc959043fa17e403a0c8b64a8f97e44248849c6ec04"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/04/recover-one-party-unavailable-v1.json",
+                      "size":  4621,
+                      "sha256":  "cb1faa224cc41d9c44b6f39310603dfb5f63d7fc5d3ab30bf570090a5411f2b2"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/04/recover-wrong-input-v1.json",
+                      "size":  4618,
+                      "sha256":  "66a6e6ef54f054646034116e737968cf5d571184a7cdaa2d1c8c0f89dc8e7aa1"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/05/enroll-recover-success-v1.json",
+                      "size":  4598,
+                      "sha256":  "7f0cf5bec1ab51f94a5328d3e4410a9ecb31a3e89af7f2009839107855ff2994"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/05/recover-one-party-unavailable-v1.json",
+                      "size":  4617,
+                      "sha256":  "775213dc8da8966bffc1a92f3d33aed73d16c91b83b5327536b8b0f2a34313e5"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/05/recover-wrong-input-v1.json",
+                      "size":  4620,
+                      "sha256":  "f89f0300bdba6957a9f4ad60763f37d293c4739138843948e5eceef528074e5f"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/06/enroll-recover-success-v1.json",
+                      "size":  4600,
+                      "sha256":  "72e140fb35bce7a3d98e9fec589c4a38eb4d66c826be6b6328d947b63e5dad28"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/06/recover-one-party-unavailable-v1.json",
+                      "size":  4618,
+                      "sha256":  "007635e890fe6a9f72b82025781e412d35c0260bd627f7b40a0acb24eafc030c"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/06/recover-wrong-input-v1.json",
+                      "size":  4626,
+                      "sha256":  "91cd3b7faf889d17dda7f48a90b395eee418e503e6015a0f71d74537ac453965"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/07/enroll-recover-success-v1.json",
+                      "size":  4597,
+                      "sha256":  "b7589266e25de8709dfec5b1ad0ba24d04f87504d3a4c71694d1caaa39933cba"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/07/recover-one-party-unavailable-v1.json",
+                      "size":  4621,
+                      "sha256":  "c0b6a6ecfd440061b892b5956369e06d231b801ea5b85f9eb2d9e67714735ce5"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/07/recover-wrong-input-v1.json",
+                      "size":  4618,
+                      "sha256":  "03220b9228f6fa6f8f8f4a8785e4cd11c30a0f32383e516751be6e0cc30d8f84"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/08/enroll-recover-success-v1.json",
+                      "size":  4602,
+                      "sha256":  "7e569f5ff2a70f7fc9c7c2e8f840876b5a3505948c76c1c7ffb56288ba68a376"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/08/recover-one-party-unavailable-v1.json",
+                      "size":  4615,
+                      "sha256":  "fdf3d111d9f710360ff3f2ea94a3f8f1fd2a7e058666350e2ab776794c725c86"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/08/recover-wrong-input-v1.json",
+                      "size":  4621,
+                      "sha256":  "d1c8d6c8cfb1eddfc21b9903ec7cda671a7d46005ed6ca2e66ecbbba29baf7b8"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/09/enroll-recover-success-v1.json",
+                      "size":  4598,
+                      "sha256":  "d8fd1f1708877e57519b328db959173735e4efec66854905dd3c64cd24f8d939"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/09/recover-one-party-unavailable-v1.json",
+                      "size":  4616,
+                      "sha256":  "12c608e53cbd6079f21e5468bbafdd5c50e913cb3513a9b7beeac5668881b610"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/09/recover-wrong-input-v1.json",
+                      "size":  4616,
+                      "sha256":  "3942611c83ed4f5d007092fdb5f90443397a5c6c2ca721045fcdf64d00d0b653"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/10/enroll-recover-success-v1.json",
+                      "size":  4606,
+                      "sha256":  "3e3b2deef61b55527f6a3e17a1ad2e10641ac5e39356f43e1dd04ca35c3f9c41"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/10/recover-one-party-unavailable-v1.json",
+                      "size":  4625,
+                      "sha256":  "79c5932d1c8223ccc27c0ecf582ec5006439b3d10d672de88908432a04d50ddc"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v1/10/recover-wrong-input-v1.json",
+                      "size":  4623,
+                      "sha256":  "99c333dd74fb381f1b69899dd22778e12c61ca61e1573bb4ee2e0ff803410596"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/01/enroll-recover-success-v1.json",
+                      "size":  4597,
+                      "sha256":  "bd84a47be40c0593fea9ebdffd3086e08e884d9cb5bfc298aff6064a8badea05"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/01/recover-one-party-unavailable-v1.json",
+                      "size":  4626,
+                      "sha256":  "2cb2d22d86c70ec565197a5735ed6017fd5377a399b9485fe2cfc8e10e1be968"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/01/recover-wrong-input-v1.json",
+                      "size":  4623,
+                      "sha256":  "ffb1a322c734b692d45c0820be82abf06cd426a4c674c8ae037675916b92571a"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/02/enroll-recover-success-v1.json",
+                      "size":  4604,
+                      "sha256":  "f5061e4b86c70518e2f45a9b030c502ace110ac77fddf00e6a0d5b4478d1395f"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/02/recover-one-party-unavailable-v1.json",
+                      "size":  4620,
+                      "sha256":  "53ce96a61ad5ad0e95b1ce79dda48b1d7b7ffecd287bd53e238caf9161798844"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/02/recover-wrong-input-v1.json",
+                      "size":  4622,
+                      "sha256":  "6f8ea2849932c73a65711842e8f18549d8c497e0cbc40758fe954d2ce7db9c74"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/03/enroll-recover-success-v1.json",
+                      "size":  4591,
+                      "sha256":  "ec9b042b2b6c62ac01645a70b4c5c0ccc7ea4ca49d562d47b3a0166bf0cf4563"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/03/recover-one-party-unavailable-v1.json",
+                      "size":  4617,
+                      "sha256":  "64ef0152beadb44f40cc0667a4d98f603552023a5065902caa401719d6f4127e"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/03/recover-wrong-input-v1.json",
+                      "size":  4620,
+                      "sha256":  "00d9a6ff7afd251113b6f9dad3efea79848c9cc332dd554abdd55b74581871ef"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/04/enroll-recover-success-v1.json",
+                      "size":  4602,
+                      "sha256":  "4ece120257725e27bdee93a1a607874e7e08c5cb10ee69195e2c686fa142da9d"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/04/recover-one-party-unavailable-v1.json",
+                      "size":  4624,
+                      "sha256":  "7beb193e59444118ac19db520bc1e1ff362fe2b38cfc0d626cfa22824676d4b7"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/04/recover-wrong-input-v1.json",
+                      "size":  4626,
+                      "sha256":  "3bb3c13497d7d56fa240782501b2e70f30d62ac5acebc6c849f1a729b52eaf68"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/05/enroll-recover-success-v1.json",
+                      "size":  4600,
+                      "sha256":  "280e4cf054f50a4bddcacdfda8ab4ea0a3168fd61b5d4b8eebb1ef56070abbd7"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/05/recover-one-party-unavailable-v1.json",
+                      "size":  4613,
+                      "sha256":  "272a64f7b386bd947fefd4c7428a7d1e6e7b9e0334870aa492728d5fec931837"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/05/recover-wrong-input-v1.json",
+                      "size":  4620,
+                      "sha256":  "0f4537f7ff4f24a14be93fc228d10c6d1d60e6f98b849eb90354cfff57bba4a6"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/06/enroll-recover-success-v1.json",
+                      "size":  4603,
+                      "sha256":  "741e1420424e8db8239e7f843e5345638dc4df2508d7cf3f68bc7153c8871222"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/06/recover-one-party-unavailable-v1.json",
+                      "size":  4623,
+                      "sha256":  "9df921f840f55a9efb3203d9f4d74a78ca771fe667fa2c5754eaf1bc991b73a8"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/06/recover-wrong-input-v1.json",
+                      "size":  4619,
+                      "sha256":  "3df5738913b7322cdf3f703c872c0a3d2774ccf91c6889b734d76a5b5b73eb93"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/07/enroll-recover-success-v1.json",
+                      "size":  4601,
+                      "sha256":  "2dae659a4f32c803b90dc1485b6de429cded4003a9877c82b001d0534c780b42"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/07/recover-one-party-unavailable-v1.json",
+                      "size":  4620,
+                      "sha256":  "890a9e5d76cb4e0cb87dd13ac10dd5f09cf3819b148dfe8a935a73de22c882bf"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/07/recover-wrong-input-v1.json",
+                      "size":  4621,
+                      "sha256":  "b4620d5128e30d3cc773461864e51025d5a0a48088dec578494e65662c9e3f06"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/08/enroll-recover-success-v1.json",
+                      "size":  4597,
+                      "sha256":  "d3dbd0a462194882ce8b936cb870e408c403824a8a71bdf8d991c21984ed7a8b"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/08/recover-one-party-unavailable-v1.json",
+                      "size":  4622,
+                      "sha256":  "b7c9635a9cbbc10efffc2eec4f66fa9c2c3e08b213e55b74782eb5295a71a2ac"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/08/recover-wrong-input-v1.json",
+                      "size":  4622,
+                      "sha256":  "4e563fe106f9dd1bd0d9bfd98f67f732c23137d8bf1a20fec714c786f062c098"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/09/enroll-recover-success-v1.json",
+                      "size":  4602,
+                      "sha256":  "056e19b10eabf34fbc2fa8ab38ca85e952006a9859e80566e17085e1e45c4554"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/09/recover-one-party-unavailable-v1.json",
+                      "size":  4621,
+                      "sha256":  "b8dcebe4cc8d2823930906600fb53a425876817d8b7adc37b5d517a971eddfbc"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/09/recover-wrong-input-v1.json",
+                      "size":  4623,
+                      "sha256":  "2c9fd7dfbbaf121621280f6bc60df7699cbee4163642bb43e19174271851170b"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/10/enroll-recover-success-v1.json",
+                      "size":  4605,
+                      "sha256":  "9e0be624bb4e7cc94b2a639155c2518aade26bb2a9bb24f8951cfb10f7966212"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/10/recover-one-party-unavailable-v1.json",
+                      "size":  4624,
+                      "sha256":  "4c63696e4140f2c50c00b9b8d8427225b11a5dd9d12effe389d3bac040f875ae"
+                  },
+                  {
+                      "path":  "experiments/raw/performance-v2/10/recover-wrong-input-v1.json",
+                      "size":  4620,
+                      "sha256":  "320dc99d4020b773f05b1631f9c754ba8952ddb3d055ec78f42d4a68763e50d3"
+                  },
+                  {
+                      "path":  "experiments/raw/README.md",
+                      "size":  1471,
+                      "sha256":  "df46f6326147b86228183eb6004160bf4a3fd870f47d929536ed71d6a0436b7e"
+                  },
+                  {
+                      "path":  "experiments/README.md",
+                      "size":  1130,
+                      "sha256":  "284ea12d72d885b00029b4350a49c6445082440605096e7c4e76b7c811497020"
+                  },
+                  {
+                      "path":  "LICENSE",
+                      "size":  10860,
+                      "sha256":  "8ada45cd9f843acf64e4722ae262c622a2b3b3007c7310ef36ac1061a30f6adb"
+                  },
+                  {
+                      "path":  "LICENSE-DOCUMENTATION.md",
+                      "size":  1615,
+                      "sha256":  "caefa6a1c16f2eb8374d0d9ca426141ffcc96be11d2c4a5be047bba52419c7c3"
+                  },
+                  {
+                      "path":  "LICENSES.md",
+                      "size":  1681,
+                      "sha256":  "772a088a6aac1e351aca37b8fe8c9b06c4f07ee3e3844ab7fbf3df9a1db842a3"
+                  },
+                  {
+                      "path":  "MANUSCRIPT-BOUNDARY.md",
+                      "size":  2185,
+                      "sha256":  "29e9dcb086c422617a371a9344354b46892380aaa0a403fb638c2f4698dcf471"
+                  },
+                  {
+                      "path":  "paper/acmart.cls",
+                      "size":  122400,
+                      "sha256":  "6895475b24fe526c12831f5cc1d16f37218ce5d65161f811dde4bce8dc4551b9"
+                  },
+                  {
+                      "path":  "paper/acmnumeric.bbx",
+                      "size":  19992,
+                      "sha256":  "4b7deca9371b6a9349750767b14309451b54486ebee578f96a8909a2ba202beb"
+                  },
+                  {
+                      "path":  "paper/acmnumeric.cbx",
+                      "size":  90,
+                      "sha256":  "22db9dd1bcb095d8af106e6a834f0ce1f182c73eee656589043c0153f226d911"
+                  },
+                  {
+                      "path":  "paper/ACM-Reference-Format.bst",
+                      "size":  93560,
+                      "sha256":  "ee0d9fd846b95ca8b9b7721e8d9aaa066c64c9e7a61284c6315cfbb844794a39"
+                  },
+                  {
+                      "path":  "paper/AGENTS.md",
+                      "size":  1132,
+                      "sha256":  "eb72ccb9eb687a3e0623a8773aae63140f32752f1e53144f75118c65713d02d3"
+                  },
+                  {
+                      "path":  "paper/cc-by-4.pdf",
+                      "size":  5017,
+                      "sha256":  "824f2a11d2434c8bbc2a6610cceb551fba641c4c7f2d09da899c2d7c5de44bcd"
+                  },
+                  {
+                      "path":  "paper/generated/benchmark_concrete_full_rows.tex",
+                      "size":  689,
+                      "sha256":  "24344e0df58afb8f49881d0c9d5daeb926673c5ba90873aab5baa5350bd86162"
+                  },
+                  {
+                      "path":  "paper/generated/benchmark_concrete_main_rows.tex",
+                      "size":  248,
+                      "sha256":  "dc48295d3b3fe97ad1c8429d02c07205b983d807397d74ff5e772ed5186a0d46"
+                  },
+                  {
+                      "path":  "paper/generated/benchmark_simulator_full_rows.tex",
+                      "size":  689,
+                      "sha256":  "e793ce044ac89898086a07a5d3caa46ff995722fb8d5aa8a637f5a3811a16810"
+                  },
+                  {
+                      "path":  "paper/generated/guessing_risk_rows.tex",
+                      "size":  340,
+                      "sha256":  "84814340b642e47de9b11a0f8cbda69e8e5779db0a5b1cb9cc269eec4606b45a"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v1/latency_rows.tex",
+                      "size":  618,
+                      "sha256":  "9690072eb61f61925fa1201405b47f83b7ec73ddb38c1601538f77776ca64230"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v1/manifest.json",
+                      "size":  1137,
+                      "sha256":  "28184377d350456bb81063dc1ee89138eaa2aed9d6a4af9890df35364b4e5cdf"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v1/phase_rows.tex",
+                      "size":  1962,
+                      "sha256":  "61986576608bd32bc05d020599ee5f5ba0816c9e99c7246cb1b6bd3468bd3176"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v1/storage_rows.tex",
+                      "size":  1984,
+                      "sha256":  "448782feb38176743a5405432dafd292eb1949c036d9e48f4d2ce94e8c4203cf"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v1/traffic_rows.tex",
+                      "size":  1062,
+                      "sha256":  "e31993b2e588402f4e8584b3c9abbb95d1977beae9c46d99f1c2d19a26b928d7"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v2/latency_rows.tex",
+                      "size":  618,
+                      "sha256":  "3bc10ff0aab704b94cbe78c3da1571ec62b26f10b52f904bfa77b737e73f1443"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v2/manifest.json",
+                      "size":  1140,
+                      "sha256":  "9d3e8b9e95234ee62cd4626432a932ce8a0ae3dd2a0a126e20311e0ba33e2dec"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v2/phase_rows.tex",
+                      "size":  1960,
+                      "sha256":  "a0cb6681f08ba312cef528268e5b2f7ef1d79d6678ba4297d7bff08e376adce8"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v2/storage_rows.tex",
+                      "size":  1984,
+                      "sha256":  "7fb6b77f078f8bc656d69e429ef42f4ec051a91d8575341b9d8033a25694d7d1"
+                  },
+                  {
+                      "path":  "paper/generated/performance-v2/traffic_rows.tex",
+                      "size":  1062,
+                      "sha256":  "9f92da53d11ba93629caac66fdf9a5f5d608c451572fef30565f5c1ecbdd743f"
+                  },
+                  {
+                      "path":  "paper/generated/README.md",
+                      "size":  1370,
+                      "sha256":  "45b31a9e6fa88b72d41eb46a268981e8841f43cd4a694ca4afab14eff8ce4f21"
+                  },
+                  {
+                      "path":  "paper/main.pdf",
+                      "size":  671607,
+                      "sha256":  "c42bb7766a08ad1cfe2c7d5d66a726c52277395df46fc12486e6749e111fec22"
+                  },
+                  {
+                      "path":  "paper/main.tex",
+                      "size":  89462,
+                      "sha256":  "cab18dd54cb09f3d3c296786dd3b856d3891d48d54861b3a8fb7686e144130db"
+                  },
+                  {
+                      "path":  "paper/popets.sty",
+                      "size":  10067,
+                      "sha256":  "3e870fc0147f0f6f4652bff876008a407a29014eed3f5567ca3b6e1d8b6afcaf"
+                  },
+                  {
+                      "path":  "paper/README.md",
+                      "size":  1284,
+                      "sha256":  "d7bb6fb755b9c755f375afc262612545e76dd58749db2ef881704fc0e8235890"
+                  },
+                  {
+                      "path":  "paper/references.bib",
+                      "size":  29195,
+                      "sha256":  "d4c5e66a0968884538d5446086569c60b51c55fe710acfd5b4082bc8e1b83e69"
+                  },
+                  {
+                      "path":  "paper/related_work.tex",
+                      "size":  11660,
+                      "sha256":  "219caf664713a366bc5417105d58f17f80fbda45768de47e354ea1eceb9090ca"
+                  },
+                  {
+                      "path":  "PLAN.md",
+                      "size":  30800,
+                      "sha256":  "dd2e7e98b82c9751655e864cd2c0ac1f351189c2f2ec3e0a2437c5eeb4a39ae6"
+                  },
+                  {
+                      "path":  "PORTABILITY-CHECKLIST.md",
+                      "size":  3870,
+                      "sha256":  "2b9ca3d2e6a3cc682cca0890cd183ec714a15dec55b588b238f39224d89801b6"
+                  },
+                  {
+                      "path":  "PROJECT-CHARTER.md",
+                      "size":  3451,
+                      "sha256":  "875961b76a85941512fb3bd0e9aa3f4ea92e6bd60f258b275f9983e238e1beb5"
+                  },
+                  {
+                      "path":  "PROTOCOL-INVARIANTS.md",
+                      "size":  5120,
+                      "sha256":  "6f76e6930924ef1011861ae8e82b2b897ea81b50bf32eb54194724ec88f978a9"
+                  },
+                  {
+                      "path":  "prototype/locus/__init__.py",
+                      "size":  371,
+                      "sha256":  "6d3dd1a3a74eda9f8893be411008bc64a301416b4e5e0e50bb684813701bdb23"
+                  },
+                  {
+                      "path":  "prototype/locus/_tpass_native.pyi",
+                      "size":  1596,
+                      "sha256":  "67d6acbdc6e9d21fc97d31d2d46afb3f968f3f811aae4754addc8c03f53fe83c"
+                  },
+                  {
+                      "path":  "prototype/locus/artifact_package.py",
+                      "size":  10896,
+                      "sha256":  "46e1c67bde509f645bbfcee03924472c49b845b3f810bfa4a7a22954f15d0197"
+                  },
+                  {
+                      "path":  "prototype/locus/attack_runner.py",
+                      "size":  25096,
+                      "sha256":  "197aaaf341dfafe602658bbdfd83360c507bf29156e2b445b3f0e906be45a3c6"
+                  },
+                  {
+                      "path":  "prototype/locus/attempt_certificates.py",
+                      "size":  28006,
+                      "sha256":  "b280e14b331850041bdd61643fda369116b6e12af6331df00b5207563754f402"
+                  },
+                  {
+                      "path":  "prototype/locus/attempt_coordinator.py",
+                      "size":  11611,
+                      "sha256":  "4119965d03de51cac5b48e9e6942ab0ebff00fbe4a09fa1a562ab3f09794ef0a"
+                  },
+                  {
+                      "path":  "prototype/locus/attempt_model.py",
+                      "size":  31868,
+                      "sha256":  "4f118eaf019abf6c02779b891146fa6a2bcafe6175927e1c2587632195955b2c"
+                  },
+                  {
+                      "path":  "prototype/locus/cloud_snapshot.py",
+                      "size":  17978,
+                      "sha256":  "878af9234afdf160b95601ea1dfc3371f51b40b29aac115938efd8e93cabe100"
+                  },
+                  {
+                      "path":  "prototype/locus/codec.py",
+                      "size":  1155,
+                      "sha256":  "437494f44abbe15db32fef1e1b8b18c37e629f2f27582f9b8b3a2190beb77e3e"
+                  },
+                  {
+                      "path":  "prototype/locus/combined_snapshot.py",
+                      "size":  14724,
+                      "sha256":  "b1266a4cd69baeb09350a9d46735e019924960922e69392d475843b6336f5c41"
+                  },
+                  {
+                      "path":  "prototype/locus/core.py",
+                      "size":  18179,
+                      "sha256":  "dc1aa151f34f74e6ab18f34c0dc69fe636d57078487121a3089eef92f8f785f2"
+                  },
+                  {
+                      "path":  "prototype/locus/crypto.py",
+                      "size":  4892,
+                      "sha256":  "4e4e18010bd3b2dd31307da3420093625808e415247ef7638149fdb391123a88"
+                  },
+                  {
+                      "path":  "prototype/locus/cue_policy.py",
+                      "size":  4714,
+                      "sha256":  "51d0bcb7bf2225ac07a9c89dd4a0b7df00a3ca627ab090fb00ca888d31bf4c89"
+                  },
+                  {
+                      "path":  "prototype/locus/deployed_profile.py",
+                      "size":  290,
+                      "sha256":  "135cb882288499756c4baa9fc63a61dcc2c2b4f70f66f7bdd2d384b5e742e583"
+                  },
+                  {
+                      "path":  "prototype/locus/deployment.py",
+                      "size":  74299,
+                      "sha256":  "80ed6af14f9b67fd75e7084fdacd3ba266366d8d78980e28b408d223c317be70"
+                  },
+                  {
+                      "path":  "prototype/locus/epoch_lifecycle.py",
+                      "size":  21142,
+                      "sha256":  "36b0555171896984e6be76b875f43f7031621f022e685aaad25d757867a3f6ae"
+                  },
+                  {
+                      "path":  "prototype/locus/experiment_metadata.py",
+                      "size":  11768,
+                      "sha256":  "d70d5dde0810a6a43e4035c5e2e1c6fe1989ecd0c596ebb7528af6c5b21fe2b4"
+                  },
+                  {
+                      "path":  "prototype/locus/object_store.py",
+                      "size":  13072,
+                      "sha256":  "3a3824fe6e349abac29d2c1d227870d5729820ddf4f93f4b9f385110a8b1cf68"
+                  },
+                  {
+                      "path":  "prototype/locus/party_http.py",
+                      "size":  57254,
+                      "sha256":  "c55306fd5a09ae5a7737bff1776f288e4ac4ac7fda48b077e6a5ef5940a956fc"
+                  },
+                  {
+                      "path":  "prototype/locus/party_service.py",
+                      "size":  6178,
+                      "sha256":  "d20349ecfce01b2c273aaa74007d2d355282b8492534ad9a7fb86afe4f7d75d1"
+                  },
+                  {
+                      "path":  "prototype/locus/party_snapshot.py",
+                      "size":  27512,
+                      "sha256":  "be6a226aa324621d584bffb28bf635a6065b57a677b5c3e86dbbeb5ff2a4247c"
+                  },
+                  {
+                      "path":  "prototype/locus/party_store.py",
+                      "size":  85976,
+                      "sha256":  "dbba4f7f59e2c5da504f825b69c6ab390572f6e09ca1342f95baeea13c4fe9e4"
+                  },
+                  {
+                      "path":  "prototype/locus/performance_paper.py",
+                      "size":  20475,
+                      "sha256":  "21188360fd7c7a393936df0afa09ce51f320dea5df97d753b7f8585813b58e43"
+                  },
+                  {
+                      "path":  "prototype/locus/performance_processing.py",
+                      "size":  33015,
+                      "sha256":  "01075707a7c2b471c06addab0e4e50263de16eec1304114178f5c4b0fb44d944"
+                  },
+                  {
+                      "path":  "prototype/locus/profile_evidence.py",
+                      "size":  6978,
+                      "sha256":  "0cbd62a8da6fd3e05a91fae413b74482e7dc6352f7b6e38f8bcdf301cce48988"
+                  },
+                  {
+                      "path":  "prototype/locus/redaction.py",
+                      "size":  3693,
+                      "sha256":  "5452c2ccb0f78acb97cda8af4f8c8c50cbc80e8dd82a5f63599b7ed4b3ac0f6a"
+                  },
+                  {
+                      "path":  "prototype/locus/resolver_fixture.py",
+                      "size":  2610,
+                      "sha256":  "224eef71648bbfaba2859f54689099d256c3a35655742c7912af41e2fd05f438"
+                  },
+                  {
+                      "path":  "prototype/locus/s3_object_store.py",
+                      "size":  12786,
+                      "sha256":  "a77a924ee2ed1e3d0da6c47ea00ac394f6e0393b6af2c9e6f01e5a2c0e2f5fea"
+                  },
+                  {
+                      "path":  "prototype/locus/tpass.py",
+                      "size":  21126,
+                      "sha256":  "c81b1eff21b3ef842fdbc59b1a1b9680468d4e9e2c1e827ea0de96e92ae7e412"
+                  },
+                  {
+                      "path":  "prototype/locus/walkthrough.py",
+                      "size":  17330,
+                      "sha256":  "867aea4078b25503051ce284f77f12047371bc6a9b87e95ef2dda8f6d8d84144"
+                  },
+                  {
+                      "path":  "prototype/README.md",
+                      "size":  2257,
+                      "sha256":  "386c94493a1e63da00e2b901bf1a5e2a81cb72bc046ab558667fe7f922ed1538"
+                  },
+                  {
+                      "path":  "prototype/scripts/format_benchmark_table.py",
+                      "size":  2694,
+                      "sha256":  "46386571610104ff5df46b69fef10cd38e316289be123c3e94cf99f723b26493"
+                  },
+                  {
+                      "path":  "prototype/scripts/run_benchmarks.py",
+                      "size":  7238,
+                      "sha256":  "b4574f45f807eb912783ba229ab6663e388998bf0e98b80acd7c7f96e303a084"
+                  },
+                  {
+                      "path":  "prototype/scripts/run_demo.py",
+                      "size":  2400,
+                      "sha256":  "0d7ee035fad384eca0dbd003c4086f740d51188ad9416d6f6d2d81389b244485"
+                  },
+                  {
+                      "path":  "prototype/scripts/run_walkthrough.py",
+                      "size":  241,
+                      "sha256":  "03e32de34e36436bf3e976a5d71765cd14cab76b5173e1049b157913bda217b2"
+                  },
+                  {
+                      "path":  "prototype/tests/__init__.py",
+                      "size":  52,
+                      "sha256":  "277f611bc5fc3c73410deff4dda32473c44bbaf9ece5f1052deabc5dd3983aa8"
+                  },
+                  {
+                      "path":  "prototype/tests/object_store_contract.py",
+                      "size":  2870,
+                      "sha256":  "82310b70e367c0a9e43b50ef1e5adf6bb8effa295e6d3e743791255db4c90ede"
+                  },
+                  {
+                      "path":  "prototype/tests/test_artifact_package.py",
+                      "size":  6299,
+                      "sha256":  "02722f50a926b1783589044feed75dfdc5482047c06ab51d2a80bb5c8b4ffa17"
+                  },
+                  {
+                      "path":  "prototype/tests/test_attempt_certificates.py",
+                      "size":  5810,
+                      "sha256":  "6237ef778c0b12b1ae705e662e1ac5d776d2472fb60534fd34058838e478f0ea"
+                  },
+                  {
+                      "path":  "prototype/tests/test_attempt_coordinator.py",
+                      "size":  9947,
+                      "sha256":  "f9cba2b167c7ecc217cd8df03e90387430d12037ad87e685d1d7890ec3f0dbdb"
+                  },
+                  {
+                      "path":  "prototype/tests/test_attempt_model.py",
+                      "size":  3451,
+                      "sha256":  "35f1614605afeb337314be0e9d93ef06893c098b76c41f3880111b435e757701"
+                  },
+                  {
+                      "path":  "prototype/tests/test_cloud_snapshot.py",
+                      "size":  6990,
+                      "sha256":  "8ae4461eaa8c4a90f64f967a3024500220403e92f322c06c6886c7dab1119514"
+                  },
+                  {
+                      "path":  "prototype/tests/test_combined_snapshot.py",
+                      "size":  11643,
+                      "sha256":  "de0fe04f703328eb8400f5e68651ff3375dd6f26438acf949448e10081a28e6b"
+                  },
+                  {
+                      "path":  "prototype/tests/test_crypto.py",
+                      "size":  3929,
+                      "sha256":  "f1750e7f9152e3e1adb5876169f4eecbce516c821fff1a438192ab203fa0bec2"
+                  },
+                  {
+                      "path":  "prototype/tests/test_cue_policy.py",
+                      "size":  5297,
+                      "sha256":  "30217d67fe39143db48fe29ccae1ba2dad705fbefa3fcd49a0c0a99fa8d4396c"
+                  },
+                  {
+                      "path":  "prototype/tests/test_deployment.py",
+                      "size":  6504,
+                      "sha256":  "7bb4bceb42bbe9559196be65afdb79d276585d9aaec67b1e108320992ebc0571"
+                  },
+                  {
+                      "path":  "prototype/tests/test_epoch_lifecycle.py",
+                      "size":  22157,
+                      "sha256":  "addeb50921d561e8bf2cf4f835d08304da7854c6a423c63358b702833cf8392d"
+                  },
+                  {
+                      "path":  "prototype/tests/test_epoch_lifecycle_http.py",
+                      "size":  20705,
+                      "sha256":  "6d566f7bc814c003aa26a821886ad7b100d2a2d684b6bb04dead7fd9a7b592ea"
+                  },
+                  {
+                      "path":  "prototype/tests/test_experiment_metadata.py",
+                      "size":  4511,
+                      "sha256":  "b15437590a76a6def376f3980ff2bf1ac34f10416fed3083abe7d9932750c99d"
+                  },
+                  {
+                      "path":  "prototype/tests/test_locus_flow.py",
+                      "size":  20404,
+                      "sha256":  "3e114ff3d4d2088435cd936e8a17e6706b11b1ef4db93ffe35ba9b29564935a5"
+                  },
+                  {
+                      "path":  "prototype/tests/test_native_tpass.py",
+                      "size":  9543,
+                      "sha256":  "eb5412a250c75762fac9d12384de4c52f236afae667d0dc4c91255a45571353c"
+                  },
+                  {
+                      "path":  "prototype/tests/test_object_store.py",
+                      "size":  8738,
+                      "sha256":  "cee55d6f1de80fe97256c673373c977af315e07d1a84b922fc9e377999990880"
+                  },
+                  {
+                      "path":  "prototype/tests/test_party_http.py",
+                      "size":  47977,
+                      "sha256":  "c5824992c391213a61116306866bc45dedbd441f88282ecbe0f753969c5049e5"
+                  },
+                  {
+                      "path":  "prototype/tests/test_party_service.py",
+                      "size":  21932,
+                      "sha256":  "84e25ac6502709d7028b9f1a5cc5921770d5205d3314db438fe5c8db80a9278b"
+                  },
+                  {
+                      "path":  "prototype/tests/test_party_snapshot.py",
+                      "size":  10376,
+                      "sha256":  "74ab48bc251d21310848c0616bae37341d3d7a512bd3d39f7a4cb5eaaec2fa66"
+                  },
+                  {
+                      "path":  "prototype/tests/test_party_transport.py",
+                      "size":  6629,
+                      "sha256":  "dca5a6ff9bd6e4c46a9fb779c59c5652f61ac24d85225aab7c2cb81e976dc215"
+                  },
+                  {
+                      "path":  "prototype/tests/test_performance_paper.py",
+                      "size":  9872,
+                      "sha256":  "dfe2476016e12e1b5108993fec52f0f4fc5ae083744fbc45a1bad14d4be3d574"
+                  },
+                  {
+                      "path":  "prototype/tests/test_performance_processing.py",
+                      "size":  15411,
+                      "sha256":  "42b768221d8ba93f5c9512dbe2379a8ac0fa568eeb24f9a4138d7ae5dc105d82"
+                  },
+                  {
+                      "path":  "prototype/tests/test_profile_evidence.py",
+                      "size":  10487,
+                      "sha256":  "d847f631971f73677397153453e4ee944fbde413278c32309971016db15fc8fb"
+                  },
+                  {
+                      "path":  "prototype/tests/test_profiles.py",
+                      "size":  10807,
+                      "sha256":  "1561221048bcd042cfe5361dcff59ec6e1a9ce8ef8bff708dbc24b00c536c79a"
+                  },
+                  {
+                      "path":  "prototype/tests/test_recovery_resilience.py",
+                      "size":  3797,
+                      "sha256":  "260dfd2f924f4fa6e9dd067a92028535bc0c28459655b791351562da94a0dc76"
+                  },
+                  {
+                      "path":  "prototype/tests/test_redaction.py",
+                      "size":  1667,
+                      "sha256":  "7575786312c7cd3d08ba6d4dda5dfc834cac7ab02ef22d9a747166ba2f88e84c"
+                  },
+                  {
+                      "path":  "prototype/tests/test_resolver_fixture.py",
+                      "size":  1814,
+                      "sha256":  "0b29e3032fd61b47b8a4eacebe24641642dd78e0969859e7b3c2def38423ac14"
+                  },
+                  {
+                      "path":  "prototype/tests/test_s3_live.py",
+                      "size":  1295,
+                      "sha256":  "8d0f34072b4c46d0a969bf6ab4408be6e0a1ef4f741b59c8b602bb3504a7376c"
+                  },
+                  {
+                      "path":  "prototype/tests/test_s3_object_store.py",
+                      "size":  7134,
+                      "sha256":  "33f62476c9afa5bc506351119963e48096610ea4965cec074471dc4c12124522"
+                  },
+                  {
+                      "path":  "prototype/tests/test_walkthrough.py",
+                      "size":  4191,
+                      "sha256":  "7c3c43b9ac747fee812e6db01eb46b253f87c8af9e14b7b45ddab12ca81d2eda"
+                  },
+                  {
+                      "path":  "prototype/test-vectors/cue-policy-v1.json",
+                      "size":  2872,
+                      "sha256":  "24b8b1972eedc7f54c8cce51f8f21d176d09b70093fb1abb610fa23635919970"
+                  },
+                  {
+                      "path":  "prototype/test-vectors/resolver-drift-v1.json",
+                      "size":  3195,
+                      "sha256":  "52a457a57a4f029709a004c3e7db60faa1f3f2bf89c103c32f877e786f991ff3"
+                  },
+                  {
+                      "path":  "pyproject.toml",
+                      "size":  1076,
+                      "sha256":  "fceeba192ab5bf23d5c59755ba4ddea96e2a2372e9477c3348a6bcbcd66bb91a"
+                  },
+                  {
+                      "path":  "README.md",
+                      "size":  5936,
+                      "sha256":  "564c7b552e4b1497c2b11b86575c7d9ab6cb4162c858ce834f94741acf15d199"
+                  },
+                  {
+                      "path":  "rust-toolchain.toml",
+                      "size":  86,
+                      "sha256":  "3b4c3b4998e5446203421c9d64467cf7464eece73c685effa631790bfe25c428"
+                  },
+                  {
+                      "path":  "SOURCE-PROVENANCE.md",
+                      "size":  3179,
+                      "sha256":  "43cbf93fd961c7eb570d60f667bc9ab26ea10f12486f42012803bd6e1fe9b46c"
+                  },
+                  {
+                      "path":  "tasks.py",
+                      "size":  93263,
+                      "sha256":  "bc5a5ecc6d1e8ef8e7679012e44a6d5ec0ea1679e575df3d2d41942f67fcbc86"
+                  },
+                  {
+                      "path":  "THESIS-GUARDRAILS.md",
+                      "size":  3295,
+                      "sha256":  "c8cdbdf6a31e18935f3d2aaf811d58e1f6e728e7d7503a0a380f56900b36f18a"
+                  },
+                  {
+                      "path":  "tpass-core/Cargo.lock",
+                      "size":  7114,
+                      "sha256":  "82919089467402e99760719fac9631cc0722f8b6935b599608d42bbd5c0984bb"
+                  },
+                  {
+                      "path":  "tpass-core/Cargo.toml",
+                      "size":  529,
+                      "sha256":  "69e9098b432f53649470a0d4682d3d8e763be9651e2aa3787dff8ec6dff25c2c"
+                  },
+                  {
+                      "path":  "tpass-core/src/lib.rs",
+                      "size":  37299,
+                      "sha256":  "bbf7c3d9ce65bb97cb33945a943a52c681a0ca2607d6f5d95544c5ea88336d5a"
+                  },
+                  {
+                      "path":  "tpass-core/src/wire.rs",
+                      "size":  25559,
+                      "sha256":  "a4a530460333c2a5c807c20cccadea37480e591a54fcf609a7dea6dbb5221308"
+                  },
+                  {
+                      "path":  "tpass-core/tests/fixed_vector.rs",
+                      "size":  4548,
+                      "sha256":  "4025c60ccbcfdebc93d6f444bb0e024dd69d4a46c57ed3cc9ab6ddd50cccb14e"
+                  },
+                  {
+                      "path":  "tpass-core/test-vectors/yi-zk-ristretto255-v1.txt",
+                      "size":  3861,
+                      "sha256":  "a25fe5589c76f26607452c52267a9fb2d4ddb91250f8ec8331f34c7c85497c99"
+                  },
+                  {
+                      "path":  "tpass-python/Cargo.lock",
+                      "size":  8370,
+                      "sha256":  "9865d4c03fc7fa8a807abdc612499dc50b3a833f2aa433027a8fd390d5b849fc"
+                  },
+                  {
+                      "path":  "tpass-python/Cargo.toml",
+                      "size":  458,
+                      "sha256":  "52af2866c75c146b87b59db8e66b53bd7f82f93c946b5eb5181d8713c1aa7e5e"
+                  },
+                  {
+                      "path":  "tpass-python/LICENSES.md",
+                      "size":  516,
+                      "sha256":  "443bdc3a8901cdd751bff93c69191ad5940f6574361d4f6184c4577073a35922"
+                  },
+                  {
+                      "path":  "tpass-python/src/lib.rs",
+                      "size":  8573,
+                      "sha256":  "67b4503c33a82d8da924dd19e44d1b1a5f53715c0c3119d96e2e7865e8c8002d"
+                  },
+                  {
+                      "path":  "uv.lock",
+                      "size":  46056,
+                      "sha256":  "4fbd85bc3c1c96cd95929e645294b44b521023f3329fdd00d13466c29ee0f29c"
+                  },
+                  {
+                      "path":  "VERSION-REGISTRY.md",
+                      "size":  4783,
+                      "sha256":  "64b83b730087b00fc413fa3d88dbf60235bf087c9e4a165710cdec5f0417990c"
+                  }
+              ]
+}

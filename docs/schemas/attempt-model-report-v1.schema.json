@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:attempt-model-report:v1",
+  "title": "LOCUS bounded attempt-control model report v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["interpretation", "model", "scenarios", "status", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-attempt-model-report-v1"},
+    "status": {"const": "passed"},
+    "interpretation": {"type": "string", "minLength": 1},
+    "model": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["byzantine_behavior", "exact_retry", "honest_state", "search"],
+      "properties": {
+        "byzantine_behavior": {"type": "string", "minLength": 1},
+        "exact_retry": {"type": "string", "minLength": 1},
+        "honest_state": {"type": "string", "minLength": 1},
+        "search": {"type": "string", "minLength": 1}
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 7,
+      "maxItems": 7,
+      "items": {"$ref": "#/$defs/scenario"}
+    }
+  },
+  "$defs": {
+    "scenario": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "bounds",
+        "expected",
+        "initial_state",
+        "observed",
+        "reconciliation",
+        "scenario_id",
+        "status"
+      ],
+      "properties": {
+        "scenario_id": {
+          "enum": [
+            "baseline-concurrency-no-rollback-v1",
+            "single-honest-rollback-quorum-v1",
+            "single-honest-rollback-anchor-v1",
+            "double-honest-rollback-quorum-v1",
+            "double-honest-rollback-anchor-v1",
+            "retired-epoch-double-rollback-quorum-v1",
+            "retired-epoch-double-rollback-anchor-v1"
+          ]
+        },
+        "reconciliation": {"enum": ["quorum", "monotonic-anchor"]},
+        "initial_state": {
+          "enum": ["active-genesis", "two-honest-pre-retirement-snapshots"]
+        },
+        "status": {"const": "passed"},
+        "bounds": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "authorization_quorum",
+            "budget",
+            "byzantine_authorizers",
+            "honest_authorizers",
+            "max_depth",
+            "max_states",
+            "request_identities",
+            "rollback_limit",
+            "total_authorizers"
+          ],
+          "properties": {
+            "authorization_quorum": {"const": 4},
+            "budget": {"const": 2},
+            "byzantine_authorizers": {"const": 2},
+            "honest_authorizers": {"const": 3},
+            "max_depth": {"type": "integer", "minimum": 0},
+            "max_states": {"type": "integer", "minimum": 1},
+            "request_identities": {"const": 2},
+            "rollback_limit": {"type": "integer", "minimum": 0, "maximum": 2},
+            "total_authorizers": {"const": 5}
+          }
+        },
+        "expected": {"$ref": "#/$defs/outcome"},
+        "observed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "maximum_depth_reached",
+            "outcome",
+            "states_explored",
+            "trace",
+            "transitions_explored",
+            "truncated",
+            "violation"
+          ],
+          "properties": {
+            "maximum_depth_reached": {"type": "integer", "minimum": 0},
+            "outcome": {
+              "enum": [
+                "counterexample",
+                "no-counterexample-within-bound",
+                "state-limit-reached"
+              ]
+            },
+            "states_explored": {"type": "integer", "minimum": 1},
+            "trace": {"type": "array", "items": {"type": "string"}},
+            "transitions_explored": {"type": "integer", "minimum": 0},
+            "truncated": {"type": "boolean"},
+            "violation": {"type": ["string", "null"]}
+          }
+        }
+      }
+    },
+    "outcome": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["outcome", "violation"],
+      "properties": {
+        "outcome": {
+          "enum": ["counterexample", "no-counterexample-within-bound"]
+        },
+        "violation": {"type": ["string", "null"]}
+      }
+    }
+  }
+}

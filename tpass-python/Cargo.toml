@@ -1,0 +1,17 @@
+[package]
+name = "locus-tpass-python"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.83"
+license = "Apache-2.0"
+description = "Narrow Python bindings for the LOCUS TPASS Rust core"
+publish = false
+
+[lib]
+name = "_tpass_native"
+crate-type = ["cdylib"]
+
+[dependencies]
+locus-tpass-core = { path = "../tpass-core" }
+pyo3 = { version = "=0.29.0", features = ["abi3-py312", "extension-module"] }
+rand_core = { version = "=0.6.4", features = ["getrandom"] }

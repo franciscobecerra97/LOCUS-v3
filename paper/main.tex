@@ -1,0 +1,1261 @@
+\documentclass[sigconf,anonymous]{acmart}
+
+% Avoid an acmart/newtxmath clash when amssymb is loaded.
+\let\Bbbk\relax
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{url}
+\usepackage{hyperref}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta}
+
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+% --- IEEE-style algorithm heading inside a figure float ---
+\newcounter{protocol}
+\renewcommand{\theprotocol}{\arabic{protocol}}
+
+\makeatletter
+\newcommand{\protocolcaption}[1]{%
+  \refstepcounter{protocol}%
+  \vspace{2pt}\hrule\vspace{0.4ex}%
+  {\raggedright\footnotesize\textbf{Algorithm \theprotocol} #1\par}%
+  \vspace{0.4ex}\hrule\vspace{2pt}%
+}
+\makeatother
+
+\renewcommand{\algorithmicrequire}{\textbf{Input:}}
+\renewcommand{\algorithmicensure}{\textbf{Output:}}
+
+% --- Macros ---
+\newcommand{\LOCUS}{\textsf{LOCUS}}
+\newcommand{\Enc}{\mathsf{Enc}}
+\newcommand{\Dec}{\mathsf{Dec}}
+\newcommand{\Encode}{\mathsf{Encode}}
+\newcommand{\HKDF}{\mathsf{HKDF}}
+\newcommand{\AEAD}{\mathsf{AEAD}}
+\newcommand{\TPASS}{\mathsf{TPASS}}
+\newcommand{\YHCLZK}{\mathsf{YHCLZK}}
+\newcounter{locusclaim}
+\newcommand{\locusclaim}[1]{\refstepcounter{locusclaim}\paragraph{Claim \thelocusclaim\ (#1).}}
+\newcommand{\proofsketch}{\paragraph{Proof sketch.}}
+
+% ASIACCS 2027 submission metadata. Final values are assigned by ACM.
+\acmYear{2027}
+\copyrightyear{2027}
+\setcopyright{acmlicensed}
+\acmConference[ASIACCS '27]{Proceedings of the 22nd ACM Asia Conference on Computer and Communications Security}{July 12--16, 2027}{Macau, China}
+\acmBooktitle{Proceedings of the 22nd ACM Asia Conference on Computer and Communications Security (ASIACCS '27), July 12--16, 2027, Macau, China}
+\acmDOI{10.1145/XXXXXXX.XXXXXXX}
+\acmISBN{979-8-XXXX-XXXX-X/27/07}
+
+\begin{document}
+
+\title{LOCUS: A Cue-Policy Interface for Storage-Separated Threshold Private-Key Recovery}
+\renewcommand{\shortauthors}{anonymous}
+
+\begin{abstract}
+
+Long-term private-key recovery needs a human-facing input that can be supplied after device loss without turning a stored backup into an offline guessing target. \LOCUS\ introduces a versioned cue-policy boundary that converts deployment-chosen structured input into canonical client-local bytes for threshold password-authenticated secret sharing (TPASS). The resulting password mediates recovery of an independently sampled group secret, from which the client derives the key that encrypts the private-key backup. The cloud stores the ciphertext, while recovery parties store threshold state and backup bindings; under the TPASS assumptions, cloud compromise, below-threshold party compromise, or their combination does not create an offline cue-testing oracle. A hybrid Rust/Python prototype demonstrates the interface through a reference policy requiring three location--person pairs, a native Rust/Ristretto255 TPASS core, AES-256-GCM backup protection, separated S3-compatible storage, and authenticated same-host party services. Conformance tests cover canonical ordering, ambiguity, malformed input, and resolver drift. Across 30 measurements per operation, median enrollment and successful recovery took 250 and 442\,ms, respectively; recovery with one TPASS party unavailable took 411\,ms. Three isolated synthetic snapshot experiments---cloud-only, one party in the deployed 2-of-3 profile, and their combination---reported no local candidate signal for either of two fixed candidates under networkless, read-only boundaries. These results demonstrate the implemented cue-policy, native-recovery, and storage-separation boundaries for the evaluated same-host profile.
+
+\end{abstract}
+
+\ccsdesc[500]{Security and privacy~Key management}
+\ccsdesc[500]{Security and privacy~Security protocols}
+\ccsdesc[300]{Security and privacy~Usability in security and privacy}
+
+\keywords{private-key recovery, offline guessing resistance, threshold password-authenticated secret sharing, decentralized recovery, usable security, cloud backup, account recovery}
+
+\maketitle
+
+\section{Introduction}
+\label{sec:introduction}
+
+Private keys protect encrypted data, self-custodied assets, identities, and account credentials, yet loss of the only usable copy can make recovery impossible. Existing mechanisms trade availability against security: custodial recovery concentrates authority, social recovery delegates decisions to guardians, conventional password-protected backups can enable offline guessing after leakage, and high-entropy bearer strings must remain available for years. \LOCUS\ seeks private-key recovery after device loss without giving one service unilateral recovery power or placing an offline cue-testing verifier in stored state.
+
+Prior studies of graphical cues, geographic passwords, and location-based fallback authentication show delayed reproduction in particular evaluated schemes~\cite{AlAmeen2015Cues,AlAmeen2017GeoPass,Hang2015LocationFallback,Zhou2025MapPasswords}. They motivate structured cues as an interface class, not the usability of a \LOCUS\ policy. The systems gap is reproducibility: TPASS consumes stable password bytes, while human-derived information may be ambiguous, provider-dependent, or publicly predictable~\cite{Bonneau2015Secrets,Yan2004Password}. A deployment therefore needs an explicit contract for accepted input, resolution, normalization, ordering, ambiguity, drift, versioning, and failure.
+
+\LOCUS\ supplies that contract as a client-side cue policy. The policy maps structured input to canonical bytes or fails; public metadata identifies the rules without revealing selected cues or a testing digest. The client binds the output to a recovery identity and uses it as the password input to the TPASS construction of Yi et al.~\cite{Yi2015TPASS,Yi2019TPASS}. TPASS recovers an independently sampled group secret, from which the client derives the backup-wrapping key. The cloud stores the ciphertext, while recovery parties store threshold state and backup bindings. Under the TPASS assumptions, the cloud, fewer than \(t\) parties, or their combination cannot test cue guesses offline; guesses remain online protocol events.
+
+The prototype instantiates the policy interface with a three location--person-pair reference policy and integrates a native Ristretto255 TPASS core, standard backup cryptography, S3-compatible storage, and authenticated same-host party services. Its evaluation covers deterministic policy behavior, native recovery cost, and isolated cloud, one-party, and combined persistent snapshots. A bounded state exploration also demonstrates why the prototype's quorum ledger does not establish rollback-resistant global attempt control.
+
+This paper contributes: (1) a versioned cue-policy interface for reproducible client-local TPASS input; (2) a storage-separated recovery architecture in which TPASS recovers random keying material rather than using cues directly for encryption; (3) a native prototype and evaluation of one reference policy, the end-to-end recovery path, and persistent state boundaries; and (4) a claim-scoped analysis of offline and online guessing, resolver leakage, and the partial ledger's rollback counterexample.
+
+\section{Problem Setting and Threat Model}
+\label{sec:problem}
+
+\subsection{Problem Setting}
+
+Let \(U\) denote a user who holds a private key \(sk_U\). The goal of \LOCUS\ is to let \(U\) recover \(sk_U\) after losing the original device, using structured input admitted by a deployment-defined cue policy, while avoiding a single recovery provider that can reconstruct the key and avoiding stored material that enables offline cue guessing.
+
+\LOCUS\ is intended for infrequent, high-value recovery events rather than daily authentication. A deployment chooses a human-facing cue scheme and records a public version identifier for the rules that convert selected input into canonical bytes. The security analysis treats the resulting input as potentially predictable; policy-specific memorability, reproduction, and selection behavior require separate human evaluation.
+
+\subsection{Entities}
+
+\LOCUS\ involves three entity types.
+
+\textbf{User.}
+The user initially holds a private key \(sk_U\). During enrollment, the user selects structured recovery information under the deployment's cue policy. The client canonicalizes that selection, derives the TPASS password input, encrypts \(sk_U\), and distributes recovery state. During recovery, the user operates from a fresh device and supplies candidate input under the same public policy version.
+
+\textbf{Cloud service.}
+The cloud service stores the encrypted backup object. It is not trusted for confidentiality or integrity. Integrity failures are detected by authenticated encryption and by comparing backup-object digests stored by recovery parties. The cloud is trusted only for availability, or the backup object may be replicated across multiple storage providers.
+
+\textbf{Recovery parties.}
+Recovery parties store threshold recovery state and participate online during recovery. A threshold parameter \(t\) determines how many parties are required. The prototype records request-bound local accounting before a secret-dependent response, but the bounded rollback result shows that its signed durable ledger does not establish a global attempt property.
+
+\subsection{Threat Model}
+
+We consider adversaries that may compromise the cloud service, compromise fewer than \(t\) recovery parties, observe recovery traffic over an untrusted relay, observe or control a resolver provider, or attempt online guessing through the recovery interface. Enrollment channels from the user to recovery parties are assumed to be authenticated and confidential because they carry recovery-party state. Because a cue policy may admit personal information, the model explicitly includes adversaries who infer candidate inputs from public traces or social knowledge.
+
+We distinguish the following adversary classes.
+
+\textbf{Cloud adversary.}
+The adversary obtains the cloud backup object, including the encrypted private key and public policy metadata. The adversary may delete, replay, or substitute backup objects.
+
+\textbf{Below-threshold party adversary.}
+The adversary compromises fewer than \(t\) recovery parties and obtains their stored state. The adversary may also know public recovery metadata and may collude with the cloud adversary.
+
+\textbf{Online guessing adversary.}
+The adversary attempts recovery sessions using candidate inputs admitted by the active cue policy. Candidates may be generated from public traces, social knowledge, resolver leakage, or ordinary password-guessing strategies. Such attempts require interaction with recovery parties. The prototype instruments local party-side attempt state, but any adversarially enforced rate limit is a deployment assumption.
+
+\textbf{Public-information adversary.}
+The adversary uses public information about the user, such as public posts, photographs, workplaces, travel history, family information, or social-media links, to predict likely personal cues.
+
+\textbf{Social-knowledge adversary.}
+The adversary knows the user personally and may know relatives, friends, schools, workplaces, frequent locations, or life events that the user might select as recovery cues.
+
+\textbf{Provider-observation adversary.}
+The adversary observes queries and selected candidates submitted to an external resolver. Local hashing does not hide these queries because resolution occurs before hashing.
+
+Table~\ref{tab:attacker-goals} summarizes the main attacker goals considered in the analysis and the corresponding \LOCUS\ security response.
+
+\begin{table*}[t]
+\centering
+\caption{Attacker goals and intended \LOCUS\ response.}
+\label{tab:attacker-goals}
+\footnotesize
+\begin{tabular}{p{0.18\linewidth}p{0.25\linewidth}p{0.24\linewidth}p{0.23\linewidth}}
+\toprule
+\textbf{Adversary} & \textbf{Goal} & \textbf{\LOCUS\ response} & \textbf{Residual risk} \\
+\midrule
+Cloud-only compromise & Decrypt \(C_U\) or test guessed cues offline from \(B_U\) & Cloud stores ciphertext and public metadata, but no TPASS states, raw cues, cue identifiers, \(p_M\), \(S_R\), wrapping key, or verifier & Deletion, rollback, and substitution affect availability or require digest checks \\
+\addlinespace
+Fewer than \(t\) recovery parties & Reconstruct \(S_R\), test cue guesses locally, or recover \(sk_U\) & TPASS threshold security prevents below-threshold reconstruction and party records contain no encrypted key or password verifier & Online guessing remains possible whenever parties participate; complete attempt enforcement is unfinished \\
+\addlinespace
+Cloud plus fewer than \(t\) parties & Combine ciphertext with partial recovery state to test cues offline & Storage-recovery separation and TPASS prevent a local cue-testing oracle below threshold & Same online-guessing and availability risks as above \\
+\addlinespace
+At least \(t\) compromised parties & Recover threshold secret or assist malicious recovery & Outside the threshold-compromise assumption & Must be addressed by party selection, monitoring, replacement, and operational controls \\
+\addlinespace
+Online guessing client & Submit candidate cues through recovery sessions & Attempts require online party participation; the design requires counting before response & The complete distributed bound is assumed, not established by the current prototype \\
+\addlinespace
+Public-information attacker & Infer likely cue values from public traces & No offline oracle; guesses must be tested online through TPASS & Obvious cues may be guessed in few attempts \\
+\addlinespace
+Social-knowledge attacker & Use personal knowledge to predict recovery inputs & Same online-only testing boundary; no claim that social knowledge is hidden & Strong social knowledge can reduce cue uncertainty substantially \\
+\addlinespace
+Resolver observer & Observe lookup queries or selected candidates & Resolver privacy is not provided by local hashing after lookup & Use local, self-hosted, cached, or private lookup mechanisms when resolver privacy is required \\
+\addlinespace
+Malicious cloud or stale backup & Substitute, roll back, corrupt, or delete backup object & Party-stored digest and AEAD detect substitution or corruption during recovery & Deletion and unavailable current backups remain availability failures \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{LOCUS Requirements}
+\label{sec:locus-requirements}
+
+This section states the requirements that the construction must satisfy. Section~\ref{sec:construction} then gives the cue processing and cryptographic protocol that realize them.
+
+\subsection{Design Requirements}
+\label{sec:design-requirements}
+
+\LOCUS\ is designed around the following requirements.
+
+\textbf{R1: No offline cue-testing material.}
+Recovery parties must not store password hashes, cue-derived identifiers, answer records, or any other verifier that lets a compromised party test guessed recovery cues without participating in an online threshold recovery session.
+
+\textbf{R2: Storage-recovery separation.}
+The encrypted private key and the threshold recovery state must be stored by different components.
+
+\textbf{R3: Threshold recovery.}
+A user who has the encrypted backup object, supplies the correct cues, and obtains participation from at least \(t\) valid recovery parties should recover \(sk_U\).
+
+\textbf{R4: Online guessing boundary.}
+Incorrect cue guesses should require online recovery sessions. A deployment that
+needs a bounded number of evaluations must independently provide rate limiting,
+admission, cooldowns, audit handling, and false-lockout recovery.
+
+\textbf{R5: Explicit cue-policy processing.}
+Each supported policy must identify its accepted input structure, resolver behavior, validation and normalization rules, canonical ordering, ambiguity handling, and version. Applying the same policy to equivalent admitted selections must produce the same canonical protocol input; unsupported, ambiguous, or drifting input must fail explicitly rather than trigger alternative guesses.
+
+\textbf{R6: Limited stored leakage.}
+The cloud and recovery parties should not store raw cues, selected resolver-record identifiers, per-cue identifiers, the derived password, the recovered group secret, or the wrapping key.
+
+\textbf{R7: Explicit privacy boundary.}
+When a cue policy uses an external resolver, the design must distinguish storage privacy from resolver privacy. Hashing after lookup prevents leakage to recovery parties and the cloud, but not to the resolver itself.
+
+\section{Protocol Construction}
+\label{sec:construction}
+
+Before formalizing notation and cue processing, consider a typical recovery. During enrollment, the user chooses structured cues under a deployment-defined cue policy. The client applies that policy locally---including resolution when the policy requires it---derives the TPASS password, encrypts \(sk_U\), uploads the backup object to the cloud, and sends each recovery party only its TPASS state and public recovery metadata. After device loss, a fresh client downloads the backup, accepts candidate cues, applies the enrolled public policy version, and asks a threshold set of parties to run TPASS. If the candidate cues reproduce the enrolled canonical policy output, the client obtains the same group secret and decrypts \(sk_U\); otherwise recovery fails through the online protocol and is counted by the participating parties.
+
+% Figure~\ref{fig:locus-workflow} gives an end-to-end view of this enrollment and recovery workflow before the construction details. The figure emphasizes the separation between client-local cue processing, cloud backup storage, and threshold recovery-party state; the notation used in the figure is defined in the subsections that follow.
+
+% \begin{figure*}[t]
+% \centering
+% \caption{End-to-end \LOCUS\ workflow. Solid arrows are protocol messages or storage writes; dashed arrows are resolver lookups. Labels indicate the data visible to each external component.}
+% \label{fig:locus-workflow}
+% \resizebox{\textwidth}{!}{%
+% \begin{tikzpicture}[
+%     font=\footnotesize,
+%     >=Stealth,
+%     lane/.style={draw=black!35, fill=gray!5},
+%     actor/.style={draw=black!55, fill=green!10, align=center, font=\footnotesize\bfseries},
+%     local/.style={rectangle, rounded corners=2pt, draw=black!59, fill=blue!8,
+%         minimum height=0.92cm, text width=2.45cm, align=center},
+%     resolver/.style={local, fill=purple!8},
+%     store/.style={local, fill=yellow!18},
+%     party/.style={local, fill=orange!18},
+%     outcome/.style={local, fill=green!18},
+%     fail/.style={local, fill=red!10},
+%     note/.style={draw=black!35, fill=gray!8, align=center, text width=4.05cm},
+%     arrow/.style={->, line width=0.45pt, draw=black!78},
+%     query/.style={->, line width=0.45pt, draw=black!62, dashed}
+% ]
+
+% \draw[lane] (0,0) rectangle (24.8,-7.55);
+% \foreach \y in {-1.45,-2.90,-4.35,-5.80} {
+%     \draw[black!35] (0,\y) -- (24.8,\y);
+% }
+% \draw[black!35] (2.15,0) -- (2.15,-7.55);
+% \draw[black!25] (12.40,0) -- (12.40,-7.55);
+
+% \node[actor, minimum width=2.05cm, minimum height=1.45cm] at (1.075,-0.725) {User\\device};
+% \node[actor, minimum width=2.05cm, minimum height=1.45cm] at (1.075,-2.175) {Resolver\\providers};
+% \node[actor, minimum width=2.05cm, minimum height=1.45cm] at (1.075,-3.625) {Recovery\\parties};
+% \node[actor, minimum width=2.05cm, minimum height=1.45cm] at (1.075,-5.075) {Cloud\\service};
+% \node[actor, minimum width=2.05cm, minimum height=1.75cm] at (1.075,-6.675) {Fresh\\device};
+
+% \node[font=\footnotesize\bfseries] at (7.25,-0.22) {Enrollment and backup};
+% \node[font=\footnotesize\bfseries] at (18.65,-0.22) {Recovery after device loss};
+
+% \node[local] (choose) at (3.45,-0.725) {Supply structured\\cues \(M\)};
+% \node[resolver] (resolveEnroll) at (4.85,-2.175) {Resolve\\cue records};
+% \node[local] (canon) at (6.20,-0.725) {Canonicalize\\records to \(Z_M\)};
+% \node[local] (derive) at (9.05,-0.725) {Derive \(p_M\);\\sample \(z_R,\nu\);\\encrypt \(sk_U\)};
+% \node[party] (setup) at (9.05,-3.625) {Run\\\(\TPASS.\mathsf{Setup}\)};
+% \node[party] (partystore) at (11.35,-3.625) {Store \(R_i\):\\\(\mathsf{st}_i,\mathsf{cref},h_B,\Pi_{\mathsf{sec}}\)};
+% \node[store] (cloudstore) at (11.35,-5.075) {Store \(B_U\):\\\(C_U,\mathsf{pp},\Pi_{\mathsf{cue}},\Pi_{\mathsf{sec}}\)};
+% \node[note] (erase) at (6.20,-6.675) {Erase \(p_M,z_R,K_{\mathsf{wrap}}\), raw cues, resolver records, and \(Z_M\)};
+
+% \node[local] (startrec) at (14.00,-6.675) {Enter candidate\\cues \(M'\); request\\backup};
+% \node[store] (download) at (14.00,-5.075) {Return\\\(B_U\)};
+% \node[resolver] (resolveRec) at (15.40,-2.175) {Resolve\\selected\\records};
+% \node[local] (recCanon) at (16.75,-6.675) {Canonicalize to\\\(Z_{M'}\); derive\\\(p'_M\)};
+% \node[party] (recover) at (19.59,-3.625) {Check attempts;\\run threshold\\\(\TPASS.\mathsf{Recover}\)};
+% \node[local] (decrypt) at (19.59,-6.675) {Check \(h_B\);\\recover \(S'_R\);\\decrypt \(C_U\)};
+% \node[outcome] (success) at (22.70,-6.675) {Recovered\\\(sk_U\)};
+% \node[fail] (reject) at (22.70,-3.625) {Reject, lock,\\or return \(\bot\)};
+
+% \draw[query] (choose.south) -- node[left,font=\tiny] {lookup queries} (resolveEnroll.north west);
+% \draw[query] (resolveEnroll.north east) -- node[right,font=\tiny] {resolver records} (canon.south);
+% \draw[arrow] (choose.east) -- (canon.west);
+% \draw[arrow] (canon.east) -- (derive.west);
+% \draw[arrow] (derive.south) -- (setup.north);
+% \draw[arrow] (setup.east) -- (partystore.west);
+% \draw[arrow] (derive.east) -- ++(0.75,0) |- (cloudstore.west);
+% \draw[arrow] (cloudstore.north) -- (partystore.south);
+% \draw[arrow] (derive.south west) -- ++(-1.10,-5.05) -- (erase.east);
+
+% \draw[arrow] (startrec.north) -- (download.south);
+% \draw[arrow] (download.south) -- (startrec.north);
+% \draw[query] (startrec.north west) -- ++(-0.50,4.50) -| node[pos=0.25,left,font=\tiny] {lookup queries} (resolveRec.south);
+% \draw[query] (resolveRec.south east) -- ++(0.55,-4.10) -- node[right,font=\tiny] {resolver records} (recCanon.north);
+% \draw[arrow] (startrec.east) -- (recCanon.west);
+% \draw[arrow] (recCanon.north) -- ++(0,1.25) -| (recover.south);
+% \draw[arrow] (partystore.east) -- (recover.west);
+% \draw[arrow] (recover.south) -- (decrypt.north);
+% \draw[arrow] (download.east) -- ++(2.20,0) |- (decrypt.west);
+% \draw[arrow] (decrypt.east) -- (success.west);
+% \draw[arrow] (recover.east) -- (reject.west);
+% \draw[arrow] (decrypt.north east) -- ++(1.50,1.90) -- (reject.south);
+
+% \end{tikzpicture}%
+% }
+% \end{figure*}
+
+\subsection{Notation}
+
+Let \(U\) denote the user and let \(sk_U\) denote the protected private key. Let
+\[
+\{P_1,\ldots,P_n\}
+\]
+be the recovery parties, and let \(t\) be the recovery threshold.
+
+\LOCUS\ uses the TPASS protocol of Yi et al.~\cite{Yi2015TPASS,Yi2019TPASS} for this layer; the notation and equations below follow that construction. Let \(\mathbb{G}\) be a cyclic group of prime order \(q\), with generators \(g_1,g_2\in\mathbb{G}\), where no party knows the discrete logarithm of \(g_2\) with respect to \(g_1\), as required by that construction.
+
+The protocol uses deterministic encoding \(\Encode(\cdot)\), a binary hash
+\[
+H_b:\{0,1\}^{\ast}\rightarrow \{0,1\}^{\lambda},
+\]
+a scalar hash
+\[
+H_q:\{0,1\}^{\ast}\rightarrow \mathbb{Z}_q,
+\]
+HKDF~\cite{HKDF2010}, and an authenticated-encryption-with-associated-data scheme AEAD~\cite{RFC5116AEAD}.
+
+\subsection{Cue-Policy Boundary}
+\label{sec:cue-policy}
+
+\subsubsection{Policy Contract}
+
+Let \(M\) be the structured recovery input selected by a user and let \(v_M\)
+identify a deployment-supported cue policy. The policy is a client-side
+transformation
+\[
+\mathsf{CuePolicy}_{v_M}(M)
+\rightarrow
+Z_M \text{ or } \bot,
+\]
+where \(Z_M\) is a canonical byte string. Each policy specifies its accepted
+input types and cardinality, resolver profile, validation and normalization
+rules, ordering and duplicate behavior, ambiguity and drift handling, and
+canonical encoding. The policy identifier is included in \(Z_M\), so changing a
+rule requires a new identifier and recovery epoch rather than reinterpretation
+of existing state.
+
+The policy may use a resolver to turn human-facing descriptions into stable
+records, but it never searches alternatives through TPASS. Unsupported,
+ambiguous, missing, or drifting input returns \(\bot\). Raw queries, resolver
+records, intermediate descriptors, \(Z_M\), and the derived password remain
+client-local. Public context metadata \(\Pi_{\mathsf{ctx}}\) identifies the
+policy rules needed by a fresh client but contains no selected cue,
+user-specific record identifier, or cue-testing digest.
+
+\subsubsection{Reference Policy}
+
+The prototype instantiates this contract with
+\[
+\begin{aligned}
+v_M&=\texttt{LOCUS-location-person-set-v1},\\
+v_\mu&=\texttt{LOCUS-location-person-pair-v1}.
+\end{aligned}
+\]
+For this policy,
+\[
+M=\{\mu_1,\mu_2,\mu_3\}
+\]
+contains exactly three location--person pairs. Each pair contains a WGS~84
+point and one email or E.164 contact channel. Coordinates are parsed from exact
+decimal strings, multiplied by \(10^4\), and rounded half-to-even; email values
+use a constrained lowercase ASCII form, and phone values use canonical E.164.
+Names, relationship labels, provider record identifiers, and unselected contact
+channels are display-only.
+
+For each validated pair \(\mu_j\), the client encodes
+\[
+d_j=\Encode(\mathsf{location}_j,\mathsf{person}_j,
+v_\mu).
+\]
+The three full pair objects are ordered by
+\[
+\big(H_b(\texttt{"LOCUS/cue-pair/v1"},d_j),d_j\big),
+\]
+using the encoding as a collision tie-breaker. Duplicate canonical locations,
+people, or complete pairs are rejected. The complete canonical recovery input is
+\[
+Z_M=\Encode\big(\{\texttt{"pairs"}:[d_{(1)},d_{(2)},d_{(3)}],
+\texttt{"version"}:v_M\}\big).
+\]
+The pinned synthetic fixture produces 511 bytes. This reference policy
+demonstrates the contract with nontrivial resolution, normalization, ordering,
+and drift behavior; it is not a restriction on the cue types or cardinalities
+that another deployment may define.
+
+\subsection{Cue-Derived Recovery Password}
+
+Let \(\mathsf{bid}\) be a fresh 16-byte public backup identifier and define the reference epoch-1 recovery identity
+\[
+ID_R=\texttt{"LOCUS-compose-recovery-v1:"}\,\|\,\mathsf{bid}.
+\]
+\LOCUS\ derives a scalar recovery password from the output of the active policy:
+\[
+p_M\in\mathbb{Z}_q
+\]
+as
+\begin{equation}
+p_M=H_q^{\mathsf{TPASS}}
+\big(\texttt{"password"},ID_R,Z_M\big).
+\label{eq:locus-cue-password}
+\end{equation}
+Here \(H_q^{\mathsf{TPASS}}\) is SHA-512 reduced to a Ristretto scalar after length-prefixing the protocol domain \(\texttt{LOCUS-TPASS-YI-ZK-RISTRETTO255-v1}\), operation label, recovery identity, and policy output. The public recovery nonce used below is not a password input. The value \(p_M\) is not an encryption key and is not stored by the cloud service or by any recovery party.
+
+\subsection{TPASS Interface Used by LOCUS}
+\label{subsec:tpass-interface}
+
+A threshold password-authenticated secret-sharing protocol allows a client to recover a secret from any threshold subset of servers using a password, while coalitions below the threshold cannot recover the secret or test password guesses offline. \LOCUS\ instantiates its TPASS layer with the zero-knowledge-proof-based construction of Yi et al.~\cite{Yi2015TPASS,Yi2019TPASS}. It does not claim a new TPASS construction; its contribution is the private-key recovery architecture built around this instantiation: cue-derived password input, separated cloud backup storage, recovery-party state separation, and explicit online-risk boundaries. Password-protected secret sharing is related to earlier work on password-protected and password-authenticated recovery of secrets~\cite{Bagherzandi2011PPSS,Camenisch2014Memento}.
+
+The main construction uses the following abstract interface:
+\[
+\TPASS.\mathsf{Setup}(ID_R,p_M,t,n)
+\rightarrow
+(\mathsf{pp},\{\mathsf{st}_i\}_{i=1}^{n},S_R),
+\]
+\[
+\TPASS.\mathsf{Recover}(ID_R,p'_M,I,\{\mathsf{st}_i\}_{i\in I})
+\rightarrow
+S'_R \text{ or } \bot .
+\]
+Here \(ID_R\) is the recovery identity, \(p_M\) is the cue-derived password, and \(I\) is a threshold set of participating TPASS parties. Setup internally samples the recovery exponent and secret-shares the password, exponent, and digest scalar.
+
+The recovered 32-byte encoded TPASS group secret is
+\[
+S_R=g_2^{z_R}.
+\]
+\LOCUS\ uses \(S_R\) to derive a symmetric wrapping key. The protected private key is encrypted under that wrapping key rather than being secret-shared directly.
+
+\subsection{Recovery Secret and Key Wrapping}
+
+During enrollment, TPASS samples
+\[
+z_R\leftarrow\mathbb{Z}_q
+\]
+and defines the TPASS-recovered group secret as
+\[
+S_R=g_2^{z_R}.
+\]
+The native core computes the digest exponent
+\begin{equation}
+\theta_R =
+H_q^{\mathsf{TPASS}}
+\big(\texttt{"secret-digest"},ID_R,\Encode(S_R)\big).
+\label{eq:digest-exponent}
+\end{equation}
+
+Let \(e\) be the explicit positive backup epoch and let \(\nu_R\) be a fresh
+16-byte recovery nonce. There is no intermediate recovery key. The wrapping key
+is derived directly as
+\begin{equation}
+\begin{aligned}
+K_{\mathsf{wrap}} =
+\mathsf{HKDF\mbox{-}SHA256}\big(
+&\mathsf{IKM}=\Encode(S_R),\;
+\mathsf{salt}=\nu_R,\\
+&\mathsf{info}=\Encode(
+\{\texttt{"purpose"}:\texttt{"LOCUS-wrap"},\\
+&\qquad\texttt{"bid"}:\mathsf{bid},
+\texttt{"epoch"}:e\}),\;L=32\big).
+\end{aligned}
+\label{eq:Kwrap}
+\end{equation}
+
+Define \(A_B\) as the canonical encoding of the associated-data format and
+backup-format versions, \(\mathsf{bid}\), \(e\), \(\nu_R\), complete TPASS public
+parameters, cue/context-policy metadata, security-policy metadata, and the sealed
+format/algorithm identifiers. With a separate fresh 12-byte GCM nonce, the
+private key is encrypted as
+\begin{equation}
+C_U =
+\mathsf{AES\mbox{-}256\mbox{-}GCM}.\Enc_{K_{\mathsf{wrap}}}
+\big(
+sk_U;
+\mathsf{aad}=A_B
+\big).
+\label{eq:private-key-encryption}
+\end{equation}
+
+\subsection{Backup Object and Recovery-Party Records}
+
+Before adding its self-digest, the public encrypted backup is
+\[
+\bar B_U =
+\big(
+\mathsf{v}_B,
+\mathsf{bid},
+e,
+\nu_R,
+C_U,
+\mathsf{pp}_{\YHCLZK},
+\Pi_{\mathsf{ctx}},
+\Pi_{\mathsf{sec}}
+\big),
+\]
+where \(\mathsf{v}_B=\texttt{LOCUS-reference-backup-v4}\);
+\(\Pi_{\mathsf{ctx}}\) is authenticated public metadata identifying the active
+cue policy; and
+\(\Pi_{\mathsf{sec}}\) records the local attempt budget and cooldown. Neither
+policy field contains a selected cue, resolver-record identifier, canonical
+descriptor, or local cue-testing verifier.
+
+The backup-object digest is
+\[
+h_B=H_b(\texttt{"LOCUS-backup-digest-v1"},\Encode(\bar B_U)),
+\]
+and \(B_U=(\bar B_U,h_B)\). The canonical cloud envelope repeats
+\((\mathsf{bid},e,h_B)\) and embeds \(B_U\); readers require exact agreement.
+This digest binds recovery-party metadata to the cloud object and helps a recovering client with current honest metadata detect cloud-object substitution, rollback, or cue-policy confusion before attempting decryption. It does not detect rollback of the authoritative party metadata itself. Tampering with \(C_U\) is also detected by AEAD decryption failure.
+
+For each recovery party \(P_i\), TPASS setup creates a server state
+\[
+\mathsf{st}_i=(i,p_i,z_i,\theta_i),
+\]
+where \(p_i,z_i,\theta_i\) are TPASS shares corresponding to \(p_M,z_R,\theta_R\). These shares are produced using threshold secret sharing, following the standard Shamir setting~\cite{Shamir1979}.
+
+Each party receives and stores the record
+\[
+R_i =
+(
+\mathsf{bid},
+e,
+ID_R,
+\mathsf{st}_i,
+\mathsf{cref},
+h_B,
+\Pi_{\mathsf{sec}}
+),
+\]
+where \(\mathsf{cref}=(\mathsf{bid},e,h_B)\) is the exact cloud reference.
+In the evaluated deployment, TPASS is 2-of-3 and only parties 1--3 store
+\(\mathsf{st}_i\); five authenticated processes hold authorizer identity,
+configuration, durable attempt-ledger, phase, and audit state. Parties 4--5 are
+authorizers but hold no TPASS state. No party record contains the encrypted
+private key, raw cues, selected resolver-record identifiers, \(Z_M\), recovered
+group secret, wrapping key, or password verifier.
+
+\begin{figure}[t]
+\protocolcaption{LOCUS Backup Phase}
+\label{alg:locus-backup}
+\footnotesize
+\begin{algorithmic}[1]
+\REQUIRE Private key \(sk_U\); structured input \(M\); supported cue policy \(v_M\); native threshold parameters \((t,n_T)\); TPASS parties \(\{P_i\}_{i=1}^{n_T}\); authorizers \(\{A_j\}_{j=1}^{n_A}\); cloud service \(\mathcal{C}\)
+\ENSURE Cloud backup object \(B_U\), TPASS records \(\{R_i\}_{i=1}^{n_T}\), and initialized authorizer state
+
+\STATE Apply \(\mathsf{CuePolicy}_{v_M}(M)\) to obtain \(Z_M\) or fail
+\STATE Sample fresh 16-byte \(\mathsf{bid}\); set \(e\leftarrow1\)
+\STATE Set \(ID_R\leftarrow\texttt{"LOCUS-compose-recovery-v1:"}\|\mathsf{bid}\)
+\STATE Derive \(p_M\) using Eq.~\eqref{eq:locus-cue-password}
+\STATE Run \(\TPASS.\mathsf{Setup}(ID_R,p_M,t,n_T)\) to obtain \((\mathsf{pp}_{\YHCLZK},\{\mathsf{st}_i\}_{i=1}^{n_T},S_R)\)
+\STATE Sample fresh 16-byte \(\nu_R\); derive \(K_{\mathsf{wrap}}\) using Eq.~\eqref{eq:Kwrap}
+\STATE Form \(A_B\) and encrypt \(sk_U\) using Eq.~\eqref{eq:private-key-encryption}
+\STATE Form \(\bar B_U\), compute \(h_B\), and set \(B_U=(\bar B_U,h_B)\)
+\STATE Upload the canonical envelope and obtain \(\mathsf{cref}=(\mathsf{bid},e,h_B)\)
+
+\FOR{\(i=1\) to \(n_T\)}
+    \STATE Form \(R_i=(\mathsf{bid},e,ID_R,\mathsf{st}_i,\mathsf{cref},h_B,\Pi_{\mathsf{sec}})\)
+    \STATE Send \(R_i\) to \(P_i\) over an authenticated confidential channel
+\ENDFOR
+\FOR{\(j=1\) to \(n_A\)}
+    \STATE Initialize \(A_j\)'s local attempt-control state for \(\mathsf{bid}\)
+\ENDFOR
+
+\STATE Erase \(p_M,S_R,K_{\mathsf{wrap}}\), raw cues, resolver records, canonical descriptors, \(Z_M\), and setup randomness
+\STATE \textbf{return} \(B_U\) and \(\{R_i\}_{i=1}^{n_T}\)
+\end{algorithmic}
+\vspace{1pt}\hrule
+\end{figure}
+
+\subsection{Backup Phase}
+
+Algorithm~\ref{alg:locus-backup} summarizes enrollment. The client applies the
+selected cue policy and derives \(p_M\). Native TPASS setup samples the protected
+secret, returns \(S_R\) to the enrollment client, and distributes state across
+the TPASS parties. The client directly derives the wrapping key and encrypts the
+private key. The cloud stores the canonical envelope; each TPASS-capable party
+stores only its own state and bindings.
+
+The setup channel to each TPASS party must be authenticated and confidential
+because \(R_i\) contains \(\mathsf{st}_i\). After enrollment, the client erases
+the cue-derived password, group secret, wrapping key, raw cues, resolver records,
+canonical descriptors, canonical recovery-input bytes, and setup randomness.
+
+\begin{figure}[t]
+\protocolcaption{LOCUS Recovery Phase}
+\label{alg:locus-recovery}
+\footnotesize
+\begin{algorithmic}[1]
+\REQUIRE Candidate structured input \(M'\); enrolled cue policy \(v_M\); exact cloud reference \((\mathsf{bid},e,h_B)\); authenticated party endpoints
+\ENSURE Recovered private key \(sk_U\) or \(\bot\)
+
+\STATE Download and validate the exact canonical envelope from \(\mathcal{C}\)
+\STATE Parse \(B_U=(\bar B_U,h_B)\) and require matching \((\mathsf{bid},e,h_B)\)
+\STATE Validate the TPASS public parameters
+\STATE Load \(ID_R\) and \(v_M\); apply \(\mathsf{CuePolicy}_{v_M}(M')\) to obtain \(Z_{M'}\) or fail
+\STATE Derive \(p'_M\) using Eq.~\eqref{eq:locus-cue-password} with \(Z_{M'}\)
+\STATE Select one fixed healthy threshold set \(I\) from consistent party summaries
+\STATE Durably authorize and count the request before native commitment generation
+\STATE Run \(\TPASS.\mathsf{Recover}(ID_R,p'_M,I,\{\mathsf{st}_i\}_{i\in I})\)
+\IF{TPASS recovery fails}
+    \STATE \textbf{return} \(\bot\)
+\ENDIF
+\STATE Let \(S'_R\) be the recovered group secret
+\STATE Derive \(K'_{\mathsf{wrap}}\) using Eq.~\eqref{eq:Kwrap} with \(S'_R\)
+\STATE Decrypt \(C_U\) using authenticated metadata \(A_B\)
+\IF{AEAD decryption fails}
+    \STATE \textbf{return} \(\bot\)
+\ELSE
+    \STATE \textbf{return} \(sk_U\)
+\ENDIF
+\end{algorithmic}
+\vspace{1pt}\hrule
+\end{figure}
+
+\subsection{Recovery Phase}
+
+Algorithm~\ref{alg:locus-recovery} summarizes recovery. The fresh client fetches
+the exact party-pinned cloud object before attempt consumption, validates its
+canonical envelope and digest, validates the TPASS public parameters, and
+rederives \(p'_M\). If \(M'\) canonicalizes to the same bytes as \(M\), then
+\(p'_M=p_M\).
+
+The client fixes one healthy TPASS subset, obtains a signed authorization
+certificate, and each selected party durably installs it before generating a
+secret-dependent commitment. The parties then execute TPASS recovery. If it
+succeeds, the client obtains \(S'_R=S_R\), derives the wrapping key, and
+authenticates/decrypts \(C_U\). Wrong input, unhandled policy drift, insufficient
+parties, an incorrect cloud object, or malformed responses returns \(\bot\). The
+client does not reveal its final TPASS or AEAD outcome to the parties.
+
+\subsection{State Separation}
+
+Table~\ref{tab:locus-state} summarizes which component stores which state.
+
+\begin{table}[t]
+\centering
+\caption{State separation in \LOCUS.}
+\label{tab:locus-state}
+\footnotesize
+\begin{tabular}{p{0.24\linewidth}p{0.62\linewidth}}
+\toprule
+\textbf{Component} & \textbf{Stored state} \\
+\midrule
+Cloud service \(\mathcal{C}\) &
+\(B_U=(\mathsf{v}_B,\mathsf{bid},e,\nu_R,C_U,\mathsf{pp}_{\YHCLZK},\Pi_{\mathsf{ctx}},\Pi_{\mathsf{sec}},h_B)\) \\
+\addlinespace
+TPASS-capable party \(P_i\) &
+\(R_i=(\mathsf{bid},e,ID_R,\mathsf{st}_i,\mathsf{cref},h_B,\Pi_{\mathsf{sec}})\) and attempt-control state \\
+\addlinespace
+Authorizer-only party &
+Identity, configuration, attempt-ledger, phase, and audit state; no \(\mathsf{st}_i\) \\
+\addlinespace
+Resolver provider &
+May observe raw lookup queries and selected candidates during resolution \\
+\addlinespace
+User after setup &
+No LOCUS-maintained cue verifier or setup secret; recovery requires user-supplied input \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+No single recovery party stores \(C_U\), \(p_M\), \(S_R\), \(K_{\mathsf{wrap}}\), raw cues, selected resolver-record identifiers, \(Z_M\), or a password verifier. The cloud service stores \(C_U\) and public policy metadata but not the threshold states needed to recover \(S_R\).
+
+\section{Implementation}
+\label{sec:implementation}
+
+\LOCUS\ is implemented as a hybrid Rust/Python research prototype. The prototype realizes the cue-policy contract with \texttt{LOCUS-location-person-set-v1}, whose exact three-pair canonicalizer feeds a Rust/Ristretto255 TPASS core through a narrow Python binding. The remaining path combines AES-256-GCM backup encryption, an S3-compatible store, mutually authenticated recovery-party services, and per-party durable SQLite state in a same-host container deployment. The client derives \(p_M\), encrypts the protected key, and provisions one native TPASS state to each of parties 1--3. Five authenticated processes participate in signed authorization; parties 4--5 are authorizer-only. Recovery validates the exact cloud reference and policy version, rederives \(p'_M\), invokes native TPASS with one fixed 2-of-3 subset, validates the digest relation, and opens the backup only if all checks succeed.
+
+The reference policy is backed by a deterministic resolver fixture and pinned canonical/drift corpora covering coordinate rounding, ASCII email/E.164 normalization, all six pair orders, duplicate classes, ambiguity, missing records, display renames, reindexing, and provider-version drift. The \texttt{LOCUS-reference-backup-v4} format authenticates the reference-policy identifier; provisioning, layout audit, the client, and fetched cloud objects require that identifier before authorization. A different cue policy would require its own identifier, canonicalization contract, resolver behavior, test vectors, and recovery epoch. The software vectors establish deterministic behavior for the reference policy, not memorability, entropy, or alternate-client interoperability.
+
+The artifact models three storage surfaces. The cloud object contains the backup identifier, explicit epoch, recovery nonce, encrypted private key, TPASS public parameters, context/security-policy metadata, and a complete-object digest. It contains no raw cues, \(Z_M\), \(p_M\), \(S_R\), wrapping key, or party state. Each TPASS-capable party stores its own native state, exact cloud reference, expected digest, security policy, and local attempt-control state; authorizer-only parties store no TPASS state. Resolver providers are simulated by local records; live map, contact, and social-network APIs are outside the reproducible path.
+
+The prototype has three TPASS backends. The default backend exposes a Rust/Ristretto255 implementation of the Yi et al. zero-knowledge construction through a narrow PyO3 boundary and stores canonical versioned public parameters and per-party state. A simulator and a fixed toy safe-prime backend remain available only through explicit test/development selection. The complete local flow uses deterministic JSON encoding, domain-separated hashing, HKDF-SHA-256, and AES-256-GCM through pinned libraries. The versioned ciphertext format uses a fresh 96-bit nonce and authenticates the backup identifier, recovery nonce, TPASS parameters, cue policy, security policy, and cipher-suite identifiers as associated data. These are research-grade implementation choices and have not received an independent cryptographic audit.
+
+Failure handling is explicit because several security claims depend on where rejection occurs. Recovery fails for an unsupported policy or deployment profile, malformed TPASS public parameters or party state, backup-digest mismatch, stale or substituted cloud objects, insufficient parties, exhausted local counters, wrong cues, failed TPASS consistency, and ciphertext authentication failure. In the tested path, a signed certificate is durably installed before native commitment generation, so hiding the client's final outcome does not restore that local count. This does not establish a rollback-resistant global bound. Paper-facing measurements use the retained native 2-of-3 same-host profile; variable-input scaffolding, simulator runs, and toy-backend benchmarks are excluded from that evidence.
+
+\section{Evaluation}
+\label{sec:evaluation}
+
+\LOCUS\ is evaluated along four axes: reference cue-policy conformance, prototype cost, persistent state and adversarial failure boundaries, and model-based online guessing. The deployment experiments use provenance-bound, aggregate-only records from clean commit \texttt{12ca815} and one pseudonymously labeled same-host machine. The guessing analysis is conditional on an externally enforced attempt budget and assumed cue uncertainty. The evaluation contains no LOCUS human-subject experiment and therefore makes no comparative memorability claim for the reference policy.
+
+\subsection{Reference Cue-Policy Conformance}
+
+The reference-policy corpus binds one synthetic selection to a 511-byte canonical encoding. All six input orders produce those same bytes, while changing a location--person association, quantized location, selected channel, channel type, or channel value changes the encoding. Display-name and provider-record reindexing that preserve canonical values leave it unchanged. Unsupported versions, incorrect pair counts, duplicate locations or people, malformed coordinates or contact channels, unresolved ambiguity, missing records, and policy-relevant drift fail before an online attempt is requested.
+
+These tests exercise the policy contract's determinism and fail-closed boundary for one concrete instantiation. They do not evaluate whether a person can reproduce the selected information, whether another cue policy has comparable behavior, or whether an independently implemented client reproduces the same vectors.
+
+\subsection{Prototype Performance}
+
+The performance profile exercises the native Ristretto255 2-of-3 TPASS path inside the five-party authenticated same-host deployment. Ten blocks use a seed-derived order over successful recovery, fixed wrong-input rejection, and recovery with party~1 unavailable. Each fresh scenario project performs one unmeasured warm-up and three measured operations, yielding 30 samples per scenario. We retain client-observed phase and total latency, application-body bytes by role, the canonical cloud-object size, and aggregate persistent bytes; we do not remove outliers.
+
+Table~\ref{tab:prototype-benchmarks} reports latency for the retained 30-file corpus. Each interval is computed deterministically: quartiles and percentiles use linear Type~7 interpolation, and the median confidence interval uses 10,000 deterministic bootstrap resamples. Median enrollment was 250.030\,ms; median correct, one-party-unavailable, and wrong-input recovery latencies were 442.063, 411.134, and 409.090\,ms. These values characterize only this exact local profile, not production practicality, scalability, concurrency, network-area performance, or independent administration.
+
+\begin{table*}[t]
+\centering
+\caption{Same-host native 2-of-3 profile latency. CI is the deterministic bootstrap 95\% interval for the median; \(n=30\) per operation.}
+\label{tab:prototype-benchmarks}
+\footnotesize
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Operation} & \textbf{\(n\)} & \textbf{Median ms} & \textbf{P25--P75} & \textbf{P05--P95} & \textbf{Median 95\% CI} \\
+\midrule
+\input{generated/performance-v2/latency_rows.tex}
+\end{tabular}
+\end{table*}
+
+\subsection{Cloud-Only Snapshot Boundary}
+\label{subsec:cloud-snapshot-eval}
+
+The versioned cloud-only snapshot scenario captures the exact canonical S3-compatible backup bytes and a public locator/integrity manifest into a fresh two-file volume. Candidate testing then runs in a separate non-root container with no credentials or network and with only that volume mounted read-only. The runner validates the object, manifest, digest, size, locator, public TPASS shape, and absence of prohibited fields before exercising two fixed synthetic candidates. Counted guards make attempted filesystem or socket access a failed observation, while a test-only injected verifier confirms that the harness detects a candidate-signal positive control.
+
+The retained run reported two candidates, zero candidate signals, zero network attempts, zero excluded-path accesses, a valid snapshot, and no prohibited-material finding; output scanning and resource cleanup passed. Its aggregate-only record binds the clean source commit, dependency locks, pseudonymous host, configuration, interval, and exact immutable output path. This is bounded implementation evidence for the registered path, not a cryptographic proof or real-provider forensic result.
+
+\subsection{One-Party Persistent-Snapshot Boundary}
+\label{subsec:party-snapshot-eval}
+
+The versioned one-party snapshot scenario models the below-threshold compromise
+in the deployed 2-of-3 profile using pre-generated synthetic state rather than
+a compromise mechanism. After one normal recovery, party~1 is stopped and a
+trusted networkless collector copies every regular file in its persistent
+volume into a canonical manifest-bound snapshot. This deliberately includes
+that party's native TPASS state, signer and TLS keys, authorization bindings,
+runtime package, attempt state, and SQLite companion files when present; it
+excludes the cloud object, client/resolver state, all other party volumes,
+credentials for other roles, and online service access. A separate non-root
+process receives only that snapshot read-only, with no credentials or network,
+validates its exact cryptographic/configuration/database bindings, and exercises
+two fixed synthetic candidates under counted file and socket guards.
+
+The retained run reported one compromised party at threshold two, two candidates, zero candidate signals, zero network attempts, zero excluded-path accesses, zero secret-output exposures, a valid snapshot, and no cloud material; output scanning and complete resource cleanup passed. Positive controls fail the report when a test-only Boolean verifier or boundary access is introduced. This is bounded persistent-state implementation evidence for one synthetic party/profile/epoch/checkpoint, not a cryptographic proof, live-party or side-channel result, or cumulative-compromise analysis.
+
+\subsection{Combined Cloud-Plus-Party Snapshot Boundary}
+\label{subsec:combined-snapshot-eval}
+
+The versioned combined-snapshot scenario tests the actual union rather than
+inferring combined security from separate storage layouts. After one synthetic
+recovery, trusted collectors create the frozen cloud and stopped-party
+sub-snapshots. A credential-free, networkless finalizer independently validates
+both and publishes a canonical top-level manifest only if their backup
+identifier, epoch, backup digest, and TPASS public parameters match. A separate
+non-root process receives only this completed union read-only, with no
+credentials or network, and exercises two fixed synthetic candidates under the
+same counted file and socket guards. Positive controls reject a test-only
+verifier, boundary access, malformed or extra input, sub-manifest substitution,
+and a manifest-consistent union assembled from different enrollments.
+
+The retained run reported one compromised party at threshold two, two candidates, zero candidate signals, zero network attempts, zero excluded-path accesses, zero secret-output exposures, valid cloud and party sub-snapshots, and a matched combined binding. Output scanning passed, and exact-project-label queries found no remaining containers, volumes, or networks. This is bounded implementation evidence for one synthetic persistent union, not a cryptographic proof, live-compromise result, cryptanalytic review, or cumulative-compromise analysis.
+
+\subsection{Online Guessing Model}
+\label{subsec:guessing-resistance}
+
+TPASS prevents offline guessing below threshold, but it does not make user-selected structured recovery inputs unpredictable. The residual risk is online guessing: an adversary submits candidate recovery inputs through threshold recovery sessions and learns only whether a session ultimately succeeds. The relevant quantity is the conditional min-entropy \(h\) of the complete cue-derived password input given the adversary's auxiliary information \(A\), including public traces, personal knowledge, and any resolver-observation leakage.
+
+For an online attempt budget \(k\), the best single guess succeeds with probability at most \(2^{-h}\), and a conservative union bound gives
+\[
+\Pr[\text{success in }k\text{ attempts}]
+\le
+\min(1,k\,2^{-h}).
+\]
+This bound is not a measurement of cue strength. It connects a deployment-enforced online budget to residual risk, while the cue policy and adversary knowledge determine \(h\). The current prototype does not justify substituting its configured local budget for an adversarially enforced \(k\); rate limiting and abuse prevention are deployment assumptions outside the scoped LOCUS result. The security benefit established by the underlying boundary is narrower: cloud-only compromise, below-threshold recovery-party compromise, or their combination gives the adversary no cheaper local test than online threshold sessions. Obvious or exposed cues can still make \(h\) small, so deployments should treat cue refresh, recovery re-enrollment, and audit review as part of the operational recovery lifecycle.
+
+\section{Security Analysis}
+\label{sec:security}
+
+\subsection{Assumptions and Claim Scope}
+
+The security of \LOCUS\ depends on the following assumptions.
+
+\textbf{A1: TPASS security.}
+The underlying TPASS protocol prevents coalitions of fewer than \(t\) recovery parties from reconstructing the protected secret or testing password guesses offline.
+
+\textbf{A2: AEAD and key-derivation security.}
+The AEAD scheme provides confidentiality and integrity for \(sk_U\), and HKDF is used with domain-separated inputs.
+
+\textbf{A3: Authenticated confidential setup.}
+The setup channel from the user to each recovery party is authenticated and confidential.
+
+\textbf{A4: Any numerical online-attempt bound is external and conditional.}
+Claim~\ref{claim:online-guessing} applies only when a deployment independently enforces at most \(k\) online evaluations. The scoped LOCUS prototype does not establish that premise; its configured local counter must not be substituted for \(k\).
+
+\textbf{A5: Cue privacy is not absolute.}
+Human-selected cues may be guessed. Resolver providers may observe lookup queries. \LOCUS\ therefore does not rely on cue secrecy alone.
+
+\textbf{A6: Operational boundary.}
+Compromise of at least \(t\) recovery parties, endpoint malware that observes \(sk_U\) or \(p_M\), and denial of service by unavailable parties are outside the confidentiality guarantees. Section~\ref{sec:lifecycle} describes the corresponding recovery-state management requirements.
+
+Under these assumptions, \LOCUS\ provides the following main-body security claims. They correspond to the attacker goals summarized in Table~\ref{tab:attacker-goals}.
+
+\subsection{No-Offline-Oracle Claims}
+\label{subsec:oracle-boundaries}
+
+\locusclaim{Correctness}
+\label{claim:correctness}
+If the user enters a candidate recovery input \(M'\) that the enrolled cue policy maps to the same canonical bytes as \(M\), at least \(t\) recovery parties participate with valid states, and the stored cloud object is the enrolled \(B_U\), then recovery returns \(sk_U\).
+
+\proofsketch
+The cue policy is deterministic, so \(Z_{M'}=Z_M\) implies \(p'_M=p_M\) by Eq.~\eqref{eq:locus-cue-password}. TPASS correctness then gives \(S'_R=S_R\) for a valid threshold set. The client derives the same \(K_{\mathsf{wrap}}\) as in enrollment, and AEAD decryption under the enrolled associated data returns the original \(sk_U\).
+
+For the remaining claims, an \emph{offline cue-testing oracle} is a local predicate that an adversary can evaluate on a guessed recovery input \(M^\ast\), without further online recovery-party participation, and that indicates whether \(M^\ast\) yields the enrolled cue-derived password or a decrypting key.
+
+\locusclaim{Cloud-only confidentiality and no offline oracle}
+\label{claim:cloud-only}
+A cloud-only adversary that obtains \(B_U\) cannot decrypt \(C_U\) or test guessed recovery inputs offline, except with negligible probability under the AEAD, key-derivation, and TPASS assumptions.
+
+A cloud adversary obtains
+\[
+B_U =
+(
+\mathsf{v}_B,
+\mathsf{bid},
+e,
+\nu_R,
+C_U,
+\mathsf{pp}_{\YHCLZK},
+\Pi_{\mathsf{ctx}},
+\Pi_{\mathsf{sec}},
+h_B
+).
+\]
+This object contains the encrypted private key and public policy metadata, but not the TPASS server states, \(S_R\), \(K_{\mathsf{wrap}}\), raw cues, selected resolver-record identifiers, \(Z_M\), \(p_M\), or a verifier for \(p_M\).
+
+\proofsketch
+The only secret-bearing value in \(B_U\) is \(C_U\), which is protected by AEAD under \(K_{\mathsf{wrap}}\). Deriving \(K_{\mathsf{wrap}}\) requires \(S_R\), and recovering \(S_R\) requires successful TPASS recovery with the enrolled password and a threshold set of parties. Since \(B_U\) contains no local verifier for \(p_M\), no raw cues, and no recovery-party states, a guessed \(M^\ast\) gives the cloud adversary no local check beyond attempting online threshold recovery. The retained snapshot experiment in Section~\ref{subsec:cloud-snapshot-eval} checks this exact implemented storage surface and candidate path, but does not replace the cryptographic assumptions in this argument.
+
+\locusclaim{Below-threshold party compromise}
+\label{claim:below-threshold}
+A coalition of fewer than \(t\) recovery parties cannot reconstruct \(S_R\), recover \(sk_U\), or test guessed recovery inputs offline from their party records.
+
+\proofsketch
+The compromised TPASS-capable party record contains one native server state and public recovery metadata. It contains no encrypted private key, raw cues, selected resolver-record identifiers, \(Z_M\), \(p_M\), \(S_R\), \(K_{\mathsf{wrap}}\), or password verifier. Under TPASS threshold security, fewer than \(t\) server states cannot reconstruct the protected secret or validate candidate passwords offline~\cite{Yi2015TPASS,Yi2019TPASS}. Because the encrypted private key is stored in the cloud rather than in party records, the coalition also lacks \(C_U\) unless it separately compromises cloud storage. The retained snapshot experiment in Section~\ref{subsec:party-snapshot-eval} checks the complete stopped persistent surface of one synthetic party in the deployed 2-of-3 profile; it does not replace the TPASS assumptions or generalize to live, cumulative, or threshold compromise.
+
+\locusclaim{Combined cloud and below-threshold compromise}
+\label{claim:combined}
+An adversary that compromises the cloud and fewer than \(t\) recovery parties still does not obtain an offline cue-testing oracle.
+
+\proofsketch
+The cloud object gives the adversary \(C_U\), \(\nu_R\), context-policy metadata, and TPASS public parameters. The compromised parties give fewer than \(t\) TPASS states. A guessed recovery input \(M^\ast\) lets the adversary compute a candidate \(p^\ast_M\), but below-threshold TPASS security prevents using \(p^\ast_M\) and the partial states to check the guess locally. The AEAD tag on \(C_U\) also cannot be tested until the adversary derives \(K_{\mathsf{wrap}}\), which requires \(S_R\), which in turn requires successful threshold recovery. The retained experiment in Section~\ref{subsec:combined-snapshot-eval} checks the exact implemented union for one matching cloud object and stopped party snapshot; it neither replaces the inherited cryptographic assumptions nor generalizes to live, cumulative, or threshold compromise.
+
+\subsection{Tamper Detection and Error Channels}
+\label{subsec:error-channels}
+
+\locusclaim{Tamper detection}
+\label{claim:tamper}
+Substitution, rollback, or corruption of the cloud backup object is detected during recovery when the client has access to honest party metadata for the intended backup. Deletion remains an availability failure.
+
+\proofsketch
+Each party configuration stores the domain-separated digest \(h_B\) of the complete backup excluding its self-digest, binding party metadata to the enrolled cloud object. During recovery, the client validates the cloud envelope and compares its exact \((\mathsf{bid},e,h_B)\) reference to party-pinned metadata before decryption. A substituted or rolled-back object with different encoded contents yields a digest mismatch, except with negligible hash-collision probability. Tampering with \(C_U\) is also detected by AEAD authentication failure. If the cloud deletes all usable copies, there may be no object to verify; \LOCUS\ treats this as availability loss rather than confidentiality failure.
+
+Protocol failures must not create a cheaper cue-testing channel than online recovery. The relevant failures are malformed public parameters, malformed party state, backup digest mismatch, party lockout, TPASS recovery failure, TPASS digest-check failure, and AEAD authentication failure. In \LOCUS, malformed metadata and digest mismatch are checked before decryption and reveal only that the recovery material is inconsistent with the selected backup. TPASS failure or digest-check failure indicates that the online threshold protocol did not yield the enrolled group secret. AEAD failure indicates that the client did not derive the correct wrapping key or that the ciphertext was corrupted.
+
+These failures are useful for legitimate recovery diagnostics and artifact tests, but they must be exposed carefully. Recovery parties should learn only whether they will participate, whether local policy permits the session, and what they need for their audit log. They need not learn whether the final client-side TPASS digest check or AEAD decryption succeeded. Externally visible recovery failures should be normalized to a generic rejection, with detailed causes retained only in local client diagnostics or administrative audit channels. This preserves the intended boundary: an attacker can still use the recovery interface as an online oracle, but cannot convert distinct error paths into an offline or below-threshold oracle.
+
+\subsection{Online Guessing and Attempt Controls}
+
+\locusclaim{Online guessing bound}
+\label{claim:online-guessing}
+If a deployment permits at most \(k\) counted online recovery attempts for a backup and the complete cue-derived password input has conditional min-entropy \(h\) given the adversary's auxiliary information, then the adversary's online success probability is bounded by \(\min(1,k2^{-h})\), up to negligible cryptographic failure terms.
+
+\proofsketch
+By definition of conditional min-entropy, the best candidate recovery input succeeds with probability at most \(2^{-h}\) before the adversary observes online accept/reject outcomes. Each counted recovery session evaluates at most one candidate through the threshold protocol. A union bound over \(k\) permitted attempts gives \(\min(1,k2^{-h})\). The bound is a model of residual online risk, not a measurement that any cue family has entropy \(h\).
+
+TPASS prevents offline guessing below threshold, but it does not eliminate or rate-limit online guessing. As shown in Table~\ref{tab:attacker-goals}, public-information and social-knowledge attackers remain relevant because they may generate strong candidate cues and submit them through the recovery interface. The prototype records signed, request-bound attempt entries before native TPASS commitments and provides exact retry and selected crash behavior. These are local implementation properties, not a global adversarial budget.
+
+A bounded compact-profile state exploration exposes the missing property. After two honest parties certify one slot while a third honest party remains at the predecessor, restoring one participating honest database lets the restored party, the already-stale honest party, and two Byzantine parties form a stale four-party view and certify a conflicting request. A second bounded trace reauthorizes after restored pre-retirement state. Thus signatures, SQLite durability, and party-quorum reconciliation do not establish rollback-resistant global attempt control. An independently administered monotonic witness or a stronger consensus design could address this class, but would add a new trust, availability, latency, and metadata boundary; \LOCUS\ leaves that extension to future work.
+
+Deployments must therefore supply any required online rate limiting, admission, abuse prevention, and false-lockout recovery. Such controls can deny service and must not silently reset state during ordinary recovery. The conditional parameter \(k\) in Claim~\ref{claim:online-guessing} refers to a bound actually enforced by that deployment, not to the prototype's configured counter.
+
+\subsection{Resolver Boundary and Authority Separation}
+\label{subsec:resolver-privacy}
+
+\locusclaim{Resolver-boundary leakage}
+\label{claim:resolver-boundary}
+For a cue policy that uses an external resolver, local canonicalization and hashing prevent the cloud and recovery parties from storing raw cue material, but they do not hide lookup activity from the resolver before local hashing.
+
+\proofsketch
+When the active policy resolves cues externally, its queries occur before the client constructs \(Z_M\). A third-party resolver may therefore observe queries, selected candidates, timing, and account metadata. These observations can reduce the adversary's uncertainty about \(M\), but resolver observation alone does not provide \(C_U\), TPASS states, \(S_R\), \(K_{\mathsf{wrap}}\), or a verifier for \(p_M\). Resolver leakage therefore affects the online-guessing distribution rather than creating the offline storage oracle ruled out by Claims~\ref{claim:cloud-only}--\ref{claim:combined}.
+
+\LOCUS\ separates storage privacy from resolver privacy whenever a policy relies on external lookup. Hashing a resolved cue record before TPASS setup prevents the cloud and recovery parties from receiving raw cues, but it does not hide the lookup from a third-party resolver that processes the query before hashing. External lookup providers or directory services may therefore observe sensitive recovery-cue candidates during enrollment or recovery.
+
+The strongest mitigation is a local-first resolver. A client can resolve cue records from encrypted local stores, user-maintained labels, cached identifiers, or deployment-managed directories without contacting a public provider during recovery. This mode reduces third-party leakage but requires users or deployments to maintain stable local records and refresh them when identifiers drift.
+
+Where local-only resolution is impractical, deployments can reduce leakage by using self-hosted or organization-hosted directories, querying through a privacy-preserving lookup service, or batching and padding resolver queries so that a single recovery cue is less distinguishable. These mitigations have different costs: self-hosting shifts trust to the operator, private lookup can add latency and deployment complexity, and batching or padding reduces but does not eliminate metadata leakage. A no-provider mode is also possible: the user selects stable local labels at enrollment, stores only the versioned cue policy and encrypted backup externally, and later re-enters those local labels without contacting a public resolver. This improves resolver privacy at the cost of weaker drift handling and potentially more user-entry errors.
+
+The baseline \LOCUS\ design therefore makes a conservative claim. Resolver providers are outside the storage-recovery privacy boundary: they can learn lookup activity unless the deployment chooses a local, self-hosted, cached, private-lookup, batched, or no-provider resolver mode. This leakage can help an attacker prioritize guesses, but it does not by itself create the offline storage oracle analyzed in Section~\ref{subsec:oracle-boundaries}.
+
+\locusclaim{Separation of authority}
+\label{claim:authority}
+No single baseline component can recover \(sk_U\) alone under the stated threat model.
+
+\proofsketch
+Successful recovery requires three conditions:
+\begin{enumerate}
+    \item access to the encrypted cloud backup object \(B_U\);
+    \item correct regeneration of the cue-derived password \(p_M\);
+    \item online participation from at least \(t\) valid recovery parties.
+\end{enumerate}
+The cloud has the ciphertext but not the recovery states. A recovery party has one recovery state but not the password or ciphertext. A resolver may observe cue lookups but does not receive TPASS states or the cloud ciphertext as part of the protocol. A below-threshold coalition lacks enough TPASS states. Thus no single component satisfies all three conditions, while a compromise of at least \(t\) recovery parties is outside the threshold assumption.
+
+\section{Lifecycle and Recovery State Management}
+\label{sec:lifecycle}
+
+\LOCUS\ is a recovery workflow, not only a one-time cryptographic construction. Its security boundary depends on how deployments refresh state after recovery, compromise, resolver drift, and lockout events.
+
+\subsection{Successful Recovery and Re-Enrollment}
+
+A successful recovery should be treated as the start of a new enrollment epoch. The recovered client should generate a fresh recovery nonce \(\nu_R\), recovery identity, TPASS secret/state, cloud object, and party records under an explicit successor epoch. If the lost device may have been compromised rather than merely unavailable, the user should also rotate the protected private key or move assets and credentials to a new key. The old \(B_U\) and \(R_i\) records should then be retired so that stale parties cannot continue participating in recovery sessions for an obsolete backup.
+
+\subsection{Party Replacement and Party Compromise}
+
+Replacing a recovery party requires re-enrollment or an equivalent authenticated re-sharing procedure that produces fresh party records and updated metadata for the active backup. A suspected below-threshold party compromise remains within the no-offline-oracle model before refresh, but it should still trigger party retirement and threshold reset because the adversary may keep partial state indefinitely and may later compromise additional parties. A compromise of at least \(t\) parties defeats the threshold assumption; operational response must assume the recovery secret may be exposed and proceed with key rotation and full re-enrollment.
+
+\subsection{Cue Refresh and Resolver Drift}
+
+Cue exposure, weak or obvious cues, changed resolver behavior, ambiguous search results, and provider identifier drift should trigger cue-policy refresh. Refresh means selecting a new recovery input or resolver mode, recording a new cue-policy version, sampling fresh public recovery metadata, and distributing fresh TPASS state. Local-first or cached resolvers reduce third-party leakage, but they shift responsibility to the user or deployment to keep local records stable enough for later recovery.
+
+\subsection{Rollback, Deletion, and Attempt-State Recovery}
+
+Cloud-object rollback and substitution are detected by comparing the downloaded \(B_U\) with current honest party-stored digest \(h_B\), and ciphertext corruption is detected by AEAD failure. This does not detect rollback of the authoritative party metadata itself. Deletion remains an availability risk, so deployments should replicate cloud backups and maintain enough responsive parties to meet the threshold. Restored or inconsistent party state is outside the demonstrated security boundary and should be handled conservatively by refusing or requiring out-of-band re-enrollment rather than silently resetting counters or reactivating an epoch.
+
+\subsection{Artifact Coverage}
+
+The reference artifact exercises several lifecycle-relevant behaviors: wrong recovery input, unsupported policy version, insufficient parties, malformed party state, backup digest mismatch, stale cloud-object rejection, exceeded local attempt limits, AEAD failure, cross-epoch mixing, and state-separation checks. These tests support only their exact failure-handling and state-separation claims; they are not party-state rollback resistance, a complete distributed deployment, a key-rotation service, or production incident response.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\LOCUS\ does not make human-selected cues uniformly random. Obvious personal associations may be easy for a public-information or social-knowledge adversary to guess. The architecture reduces the damage of storage compromise by avoiding offline verification below threshold, but it does not itself bound the resulting online sessions; rate limiting is a deployment assumption.
+
+For policies that use external resolution, \LOCUS\ does not hide cue lookup activity from the resolver. A provider may observe search queries and selected candidates before local hashing occurs. Deployments that need stronger resolver privacy should use local records, self-hosted directories, private-information-retrieval techniques, or other resolver designs beyond the baseline described here.
+
+Resolver identifiers can drift, APIs can change, and search results can become ambiguous over time. A practical deployment therefore needs cue refresh, policy versioning, and recovery guidance when a user's intended selection is unchanged but resolver output changes. Availability is also conditional: fewer than \(t\) responsive recovery parties can block legitimate recovery, and a threshold compromise defeats the threshold assumption. Party-database snapshots can fork attempt or lifecycle state; public recovery admission, false-lockout administration, general party replacement, and independently administered deployment are absent. Finally, the research prototype supports protocol validation and selected same-host failure tests, but it is not production cryptography, independently audited, or a complete distributed service.
+
+\section{Related Work}
+\label{sec:related-work}
+
+\textbf{Threshold and password-protected recovery.}
+Shamir secret sharing established the standard \((t,n)\) reconstruction
+model~\cite{Shamir1979}; verifiable and proactive variants add checks and
+long-lived maintenance~\cite{Feldman1987,PVSS1999,AVSS2002}. Plain threshold
+sharing, however, makes a threshold coalition sufficient for recovery.
+Password-protected secret sharing and key retrieval require an additional
+human-supplied secret while preventing specified server views from becoming
+offline password oracles~\cite{Bagherzandi2011PPSS,Jarecki2014PPSS,PPSS2016,Camenisch2014Memento,Yi2015TPASS,Yi2019TPASS,PPKR2024}. \LOCUS\
+instantiates Yi et al.'s zero-knowledge TPASS construction; it does not claim a
+new TPASS protocol. Its system-level delta is the versioned cue-policy boundary,
+separation of encrypted cloud backup from TPASS states, and bounded
+state-surface evaluation.
+
+\textbf{Closest encrypted-backup systems.}
+SafetyPin protects encrypted mobile backups under a short PIN, distributes
+trust across an HSM fleet, and couples recovery to hardware-enforced
+guessing defenses~\cite{SafetyPin2020}. SVR3 distributes secret recovery across
+heterogeneous enclaves at different cloud providers and includes
+rollback-protection and fault-tolerance mechanisms; it is evaluated at deployed
+scale~\cite{SVR3_2024}. The WhatsApp backup protocol and subsequent PPKR work
+likewise study password-bootstrapped retrieval with explicit server/HSM trust
+assumptions~\cite{WhatsAppBackup2023,PPKR2024}. These systems preclude a broad
+claim that \LOCUS\ is the first distributed, offline-guessing-resistant, or
+attempt-controlled recovery design. They also provide stronger completed
+attempt-control or deployment evidence. \LOCUS\ instead studies a
+hardware-independent TPASS composition, a deployment-defined cue-policy boundary,
+and storage separation across a cloud object and software recovery parties. Its
+partial quorum ledger is not comparable to their rollback protections.
+
+\textbf{Social and account recovery.}
+Wallet and decentralized-application recovery often makes guardians, peers, or
+smart contracts part of the authorization factor~\cite{DAppRecovery2019,CRSA2021,SocialWallet2023}.
+\LOCUS\ parties do not exercise social judgment: a threshold participates in
+TPASS, while the client must still supply the enrolled input. This avoids making
+helpers direct recovery authorities, but leaves public admission, abuse
+prevention, and false-lockout administration to a deployment. Password managers,
+passkey sync, and platform accounts solve related availability problems under
+different provider and account-recovery trust assumptions; \LOCUS\ does not
+claim to replace those ecosystems.
+
+\textbf{Human-derived cues and recovery policies.}
+Usable-security studies provide scheme-specific evidence for structured cues.
+Al-Ameen et al.\ found that verbal cues and meaningful user interaction raised
+one-week recognition success for system-assigned graphical passwords in a
+56-participant study~\cite{AlAmeen2015Cues}. A 66-day GeoPass field study
+reported 96.1\% successful sessions for a single geographic password, while
+separate multiple-password studies found substantial interference without a
+meaningful account--location association~\cite{AlAmeen2017GeoPass}. Hang et
+al.\ evaluated location-based questions as fallback authentication and reported
+95\% accuracy after four weeks and 92\% after six months
+~\cite{Hang2015LocationFallback}. Zhou et al.\ studied a single Google Maps
+point with tolerant-distance matching and reported high reproduction through
+two weeks~\cite{Zhou2025MapPasswords}.
+
+These results motivate structured cues as an interface class, but their matching
+tolerances, rehearsal patterns, and authentication tasks do not establish the
+memorability of an arbitrary policy or of the LOCUS reference policy.
+Human-selected passwords and personal-knowledge answers can also be biased,
+predictable, or exposed through public and social information
+~\cite{Bonneau2015Secrets,Yan2004Password}. \LOCUS\ contributes the protocol
+boundary after cue selection: a versioned client policy produces canonical
+TPASS input without exporting raw cues or a verifier. The evaluated
+location--person policy is one instantiation of that boundary.
+
+\textbf{Fuzzy and biometric recovery.}
+Graphical authentication studies the broader recall--guessability tension
+~\cite{Biddle2012Graphical}, while fuzzy commitments and extractors reconstruct
+keys from noisy inputs~\cite{FuzzyCommitment1999,FuzzyExtractors2004}. \LOCUS\
+does not perform fuzzy matching: the active cue policy must resolve candidate
+input to the enrolled canonical bytes or fail. Canonicalization is a protocol
+reproducibility property, not evidence of memorability, entropy, or long-term
+resolver stability.
+
+The supplementary comparison in Table~\ref{tab:recovery-comparison} summarizes
+these distinctions mechanism by mechanism. The comparison narrows the novelty
+claim. \LOCUS\ contributes neither TPASS nor
+the first distributed encrypted-backup or rollback-controlled recovery system.
+Its scoped contribution is the applied composition and evidence boundary:
+an explicit client-local cue-policy contract, a native TPASS layer, ciphertext/state role
+separation, bounded persistent-snapshot tests, same-host cost
+measurements, and an explicit negative result for the attempted quorum ledger.
+
+% \clearpage
+\begin{table*}[!t]
+\centering
+\caption{Mechanism comparison with the closest recovery lines.}
+\label{tab:recovery-comparison}
+\footnotesize
+\begin{tabular}{p{0.17\linewidth}p{0.22\linewidth}p{0.22\linewidth}p{0.29\linewidth}}
+\toprule
+\textbf{System/line} & \textbf{Human input and trust split} & \textbf{Attempt/rollback mechanism} & \textbf{Relation to \LOCUS} \\
+\midrule
+Yi et al. TPASS~\cite{Yi2019TPASS} & Password plus threshold server states & Primitive does not provide deployment admission or durable global counting & Cryptographic building block instantiated by \LOCUS; not a LOCUS novelty. \\
+\addlinespace
+PPKR/WhatsApp~\cite{WhatsAppBackup2023,PPKR2024} & Password-bootstrapped server key retrieval; explicit server/HSM assumptions & HSM and authenticated service assumptions depend on the construction & Closest password-to-key-retrieval line; \LOCUS\ distributes TPASS state and separates the ciphertext role. \\
+\addlinespace
+SafetyPin~\cite{SafetyPin2020} & Short PIN; trust split across an HSM fleet & Hardware protections and a distributed recovery design constrain guessing & Stronger completed hardware-backed attempt-control and scale story; different cue and software assumptions. \\
+\addlinespace
+SVR3~\cite{SVR3_2024} & PIN/secret recovery across heterogeneous enclaves and cloud providers & Explicit rollback protection, usage control, and fault tolerance & Stronger deployed rollback/scale evidence; \LOCUS\ does not claim equivalence. \\
+\addlinespace
+Social recovery & Guardians or contracts authorize or contribute recovery & Policy is social/organizational and scheme-specific & \LOCUS\ parties do not judge identity; exact client input remains required. \\
+\addlinespace
+\LOCUS & Versioned cue-policy input; three-pair reference policy; 2-of-3 TPASS state separated from cloud ciphertext & Durable local signed ledger, but bounded rollback counterexamples defeat a global claim & Same-host composition and snapshot evidence; no independent administration or global bound. \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\section{Conclusion}
+\label{sec:conclusion}
+\LOCUS\ treats the transformation from human-derived recovery information to cryptographic input as an explicit protocol boundary. A versioned deployment policy resolves and canonicalizes selected input locally, binds the resulting bytes to a recovery identity, and supplies the TPASS password without making that password the backup-encryption key. TPASS instead recovers an independently sampled group secret from which the client derives the wrapping key. Separating the encrypted cloud backup from recovery-party state prevents cloud compromise, below-threshold party compromise, or their combination from enabling offline cue testing under the stated assumptions. The three location--person-pair construction demonstrates one policy contract rather than defining the architecture. Policy-specific human usability, global rate limiting, party-state rollback resistance, public admission, and independent administration remain outside the scoped result.
+
+\bibliographystyle{ACM-Reference-Format}
+\bibliography{references}
+
+\appendix
+
+\section{Open Science}
+\label{sec:open-science}
+
+The intended release artifact is designed to support reproduction of the system claims without exposing sensitive human data. The current repository includes the hybrid Rust/Python prototype, cue-policy conformance vectors, synthetic examples, 33 aggregate-only attack/performance records, a deterministic raw-to-processed pipeline, manifest-bound generated table rows, and documentation for selected state-separation, attempt-control, lifecycle, and failure-handling paths. The current corpus is a same-host collection and still requires anonymous clean-host reproduction. The artifact also documents the research-grade boundary of the native TPASS implementation: it has not received an independent cryptographic audit.
+
+Human-subjects records, raw cues, cue-derived identifiers tied to people, invitation or recovery emails, social-profile identifiers, API keys, and account metadata are excluded. The paper reports no original human-subjects results. If an anonymous artifact link is used during review, it will remain accessible throughout the ASIACCS review process.
+
+\section{Ethical Considerations}
+\label{sec:ethics}
+
+\LOCUS\ may involve sensitive recovery inputs because a deployment's cue policy can draw on places, relationships, local records, images, events, or other personal information, and a resolver can expose associated lookup behavior. This submission does not report original human-subjects data. Future studies of policy-specific memorability, user comprehension, guessing resistance, or comparisons with retained password strings require prior institutional approval or exemption, data-minimization procedures, retention limits, withdrawal procedures, and a release plan that excludes identifying records.
+
+The main ethical and privacy risks are deployment risks: resolver providers may observe lookup activity, strict attempt controls can deny service to legitimate users, and weak cues can be guessed online through whatever attempts a deployment permits. The paper therefore separates storage privacy from resolver privacy and treats audit, lockout reset, cue refresh, and re-enrollment as operational requirements rather than optional usability details.
+
+% \clearpage
+\section{TPASS Algebra and Instantiation Notes}
+\label{app:tpass}
+
+This appendix records the Yi--Hao--Chen--Liu zero-knowledge-proof-based TPASS algebra instantiated by \LOCUS. For readability, equations retain the source paper's multiplicative notation; the Rust core maps group multiplication/division to Ristretto point addition/subtraction and exponentiation to scalar multiplication. Every implementation transcript uses the fixed domain \texttt{LOCUS-TPASS-YI-ZK-RISTRETTO255-v1}, an operation label, and length-prefixed fields. The main paper abstracts this interface in Section~\ref{subsec:tpass-interface}.
+
+\subsection{Setup Mapping}
+
+\LOCUS\ instantiates TPASS with the zero-knowledge-proof-based \(t\)-out-of-\(n\) construction of Yi et al.~\cite{Yi2015TPASS,Yi2019TPASS}. \(g_1\) maps to the canonical Ristretto basepoint; \(g_2\) is transparently derived by SHA-512-to-Ristretto under the fixed protocol domain, replacing the source generator ceremony. The reference epoch-1 recovery identity is
+\[
+ID_R=\texttt{"LOCUS-compose-recovery-v1:"}\,\|\,\mathsf{bid}.
+\]
+The password input is \(p_M=H_q(\texttt{"password"},ID_R,Z_M)\) under the transcript convention above. The protected TPASS secret exponent is \(z_R\), and the corresponding group secret is
+\[
+S_R=g_2^{z_R}.
+\]
+The digest exponent is
+\[
+\theta_R =
+H_q(
+\texttt{"secret-digest"}
+\|ID_R
+\|\Encode(S_R)
+).
+\]
+This is the LOCUS domain-separated version of Yi et al.'s \(H(S)\) digest check. The recovery identity binds the reference backup identifier.
+
+The setup phase samples three random degree-\((t-1)\) polynomials over \(\mathbb{Z}_q\):
+\[
+f_1(x), f_2(x), f_3(x),
+\]
+with constants
+\[
+f_1(0)=p_M,\qquad
+f_2(0)=z_R,\qquad
+f_3(0)=\theta_R.
+\]
+For each recovery party \(P_i\), the client computes
+\[
+p_i=f_1(i),\qquad
+z_i=f_2(i),\qquad
+\theta_i=f_3(i).
+\]
+The server state stored by \(P_i\) is
+\[
+\mathsf{st}_i=(i,p_i,z_i,\theta_i).
+\]
+A coalition of fewer than \(t\) parties obtains fewer than \(t\) evaluations of each polynomial and therefore cannot reconstruct the constants, following Shamir secret sharing~\cite{Shamir1979}.
+
+\subsection{Recovery Equations}
+
+Recovery uses exactly \(t\) parties. If more than \(t\) are available, the client selects a threshold subset
+\[
+I\subseteq\{1,\ldots,n\},\qquad |I|=t.
+\]
+For each \(i\in I\), define the Lagrange coefficient at zero:
+\begin{equation}
+a_i^{(I)}
+=
+\prod_{\substack{j\in I\\ j\neq i}}
+\frac{j}{j-i}
+\pmod q.
+\label{eq:app-lagrange}
+\end{equation}
+Then
+\[
+\sum_{i\in I}a_i^{(I)}p_i=p_M,
+\qquad
+\sum_{i\in I}a_i^{(I)}z_i=z_R,
+\qquad
+\sum_{i\in I}a_i^{(I)}\theta_i=\theta_R.
+\]
+
+During recovery, the fresh device derives a candidate password \(p'_M\), samples
+\[
+r\leftarrow\mathbb{Z}_q^\ast,
+\]
+and computes the TPASS retrieval request
+\begin{equation}
+A=g_1^r g_2^{-p'_M}.
+\label{eq:app-client-request}
+\end{equation}
+The negative exponent follows the Yi et al. sign convention and ensures cancellation when \(p'_M=p_M\).
+
+Each party \(P_i\), \(i\in I\), samples
+\[
+\rho_i,\alpha_i,\beta_i\leftarrow\mathbb{Z}_q^\ast
+\]
+and computes
+\begin{align}
+B_i &= g_1^{\rho_i}g_2^{a_i^{(I)}p_i},\label{eq:app-Bi}\\
+C_i &= g_1^{\alpha_i},\label{eq:app-Ci}\\
+D_i &= g_1^{\beta_i}.\label{eq:app-Di}
+\end{align}
+It then forms the transcript
+\begin{align}
+\tau_i &=
+ID_R\|\Encode(I)\|\Encode(i)\|\Encode(A)\notag\\
+&\quad\|\Encode(B_i)\|\Encode(C_i)\|\Encode(D_i),\notag
+\end{align}
+and computes
+\begin{align}
+h_i &=H_q(\texttt{"server-proof-challenge"}\|\tau_i),
+\label{eq:app-hi}\\
+H_i &= H_q(\texttt{"server-proof-second-challenge"}\|\Encode(h_i)),\label{eq:app-Hi}\\
+\delta_i &= h_i\alpha_i+H_i\beta_i \pmod q.\label{eq:app-deltai}
+\end{align}
+
+The tuple \((C_i,D_i,\delta_i)\) is the non-interactive proof-of-knowledge component used by the Yi et al. zero-knowledge-proof variant. Each party makes
+\[
+\langle ID_R,B_i,C_i,D_i,\delta_i\rangle
+\]
+available within the selected party set. Each selected party recomputes \(h_j,H_j\) for the other broadcasts and verifies
+\begin{equation}
+g_1^{\delta_j}=C_j^{h_j}D_j^{H_j}
+\qquad\text{for each received }j\in I.
+\label{eq:app-zk-verify}
+\end{equation}
+Invalid proofs cause the session to abort.
+
+After all proofs are accepted, each party computes
+\begin{align}
+C &= \prod_{j\in I}C_j,\label{eq:app-Cagg}\\
+D &= \prod_{j\in I}D_j,\label{eq:app-Dagg}
+\end{align}
+and forms
+\begin{align}
+\tau &=ID_R\|\Encode(I)\|\Encode(A)\notag\\
+&\quad\|\Encode(C)\|\Encode(D),\notag\\
+h &= H_q(\texttt{"aggregate-challenge"}\|\tau),
+\label{eq:app-hagg}\\
+W &= A\prod_{j\in I}B_j.\label{eq:app-W}
+\end{align}
+Then party \(P_i\) computes
+\begin{align}
+E_i &= g_2^{a_i^{(I)}z_i h} C^{-\rho_i} W^{\alpha_i},\label{eq:app-Ei}\\
+F_i &= g_2^{a_i^{(I)}\theta_i h} D^{-\rho_i} W^{\beta_i}.\label{eq:app-Fi}
+\end{align}
+The party sends
+\[
+\langle ID_R,C,D,E_i,F_i\rangle
+\]
+to the client.
+
+The client combines responses as
+\begin{align}
+E &= \prod_{i\in I}E_i,\label{eq:app-Eagg}\\
+F &= \prod_{i\in I}F_i.\label{eq:app-Fagg}
+\end{align}
+It computes
+\begin{align}
+S'_R &= \left(E/C^r\right)^{h^{-1}},\label{eq:app-recoverS}\\
+T'_R &= \left(F/D^r\right)^{h^{-1}},\label{eq:app-recoverT}
+\end{align}
+where \(h^{-1}\) is the inverse of \(h\) modulo \(q\). The client accepts the TPASS output only if
+\begin{equation}
+T'_R
+=
+g_2^{
+H_q(
+\texttt{"secret-digest"}
+\|ID_R
+\|\Encode(S'_R)
+)
+}.
+\label{eq:app-final-check}
+\end{equation}
+
+\subsection{Correctness Sketch}
+
+If \(p'_M=p_M\), then by Eqs.~\eqref{eq:app-client-request} and \eqref{eq:app-Bi},
+\[
+A\prod_{i\in I}B_i
+=
+g_1^r g_2^{-p_M}
+\prod_{i\in I}
+g_1^{\rho_i}g_2^{a_i^{(I)}p_i}.
+\]
+Using
+\[
+\sum_{i\in I}a_i^{(I)}p_i=p_M,
+\]
+the password-dependent terms cancel:
+\[
+A\prod_{i\in I}B_i
+=
+g_1^{r+\sum_{i\in I}\rho_i}.
+\]
+The remaining Yi et al. recovery equations then yield
+\[
+S'_R=S_R
+\qquad\text{and}\qquad
+T'_R=g_2^{\theta_R}.
+\]
+Therefore Eq.~\eqref{eq:app-final-check} holds. If \(p'_M\neq p_M\), the cancellation does not occur and the final digest relation fails except with negligible probability under the assumptions of the TPASS construction.
+
+The Rust tests validate these equations, canonical message encodings, malformed
+inputs, all small threshold subsets, and one deterministic cross-language
+vector. This is regression evidence from one algebraic implementation, not an
+independent cryptographic audit. The source proof also assumes the
+proof-of-knowledge property of its server proof; implementing the verification
+equation does not establish that assumption independently.
+
+\end{document}
+\endinput

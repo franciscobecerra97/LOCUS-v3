@@ -1,0 +1,86 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:experiment-metadata:v1",
+  "title": "LOCUS experiment metadata v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "configuration",
+    "evidence_class",
+    "experiment_id",
+    "finished_at",
+    "git",
+    "host",
+    "locks",
+    "profile",
+    "randomness",
+    "raw_output",
+    "started_at",
+    "version",
+    "warnings"
+  ],
+  "properties": {
+    "version": {"const": "LOCUS-experiment-metadata-v1"},
+    "experiment_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+    "profile": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+    "evidence_class": {"enum": ["development", "paper"]},
+    "started_at": {"type": "string", "format": "date-time"},
+    "finished_at": {"type": "string", "format": "date-time"},
+    "git": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commit", "dirty"],
+      "properties": {
+        "commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "dirty": {"type": "boolean"}
+      }
+    },
+    "locks": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["uv.lock", "tpass-core/Cargo.lock", "tpass-python/Cargo.lock"],
+      "properties": {
+        "uv.lock": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "tpass-core/Cargo.lock": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "tpass-python/Cargo.lock": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "host": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "machine", "processor", "python", "release", "system"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9._-]{0,63}$"},
+        "machine": {"type": "string", "minLength": 1, "maxLength": 256},
+        "processor": {"type": "string", "maxLength": 256},
+        "python": {"type": "string", "minLength": 1, "maxLength": 256},
+        "release": {"type": "string", "minLength": 1, "maxLength": 256},
+        "system": {"type": "string", "minLength": 1, "maxLength": 256}
+      }
+    },
+    "configuration": {"type": "object"},
+    "randomness": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "seed"],
+      "properties": {
+        "kind": {"enum": ["os-csprng", "orchestrator-prng-v1"]},
+        "seed": {"type": ["integer", "null"], "minimum": 0, "maximum": 18446744073709551615}
+      }
+    },
+    "raw_output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "retained"],
+      "properties": {
+        "path": {"type": ["string", "null"], "maxLength": 256},
+        "retained": {"type": "boolean"}
+      }
+    },
+    "warnings": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"enum": ["dirty-worktree", "unlabeled-host", "unretained-output"]}
+    }
+  }
+}

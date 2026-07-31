@@ -1,0 +1,79 @@
+# LOCUS Output-Safety Contract
+
+Status: P1.11 enforced output and retained-profile contract, 2026-07-23.
+
+## Problem statement
+
+Normal terminals, logs, status results, traces, benchmark files, attack-result
+files, and paper artifacts must not expose raw cues or selected resolver records,
+derived cue identifiers, TPASS passwords or states/shares, wrapping keys, private
+keys, recovered secrets, party-local cryptographic randomness, or credentials.
+The control must fail closed before serialization rather than relying only on a
+later text scan.
+
+## Enforced normal-output path
+
+`prototype/locus/redaction.py` recursively validates JSON-bound output. It
+rejects prohibited field names at any depth, private-key markers, non-finite
+numbers, non-JSON values, and pathologically deep or large values. The deployment
+CLI and benchmark runner validate their complete result before emitting it.
+Experiment configurations pass through the same check. Deployment smoke testing
+also scans combined service logs and client output for field markers, private-key
+blocks, and per-run secret/cue canaries; findings report category labels only.
+
+Operator diagnostics may expose an exception class, but never an exception
+message. This avoids copying attacker-controlled or secret-bearing values from an
+exception into ordinary output.
+
+This is an application-layer guard, not proof that Python runtimes, operating
+systems, container engines, crash collectors, debuggers, or third-party libraries
+cannot retain memory. Core dumps and external tracing must remain disabled in
+paper-facing deployments and need separate deployment verification.
+
+## Retained Compose profile evidence
+
+`docs/retained-profile-evidence.md` freezes the only normal retained trace for
+Compose attack, benchmark, and performance profiles. It contains the
+registry-bound aggregate result, exact experiment provenance, and a fixed
+machine-readable trace policy.
+It never contains arbitrary service logs, snapshot bytes, database files,
+packet captures, exception text, candidate values, per-candidate outcomes, or
+credentials.
+
+The main and focused S3 Compose definitions set the container core-file soft and
+hard limits to zero. The main resolved-graph validator requires this for every
+service, and live default-deployment inspection checks it for recovery parties,
+the resolver, and S3. Successful profile logs are scanned with dynamic canaries
+and then discarded during exact-project cleanup rather than copied into retained
+evidence. The exclusive evidence writer synchronizes, rereads, and revalidates
+the canonical file.
+
+## Unsafe synthetic-only inspection design
+
+No unsafe inspection mode is currently implemented or enabled. If a later
+debugging task demonstrates a concrete need, `synthetic-inspection-v1` must meet
+all of these conditions:
+
+1. require both a dedicated command-line flag and the exact acknowledgement
+   environment variable documented by that implementation;
+2. accept only the committed synthetic fixture and refuse arbitrary cue input;
+3. require the `inspection` profile and `development` evidence class;
+4. refuse benchmark, attack-result, paper, CI, and deployment-smoke profiles;
+5. refuse network service startup and retained output;
+6. place a prominent unsafe marker on every emitted record; and
+7. remain excluded from all normal task-runner commands.
+
+A single environment variable, a generic debug flag, or operator diagnostics
+must never activate this mode. Until its isolation tests exist, the safest
+implementation is its current absence.
+
+## Evidence and remaining limits
+
+Focused tests cover safe metrics/status values, every prohibited category named
+by P1.11.1, nested fields, private-key markers, dynamic secret/cue canaries,
+fixed trace-policy enforcement, metadata/result cross-binding, canonical
+serialization, exclusive publication, and reread validation. The complete
+deployment smoke test covers the integrated output path and live container
+core-file limit. Privileged-host memory, host crash collectors, container-engine
+internals, deleted blocks, and future external observability remain explicitly
+outside this evidence boundary and require separate review if later introduced.

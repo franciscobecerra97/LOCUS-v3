@@ -1,0 +1,103 @@
+{
+  "baseline": {
+    "pairs": [
+      {
+        "location": {
+          "display_name": "Synthetic Park",
+          "latitude": "49.59875",
+          "longitude": "6.13445",
+          "record_id": "place-001"
+        },
+        "person": {
+          "display_name": "Synthetic Contact A",
+          "record_id": "person-001",
+          "selected_contact": {"type": "phone", "value": "+352621123456"}
+        }
+      },
+      {
+        "location": {
+          "display_name": "Synthetic Library",
+          "latitude": "49.61160",
+          "longitude": "6.13190",
+          "record_id": "place-002"
+        },
+        "person": {
+          "display_name": "Synthetic Contact B",
+          "record_id": "person-002",
+          "selected_contact": {"type": "email", "value": "fixture.friend@example.org"}
+        }
+      },
+      {
+        "location": {
+          "display_name": "Synthetic Station",
+          "latitude": "49.62610",
+          "longitude": "6.12750",
+          "record_id": "place-003"
+        },
+        "person": {
+          "display_name": "Synthetic Contact C",
+          "record_id": "person-003",
+          "selected_contact": {"type": "phone", "value": "+33123456789"}
+        }
+      }
+    ],
+    "profile_version": "LOCUS-deterministic-directory-v1",
+    "status": "resolved"
+  },
+  "corpus_version": "LOCUS-resolver-drift-corpus-v1",
+  "expected_baseline_sha256": "9b00f79ac15311a0cf1783e3049eba30e555eaa28405b8912abe1eb265de321b",
+  "scenarios": [
+    {
+      "expected": "stable",
+      "id": "renamed-display-entry",
+      "mutations": [
+        {"path": ["pairs", 0, "location", "display_name"], "replacement": "Parc synthétique renommé"},
+        {"path": ["pairs", 0, "person", "display_name"], "replacement": "Contact synthétique renommé"}
+      ]
+    },
+    {
+      "expected": "stable",
+      "id": "changed-map-record-within-grid-cell",
+      "mutations": [
+        {"path": ["pairs", 0, "location", "record_id"], "replacement": "place-001-reindexed"},
+        {"path": ["pairs", 0, "location", "latitude"], "replacement": "49.59876"}
+      ]
+    },
+    {
+      "expected": "canonical-drift",
+      "id": "changed-map-record-across-grid-cell",
+      "mutations": [
+        {"path": ["pairs", 0, "location", "record_id"], "replacement": "place-001-moved"},
+        {"path": ["pairs", 0, "location", "latitude"], "replacement": "49.59895"}
+      ]
+    },
+    {
+      "expected": "canonical-drift",
+      "id": "changed-selected-contact",
+      "mutations": [
+        {"path": ["pairs", 1, "person", "selected_contact", "value"], "replacement": "new.fixture@example.org"}
+      ]
+    },
+    {
+      "expected": "local-rejection",
+      "id": "provider-profile-version-change",
+      "mutations": [
+        {"path": ["profile_version"], "replacement": "LOCUS-deterministic-directory-v2"}
+      ]
+    },
+    {
+      "expected": "local-rejection",
+      "id": "ambiguous-provider-result",
+      "mutations": [
+        {"path": ["status"], "replacement": "ambiguous"}
+      ]
+    },
+    {
+      "expected": "local-rejection",
+      "id": "missing-provider-result",
+      "mutations": [
+        {"path": ["status"], "replacement": "missing"}
+      ]
+    }
+  ]
+}

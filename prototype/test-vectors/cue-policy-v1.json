@@ -1,0 +1,63 @@
+{
+  "corpus_version": "LOCUS-cue-policy-corpus-v1",
+  "policy_version": "LOCUS-location-person-set-v1",
+  "valid": [
+    {
+      "canonical_hex": "7b227061697273223a5b7b226c6f636174696f6e223a7b226c617469747564655f6534223a3439363236312c226c6f6e6769747564655f6534223a36313237357d2c22706572736f6e223a7b2274797065223a2270686f6e65222c2276616c7565223a222b3333313233343536373839227d2c2276657273696f6e223a224c4f4355532d6c6f636174696f6e2d706572736f6e2d706169722d7631227d2c7b226c6f636174696f6e223a7b226c617469747564655f6534223a3439353938382c226c6f6e6769747564655f6534223a36313334347d2c22706572736f6e223a7b2274797065223a2270686f6e65222c2276616c7565223a222b333532363231313233343536227d2c2276657273696f6e223a224c4f4355532d6c6f636174696f6e2d706572736f6e2d706169722d7631227d2c7b226c6f636174696f6e223a7b226c617469747564655f6534223a3439363131362c226c6f6e6769747564655f6534223a36313331397d2c22706572736f6e223a7b2274797065223a22656d61696c222c2276616c7565223a22666978747572652e667269656e64406578616d706c652e6f7267227d2c2276657273696f6e223a224c4f4355532d6c6f636174696f6e2d706572736f6e2d706169722d7631227d5d2c2276657273696f6e223a224c4f4355532d6c6f636174696f6e2d706572736f6e2d7365742d7631227d",
+      "canonical_sha256": "9b00f79ac15311a0cf1783e3049eba30e555eaa28405b8912abe1eb265de321b",
+      "cues": [
+        {
+          "location": {"latitude": "49.59875", "longitude": "6.13445"},
+          "person": {"type": "phone", "value": "+352621123456"}
+        },
+        {
+          "location": {"latitude": "49.61160", "longitude": "6.13190"},
+          "person": {"type": "email", "value": "fixture.friend@example.org"}
+        },
+        {
+          "location": {"latitude": "49.62610", "longitude": "6.12750"},
+          "person": {"type": "phone", "value": "+33123456789"}
+        }
+      ],
+      "id": "compose-synthetic-three-pair",
+      "input_orders": [[0, 1, 2], [2, 0, 1], [1, 2, 0]]
+    }
+  ],
+  "invalid_mutations": [
+    {
+      "id": "locale-decimal-comma",
+      "path": [0, "location", "latitude"],
+      "replacement": "49,59875"
+    },
+    {
+      "id": "unicode-arabic-indic-coordinate",
+      "path": [0, "location", "latitude"],
+      "replacement": "٤٩.٥٩٨٧٥"
+    },
+    {
+      "id": "unicode-nonbreaking-space-coordinate",
+      "path": [0, "location", "longitude"],
+      "replacement": "6.13445\u00a0"
+    },
+    {
+      "id": "unicode-fullwidth-email",
+      "path": [1, "person", "value"],
+      "replacement": "ｆixture.friend@example.org"
+    },
+    {
+      "id": "unicode-decomposed-email",
+      "path": [1, "person", "value"],
+      "replacement": "fixtu\u0065\u0301.friend@example.org"
+    },
+    {
+      "id": "unicode-fullwidth-plus",
+      "path": [2, "person", "value"],
+      "replacement": "＋33123456789"
+    },
+    {
+      "id": "locale-national-phone",
+      "path": [2, "person", "value"],
+      "replacement": "01 23 45 67 89"
+    }
+  ]
+}

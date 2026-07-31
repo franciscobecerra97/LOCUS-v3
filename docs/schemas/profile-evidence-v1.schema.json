@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:compose-profile-evidence:v1",
+  "title": "LOCUS Compose profile evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["artifact", "metadata", "result", "trace_policy"],
+  "properties": {
+    "artifact": {"const": "LOCUS-compose-profile-evidence-v1"},
+    "metadata": {"$ref": "experiment-metadata-v1.schema.json"},
+    "result": {
+      "oneOf": [
+        {"$ref": "attack-report-v1.schema.json"},
+        {"$ref": "benchmark-result-v1.schema.json"},
+        {"$ref": "performance-result-v1.schema.json"}
+      ]
+    },
+    "trace_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "core_dump_policy",
+        "network_trace_policy",
+        "retained_content",
+        "service_log_policy",
+        "version"
+      ],
+      "properties": {
+        "core_dump_policy": {"const": "disabled-by-container-ulimit"},
+        "network_trace_policy": {"const": "not-collected"},
+        "retained_content": {
+          "const": "aggregate-result-and-provenance-only"
+        },
+        "service_log_policy": {"const": "scanned-then-discarded"},
+        "version": {"const": "LOCUS-profile-trace-policy-v1"}
+      }
+    }
+  }
+}

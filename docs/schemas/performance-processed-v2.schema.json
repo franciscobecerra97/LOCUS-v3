@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:performance-processed:v2",
+  "title": "LOCUS processed performance corpus v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "enrollment_latency_ms",
+    "processing",
+    "scenarios",
+    "source"
+  ],
+  "properties": {
+    "artifact": {"const": "LOCUS-performance-processed-v2"},
+    "enrollment_latency_ms": {
+      "$ref": "performance-processed-v1.schema.json#/$defs/latency30"
+    },
+    "processing": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "blocks",
+        "bootstrap",
+        "quantile_method",
+        "samples_per_scenario",
+        "scenarios"
+      ],
+      "properties": {
+        "blocks": {"const": 10},
+        "bootstrap": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["algorithm", "confidence", "resamples", "seed"],
+          "properties": {
+            "algorithm": {"const": "sha256-counter-index-v1"},
+            "confidence": {"const": 0.95},
+            "resamples": {
+              "type": "integer",
+              "minimum": 1000,
+              "maximum": 100000
+            },
+            "seed": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 18446744073709551615
+            }
+          }
+        },
+        "quantile_method": {"const": "linear-type-7"},
+        "samples_per_scenario": {"const": 30},
+        "scenarios": {
+          "const": [
+            "enroll-recover-success-v1",
+            "recover-one-party-unavailable-v1",
+            "recover-wrong-input-v1"
+          ]
+        }
+      }
+    },
+    "scenarios": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "enroll-recover-success-v1",
+        "recover-one-party-unavailable-v1",
+        "recover-wrong-input-v1"
+      ],
+      "properties": {
+        "enroll-recover-success-v1": {
+          "$ref": "performance-processed-v1.schema.json#/$defs/successScenario"
+        },
+        "recover-one-party-unavailable-v1": {
+          "$ref": "performance-processed-v1.schema.json#/$defs/unavailableScenario"
+        },
+        "recover-wrong-input-v1": {
+          "$ref": "performance-processed-v1.schema.json#/$defs/wrongScenario"
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "experiment_id",
+        "git_commit",
+        "host",
+        "inputs",
+        "locks",
+        "runtime"
+      ],
+      "properties": {
+        "experiment_id": {"const": "compose-performance-v2"},
+        "git_commit": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "host": {
+          "$ref": "performance-processed-v1.schema.json#/$defs/host"
+        },
+        "inputs": {
+          "type": "array",
+          "minItems": 30,
+          "maxItems": 30,
+          "items": {"$ref": "#/$defs/input"}
+        },
+        "locks": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "tpass-core/Cargo.lock",
+            "tpass-python/Cargo.lock",
+            "uv.lock"
+          ],
+          "properties": {
+            "tpass-core/Cargo.lock": {
+              "$ref": "performance-processed-v1.schema.json#/$defs/digest"
+            },
+            "tpass-python/Cargo.lock": {
+              "$ref": "performance-processed-v1.schema.json#/$defs/digest"
+            },
+            "uv.lock": {
+              "$ref": "performance-processed-v1.schema.json#/$defs/digest"
+            }
+          }
+        },
+        "runtime": {
+          "$ref": "performance-processed-v1.schema.json#/$defs/runtime"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "input": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "pattern": "^experiments/raw/performance-v2/(0[1-9]|10)/(enroll-recover-success-v1|recover-one-party-unavailable-v1|recover-wrong-input-v1)\\.json$"
+        },
+        "sha256": {
+          "$ref": "performance-processed-v1.schema.json#/$defs/digest"
+        }
+      }
+    }
+  }
+}
