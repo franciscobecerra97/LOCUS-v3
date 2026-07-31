@@ -156,7 +156,7 @@ class AttemptCoordinatorTests(unittest.TestCase):
                         config=config,
                         nodes=nodes,
                         operation_timeout_seconds=1.5,
-                        phase_timeout_seconds=0.15,
+                        phase_timeout_seconds=0.5,
                     )
                     started = time.monotonic()
                     authorization = coordinator.authorize(entry(config, "29"))

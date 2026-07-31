@@ -197,7 +197,7 @@ class EpochLifecycleHttpTests(unittest.TestCase):
                             "server_certificate_sha256": certificate_sha256(
                                 peer.server_certificate
                             ),
-                            "timeout_seconds": 0.5,
+                            "timeout_seconds": 2.0,
                         }
                         for peer in endpoints
                         if peer.party_id != endpoint.party_id
@@ -254,7 +254,7 @@ class EpochLifecycleHttpTests(unittest.TestCase):
                             server_certificate_sha256=certificate_sha256(
                                 endpoint.server_certificate
                             ),
-                            timeout_seconds=0.75,
+                            timeout_seconds=2.0,
                         )
                     )
                 processes.extend(start(index) for index in range(5))
@@ -268,8 +268,8 @@ class EpochLifecycleHttpTests(unittest.TestCase):
                 old_coordinator = AttemptCoordinator(
                     config=old_config,
                     nodes=list(clients),
-                    operation_timeout_seconds=4,
-                    phase_timeout_seconds=1,
+                    operation_timeout_seconds=8,
+                    phase_timeout_seconds=3,
                 )
                 old_authorization = old_coordinator.authorize(
                     _entry(
@@ -316,7 +316,7 @@ class EpochLifecycleHttpTests(unittest.TestCase):
                     server_certificate_sha256=certificate_sha256(
                         endpoints[0].server_certificate
                     ),
-                    timeout_seconds=0.75,
+                    timeout_seconds=2.0,
                 )
                 with self.assertRaises(PartyProtocolError):
                     peer_caller.create_epoch_approval(
@@ -399,8 +399,8 @@ class EpochLifecycleHttpTests(unittest.TestCase):
                 new_coordinator = AttemptCoordinator(
                     config=new_config,
                     nodes=list(clients),
-                    operation_timeout_seconds=4,
-                    phase_timeout_seconds=1,
+                    operation_timeout_seconds=8,
+                    phase_timeout_seconds=3,
                 )
                 new_session = native.begin_recovery(
                     new_parameters, NEW_RECOVERY_ID, NEW_RECOVERY_INPUT

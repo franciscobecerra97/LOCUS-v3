@@ -240,6 +240,7 @@ class PartySnapshotAttackTests(unittest.TestCase):
                 audit_party_snapshot(substituted)
 
             checkpoint, _service = self._snapshot(root / "checkpoint")
+            (checkpoint / "party").chmod(0o700)
             database = checkpoint / "party" / "party.sqlite3"
             database.chmod(0o600)
             connection = sqlite3.connect(database)
