@@ -46,7 +46,7 @@ documentation, and evidence gate must pass.
 
 ### P0.1 Copy this seed to its independent root
 
-Status: `Proposed`
+Status: `Complete`
 
 Actions:
 
@@ -61,9 +61,16 @@ Acceptance:
 - The copied root is not nested inside the original Git repository.
 - Required files in `PORTABILITY-CHECKLIST.md` are present.
 
+Completion record (2026-07-31):
+
+- Git identifies this directory as the independent `LOCUS-v3` repository root.
+- Git reports no enclosing superproject.
+- Every required root file and source directory in
+  `PORTABILITY-CHECKLIST.md` is present.
+
 ### P0.2 Initialize source control and freeze the import
 
-Status: `Proposed`
+Status: `Complete`
 
 Actions:
 
@@ -84,6 +91,17 @@ Acceptance:
   extension, or disposable build product is tracked.
 - The manuscript, review PDF, retained v1/v2 evidence, generated inputs, and
   sealed v1 artifact are tracked at their documented paths.
+
+Completion record (2026-07-31):
+
+- The independent repository was initialized with initial import commit
+  `71836c304490db0984cbe2786edf414ff18a960b`.
+- All 307 entries in `PORTABLE-CONTENTS.json` matched by size and SHA-256; the
+  manifest plus those entries comprise the 308 files in the initial commit.
+- The initial commit has no imported parent history, and `origin` points to the
+  owner-created LOCUS-v3 repository rather than the upstream repository.
+- The initial import had no ignored or untracked files. Subsequent project
+  records may change without modifying the immutable import manifest.
 
 ### P0.3 Run the clean baseline gate
 

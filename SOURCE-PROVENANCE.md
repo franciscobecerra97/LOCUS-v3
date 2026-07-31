@@ -58,23 +58,26 @@ for its exact frozen profile and can be deterministically verified, processed,
 and used to reproduce the current manuscript inputs. Neither family supports
 changed implementation profiles.
 
-## Portability note
+## Independent repository
 
-This directory is currently nested only as a staging location. After copying it
-to the intended independent directory:
+- Repository root: this directory (`LOCUS-v3/`)
+- Initial import commit:
+  `71836c304490db0984cbe2786edf414ff18a960b`
+- Initial branch: `main`
+- Remote: owner-created `LOCUS-v3` GitHub repository
+- Imported parent history: none
 
-1. initialize a new Git repository;
-2. make an initial import commit;
-3. run the frozen environment synchronization;
-4. run the complete quality/test gate;
-5. record the new repository commit as the starting point for all future
-   evidence.
+The independent repository was initialized on 2026-07-31. Before the first
+project-authored follow-up commit, all 307 manifest entries matched their
+recorded sizes and SHA-256 digests, all 308 intended files were tracked, and no
+ignored or untracked files were present.
 
-Do not copy the upstream `.git` directory.
+The upstream `.git` directory and upstream history were not copied.
 
 ## Portable contents manifest
 
 `PORTABLE-CONTENTS.json` contains a sorted path/size/SHA-256 record for every
 other file in this seed. It excludes itself to avoid a recursive self-digest.
-Verify that manifest immediately after copying and before initializing the new
-project.
+It permanently describes the initial portable seed and is not regenerated for
+ordinary project changes. Its contents were verified immediately before the
+first project-authored follow-up commit.
