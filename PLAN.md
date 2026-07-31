@@ -9,7 +9,10 @@ The roadmap has no conference-cycle deadline. Work should follow dependency and
 evidence order rather than maximizing visible features quickly.
 
 The owner has approved the overall direction: expand LOCUS into a realistic,
-complete reference recovery system without changing the current thesis.
+complete reference recovery system while preserving the storage-separation and
+below-threshold no-offline-oracle thesis. D016 additionally approves a
+versioned aPPSS successor for new enrollments. The frozen Yi TPASS profile
+remains active until the successor completes its explicit cutover gate.
 Architecture decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -30,7 +33,8 @@ documentation, and evidence gate must pass.
 
 ## Global rules
 
-1. Preserve `PROTOCOL-INVARIANTS.md`.
+1. Preserve the active path in `PROTOCOL-INVARIANTS.md` until an approved,
+   versioned successor passes its cutover gate.
 2. Resolve and record owner decisions before affected implementation.
 3. Never reinterpret frozen identifiers or retained/historical evidence.
 4. Add a new version for every semantic change.
@@ -190,25 +194,62 @@ Status: `Proposed`
 
 Required decisions:
 
-- Approved: D001, D003, D005, D014, and D015 establish account-scoped bundle
-  discovery, descriptor trust, three atomic CuePolicies, the immutable bundle
-  layout, and an application-operated S3 namespace with an optional AWS S3
-  profile. D015 supersedes the personal-cloud-account and Google Drive choices
-  in D002 and D006.
-- Pending: D004 and D007--D010 cover admission, deployed profiles,
-  independence wording, attempt role, and UI platform.
+- Approved: D001, D003, D005, D014, D015, and D016 establish account-scoped
+  bundle discovery, descriptor trust, three atomic CuePolicies, the immutable
+  bundle layout, and an application-operated S3 namespace with an optional AWS
+  S3 profile, plus a versioned aPPSS successor with frozen Yi compatibility.
+  D015 supersedes the personal-cloud-account and Google Drive choices in D002
+  and D006.
+- Pending: D004, D007--D010, and D017 cover admission, deployed profiles,
+   independence wording, attempt role, UI platform, and the exact aPPSS
+   instantiation.
 
 Acceptance:
 
 - Approved decision records include trust, privacy, version, compatibility, and
   evidence consequences.
 
-### P1.2 Create typed system interfaces
+### P1.2 Freeze the password-protected recovery contract
+
+Status: `Proposed`
+
+Before implementation, map the aPPSS construction in Section 3, Figure 4, and
+Theorem 2 of *Password-Protected Threshold Signatures* to LOCUS:
+
+- distinguish the paper's corruption bound `t` and reconstruction threshold
+  `t+1` from LOCUS reconstruction threshold `k`, with `k = t+1`;
+- define the exact password space, high-entropy recovery-secret output,
+  server/public/client state, initialization and recovery messages, and failure
+  behavior;
+- state the random-oracle, OPRF, authenticated-initialization, server-identity,
+  erasure, corruption-timing, and availability assumptions;
+- define precisely that fewer than `k` static party states expose no local cue
+  predicate under those assumptions, while `k` or more aPPSS server states
+  enable unrate-limited offline password tests and reveal `S_R` after a correct
+  guess;
+- record that the existing Yi profile instead Shamir-shares the password,
+  secret exponent, and digest, so `k` Yi states directly interpolate the
+  password and high-entropy recovery secret;
+- use the aPPSS output `sk` directly as LOCUS `S_R`, followed by the existing
+  HKDF-SHA-256 and AES-256-GCM path; and
+- reject importing aptSIG, retaining an independently threshold-shared unmasked
+  `S_R`, or treating implementation tests as a new cryptographic proof.
+
+Acceptance:
+
+- D017 records the exact OPRF, field/security parameter, hashes, domains,
+  canonical formats, robustness choice, and theorem-to-LOCUS claim mapping.
+- `docs/APPSS-MIGRATION.md` and the claim/evidence matrix agree on thresholds,
+  assumptions, claims, and non-claims.
+
+### P1.3 Create typed system interfaces
 
 Status: `Proposed`
 
 Define interfaces for:
 
+- `PasswordProtectedSecretRecovery`, with opaque versioned public, party,
+  request, response, and client-session types;
 - `CuePolicy`;
 - `Resolver`;
 - `BackupObjectStore` compatibility contract;
@@ -223,30 +264,33 @@ Define interfaces for:
 Rules:
 
 - Interface definitions must not silently alter evaluated v1 bytes.
-- TPASS-holder and authorizer roles must be distinct types.
+- Recovery-suite holder and authorizer roles must be distinct types.
+- The frozen Yi implementation is one compatibility adapter; the new aPPSS
+  suite is a separate adapter and never reuses Yi wire objects or domains.
 - Strict decoders reject unknown, duplicate, oversized, and unsupported input.
 
 Acceptance:
 
-- Interface tests compile/run without changing current native recovery results.
-- Existing cue and TPASS vectors remain byte-identical.
+- Interface tests compile/run without changing current native Yi recovery
+  results.
+- Existing cue and Yi TPASS vectors remain byte-identical.
 
-### P1.3 Freeze a new profile namespace
+### P1.4 Freeze a new profile namespace
 
 Status: `Proposed`
 
 Actions:
 
 - Assign identifiers only after schemas are approved.
-- Register policy, descriptor, backup, admission, deployment, trace, result, and
-  artifact versions in `VERSION-REGISTRY.md`.
+- Register recovery-suite, policy, descriptor, backup, admission, deployment,
+  trace, result, and artifact versions in `VERSION-REGISTRY.md`.
 - Define compatibility and upgrade rules.
 
 Acceptance:
 
 - No new identifier collides with or reinterprets a frozen upstream identifier.
 
-### P1.4 Create security and information-flow matrices
+### P1.5 Create security and information-flow matrices
 
 Status: `Proposed`
 
@@ -266,6 +310,8 @@ Required views:
 - application storage gateway;
 - resolver;
 - each below-threshold party coalition used by an evaluated profile;
+- each exact-reconstruction-threshold aPPSS coalition used by the comparative
+  compromise claim;
 - matching combined state;
 - enrollment client after disposal;
 - clean client before and after cue entry;
@@ -291,8 +337,9 @@ Specify:
 - version;
 - backup identifier, epoch, logical immutable backup reference, and digest;
 - CuePolicy identifier and public parameters;
-- TPASS public parameters and threshold;
-- TPASS-holder membership;
+- recovery-suite identifier, suite public parameters, and reconstruction
+  threshold `k`;
+- recovery secret-state-holder membership;
 - separate authorizer membership and quorum;
 - endpoint identities or directory binding;
 - admission profile;
@@ -408,6 +455,7 @@ Scenarios:
 - stale epoch;
 - cross-user substitution;
 - cross-policy substitution;
+- cross-suite substitution or downgrade;
 - cross-membership mix;
 - descriptor/backup digest mismatch;
 - descriptor/party current-state mismatch;
@@ -433,7 +481,7 @@ States:
 ```text
 key import/generation
 -> policy processing
--> TPASS setup
+-> recovery-suite setup
 -> key wrapping
 -> backup publication
 -> party provisioning
@@ -467,7 +515,9 @@ Acceptance:
 
 - Parties run in distinct processes without shared secret volumes.
 - Wrong recipient, endpoint, identity, body, route, and idempotency reuse fail.
-- No coordinator persists all TPASS states.
+- No coordinator persists all recovery-suite secret states. An aPPSS production
+  enrollment has each server create and retain its own OPRF key; a central
+  fixture may exist only for bounded unit tests.
 
 ### P3.3 Specify the admission contract
 
@@ -489,7 +539,7 @@ For D015 storage operations, also bind the exact pseudonymous object prefix,
 storage operation, and storage-gateway audience. The capability authorizes no
 bucket listing and carries no provider credential.
 
-Keep admission independent from CuePolicy/TPASS correctness.
+Keep admission independent from CuePolicy/recovery-suite correctness.
 
 Acceptance:
 
@@ -531,7 +581,7 @@ bootstrap
 -> policy processing
 -> threshold selection
 -> authorization
--> TPASS recovery
+-> recovery-suite recovery
 -> AEAD decryption
 -> key identity verification
 -> successor action
@@ -541,7 +591,7 @@ Acceptance:
 
 - Wrong input and malformed remote state expose only the approved error
   boundary.
-- The client does not disclose final TPASS/AEAD outcome to parties.
+- The client does not disclose the final recovery-suite/AEAD outcome to parties.
 
 ### P4.2 Implement Client A/Client B isolation
 
@@ -608,7 +658,9 @@ Status: `Approved`
 Acceptance:
 
 - All v1 canonical bytes and errors are unchanged.
-- TPASS input and backup vectors remain unchanged.
+- Frozen Yi TPASS input and backup vectors remain unchanged. Each new policy's
+  canonical bytes enter a recovery suite only through that suite's separately
+  versioned password-input domain.
 - Existing resolver-drift vectors pass through the new interface.
 
 ### P5.2 Design three atomic policies
@@ -662,7 +714,8 @@ Cover:
 
 Acceptance:
 
-- Four policies share one interface and unchanged TPASS internals.
+- Four policies share one interface without changing either recovery-suite
+  implementation.
 - Frozen v1 vectors remain byte-identical after extracting shared
   canonicalization helpers.
 - No test is interpreted as memorability, entropy, or usability evidence.
@@ -684,7 +737,211 @@ Implement:
 Acceptance:
 
 - Policies declare exactly what the resolver learns.
-- No resolver automatically enumerates cue alternatives through TPASS.
+- No resolver automatically enumerates cue alternatives through a recovery
+  suite.
+
+---
+
+## P5A — Versioned aPPSS successor and Yi-to-aPPSS migration
+
+Direction: `Approved` by D016
+Execution status: `Proposed`
+
+This phase begins only after P1 has frozen the suite-neutral contract, P2 binds
+the suite in authenticated recovery metadata, P3 supplies authenticated
+enrollment, P4.1--P4.3 supply recovery and successor state machines, P5 has
+shown that CuePolicy is independent of the recovery suite, and D017 is
+approved. P4.4 general membership replacement is not a prerequisite.
+
+For this phase, "replacement" means that aPPSS becomes the active suite for new
+enrollments after cutover. The frozen Yi suite remains available only for
+legacy recovery and migration. One epoch contains exactly one suite. There is
+no in-place share conversion, dual-state fallback, automatic downgrade, or
+reinterpretation of an old identifier, backup, vector, or evidence record.
+
+### P5A.1 Freeze the exact aPPSS profile and formats
+
+Status: `Proposed`
+
+Specify:
+
+- the Section 3, Figure 4 aPPSS protocol and Theorem 2 mapping, excluding the
+  paper's aptSIG and threshold-signature layers;
+- LOCUS reconstruction threshold `k`, party count `n`, and the explicit mapping
+  `k = t_paper + 1`;
+- the concrete OPRF construction and proof basis, security parameter, Shamir
+  field, hash-to-group/hash/random-oracle functions, and domain separation;
+- public `omega=(e,C)`, public parameters, independent per-server OPRF state,
+  transient client state, request/response messages, and typed failures;
+- authenticated initialization, server identity, session, backup identifier,
+  epoch, CuePolicy, membership, threshold, configuration, and operation
+  bindings;
+- malicious-server abort behavior and the approved decision on the paper's
+  optional verifiable-OPRF robustness sketch; and
+- new bounded canonical wire and state formats, with no serializable client
+  blinder or secret-bearing debug/log representation.
+
+The recovered aPPSS output `sk` is LOCUS `S_R`. It feeds the existing
+HKDF-SHA-256 wrapping-key derivation directly. Do not add or retain an
+independently threshold-shared unmasked recovery secret.
+
+Acceptance:
+
+- D017 is approved and fully reflected in `docs/APPSS-MIGRATION.md`, a new
+  exact profile specification, and a new wire-format specification.
+- The version registry assigns identifiers only alongside approved schemas and
+  canonical vectors.
+- Cross-suite, cross-version, cross-epoch, cross-session, and cross-membership
+  objects fail closed.
+
+### P5A.2 Implement the native aPPSS core
+
+Status: `Proposed`
+
+Implement a separate research-grade Rust core using the approved profile:
+
+- OPRF blind/evaluate/finalize and server-key lifecycle;
+- field/Shamir operations, share masking, interpolation, `C` verification, and
+  recovery-secret derivation;
+- strict bounded canonical codecs for every external object;
+- secret redaction, zeroization where supported, and production CSPRNG use;
+- deterministic randomness only in tests and frozen vectors; and
+- typed internal errors that can be normalized at service boundaries.
+
+Tests cover correct and wrong passwords, every valid subset for bounded small
+`k,n`, insufficient/duplicate/out-of-range parties, inconsistent `omega`,
+malformed/truncated/trailing/wrong-kind/noncanonical objects, identity or
+invalid group elements where applicable, altered state/messages, resource
+bounds, and deterministic regeneration.
+
+Acceptance:
+
+- A frozen synthetic vector is regenerated by Rust and consumed independently
+  across the narrow Python boundary.
+- The frozen Yi crate, wire format, vector, and behavior remain byte-identical.
+- Unit fixtures that centrally orchestrate setup are explicitly labeled and do
+  not count as evidence of authenticated distributed initialization.
+
+### P5A.3 Integrate the generic client and party protocol
+
+Status: `Proposed`
+
+Actions:
+
+- add a narrow PyO3 binding and register Yi and aPPSS as distinct
+  `PasswordProtectedSecretRecovery` adapters;
+- replace TPASS-specific orchestration assumptions with opaque,
+  suite-versioned messages while retaining the frozen Yi adapter;
+- version request hashes, SQLite state, runtime packages, service routes,
+  backup fields, descriptor fields, redaction rules, snapshot parsers, and
+  build-lock provenance;
+- keep authorization durable before the first secret-dependent OPRF response;
+  and
+- define exact retry, timeout, subset, crash, restart, and generic external
+  failure behavior for the aPPSS flow.
+
+Acceptance:
+
+- Correct and wrong-input recovery works through distinct authenticated party
+  processes for the new profile.
+- No coordinator or provisioner persists all OPRF keys, and each server creates
+  and retains only its own key.
+- Cross-suite substitution and downgrade fail before secret-dependent recovery.
+
+### P5A.4 Integrate authenticated initialization
+
+Status: `Proposed`
+
+Use P3's enrollment transport so the client performs the approved OPRF
+initialization with each authenticated server and distributes the common
+`omega=(e,C)` record under exact recipient, suite, backup, epoch, policy,
+membership, threshold, and configuration bindings. The existing networkless
+central provisioner may remain only as a legacy Yi path or generated test
+fixture; it cannot support an aPPSS distributed-initialization claim.
+
+Acceptance:
+
+- Wrong server, recipient, suite, epoch, body, replay, and idempotency reuse
+  fail closed.
+- Each ready party proves possession of the exact bound state without exposing
+  its OPRF key or a cue verifier.
+- Initialization interruption cannot activate a partially provisioned epoch.
+
+### P5A.5 Implement successor migration and cutover
+
+Status: `Proposed`
+
+Migration procedure:
+
+1. Recover the protected key client-side through the frozen Yi predecessor.
+2. Create a fresh aPPSS recovery secret, party state, backup, descriptor, and
+   epoch under new identifiers.
+3. Durably prepare and verify every required party, storage object, bundle,
+   descriptor, and current-state binding.
+4. Activate the aPPSS successor through the P4 lifecycle protocol.
+5. Retire the Yi predecessor only after successor recovery succeeds.
+
+Acceptance:
+
+- Crash and exact retry are tested at every transition.
+- Old and new state never combine into a threshold result.
+- A new aPPSS epoch never silently falls back to Yi.
+- New enrollments select aPPSS only after the complete P5A acceptance gate;
+  existing Yi epochs remain recoverable without reinterpretation.
+
+### P5A.6 Validate the comparative security boundary
+
+Status: `Proposed`
+
+Add fixed, bounded, synthetic scenarios for:
+
+- cloud-only aPPSS state;
+- every evaluated coalition below reconstruction threshold `k`;
+- matching cloud plus below-threshold aPPSS state;
+- exact-threshold and all-server aPPSS state; and
+- a fixed Yi comparator showing that `k` serialized Yi party states directly
+  reconstruct the shared password scalar and high-entropy recovery secret,
+  while `k` aPPSS states expose an offline dictionary-test capability and
+  reveal `S_R` only after the fixed correct candidate.
+
+Retain only aggregate Boolean/category observations. Never retain candidates,
+per-candidate outcomes, OPRF keys, masked or unmasked shares, passwords,
+recovery secrets, private keys, raw snapshots, or configurable attack tooling.
+
+Acceptance:
+
+- Every scenario has the invariant, exact synthetic roles, enforced read-only
+  and networkless boundary, positive control, expected observation,
+  interpretation limit, and new schema/path.
+- Documentation states that the no-offline-predicate and augmented-compromise
+  properties are inherited from their respective constructions under explicit
+  assumptions; tests demonstrate only the exact implementation boundary.
+- Threshold compromise is described as unrate-limited offline guessing, not as
+  continued threshold security or protection for low-entropy cues.
+
+### P5A.7 Complete cutover documentation and review gates
+
+Status: `Proposed`
+
+Actions:
+
+- pass clean Linux and Windows builds and the complete legacy-regression gate;
+- collect no retained performance corpus until P9 freezes a new methodology
+  and result schema;
+- update active architecture, protocol, threat, information-flow, lifecycle,
+  API, storage, evidence, artifact, and version documentation at cutover;
+- obtain independent cryptographic review of the paper-to-code mapping before
+  calling the profile "augmented" or promoting the comparative result; and
+- prepare M-APPPSS-001, but do not edit `paper/` until its separate owner
+  approval and the P8/P9 evidence gates are complete.
+
+Acceptance:
+
+- Frozen Yi regression and retained-v2 verification remain unchanged.
+- The active-profile cutover commit, identifiers, clean-host results, review
+  findings, and known limitations are recorded.
+- Manuscript wording remains unchanged unless M-APPPSS-001 is explicitly
+  approved and later applied under P10.6.
 
 ---
 
@@ -744,6 +1001,8 @@ Support:
 
 - existing deployed 2-of-3;
 - new deployed 3-of-5;
+- explicit recovery-suite identity for every profile, with aPPSS active for new
+  profiles after P5A and Yi labeled legacy-only;
 - distinct authorization quorum for each profile;
 - exact consistent threshold subset selection;
 - satisfiable and unsatisfiable availability cases.
@@ -850,7 +1109,8 @@ May display:
 Must not display:
 
 - raw/canonical cues;
-- TPASS password, shares, group secret, wrapping key;
+- recovery-suite password input, OPRF keys, masked or unmasked shares,
+  recovery secret, wrapping key;
 - credentials/tokens;
 - private key bytes.
 
@@ -893,6 +1153,9 @@ Required surfaces:
   authority surface;
 - each relevant below-threshold party coalition;
 - matching combined state;
+- each exact-threshold aPPSS coalition supporting the augmented-compromise
+  comparison, kept separate from below-threshold no-oracle evidence;
+- cross-suite and downgrade views;
 - post-enrollment Client A;
 - pre-cue Client B;
 - resolver-visible categories;
@@ -928,7 +1191,7 @@ Acceptance:
 Status: `Proposed`
 
 - Keep the rollback counterexample reproducible.
-- Keep signed local auditing isolated from the TPASS correctness claim.
+- Keep signed local auditing isolated from recovery-suite correctness claims.
 - Do not block core recovery on an unproven global bound.
 
 Acceptance:
@@ -948,7 +1211,7 @@ Measure:
 
 - policy processing;
 - resolver;
-- TPASS setup;
+- recovery-suite initialization, including per-server OPRF work;
 - backup encryption/upload;
 - party provisioning;
 - descriptor publication/retrieval;
@@ -984,9 +1247,12 @@ Candidate result families:
 
 Acceptance:
 
-- Schemas bind exact policy, descriptor, backup, profile, threshold, party
-  identities, topology, backend, scenario, positive control, output scan, and
-  limitations.
+- Schemas bind exact recovery suite, policy, descriptor, backup, profile,
+  threshold, party identities, topology, backend, scenario, positive control,
+  output scan, and limitations.
+- aPPSS and frozen Yi results use separate result families. A comparative
+  processor may consume both only under a new schema that preserves both
+  provenance records and never relabels or pools retained v2 measurements.
 
 ### P9.3 Collect same-host revised baseline
 
@@ -1018,10 +1284,14 @@ Status: `Proposed`
 
 Review:
 
-- mapping from Yi et al. to the Ristretto instantiation;
-- setup and generator derivation;
-- canonical wire formats;
-- proof and aggregation validation;
+- the aPPSS Section 3/Figure 4/Theorem 2 paper-to-code mapping;
+- the concrete OPRF, field, hashes, domains, authenticated initialization, and
+  threshold-notation translation;
+- canonical aPPSS wire/state formats and server-key lifecycle;
+- reconstruction, commitment check, malformed-state, and downgrade behavior;
+- the scoped claim comparing Yi direct threshold-state reconstruction with
+  aPPSS offline-dictionary degradation;
+- continued correctness of the frozen Yi compatibility path;
 - Python boundary;
 - domain separation and malformed-state behavior.
 
@@ -1105,18 +1375,27 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-After P0 and owner decisions D001--D004:
+Execution is chronological. Complete the pending P0.3 clean CI confirmation and
+P0.4 before P1. Do not begin a later phase while an applicable predecessor gate
+is incomplete, except for a task explicitly marked deferred and not named as a
+dependency.
 
-1. P1.2 — typed interfaces without semantic change;
-2. P2.1 — RecoveryDescriptor specification and vectors;
-3. P2.2 — bootstrap/trust model;
-4. P2.3 — DescriptorStore;
-5. P3.1 — enrollment state machine;
-6. P3.2 — authenticated enrollment transport;
-7. P4.1 — recovery state machine;
-8. P4.2 — isolated Client A/Client B exact-key recovery;
-9. P2.4 — descriptor adversarial regressions;
-10. P8.2 — state-boundary evidence.
+The next sequence is:
 
-Do not begin the graphical UI, real cloud provider, or general party replacement
-before this slice is complete.
+1. P1.1--P1.5 — decisions, exact recovery contract, suite-neutral interfaces,
+   version namespace, and security/information-flow matrices;
+2. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
+   scenarios;
+3. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
+4. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
+   successor publication; P4.4 remains deferred unless D011 is approved;
+5. P5.1--P5.4 — CuePolicy and resolver generality without changing either
+   recovery suite;
+6. P5A.1--P5A.7 — aPPSS implementation, authenticated integration, migration,
+   comparative boundary validation, and active-profile cutover; and
+7. P6 onward — storage/deployment expansion, UI, assurance, performance,
+   external review, artifact, and separately approved manuscript changes.
+
+Do not begin the graphical UI, external provider run, expanded deployment
+profiles, or general party replacement before the applicable preceding gates
+are complete.

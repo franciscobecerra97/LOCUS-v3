@@ -18,6 +18,28 @@ wrapping key, and authenticates/decrypts the exact backup object.
 
 There is no independent symmetric recovery key between TPASS and `K_wrap`.
 
+### Approved aPPSS successor path
+
+The TPASS path above remains the active implemented invariant until P5A's
+cutover gate passes. D016 authorizes the following separately versioned path
+for new successor epochs:
+
+```text
+CuePolicy_vM(M) -> Z_M or failure
+p_M = suite-domain-separated password input(ID_R, epoch, Z_M)
+aPPSS.Initialize / aPPSS.Recover -> high-entropy output sk_appss
+S_R = sk_appss
+K_wrap = HKDF-SHA-256(S_R, recovery nonce, backup context)
+C_U = AES-256-GCM.Enc(K_wrap, sk_U, authenticated backup metadata)
+```
+
+The aPPSS output is the recovery secret; there is no additional independently
+sampled or threshold-shared unmasked `S_R` between aPPSS and `K_wrap`. Every
+epoch binds exactly one recovery suite. Existing Yi epochs use only the frozen
+Yi path, and an aPPSS epoch never falls back to or combines shares/messages with
+Yi. Migration is client-side recovery followed by fresh successor enrollment,
+not state conversion.
+
 ## Role-state invariants
 
 ### Enrollment client
@@ -101,6 +123,17 @@ Must not hold:
   wrapping key, or plaintext key;
 - a local cue verifier.
 
+### Planned aPPSS holder
+
+After P5A cutover, an aPPSS holder may keep only its own independent OPRF secret
+state, its party/index binding, the common public `omega=(e,C)`, and the same
+bounded public identity, epoch, policy, configuration, lifecycle, and audit
+metadata permitted for a recovery party. It must not hold another server's OPRF
+key, an unmasked Shamir share, `p_M`, `S_R`, `K_wrap`, or a separate local cue
+verifier. Fewer than reconstruction threshold `k` holder states must not expose
+a local predicate under the approved profile assumptions; `k` or more holder
+states are explicitly modeled as enabling offline dictionary tests.
+
 ### Authorizer-only service
 
 May hold identity, configuration, phase, admission, idempotency, and local audit
@@ -119,7 +152,9 @@ reconstruct the secret path and return the recovered protected key.
 
 ## Cross-role invariants
 
-- TPASS threshold and authorization quorum are different types.
+- Recovery-suite threshold and authorization quorum are different types.
+- Recovery-suite identity, public parameters, holder membership, threshold,
+  backup, policy, recovery identity, and epoch bind to one enrollment.
 - A descriptor never authenticates its own trust root.
 - The client validates a current consistent epoch before secret-dependent
   recovery.

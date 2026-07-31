@@ -17,9 +17,11 @@ Read `PROJECT-CHARTER.md`, `BASELINE.md`, `PLAN.md`, `DECISIONS.md`,
 
 LOCUS is a research system for distributed private-key recovery. A client
 converts structured recovery input into deterministic bytes through a versioned
-CuePolicy, derives TPASS password input locally, stores only an encrypted
+CuePolicy, derives suite-bound password input locally, stores only an encrypted
 private-key backup in a cloud-object role, and distributes native threshold
-state across separately identified recovery parties.
+state across separately identified recovery parties. The current implementation
+uses the frozen Yi TPASS suite; D016 authorizes a separately versioned aPPSS
+successor for new enrollments after its gates pass.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered
@@ -54,6 +56,29 @@ Consequences:
   completeness layers. They do not alter the offline-oracle argument unless
   they add a prohibited verifier or new secret-bearing state.
 - Global rollback-resistant attempt control is not part of the core thesis.
+
+### Owner-approved successor direction
+
+D016 approves planning and implementation of a new aPPSS recovery suite. Until
+P5A's cutover acceptance gate passes, the frozen TPASS thesis and protected path
+below remain the active implementation and paper boundary. Successor work must:
+
+- use new domains, formats, epochs, profiles, schemas, evidence paths, and
+  identifiers;
+- preserve the frozen Yi implementation, vector, legacy recovery behavior, and
+  retained v2 evidence without reinterpretation;
+- use the aPPSS output directly as the high-entropy LOCUS recovery secret that
+  feeds HKDF, without retaining an independently threshold-shared unmasked
+  recovery secret;
+- bind one and only one recovery suite to each epoch and prohibit downgrade,
+  cross-suite mixing, and in-place share conversion;
+- treat fewer-than-reconstruction-threshold no-offline-predicate behavior and
+  reconstruction-threshold offline-dictionary behavior as separate claims; and
+- obtain D017 approval for the exact OPRF, field, hash, wire, robustness, and
+  theorem profile before cryptographic implementation.
+
+The aPPSS and Yi constructions are inherited cryptographic work, not LOCUS
+novelty. D016 does not authorize M-APPPSS-001 or any other manuscript wording.
 
 ## Protocol invariants
 
@@ -201,13 +226,15 @@ data. Normal reviewer workflows must not require external credentials.
 ### Party roles
 
 - Model every remote process as an authorizer and optionally a TPASS holder.
-- Keep TPASS threshold and authorization quorum distinct in types, schemas,
-  UI, logs, and evidence.
+- Successor interfaces may model it as a recovery-suite holder, with TPASS and
+  aPPSS as disjoint suite-specific state types.
+- Keep recovery-suite threshold and authorization quorum distinct in types,
+  schemas, UI, logs, and evidence.
 - Separate hosts do not prove independent administration.
 
 ### Admission
 
-- Keep admission independent of CuePolicy and TPASS.
+- Keep admission independent of CuePolicy and recovery-suite correctness.
 - Bind authorization to subject, backup identifier, epoch, operation, audience,
   client proof key, nonce, and expiry.
 - A cloud or identity account used for discovery is an explicit prerequisite,
@@ -258,6 +285,7 @@ owner when it affects:
 - the number or semantics of CuePolicies;
 - a real external provider;
 - threshold or party topology;
+- the exact aPPSS cryptographic profile or active-profile cutover;
 - the meaning of independent administration;
 - general replacement or a monotonic rollback anchor;
 - attempt control as a contribution;

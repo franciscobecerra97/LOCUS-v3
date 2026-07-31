@@ -10,7 +10,8 @@ matching, privacy-safe, provenance-bound evidence.
 The retained v1/v2 corpora are stored under their exact versioned paths. V1 is
 superseded historical material. V2 is baseline evidence only for the exact
 frozen profile and provenance it records. It is not evidence for changed
-CuePolicy, descriptor, admission, topology, provider, or lifecycle semantics.
+CuePolicy, recovery suite, descriptor, admission, topology, provider, or
+lifecycle semantics. In particular, no Yi TPASS v2 result supports aPPSS.
 
 Raw records remain immutable. Deterministic verification and processing may be
 rerun. Changed profiles use new identifiers and paths and must never be mixed
@@ -23,8 +24,12 @@ Every security-sensitive experiment records:
 - claim or invariant;
 - protected asset;
 - protocol phase;
-- exact policy, descriptor, backup, deployment, and schema versions;
-- TPASS threshold and holder identities;
+- exact recovery-suite, policy, descriptor, backup, deployment, and schema
+  versions;
+- reconstruction threshold `k`, holder identities, and any source-paper
+  threshold-notation mapping;
+- for aPPSS, the exact OPRF/field/hash/theorem profile and whether the view is
+  below threshold or at/above threshold;
 - authorizer quorum and identities;
 - cloud/storage backend class;
 - topology;
@@ -55,7 +60,8 @@ Forbidden retained output:
 
 - raw or canonical cues;
 - candidate values or per-candidate outcomes;
-- TPASS password input, group secret, shares, or wrapping key;
+- recovery-suite password input, OPRF keys, masked or unmasked shares,
+  high-entropy recovery secret, or wrapping key;
 - plaintext private keys;
 - credentials, certificates with private material, access tokens, or cookies;
 - databases or raw snapshots;
@@ -89,14 +95,33 @@ present.
 
 ## Versioning
 
-Any change to policy semantics, descriptor, topology, threshold, admission,
-recovery-bundle format, cloud backend, clean-client boundary, metric definition,
-or trace policy
+Any change to policy semantics, recovery suite or concrete cryptographic
+profile, descriptor, topology, threshold, admission, recovery-bundle format,
+cloud backend, clean-client boundary, metric definition, or trace policy
 requires a new profile and result version.
 
 Do not mix profiles, commits, hosts, policies, thresholds, or topology in one
 processed corpus unless the schema and methodology explicitly define that
 comparison.
+
+## aPPSS comparative evidence
+
+Any evidence supporting the D016/M-APPPSS-001 comparison must keep three claims
+separate:
+
+1. below reconstruction threshold `k`, no local persistent-state cue predicate
+   under the exact suite assumptions;
+2. at or above `k` aPPSS server compromise, an offline dictionary-test
+   capability whose correct guess yields `S_R`; and
+3. at or above `k` frozen Yi party compromise, direct interpolation of the
+   shared password scalar and protected high-entropy secret.
+
+The comparison uses fixed synthetic state and fixed candidates, retains only
+aggregate Boolean/category observations, and includes positive controls. It
+must not retain per-candidate outcomes or become configurable guessing tooling.
+The underlying cryptographic statements come from the cited constructions and
+their reviewed LOCUS mappings; experiments show only the behavior of the exact
+implementation and persistent-state boundary.
 
 ## External services
 

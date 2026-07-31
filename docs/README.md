@@ -15,6 +15,7 @@ baseline documents:
 For proposed architecture, start with:
 
 - `TARGET-ARCHITECTURE.md`
+- `APPSS-MIGRATION.md`
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`

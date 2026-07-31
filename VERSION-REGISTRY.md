@@ -34,6 +34,11 @@ format or profile is approved.
 No final identifiers are assigned until the corresponding design is approved.
 The following families are reserved conceptually:
 
+- recovery-suite registry and suite-neutral client/party interfaces;
+- aPPSS suite, password-input domain, OPRF profile, public parameters, party
+  state, protocol messages, canonical wire format, and fixed vectors;
+- aPPSS-bound backup, descriptor, service/API, runtime-package, deployment,
+  migration, performance, and security-evidence profiles;
 - RecoveryDescriptor and descriptor-current-pointer;
 - immutable recovery-bundle ZIP and bundle manifest;
 - CuePolicy registry plus quantized-coordinate-set, canonical-phone-set, and
@@ -52,12 +57,16 @@ first implementing commit here before collecting evidence.
 
 ## Approved but unassigned families
 
-D001, D003, D005, D014, and D015 approve the architecture direction for the
+D001, D003, D005, D014, D015, and D016 approve the architecture direction for the
 following families without assigning protocol identifiers. D015 supersedes the
 unassigned personal-cloud-account and Google Drive families from D002/D006:
 
 | Family | Approved semantic boundary | Compatibility rule |
 | --- | --- | --- |
+| aPPSS recovery-suite successor | Section 3 aPPSS supplies the high-entropy `S_R` for new enrollments after P5A; exact OPRF, field, hash, wire, robustness, and theorem profile remain gated by D017 | New identifiers and epoch only; frozen Yi TPASS remains legacy-recovery compatible and is never reinterpreted |
+| Recovery-suite password derivation | CuePolicy output enters an immutable suite-specific password-input domain | New domain per suite; identical CuePolicy bytes do not authorize cross-suite message or state reuse |
+| Yi-to-aPPSS migration | Recover the old epoch client-side, create and verify a fresh aPPSS successor, activate it, then retire the predecessor | No share conversion, mixed-suite threshold, dual-state fallback, automatic downgrade, or in-place backup migration |
+| aPPSS evidence | Correctness, below-threshold, matching combined, exact-threshold offline-dictionary, migration, and performance results for one exact profile | New schemas and paths; retained v2 Yi evidence remains frozen and cannot be pooled or relabeled |
 | RecoveryDescriptor | Signed public recovery configuration authenticated from an app-pinned root and checked against party current state | New strict format; no change to frozen backup or TPASS formats |
 | Descriptor current pointer | Authenticated mutable binding to one active bundle, descriptor, backup identifier, epoch, and configuration | New strict format with compare-and-swap semantics |
 | Recovery bundle | Immutable bounded ZIP containing exactly canonical backup, signed descriptor, and manifest members | New container profile; descriptor binds the backup member and the external pointer binds the exact bundle |

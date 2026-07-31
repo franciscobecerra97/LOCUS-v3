@@ -150,6 +150,16 @@ evidence for RecoveryDescriptor, clean-client, multi-policy, real-cloud,
 multi-host, UI, admission, or changed lifecycle behavior. Never overwrite or
 reinterpret either family; new profiles require new identifiers and paths.
 
+## Post-baseline aPPSS migration note
+
+aPPSS is not part of the imported implementation, manuscript baseline, sealed
+artifact, or retained v1/v2 evidence. D016 authorizes a future separately
+versioned successor, but no aPPSS implementation or result exists until P5A is
+completed. The locally supplied 2024 paper is an ignored research input; it is
+not tracked or included in an artifact, and its redistribution status has not
+been established. None of these planning facts changes the inherited Yi TPASS
+baseline described above.
+
 ## Excluded material
 
 The portable copy excludes:

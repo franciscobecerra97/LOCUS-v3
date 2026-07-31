@@ -20,14 +20,14 @@ The target system should eventually provide:
 - exact original-key recovery and post-recovery successor enrollment;
 - multiple immutable CuePolicy implementations behind one contract;
 - provider-neutral backup and descriptor storage;
-- multi-host TPASS parties with distinct identities and state;
+- multi-host recovery parties with distinct identities and suite-bound state;
 - a safe, instrumented enrollment and recovery UI;
 - reproducible security, failure, information-flow, and performance evidence;
 - independent clean-host reproduction and external technical review.
 
 ## Scientific thesis
 
-LOCUS combines:
+The active imported baseline combines:
 
 1. local, deterministic processing of structured recovery input;
 2. TPASS-mediated recovery of a random group secret;
@@ -39,6 +39,15 @@ The intended security boundary is that the cloud, fewer than the TPASS
 threshold, or their matching persistent snapshots do not gain an offline test
 for candidate cues.
 
+D016 approves a versioned successor direction without changing that
+below-threshold system thesis. After P5A cutover, aPPSS becomes the active suite
+for new enrollments, its high-entropy output becomes `S_R`, and frozen Yi TPASS
+remains a legacy recovery profile. The augmented result adds a distinct
+threshold-compromise boundary: enough aPPSS server state enables offline
+guessing but does not directly reveal `S_R` before a correct password guess.
+It does not claim that low-entropy cues remain safe, rate-limited, or
+unrecoverable after threshold compromise.
+
 ## What is inherited
 
 - TPASS construction and security assumptions.
@@ -46,6 +55,9 @@ for candidate cues.
 - HKDF and AEAD primitives.
 - The current versioned location-person CuePolicy.
 - The current native TPASS and backup implementation.
+
+The aPPSS paper, future profile, implementation, and evidence are not inherited
+baseline facts and must receive new identifiers and provenance.
 
 ## What LOCUS contributes as a system
 
@@ -58,10 +70,11 @@ for candidate cues.
 
 ## Non-goals without separate approval and evidence
 
-- inventing a new TPASS construction;
+- claiming either Yi TPASS or aPPSS as a new LOCUS construction;
 - proving cue memorability, entropy, or usability;
 - fuzzy matching or automatic candidate enumeration;
-- recovery after threshold compromise;
+- preventing offline guessing or guaranteeing recovery-secret confidentiality
+  after aPPSS reconstruction-threshold compromise;
 - hiding resolver use from the resolver;
 - global rollback-resistant attempt limiting;
 - Byzantine availability;

@@ -12,7 +12,7 @@ gates before their affected implementation work.
 | D004 | Public-client admission | Local test issuer first; later OIDC authorization-code/PKCE with DPoP-bound short-lived tokens | Pending |
 | D005 | Additional CuePolicies | Keep v1 immutable; add separate quantized-coordinate, canonical-phone, and canonical-email set policies | Approved |
 | D006 | Cloud providers | Superseded by D015: replace the planned Google Drive adapter with the common S3 contract and an optional AWS S3 profile | Superseded |
-| D007 | Evaluated TPASS profiles | Preserve 2-of-3 baseline; add deployed 3-of-5 after configuration generalization | Pending |
+| D007 | Evaluated recovery-suite profiles | Preserve the frozen Yi 2-of-3 baseline; evaluate aPPSS 2-of-3 first; add deployed aPPSS 3-of-5 only after configuration generalization | Pending |
 | D008 | Meaning of party independence | Claim host separation after multi-host tests; reserve independent administration for actual independent operators | Pending |
 | D009 | Attempt-control role | Local signed audit only; global rollback-resistant bound remains outside core | Pending |
 | D010 | UI technology and platform | Cross-platform thin UI over stable local client APIs; framework selected after API freeze | Pending |
@@ -21,6 +21,8 @@ gates before their affected implementation work.
 | D013 | Human study | Separate future ethics-approved project; no current usability claims | Pending |
 | D014 | Recovery bundle layout | Store each epoch as an immutable bounded ZIP containing a canonical backup object, signed descriptor, and manifest; keep the authenticated mutable current pointer outside the ZIP | Approved |
 | D015 | S3 provider and user-access model | Application storage gateway over an account-scoped S3 namespace; local S3-compatible reference; optional AWS S3 profile; no client provider credentials | Approved |
+| D016 | Password-protected recovery primitive | Make a new aPPSS suite the active profile for new enrollments after its gates pass; preserve the frozen Yi TPASS profile for legacy recovery; migrate only through a successor epoch | Approved |
+| D017 | Exact aPPSS instantiation | Map Figure 4 and Theorem 2 to a reviewed concrete OPRF, field, hash, wire, robustness, and corruption profile before implementation | Pending |
 
 ## Approved architecture records
 
@@ -224,6 +226,78 @@ proof-key-bound storage capability boundary, and optional AWS S3 profile after
 D004 and the local contract are complete.  
 Manuscript implication: None authorized.
 
+### D016 — Versioned aPPSS successor
+
+Decision ID: D016
+Date: 2026-07-31
+Status: Approved
+Chosen option: LOCUS will implement Augmented Password-Protected Secret Sharing
+(aPPSS) as a new, separately versioned recovery suite and make it the active
+suite for new enrollments only after P5A's specification, implementation,
+integration, evidence, and review gates pass. The aPPSS output `sk` is the
+high-entropy LOCUS recovery secret `S_R` and is the sole input keying material
+to the existing HKDF-SHA-256 wrapping-key derivation. Existing Yi TPASS epochs
+remain recoverable through their frozen suite. Migration recovers the protected
+key through the old epoch and creates a fresh aPPSS successor epoch; no Yi
+party state, backup, identifier, or evidence is converted or reinterpreted in
+place. One epoch binds exactly one recovery suite, with no automatic downgrade
+or dual-suite fallback.
+Alternatives considered: Mutating the frozen Yi implementation in place;
+continuing Yi as the active profile; importing the paper's threshold-signature
+construction rather than its aPPSS component; and retaining an independently
+threshold-shared unmasked `S_R` behind aPPSS.
+New trust assumptions: The exact aPPSS profile must satisfy the assumptions of
+the approved Figure 4/Theorem 2 mapping, including a reviewed OPRF
+instantiation, random-oracle hash mapping, authenticated initialization,
+independent server OPRF state, authenticated server identities, and explicit
+static/adaptive-corruption scope. The paper's threshold notation must be
+translated as `k_LOCUS = t_paper + 1`.
+Privacy implications: Below reconstruction threshold `k`, the intended aPPSS
+state boundary exposes no local cue verifier under the stated assumptions. At
+or above `k` compromised aPPSS servers, the adversary obtains an offline
+dictionary-test capability; the high-entropy recovery secret is obtained after
+a correct cue-derived password guess. This is delayed exposure, not continued
+offline-guessing resistance, and its residual security depends on the
+conditional cue distribution.
+Compatibility/version impact: New recovery-suite, password-domain, public
+parameter, party-state, wire, backup, descriptor, service, deployment, and
+evidence identifiers are required. `LOCUS-TPASS-YI-ZK-RISTRETTO255-v1`,
+`LOCUS-reference-backup-v4`, `LOCUS-compose-deployment-v2`, the Yi fixed vector,
+and retained v2 evidence remain immutable and non-transferable.
+Required evidence: Independent vectors and a consumer; bounded canonical-codec
+and malformed-state tests; all valid small threshold subsets; authenticated
+initialization; correct/wrong-input and cross-suite/epoch/session rejection;
+crash/retry and successor migration; below-threshold, matching combined, and
+at-threshold synthetic state views; an aggregate-only Yi/aPPSS compromise
+comparator; new performance results; clean Linux/Windows reproduction; and
+independent cryptographic review.
+Files or components authorized: Suite-neutral planning and interfaces, a new
+native aPPSS core and narrow binding after D017, new versioned service/storage
+profiles, compatibility adapters, tests, documentation, and new evidence paths.
+The supplied paper remains an ignored local research source and is not added to
+the artifact without redistribution authorization.
+Manuscript implication: None authorized. Proposed change set M-APPPSS-001
+remains a separate owner gate.
+
+### D017 — Exact aPPSS construction profile
+
+Decision ID: D017
+Date: 2026-07-31
+Status: Pending
+Recommended option: Instantiate only the aPPSS construction in Section 3,
+Figure 4, not aptSIG. P1 must freeze the concrete OPRF and its proof basis,
+security parameter and Shamir field, hash-to-group and random-oracle domains,
+canonical encodings, server-state lifecycle, transcript/session bindings,
+malicious-server failure policy, and whether the optional verifiable-OPRF
+robustness extension is adopted.
+Alternatives to evaluate: The paper's 2HashDH OPRF versus a separately justified
+standardized VOPRF profile; exact Figure 4 failure behavior versus a reviewed
+robustness extension; and candidate finite-field/security-parameter choices.
+Gate: No aPPSS cryptographic implementation or identifier assignment begins
+until the owner approves the exact profile and its assumptions. Planning,
+interface generalization, and source-analysis work may proceed.
+Manuscript implication: None authorized.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -244,7 +318,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D015 authorizes only the recorded architecture or
+Approval of D001--D016 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:
@@ -261,3 +335,38 @@ Implementation/evidence commit:
 Applied commit:               # only after approval
 Rendered PDF SHA-256:         # only after approval and visual verification
 ```
+
+### M-APPPSS-001 — Active aPPSS profile and comparative compromise result
+
+Change-set ID: M-APPPSS-001
+Date proposed: 2026-07-31
+Exact file and sections: `paper/main.tex` abstract, introduction and
+contributions, threat model and attacker table, requirements, protocol
+construction, implementation, evaluation, security analysis, lifecycle,
+limitations, related work/comparison table, conclusion, open science, and
+cryptographic appendix; plus the aPPSS bibliographic record in
+`paper/references.bib`. No title change is proposed.
+Before/after summary: Replace the paper-facing active Yi TPASS profile with the
+implemented and evaluated aPPSS profile; retain Yi only as an explicitly frozen
+legacy/baseline comparison; describe suite-bound migration; and add the scoped
+result that below-threshold state gives neither profile a local cue verifier,
+while reconstruction-threshold Yi state directly reconstructs its shared
+password and recovery secret and reconstruction-threshold aPPSS state instead
+enables unrate-limited offline guessing until the correct cue-derived password
+reveals the recovery secret.
+Claim and evidence basis: Theorem 2 and the Section 3 construction of
+*Password-Protected Threshold Signatures*, the reviewed theorem-to-code mapping,
+new aPPSS conformance/correctness/state-boundary evidence, the fixed
+aggregate-only Yi/aPPSS comparator, and separately versioned performance data.
+The cryptographic result is inherited; LOCUS claims only its exact composition
+and implementation/evidence boundary.
+Limitations affected: Random-oracle/OPRF/authenticated-initialization
+assumptions; threshold-notation translation; conditional cue entropy after
+threshold compromise; local unrate-limited guessing at threshold; malicious
+server abort behavior; no proactive/mobile compromise, side-channel,
+production-security, memorability, or usability claim; old performance/evidence
+cannot support the new profile.
+Owner status: Pending
+Implementation/evidence commit: Pending P5A and P8/P9
+Applied commit:
+Rendered PDF SHA-256:
