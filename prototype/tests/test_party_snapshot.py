@@ -210,6 +210,7 @@ class PartySnapshotAttackTests(unittest.TestCase):
             root = Path(temporary)
 
             extra, _service = self._snapshot(root / "extra")
+            (extra / "party").chmod(0o700)
             (extra / "party" / "cloud-object.json").write_text("{}", encoding="ascii")
             with self.assertRaises(PartySnapshotError):
                 audit_party_snapshot(extra)

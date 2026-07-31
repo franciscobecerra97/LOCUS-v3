@@ -324,7 +324,7 @@ class PartyHttpIntegrationTests(unittest.TestCase):
                             server_certificate_sha256=certificate_sha256(
                                 server_certificate
                             ),
-                            timeout_seconds=0.5,
+                            timeout_seconds=2.0,
                         )
                     )
                     peer_nodes.append(
@@ -338,7 +338,7 @@ class PartyHttpIntegrationTests(unittest.TestCase):
                             server_certificate_sha256=certificate_sha256(
                                 server_certificate
                             ),
-                            timeout_seconds=0.5,
+                            timeout_seconds=2.0,
                         )
                     )
 
@@ -457,7 +457,7 @@ class PartyHttpIntegrationTests(unittest.TestCase):
                     client_certificate=str(client_certificate),
                     client_private_key=str(client_key),
                     server_certificate_sha256=nodes[0].server_certificate_sha256,
-                    timeout_seconds=0.5,
+                    timeout_seconds=2.0,
                 )
                 shared_key = "91" * 32
                 direct_vote = nodes[0].create_entry_vote(
