@@ -105,7 +105,7 @@ Completion record (2026-07-31):
 
 ### P0.3 Run the clean baseline gate
 
-Status: `Proposed`
+Status: `In progress`
 
 Actions:
 
@@ -127,6 +127,36 @@ Acceptance:
 - The native extension builds from source.
 - Default tests do not require external accounts or real data.
 - Any inherited tooling path retained only for compatibility is documented.
+
+Progress record (2026-07-31, commit
+`5516b9db7221f4f64ae0dab66b176ee486f0d16a`):
+
+- The frozen environment synchronized under CPython 3.12.13 with 18 pinned
+  packages.
+- The complete local Windows gate passed: 65 Python files parsed; Ruff format
+  and lint passed for 66 files; mypy passed for 66 source files; 152 Python
+  tests passed with the opt-in live-S3 test skipped; 17 Rust core unit tests and
+  one fixed-vector integration test passed; rustfmt and clippy passed for both
+  Rust crates; and the PyO3 extension built from source.
+- The first gate attempt could not create `tpass-python/target` under the
+  controlled execution environment. Creating that exact ignored build
+  directory and retrying the unchanged command succeeded. This is recorded as
+  a local execution-environment constraint, not a source compatibility result.
+- Regenerating the retained 30-input v2 performance summary produced the
+  recorded SHA-256
+  `462e492795fafdd90a4f39851a612275193603d816f761728afe05e97a470a6b`.
+  The manifest-bound `LOCUS-performance-paper-inputs-v2` bundle verified as
+  `unchanged` without replacement.
+- MiKTeX pdfTeX/BibTeX rebuilt the manuscript as a 14-page, letter-size PDF.
+  Its binary digest differed from the imported snapshot and its observed PDF
+  creation/modification timestamps differed, but all 14 page renders were
+  byte-identical under the same Poppler renderer. Visual inspection found no
+  new layout difference. It reconfirmed the inherited page-13 overfull line in
+  which the frozen TPASS identifier reaches into the adjacent column; this is a
+  baseline review issue and does not authorize a manuscript edit.
+- Clean `ubuntu-latest` and `windows-latest` Actions results remain pending.
+  The available GitHub integration and browser cannot access the private
+  repository, so no remote CI result is inferred or recorded.
 
 ### P0.4 Reconcile manuscript/evidence/artifact tooling
 

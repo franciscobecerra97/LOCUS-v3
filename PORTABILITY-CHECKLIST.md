@@ -83,11 +83,11 @@ Use this after copying the seed to its independent directory.
 
 ## Build validation
 
-- [ ] `uv sync --frozen`
-- [ ] `uv run --frozen python tasks.py check`
-- [ ] Native extension built from source
-- [ ] Python tests passed
-- [ ] Rust tests, formatting, and clippy passed
+- [x] `uv sync --frozen`
+- [x] `uv run --frozen python tasks.py check`
+- [x] Native extension built from source
+- [x] Python tests passed
+- [x] Rust tests, formatting, and clippy passed
 - [ ] Clean Linux CI passed
 - [ ] Clean Windows CI passed
 
@@ -102,9 +102,9 @@ Use this after copying the seed to its independent directory.
 
 ## Baseline integrity
 
-- [ ] Existing v1 policy vectors remain unchanged
-- [ ] Existing TPASS fixed vector remains unchanged
+- [x] Existing v1 policy vectors remain unchanged
+- [x] Existing TPASS fixed vector remains unchanged
 - [ ] Frozen identifiers match `VERSION-REGISTRY.md`
 - [ ] Retained evidence and review-PDF hashes match `BASELINE.md`
-- [ ] V2 may be verified/reprocessed only as the exact baseline profile
+- [x] V2 may be verified/reprocessed only as the exact baseline profile
 - [ ] New processors do not mix inherited v1/v2 evidence with changed profiles
