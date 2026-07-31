@@ -163,7 +163,9 @@ def _base64url(value: bytes) -> str:
 def _start_party_process(config_path: Path) -> subprocess.Popen[bytes]:
     environment = os.environ.copy()
     environment["PYTHONPATH"] = str(ROOT / "prototype")
-    creation_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+    creation_flags = (
+        int(getattr(subprocess, "CREATE_NO_WINDOW", 0)) if os.name == "nt" else 0
+    )
     return subprocess.Popen(
         [
             sys.executable,
