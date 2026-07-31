@@ -61,7 +61,8 @@ def _git_state(repo_root: Path) -> tuple[str, bool]:
         if (
             not isinstance(manifest, dict)
             or set(manifest) != {"artifact", "entries", "source_commit"}
-            or manifest["artifact"] != "LOCUS-anonymous-artifact-v1"
+            or manifest["artifact"]
+            not in {"LOCUS-anonymous-artifact-v1", "LOCUS-anonymous-artifact-v2"}
             or not isinstance(manifest["source_commit"], str)
             or _COMMIT.fullmatch(manifest["source_commit"]) is None
         ):

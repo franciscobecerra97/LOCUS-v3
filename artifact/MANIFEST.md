@@ -1,7 +1,9 @@
 # Artifact Manifest Policy
 
-The final expanded artifact must use an explicit allowlist and a new manifest
-version.
+The active baseline package uses the explicit v2 allowlist implemented in
+`prototype/locus/artifact_package.py`, package-specific documentation under
+`artifact/package-v2/`, and `LOCUS-anonymous-artifact-v2` manifests validated by
+`docs/schemas/artifact-manifest-v2.schema.json`.
 
 It must exclude:
 
@@ -13,10 +15,11 @@ It must exclude:
 - historical paper results presented as current evidence;
 - external PDFs with unverified redistribution rights.
 
-Exact-profile baseline evidence may be included when the allowlist and
-documentation label it unambiguously. The integrated repository contains the
-manuscript, but an anonymous artifact may continue to exclude manuscript source
-and PDF. Repository inclusion does not imply artifact inclusion.
+The v2 allowlist includes only the exact-profile frozen v2 aggregate evidence
+and generated performance inputs. It deliberately excludes the manuscript,
+review PDF, bibliography, superseded results, external papers, and
+repository-facing planning documents. Repository inclusion does not imply
+package inclusion.
 
 Every included file must have a canonical path, size, SHA-256 digest, and
 license coverage. The extracted tree must pass the complete gate without Git

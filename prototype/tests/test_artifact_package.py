@@ -26,7 +26,7 @@ class ArtifactPackageTests(unittest.TestCase):
             (root / "artifact_manifest.json").write_text(
                 json.dumps(
                     {
-                        "artifact": "LOCUS-anonymous-artifact-v1",
+                        "artifact": "LOCUS-anonymous-artifact-v2",
                         "entries": [
                             {
                                 "path": "README.md",
@@ -70,7 +70,7 @@ class ArtifactPackageTests(unittest.TestCase):
             ):
                 tasks.extracted_artifact_paths(root)
 
-    def test_allowlist_excludes_history_paper_and_superseded_evidence(self) -> None:
+    def test_v2_allowlist_excludes_repository_docs_paper_and_old_evidence(self) -> None:
         selected = select_artifact_paths(
             (
                 ".git/config",
@@ -78,6 +78,7 @@ class ArtifactPackageTests(unittest.TestCase):
                 "LICENSE-DOCUMENTATION.md",
                 "README.md",
                 "artifact/README.md",
+                "artifact/package-v2/README.md",
                 "artifact/RELEASE-CHECKLIST.md",
                 "docs/architecture.md",
                 "docs/schemas/attack-report-v1.schema.json",
@@ -92,8 +93,7 @@ class ArtifactPackageTests(unittest.TestCase):
             (
                 "LICENSE",
                 "LICENSE-DOCUMENTATION.md",
-                "README.md",
-                "artifact/README.md",
+                "artifact/package-v2/README.md",
                 "docs/schemas/attack-report-v1.schema.json",
                 "experiments/raw/performance-v2/01/result.json",
                 "prototype/locus/core.py",
@@ -165,7 +165,7 @@ class ArtifactPackageTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
             checklist = root / RELEASE_STATUS_PATH
-            checklist.parent.mkdir()
+            checklist.parent.mkdir(parents=True)
             checklist.write_text(
                 "Release authorization: PENDING\n"
                 "Change the field to `Release authorization: APPROVED` later.\n",

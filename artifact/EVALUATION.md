@@ -23,8 +23,9 @@ Optional same-host deployment:
 uv run --frozen python tasks.py deployment-smoke
 ```
 
-The expanded artifact workflow is not yet frozen. Its required future contents
-are defined by PLAN P10.3:
+The v2 package boundary and audit are frozen for the current Yi baseline. Later
+expanded-system packaging must add newly evidenced profiles through another
+reviewed version change, including:
 
 - CuePolicy conformance;
 - RecoveryDescriptor and bootstrap tests;
@@ -34,9 +35,14 @@ are defined by PLAN P10.3:
 - same-host and feasible multi-host deployment;
 - deterministic evidence processing.
 
-The inherited `artifact-package --check` is expected to fail closed on the new
-integrated project-management documentation until PLAN P0.4 separates
-repository documentation from the next anonymous package. The sealed v1 ZIP
-and external manifest under `dist/` can still be verified independently.
+Audit the active v2 source allowlist without creating an archive:
+
+```console
+uv run --frozen python tasks.py artifact-package --check
+```
+
+The sealed v1 ZIP and external manifest under `dist/` remain unchanged and can
+still be verified independently. V2 archive creation remains blocked by its
+pending release checklist.
 
 Use fictional inputs and generated credentials only.

@@ -49,19 +49,26 @@ def sample_metadata() -> dict:
 
 class ExperimentMetadataTests(unittest.TestCase):
     def test_artifact_manifest_supplies_clean_source_commit_without_git(self) -> None:
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            (root / "artifact_manifest.json").write_text(
-                json.dumps(
-                    {
-                        "artifact": "LOCUS-anonymous-artifact-v1",
-                        "entries": [],
-                        "source_commit": "c" * 40,
-                    }
-                ),
-                encoding="ascii",
-            )
-            self.assertEqual(_git_state(root), ("c" * 40, False))
+        for artifact in (
+            "LOCUS-anonymous-artifact-v1",
+            "LOCUS-anonymous-artifact-v2",
+        ):
+            with (
+                self.subTest(artifact=artifact),
+                tempfile.TemporaryDirectory() as temporary,
+            ):
+                root = Path(temporary)
+                (root / "artifact_manifest.json").write_text(
+                    json.dumps(
+                        {
+                            "artifact": artifact,
+                            "entries": [],
+                            "source_commit": "c" * 40,
+                        }
+                    ),
+                    encoding="ascii",
+                )
+                self.assertEqual(_git_state(root), ("c" * 40, False))
 
     def test_collects_current_commit_lock_hashes_and_privacy_safe_host(self) -> None:
         timestamp = utc_timestamp()

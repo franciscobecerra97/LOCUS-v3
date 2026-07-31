@@ -141,7 +141,8 @@ def extracted_artifact_paths(root: Path) -> tuple[str, ...]:
     if (
         not isinstance(manifest, dict)
         or set(manifest) != {"artifact", "entries", "source_commit"}
-        or manifest["artifact"] != "LOCUS-anonymous-artifact-v1"
+        or manifest["artifact"]
+        not in {"LOCUS-anonymous-artifact-v1", "LOCUS-anonymous-artifact-v2"}
         or not isinstance(manifest["entries"], list)
         or not isinstance(manifest["source_commit"], str)
         or re.fullmatch(r"[0-9a-f]{40}", manifest["source_commit"]) is None
@@ -2546,7 +2547,7 @@ def build_parser() -> argparse.ArgumentParser:
     artifact_package_parser.add_argument(
         "--out",
         type=Path,
-        default=Path("dist/LOCUS-anonymous-artifact-v1.zip"),
+        default=Path("dist/LOCUS-anonymous-artifact-v2.zip"),
     )
     artifact_package_parser.add_argument(
         "--replace",

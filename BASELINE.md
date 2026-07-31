@@ -55,15 +55,17 @@ project instructions was stale. `paper/related_work.tex` and legacy generated
 v1/benchmark rows are retained for history but are not included by
 `paper/main.tex`.
 
-## Known integrated-repository migration gate
+## Integrated-repository artifact boundary
 
-The inherited anonymous-artifact builder is still versioned for its smaller v1
-repository layout. Its audit intentionally rejects project-management
-references now present in the integrated root README and active artifact
-planning documents. The sealed v1 ZIP remains independently verified, but a
-new artifact package must not be built until PLAN P0.4 creates a
-package-specific README, allowlist, identifier, and tests without weakening the
-anonymity scan.
+The sealed v1 anonymous ZIP remains independently verified and unchanged. P0.4
+introduced the separate `LOCUS-anonymous-artifact-v2` source package boundary:
+package-specific reviewer documents, a strict manifest schema, an explicit
+privacy-safe allowlist, deterministic-package tests, and a separate pending
+release checklist. The anonymity scanner was not weakened. The active v2 audit
+excludes repository-facing planning documents, manuscript source/PDF,
+superseded results, and external papers while retaining only the exact frozen
+v2 aggregate evidence and generated performance inputs. Archive publication is
+not authorized while the v2 release checklist remains pending.
 
 ## Inherited evaluated profile
 

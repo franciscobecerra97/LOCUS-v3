@@ -11,9 +11,9 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
-ARTIFACT_VERSION = "LOCUS-anonymous-artifact-v1"
-ARCHIVE_ROOT = "locus-artifact"
-RELEASE_STATUS_PATH = "artifact/RELEASE-CHECKLIST.md"
+ARTIFACT_VERSION = "LOCUS-anonymous-artifact-v2"
+ARCHIVE_ROOT = "locus-artifact-v2"
+RELEASE_STATUS_PATH = "artifact/package-v2/RELEASE-CHECKLIST.md"
 
 ALLOWED_EXACT = frozenset(
     {
@@ -22,11 +22,10 @@ ALLOWED_EXACT = frozenset(
         "LICENSE",
         "LICENSE-DOCUMENTATION.md",
         "LICENSES.md",
-        "README.md",
-        "artifact/EVALUATION.md",
-        "artifact/INSTALL.md",
-        "artifact/MANIFEST.md",
-        "artifact/README.md",
+        "artifact/package-v2/EVALUATION.md",
+        "artifact/package-v2/INSTALL.md",
+        "artifact/package-v2/MANIFEST.md",
+        "artifact/package-v2/README.md",
         "pyproject.toml",
         "rust-toolchain.toml",
         "tasks.py",
@@ -136,10 +135,10 @@ def validate_required_paths(paths: Sequence[str]) -> None:
         "LICENSE",
         "LICENSE-DOCUMENTATION.md",
         "LICENSES.md",
-        "artifact/EVALUATION.md",
-        "artifact/INSTALL.md",
-        "artifact/MANIFEST.md",
-        "artifact/README.md",
+        "artifact/package-v2/EVALUATION.md",
+        "artifact/package-v2/INSTALL.md",
+        "artifact/package-v2/MANIFEST.md",
+        "artifact/package-v2/README.md",
         "experiments/processed/performance-v2/summary.json",
         "paper/generated/performance-v2/manifest.json",
         "prototype/locus/__init__.py",

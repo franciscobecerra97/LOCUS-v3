@@ -109,7 +109,7 @@ Completion record (2026-07-31):
 
 ### P0.3 Run the clean baseline gate
 
-Status: `In progress`
+Status: `Complete`
 
 Actions:
 
@@ -158,13 +158,19 @@ Progress record (2026-07-31, commit
   new layout difference. It reconfirmed the inherited page-13 overfull line in
   which the frozen TPASS identifier reaches into the adjacent column; this is a
   baseline review issue and does not authorize a manuscript edit.
-- Clean `ubuntu-latest` and `windows-latest` Actions results remain pending.
-  The available GitHub integration and browser cannot access the private
-  repository, so no remote CI result is inferred or recorded.
+- GitHub Actions run 7 for commit
+  `d80dbe3a7e66f2f091087d44fe412eae08778f47` passed on clean
+  `ubuntu-latest` (job `91174703539`) and `windows-latest` (job
+  `91174703595`); the dependent artifact smoke job `91176596063` also passed.
+- Clean-run compatibility fixes were limited to typed access to the optional
+  Windows subprocess flag, portable mutation of intentionally read-only test
+  snapshots, and bounded test-network deadlines aligned with the existing
+  deployment profile. The complete local gate remained green after each final
+  patch.
 
 ### P0.4 Reconcile manuscript/evidence/artifact tooling
 
-Status: `Proposed`
+Status: `Complete`
 
 Actions:
 
@@ -183,6 +189,33 @@ Acceptance:
 - New profiles write only to new versioned evidence/generated paths.
 - The new artifact deliberately includes or excludes paper/evidence material
   through an explicit licensed, privacy-safe allowlist.
+
+Completion record (2026-07-31):
+
+- The active builder now emits `LOCUS-anonymous-artifact-v2` under archive root
+  `locus-artifact-v2`, uses the strict
+  `docs/schemas/artifact-manifest-v2.schema.json`, and reads release status only
+  from the separate v2 checklist. The sealed v1 archive and manifest remain
+  unchanged and verification-only.
+- Extracted-tree source and experiment-provenance readers accept both frozen v1
+  and active v2 manifest envelopes. Package creation emits only v2, preventing
+  silent reinterpretation or overwrite of v1.
+- The v2 audit passed over 149 explicitly allowlisted files. It includes only
+  package-specific reviewer documentation, licensed source/synthetic fixtures,
+  schemas, frozen aggregate v2 evidence, its processed summary, and generated
+  performance inputs. It excludes repository planning documents, manuscript
+  source/PDF, bibliography and LaTeX support, superseded evidence, external
+  papers, and prohibited state. Release remains `pending`, so no v2 ZIP was
+  created.
+- Eleven focused artifact/provenance tests passed, including deterministic ZIP
+  construction and v1/v2 extracted-manifest compatibility. The complete local
+  gate passed with 152 Python tests (one opt-in live-S3 skip), 17 Rust core tests,
+  the fixed vector, native extension build, Ruff, mypy, rustfmt, and clippy.
+- Retained performance-v2 processing verified byte-identically at SHA-256
+  `462e492795fafdd90a4f39851a612275193603d816f761728afe05e97a470a6b`;
+  the manifest-bound `LOCUS-performance-paper-inputs-v2` bundle reported
+  `unchanged`. The P0.3 manuscript rebuild/14-page render comparison remains
+  applicable because neither manuscript source nor generated inputs changed.
 
 ---
 
@@ -1375,10 +1408,9 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. Complete the pending P0.3 clean CI confirmation and
-P0.4 before P1. Do not begin a later phase while an applicable predecessor gate
-is incomplete, except for a task explicitly marked deferred and not named as a
-dependency.
+Execution is chronological. P0 is complete; begin with P1.1 and do not begin a
+later phase while an applicable predecessor gate is incomplete, except for a
+task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 

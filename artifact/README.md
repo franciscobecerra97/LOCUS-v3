@@ -3,9 +3,11 @@
 This directory is the active artifact-documentation workspace for the expanded
 LOCUS system.
 
-The inherited artifact builder still uses its old v1 allowlist and must not be
-used to publish the expanded system until PLAN P0.4 and P10.3 update its version,
-allowlist, schemas, tests, and release checks.
+The active builder now audits the versioned package definition under
+`artifact/package-v2/`. That package has its own identifier, reviewer documents,
+manifest schema, allowlist, tests, and release checklist. Release authorization
+remains pending, so the audit path may be used but no v2 archive may be
+published.
 
 The integrated repository retains:
 
@@ -17,8 +19,7 @@ Repository scope and anonymous-package scope are intentionally different. A
 future package includes only its explicit licensed, privacy-safe allowlist. The
 sealed v1 release remains baseline history and must not be overwritten.
 
-Known migration gate: the inherited v1 `artifact-package --check` treats
-project-management references in the integrated repository README and active
-artifact planning documents as anonymity violations. That fail-closed result is
-expected until P0.4 introduces a new package-specific README, allowlist, and
-version. Do not weaken the existing anonymity scan merely to make it pass.
+The v2 allowlist excludes repository-facing planning documents and includes
+only its package-specific reviewer guides. The anonymity scan remains unchanged
+and fail closed. Extracted-tree verification continues to accept the sealed v1
+manifest while the active builder emits only the new v2 identifier.

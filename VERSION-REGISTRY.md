@@ -17,6 +17,8 @@ format or profile is approved.
 | `LOCUS-attempt-config-v2` | Existing signed-ledger configuration | Frozen |
 | performance/attack evidence `v1` | Superseded historical result family | Frozen superseded |
 | performance/attack evidence `v2` | Retained baseline evidence for exact deployed profile | Frozen; non-transferable |
+| `LOCUS-anonymous-artifact-v1` | Sealed imported anonymous artifact and manifest envelope | Frozen; verification only |
+| `LOCUS-anonymous-artifact-v2` | Integrated-repository anonymous package with package-specific reviewer documents and strict manifest schema | Active audit profile; release pending |
 
 ## Rules
 
@@ -50,7 +52,7 @@ The following families are reserved conceptually:
 - additional provider adapters;
 - distributed performance results;
 - clean-client and information-flow evidence;
-- revised artifact package.
+- post-v2 revised artifact package for later aPPSS/expanded-system evidence.
 
 Record the exact identifier, schema, compatibility rule, owner decision, and
 first implementing commit here before collecting evidence.
@@ -77,6 +79,15 @@ unassigned personal-cloud-account and Google Drive families from D002/D006:
 | NoResolver | Explicit declaration that policy processing performs no resolver lookup | New resolver profile; no implicit fallback or enumeration |
 | Storage capability | Short-lived subject/backup/prefix/operation/client-key/nonce/expiry-bound authority validated by the application storage gateway | New admission/storage profile; no client provider credential or direct pre-signed bearer URL |
 | AWS S3 provider | Supplemental application-operated implementation of the logical backup, descriptor, current-pointer, and bundle contracts | New provider profile; local/S3-compatible identifiers unchanged |
+
+## Assigned artifact package profiles
+
+`LOCUS-anonymous-artifact-v2` uses archive root `locus-artifact-v2`, schema
+`docs/schemas/artifact-manifest-v2.schema.json`, and reviewer files under
+`artifact/package-v2/`. Its manifest retains the strict v1 field set
+(`artifact`, sorted unique `entries`, and `source_commit`) while assigning a new
+package identifier and allowlist. Extracted-tree readers accept both v1 and v2;
+the builder emits only v2. V1 archives and manifests are never rewritten.
 
 Assign final identifiers only with the corresponding schemas and canonical
 vectors in the same reviewed change.

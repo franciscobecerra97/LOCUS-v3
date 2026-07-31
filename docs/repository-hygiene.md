@@ -62,11 +62,13 @@ are forbidden in all of these paths. Synthetic inputs remain clearly labeled.
 
 ## Anonymous artifact lifecycle
 
-The development repository is not the anonymous artifact. The package contract
-in `artifact/MANIFEST.md` uses an explicit allowlist, excludes Git
-history/remotes and manuscript-only third-party material, and includes only the
-authoritative v2 retained/processed/generated evidence paths. `dist/` remains
-ignored build output.
+The development repository is not the anonymous artifact. The active
+`LOCUS-anonymous-artifact-v2` contract uses package-specific reviewer documents
+under `artifact/package-v2/` and an explicit allowlist. It excludes Git
+history/remotes, repository-facing planning material, manuscript-only
+third-party material, and superseded evidence, and includes only the
+authoritative frozen v2 retained/processed/generated evidence paths. `dist/`
+remains ignored build output. The sealed v1 package remains verification-only.
 
 `tasks.py artifact-package --check` may audit a development tree without
 creating an archive. Archive creation requires a clean committed state,
