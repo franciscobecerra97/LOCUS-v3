@@ -391,8 +391,9 @@ Completion record (2026-08-01):
   ledger, and `docs/schemas/version-registry-v1.schema.json` freezes its exact
   shape. `LOCUS-version-registry-v1` is the only new identifier assigned by
   this phase, with its schema and tests introduced in the same change.
-- The ledger protects 76 existing and registry identifiers against exact or
-  case-folded collision. Protection includes frozen, superseded, development,
+- At P1.4 completion, the ledger protected 76 existing and registry identifiers
+  against exact or case-folded collision. Protection includes frozen,
+  superseded, development,
   test, wire, lifecycle, snapshot, trace, result, and artifact identifiers but
   does not promote their status or reinterpret their meaning.
 - Nine future families—recovery suite, policy/resolver, descriptor,
@@ -415,7 +416,7 @@ Completion record (2026-08-01):
 
 ### P1.5 Create security and information-flow matrices
 
-Status: `Proposed`
+Status: `Complete`
 
 Required phases:
 
@@ -445,6 +446,34 @@ Acceptance:
 
 - Every active claim has an asset, adversary, assumptions, boundary, positive
   control, expected observation, and interpretation limit.
+
+Completion record (2026-08-01):
+
+- `docs/INFORMATION-FLOW.md` now crosses all six required phases with all
+  twelve operational, adversary, and evidence views. Its legend distinguishes
+  transient, persistent, metadata-only, snapshot, phase-gated, and absent
+  flows so planned behavior is not mistaken for implementation.
+- Phase contracts define allowed and forbidden enrollment, disposal,
+  bootstrap, recovery, successor-publication, and replacement flows. The
+  original material-by-role table remains controlling for individual values.
+- The coalition matrix enumerates every one-party below-threshold and every
+  two-party exact-threshold coalition for the first 2-of-3 aPPSS profile,
+  separates the all-server control, and requires every matching combined view
+  to bind the same suite, backup, epoch, policy, membership, and configuration.
+- `docs/security-matrix-v1.json` and its strict schema record phases, views,
+  asset, adversary, assumptions, boundary, positive control, expected
+  observation, and interpretation limit for every C01--C26 row.
+  `LOCUS-security-matrix-v1` is a governance identifier, not a protocol, trace,
+  result, or evidence profile.
+- Automated tests require exact cross-document claim coverage, complete
+  nonempty contracts, all phase/view coverage, explicit C24/C25 threshold
+  separation, preservation of non-claims, coalition enumeration, and P1.4
+  registry inclusion.
+- No implementation claim is promoted, no evidence is collected or
+  reinterpreted, and no manuscript wording changes in P1.5.
+- The complete default gate passed with 169 Python tests (one expected opt-in
+  live-S3 skip), 17 Rust core tests, the fixed-vector integration test, native
+  binding build, formatting, lint, type, and repository-boundary checks.
 
 ---
 
@@ -1503,23 +1532,22 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0 and P1.1--P1.4 are complete; begin with P1.5 and
+Execution is chronological. P0 and P1.1--P1.5 are complete; begin with P2.1 and
 do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P1.5 — security and information-flow matrices (P1.1--P1.4 complete);
-2. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
+1. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
    scenarios;
-3. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
-4. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
+2. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
+3. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
    successor publication; P4.4 remains deferred unless D011 is approved;
-5. P5.1--P5.4 — CuePolicy and resolver generality without changing either
+4. P5.1--P5.4 — CuePolicy and resolver generality without changing either
    recovery suite;
-6. P5A.1--P5A.7 — aPPSS implementation, authenticated integration, migration,
+5. P5A.1--P5A.7 — aPPSS implementation, authenticated integration, migration,
    comparative boundary validation, and active-profile cutover; and
-7. P6 onward — storage/deployment expansion, UI, assurance, performance,
+6. P6 onward — storage/deployment expansion, UI, assurance, performance,
    external review, artifact, and separately approved manuscript changes.
 
 Do not begin the graphical UI, external provider run, expanded deployment

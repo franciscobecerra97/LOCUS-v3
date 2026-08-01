@@ -1,5 +1,10 @@
 # Information-Flow Contract
 
+Status: P1.5 security and information-flow matrices implemented on 2026-08-01.
+This is a design/evidence contract. Entries marked as gated do not claim that
+the corresponding descriptor, admission, aPPSS, UI, provider, multi-host, or
+replacement behavior is implemented or evidenced.
+
 This table is the starting contract. Update it before implementing new roles or
 retained observations.
 
@@ -33,6 +38,140 @@ Legend:
 | Short-lived proof-key-bound storage capability | E | F behind gateway | F behind gateway | F | F | F unless separately acting as issuer | E |
 | Local audit state | F after request | F | F | F | P: own | P: own | F |
 | Descriptor signature/current pointer | P | F unless co-hosted adapter | P | F | P as required | P as required | P |
+
+## Phase-by-view matrix
+
+This matrix crosses every P1.5 phase with every required operational,
+adversary, or evidence view. A view is not necessarily a protocol actor. In
+particular, coalition and matching-combined entries describe bounded snapshots
+that later evidence must construct.
+
+Legend:
+
+- `T` — may participate or observe allowed values transiently.
+- `P` — may retain only the bounded state permitted by the material table and
+  role invariants.
+- `M` — may observe bounded role/network metadata but no protected payload.
+- `V` — adversary/evidence view assembled from exact persistent state, not an
+  additional runtime role.
+- `G` — future phase-gated behavior; no implementation/evidence claim yet.
+- `—` — no designed flow or participation in that phase.
+
+View abbreviations:
+
+- `CLD`: cloud/backup provider;
+- `DS`: descriptor/current-pointer store;
+- `GW`: application storage gateway;
+- `RES`: resolver;
+- `B<k`: every evaluated below-threshold party coalition;
+- `A=k`: every exact-threshold aPPSS coalition used by C25;
+- `COM`: matching cloud/descriptor plus below-threshold coalition;
+- `A0`: enrollment client after persistent-state disposal;
+- `B0`: clean client before cue entry;
+- `B1`: clean client after cue entry;
+- `IDP`: identity/admission issuer and verifier; and
+- `NET`: network-role metadata.
+
+| Phase | CLD | DS | GW | RES | B<k | A=k | COM | A0 | B0 | B1 | IDP | NET |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Enrollment | `T/P` encrypted backup | `G` descriptor/bundle | `G` exact writes | `T/M` if policy uses it | `T/P` own state | `G` aPPSS setup | `—` | `—` | `—` | `—` | `G` admission | `M` |
+| Persistent-state disposal | `P` public/encrypted state | `G/P` public state | `—` no request retention | `—` | `P` own state | `G/P` own aPPSS state | `V` exact union | `V` disposed-state surface | `—` | `—` | `G/P` replay metadata only | `M` |
+| Bootstrap | `T/P` exact object read | `G/T/P` pointer/bundle | `G/T` admitted read | `—` | `T/P` current summaries | `—` | `V` pre-cue public union | `—` | `T` approved bootstrap only | `—` | `G/T` admission | `M` |
+| Recovery | `T/P` ciphertext read | `G/T/P` authenticated metadata | `G/T` exact read | `T/M` if policy uses it | `T/P/V` selected coalition | `G/V` compromised threshold view | `V` matching union | `—` | `T` before cue | `T` secret path | `G/T` admission | `M` |
+| Successor publication | `T/P` new immutable object | `G/T/P` new descriptor/pointer | `G/T` exact create/CAS | `—` | `T/P` readiness/current state | `G` aPPSS successor | `V` crash snapshots | `—` | `—` | `T` active client | `G/T` admission | `M` |
+| Party replacement | `G` | `G` | `G` | `—` | `G` old/new sets | `G` if aPPSS profile | `G/V` transition snapshots | `—` | `—` | `G` active client | `G` | `G/M` |
+
+### Enrollment phase contract
+
+The trusted active enrollment client may transiently hold the complete secret
+path and complete suite setup output. It sends each holder only that holder's
+recipient-bound state and publishes only the encrypted backup and approved
+public metadata. Resolver use is policy-specific. The network may observe
+bounded endpoint, timing, and size metadata but not plaintext provisioning
+payloads. P3 must replace direct-volume provisioning before an authenticated
+confidential enrollment-transport claim is available.
+
+### Persistent-state disposal phase contract
+
+After enrollment, Client A's allowed durable output is limited to an optional
+public receipt and explicitly approved public references. Raw cues, selected
+resolver records, `Z_M`, password input, complete suite setup state, `S_R`,
+`K_wrap`, plaintext private-key bytes, credentials, and transient provisioning
+messages are forbidden in its persistent surface. Cloud and parties retain only
+their role-specific state. This phase supports bounded state deletion and
+isolation testing, not forensic secure erasure.
+
+### Bootstrap phase contract
+
+Client B begins with the installed application, app-pinned issuer root, fresh
+session/proof key, the approved admission/bootstrap input, and optionally a
+public receipt or recovery handle. It authenticates subject scope, current
+pointer, exact bundle/descriptor digests, issuer/signature, suite, policy,
+membership, endpoints, configuration, and party-consistent current state before
+cue entry. It receives no Client A state, provider credential, cue, candidate
+hint, password-derived authenticator, or self-authenticating trust root. The
+coordinated rollback of every authoritative source remains outside the claim.
+
+### Recovery phase contract
+
+Only the active clean client may combine entered cues, canonical policy output,
+suite password input, threshold responses, `S_R`, `K_wrap`, ciphertext, and the
+plaintext protected key. Remote roles receive only their exact admitted and
+suite-bound request. Final AEAD/cue success is not disclosed to the issuer,
+gateway, resolver, cloud, or parties. Coalition views are read-only,
+networkless, synthetic-state experiments; they are not online guessing tools.
+
+### Successor publication phase contract
+
+The active client prepares and verifies fresh successor party state, immutable
+backup/bundle, signed descriptor, and current summaries before current-pointer
+activation. The predecessor remains recoverable until successor recovery is
+verified and activation is durable. Exact retries are idempotent. Each crash
+boundary must be inspected for mixed suite/epoch/configuration state. This does
+not authorize automatic downgrade, share conversion, general replacement, or
+global rollback-resistance claims.
+
+### Party replacement phase contract
+
+Party replacement is entirely gated by pending D011 and the P4 predecessor
+gate. A future profile must distinguish old/new authorizers, suite holders,
+threshold, quorum, endpoint identities, recipients, readiness, activation, and
+retirement. Until then, every party-replacement cell is a design/evidence
+requirement rather than implemented behavior.
+
+## Coalition and combined-view matrix
+
+| Evaluated profile/view | Required coalitions | Included public/persistent state | Permitted conclusion |
+| --- | --- | --- | --- |
+| Frozen Yi 2-of-3 below threshold | `{P1}`, `{P2}`, `{P3}` when new-profile evidence is collected; retained v2 covers only its exact recorded one-party boundary | Own Yi state, exact public parameters, configuration/epoch binding, local audit state, and matching cloud state only for C05 | No local offline predicate under the frozen Yi assumptions and exact captured boundary; never an aPPSS result |
+| First aPPSS 2-of-3 below threshold | `{P1}`, `{P2}`, `{P3}` | Own independent OPRF state, party/index binding, public `omega`, exact configuration/epoch metadata, audit state, and matching cloud/descriptor state for C24 | Conditional below-`k` no-local-predicate statement after theorem/profile review; no adaptive, side-channel, or online-interaction claim |
+| First aPPSS exact threshold | `{P1,P2}`, `{P1,P3}`, `{P2,P3}` | Exact two server states plus public `omega`, suite/epoch/configuration, and the fixed aggregate-only candidate-test harness | C25 offline dictionary-test capability; not direct release of `S_R` before a correct password guess under the declared conditional-entropy assumption |
+| First aPPSS above threshold control | `{P1,P2,P3}` | All server states and the same public/matching state | Confirms the at-or-above-threshold behavior only; results remain separate from exact-threshold rows |
+| Matching combined state | One exact cloud/descriptor/gateway snapshot plus one below-threshold coalition from the same suite, backup, epoch, policy, membership, and configuration | Complete union of the declared persistent views, with no client secrets or online honest-server access | C05/C24 only for the exact matching profile; mismatched snapshots are rejection tests, not evidence for the positive claim |
+
+The later aPPSS 3-of-5 profile has no coalition matrix until P6.3 assigns its
+exact configuration and evidence profile. Authorization quorum coalitions are
+not recovery-suite coalitions and must be reported separately.
+
+## Claim security-contract matrix
+
+`security-matrix-v1.json`, validated by
+`schemas/security-matrix-v1.schema.json`, is the normative P1.5 claim contract.
+For every active C01--C26 row in the root `CLAIM-EVIDENCE-MATRIX.md`, it records:
+
+- applicable phases and views;
+- protected asset;
+- adversary;
+- assumptions;
+- exact implementation/evidence boundary;
+- positive control;
+- expected privacy-safe observation; and
+- interpretation limit.
+
+The matrix is prospective where the claim/evidence matrix says unsupported or
+explicit non-claim. Completing a row does not promote its status. Promotion
+still requires the assigned implementation/evidence profile, new results, and
+any separately approved manuscript delta.
 
 ## Additional rules
 

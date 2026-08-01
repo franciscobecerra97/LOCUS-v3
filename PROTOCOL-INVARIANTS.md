@@ -183,6 +183,11 @@ profile. These contracts are not new serialization formats. They require one
 suite per epoch and preserve distinct recovery-holder membership/threshold and
 authorizer membership/quorum fields.
 
+P1.5 records the phase/view flow contract in `docs/INFORMATION-FLOW.md` and the
+normative C01--C26 security contracts in `docs/security-matrix-v1.json`.
+Gated cells and prospective evidence boundaries are requirements, not claims of
+implemented behavior.
+
 - Recovery-suite threshold and authorization quorum are different types.
 - Recovery-suite identity, public parameters, holder membership, threshold,
   backup, policy, recovery identity, and epoch bind to one enrollment.

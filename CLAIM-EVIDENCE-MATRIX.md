@@ -9,6 +9,11 @@ families, but it creates no implementation or security evidence. A reservation
 does not advance any claim status, and later claims must cite the exact assigned
 profile and result schema.
 
+P1.5's normative per-claim asset, adversary, assumption, boundary, positive
+control, expected-observation, and interpretation-limit fields are in
+`docs/security-matrix-v1.json`. That prospective contract does not promote the
+statuses below; implementation and evidence gates remain controlling.
+
 Status values include `Supported for exact baseline`, `Partial for exact
 baseline`, `Unsupported in improvement profile`, `In progress`, `Disproved`,
 and `Explicit non-claim`.

@@ -22,6 +22,13 @@ P1.4 records protected identifiers and reserved evidence families in
 trace and result identifiers remain unassigned until P8.3/P9.2 approve the
 exact privacy boundary, schema, positive controls, metrics, and provenance.
 
+P1.5's `docs/security-matrix-v1.json` supplies the minimum security contract
+for every C01--C26 row. Before implementing or collecting a scenario, copy its
+asset, adversary, assumptions, boundary, positive control, expected
+privacy-safe observation, and interpretation limit into the assigned scenario
+methodology and narrow them for the exact profile. The matrix itself is not
+evidence and cannot promote a claim.
+
 ## Required scenario contract
 
 Every security-sensitive experiment records:

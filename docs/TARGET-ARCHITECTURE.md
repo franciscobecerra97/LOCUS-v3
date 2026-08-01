@@ -17,6 +17,10 @@ P1.4 freezes the allocation rules and protected-identifier ledger in
 families are reserved by decision and chronological schema gate, not assigned
 usable identifiers in advance.
 
+P1.5 completes the prospective six-phase/twelve-view information-flow matrix
+and the schema-checked C01--C26 security contracts. These define later
+implementation and evidence obligations without promoting unsupported claims.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

@@ -66,6 +66,7 @@
     "LOCUS-response-freshness-request-v1",
     "LOCUS-response-freshness-vote-v1",
     "LOCUS-runtime-epoch-package-v1",
+    "LOCUS-security-matrix-v1",
     "LOCUS-security-policy-v0",
     "LOCUS-security-policy-v1",
     "LOCUS-storage-metric-v1",

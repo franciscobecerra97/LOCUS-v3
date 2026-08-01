@@ -1,0 +1,115 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://locus.invalid/schemas/security-matrix-v1.schema.json",
+  "title": "LOCUS security and information-flow matrix v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "phases",
+    "views",
+    "claims"
+  ],
+  "properties": {
+    "artifact": {
+      "const": "LOCUS-security-matrix-v1"
+    },
+    "phases": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    },
+    "views": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^[a-z][a-z0-9-]*$"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "claim_id",
+          "phases",
+          "views",
+          "asset",
+          "adversary",
+          "assumptions",
+          "boundary",
+          "positive_control",
+          "expected_observation",
+          "interpretation_limit"
+        ],
+        "properties": {
+          "claim_id": {
+            "type": "string",
+            "pattern": "^C[0-9]{2}$"
+          },
+          "phases": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            }
+          },
+          "views": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9-]*$"
+            }
+          },
+          "asset": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "adversary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "assumptions": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1500
+          },
+          "boundary": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1500
+          },
+          "positive_control": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1500
+          },
+          "expected_observation": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1500
+          },
+          "interpretation_limit": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1500
+          }
+        }
+      }
+    }
+  }
+}

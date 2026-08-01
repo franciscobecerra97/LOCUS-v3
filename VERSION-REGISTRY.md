@@ -46,6 +46,11 @@ schema and tests are introduced in the same change. Later protocol and evidence
 families remain reservations without candidate identifiers until their named
 schema/vector gate passes.
 
+P1.5 subsequently assigns `LOCUS-security-matrix-v1` to the governance-only
+claim and information-flow contract in `docs/security-matrix-v1.json`, with its
+schema introduced in the same change. It is not a protocol, trace, result, or
+evidence-profile identifier and does not advance any claim status.
+
 ### Syntax and collision rules
 
 - Assigned identifiers use printable ASCII and the form

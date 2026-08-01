@@ -181,6 +181,14 @@ changing their original status or meaning. Future descriptor, admission,
 policy, aPPSS, deployment, trace, result, and artifact identifiers remain
 unassigned until their chronological schema/vector gates pass.
 
+## Post-baseline security-matrix note
+
+P1.5 adds prospective phase/view and claim-security contracts for the
+improvement project. These matrices preserve the retained baseline boundary:
+they do not make unimplemented descriptor, admission, clean-client, aPPSS,
+provider, multi-host, UI, replacement, or production claims supported. Frozen
+v2 evidence remains unchanged and non-transferable.
+
 ## Excluded material
 
 The portable copy excludes:
