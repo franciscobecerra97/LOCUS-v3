@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "LOCUS-party-current-summary-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["payload", "signature", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-party-current-summary-v1"},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorizer_id", "backup_id", "configuration_digest", "cue_policy_id", "descriptor_sha256", "epoch", "expires_at", "issued_at", "recovery_id", "recovery_suite_id", "state", "subject_id"],
+      "properties": {
+        "authorizer_id": {"type": "integer", "minimum": 1, "maximum": 65535},
+        "subject_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "backup_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "recovery_id": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "epoch": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+        "descriptor_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "configuration_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "cue_policy_id": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "recovery_suite_id": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "state": {"const": "active"},
+        "issued_at": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+        "expires_at": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value", "version"],
+      "properties": {
+        "algorithm": {"const": "Ed25519"},
+        "key_id": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "value": {"type": "string", "pattern": "^[0-9a-f]{128}$"},
+        "version": {"const": "LOCUS-party-current-signature-v1"}
+      }
+    }
+  }
+}

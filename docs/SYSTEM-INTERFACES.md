@@ -97,7 +97,7 @@ persist a verifier.
 | `AdmissionVerifier` | Validate an opaque capability against the complete D004 binding and client proof | Interface only; P3 implements the local issuer/verifier |
 | `StorageCapabilityVerifier` | Same validation signature at a distinct storage-gateway trust boundary | Separate structural protocol; no capability format or implementation assigned |
 | `ApplicationStorageGateway` | Execute one exact admitted storage operation | Interface only; P2/P3 implement it above the storage adapter |
-| `PartyDirectory` | Resolve authenticated authorizer and suite-holder membership for one epoch | Interface only; P2 supplies trust/bootstrap behavior |
+| `PartyDirectory` | Resolve authenticated authorizer and suite-holder membership for one epoch | P2.2 supplies an exact bootstrap-bound adapter after installed endpoint/key checks and a matching current-state authorization quorum |
 
 `AdmissionBinding` contains exactly the D004 fields: subject, backup, epoch,
 operation, audience, client-key thumbprint, nonce, issuance/expiry, issuer, and
@@ -121,6 +121,12 @@ authorization / 2-of-3 recovery topology without conflating its parameters.
 
 P1.3 freezes public phase names and state snapshots, not workflow
 implementations.
+
+P2.2 implements the `bootstrap -> descriptor verification -> current state`
+prefix as one pure validator over already retrieved bytes. It returns the
+authenticated P1.3 `PartyDirectory` adapter only after the operator signature,
+P2.1 cross-bindings, external subject/handle, installed directory, and fresh
+party quorum agree. Storage fetching remains P2.3 and admitted transport P3.
 
 `EnrollmentClientStateMachine` progresses through:
 

@@ -64,9 +64,25 @@ evidence-profile identifier and does not advance any claim status.
 
 All six P2.1 identifiers are introduced with strict schemas or an exact binary
 profile, canonical vector, decoder, compatibility rules, and negative tests.
-They do not assign the P3.3 admission profile or implement P2.2 discovery/P2.3
-storage. The canonical vector's `test-only:unassigned-p3.3` value is explicitly
-non-deployable and is not a LOCUS admission identifier.
+They do not assign the P3.3 admission profile or, by themselves, implement
+P2.2 discovery/P2.3 storage. The canonical vector's
+`test-only:unassigned-p3.3` value is explicitly non-deployable and is not a
+LOCUS admission identifier.
+
+### P2.2 assigned discovery and trust-bootstrap profiles
+
+| Identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-account-scoped-bootstrap-v1` | Clean-client algorithm that authenticates one exact gateway endpoint, current pointer, bundle, recovery identity, installed directory, and current-state authorization quorum | It performs no provider fetch or admission and cannot be relabeled as P2.3/P3 evidence |
+| `LOCUS-bootstrap-trust-config-v1` | Canonical application-installed operator/discovery/party trust configuration with generation, validity, and predecessor binding | A descriptor cannot add keys; replacement bytes require the trusted application update channel and a consecutive predecessor binding |
+| `LOCUS-recovery-receipt-v1` | Optional operator-signed subject/handle/discovery binding with an optional initial epoch/configuration/descriptor anchor | It is public recovery metadata, not a cue, factor, provider credential, or independent freshness authority |
+| `LOCUS-party-current-summary-v1` | Short-lived party-signed active subject/backup/recovery/epoch/descriptor/configuration/policy/suite assertion | Its lifetime is at most 300 seconds and acceptance requires the descriptor's distinct authorization quorum |
+| `LOCUS-party-current-signature-v1` | Ed25519 party-summary signature domain and metadata | The expected party endpoint, key ID, and public key come only from the installed trust configuration |
+
+These five identifiers have strict schemas or an exact algorithm profile,
+canonical synthetic vectors, bounded decoders, and negative tests. P2.2 does
+not assign the P3 admission/capability format, implement P2.3 storage/CAS, or
+claim coordinated rollback resistance.
 
 ### Syntax and collision rules
 

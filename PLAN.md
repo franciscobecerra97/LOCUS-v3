@@ -562,7 +562,7 @@ Completion record (2026-08-01):
 
 ### P2.2 Specify discovery and trust bootstrap
 
-Status: `Approved`
+Status: `Complete`
 
 Approved profile:
 
@@ -598,6 +598,44 @@ Acceptance:
 
 - A clean client can authenticate every endpoint and current-state assertion
   without trusting keys introduced only by the untrusted descriptor.
+
+Completion record (2026-08-01):
+
+- P2.2 assigns `LOCUS-account-scoped-bootstrap-v1`, the canonical installed
+  trust configuration, optional signed receipt, party-current summary, and
+  party-current signature profiles. The registry records separate compatibility
+  boundaries and the three new JSON schemas freeze exact shapes and bounds.
+- `prototype/locus/recovery_bootstrap.py` authenticates already supplied
+  account-scoped discovery bytes. It validates installed trust validity and
+  endpoint, the operator-signed P2.1 pointer/bundle/descriptor chain, external
+  subject and recovery handle, optional receipt, exact installed party
+  endpoint/key bindings, and a fresh matching authorization quorum before any
+  cue-dependent processing.
+- The returned adapter implements the P1.3 `PartyDirectory` contract with
+  recovery threshold and authorization quorum still distinct. Valid dissent is
+  reported; fewer than the required matching summaries fail explicitly as
+  unavailable or cloud/party mismatch.
+- Trust updates require a consecutive generation and exact predecessor digest
+  but are accepted only as already trusted application-installation inputs.
+  Descriptor-, bundle-, receipt-, or discovery-supplied keys never become trust
+  roots. Root/key/endpoint rotation therefore fails closed until a trusted app
+  update installs the replacement.
+- Synthetic vectors and unit tests cover a complete clean-client positive
+  control, receipt/no-receipt paths, invalid or expired trust, wrong discovery
+  endpoint, wrong subject/handle, pointer/bundle substitution, untrusted
+  operator/party keys and endpoints, malformed/tampered/stale/duplicate party
+  summaries, quorum unavailability, signed state disagreement, trust-update
+  continuity, and forbidden secret fields.
+- The disclosure/rollback analysis states that admission/account/storage and
+  live-party availability are prerequisites; operator and parties observe
+  linkable public recovery metadata; operator compromise alone cannot forge the
+  pinned party quorum; and coordinated rollback or compromise of all required
+  authorities remains outside the profile.
+- The complete pinned repository gate passes with 191 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
+- P2.2 does not implement DescriptorStore/CAS, admitted gateway retrieval,
+  P2.4 evidence, complete clean-client recovery, or manuscript wording.
 
 ### P2.3 Implement `DescriptorStore`
 
@@ -1566,14 +1604,13 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0, P1.1--P1.5, and P2.1 are complete; begin with
-P2.2 and do not begin a later phase while an applicable predecessor gate is incomplete,
+Execution is chronological. P0, P1.1--P1.5, P2.1, and P2.2 are complete; begin
+with P2.3 and do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P2.2--P2.4 — trust bootstrap, descriptor store, and security scenarios
-   (P2.1 complete);
+1. P2.3--P2.4 — descriptor store and security scenarios (P2.1/P2.2 complete);
 2. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
 3. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
    successor publication; P4.4 remains deferred unless D011 is approved;

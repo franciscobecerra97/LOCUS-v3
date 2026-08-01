@@ -200,6 +200,16 @@ implemented behavior.
   provider-assigned locator.
 - The client validates a current consistent epoch before secret-dependent
   recovery.
+- In `LOCUS-account-scoped-bootstrap-v1`, the installed trust configuration is
+  the only source of the operator key, discovery endpoint, party endpoints,
+  party key IDs, and party public keys. Descriptor values must exactly match
+  it. A fresh matching party-current-summary set must reach the independently
+  typed authorization quorum before cue processing.
+- Trust-configuration predecessor digests detect accidental or substituted
+  update chains but do not authenticate an update channel. Root/key/endpoint
+  replacement arrives only through the trusted application installation path.
+- A signed receipt is optional public metadata and an initial binding, not a
+  recovery factor, provider credential, or monotonic freshness witness.
 - Cloud substitution is checked against current honest party metadata.
 - Descriptor, backup, party membership, policy, recovery identity, and epoch
   must bind to one enrollment.

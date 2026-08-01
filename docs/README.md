@@ -27,8 +27,9 @@ For proposed architecture, start with:
   `version-registry-v1.json`
 
 `schemas/` contains inherited active evidence schemas, the P1.4/P1.5
-governance schemas, and the P2.1 descriptor/current-pointer/manifest schemas.
-New schemas must receive new identifiers rather than changing the meaning of
+governance schemas, the P2.1 descriptor/current-pointer/manifest schemas, and
+the P2.2 installed-trust/recovery-receipt/party-current-summary schemas. New
+schemas must receive new identifiers rather than changing the meaning of
 existing versions.
 
 The lower-case baseline documents remain active and must be synchronized with

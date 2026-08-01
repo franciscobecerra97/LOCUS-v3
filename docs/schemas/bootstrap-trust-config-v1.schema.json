@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "LOCUS-bootstrap-trust-config-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["discovery", "generation", "operator", "parties", "previous_configuration_sha256", "profile", "valid_from", "valid_until", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-bootstrap-trust-config-v1"},
+    "profile": {"const": "LOCUS-account-scoped-bootstrap-v1"},
+    "generation": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "valid_from": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "valid_until": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "previous_configuration_sha256": {
+      "oneOf": [
+        {"type": "null"},
+        {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      ]
+    },
+    "operator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["issuer", "key_id", "public_key_hex"],
+      "properties": {
+        "issuer": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "key_id": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "public_key_hex": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "discovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["audience", "endpoint"],
+      "properties": {
+        "audience": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+        "endpoint": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^https://[^/?#]+/?$"}
+      }
+    },
+    "parties": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 65535,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["authorizer_id", "endpoint", "identity_key_id", "public_key_hex"],
+        "properties": {
+          "authorizer_id": {"type": "integer", "minimum": 1, "maximum": 65535},
+          "endpoint": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^https://[^/?#]+/?$"},
+          "identity_key_id": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+          "public_key_hex": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+        }
+      }
+    }
+  }
+}

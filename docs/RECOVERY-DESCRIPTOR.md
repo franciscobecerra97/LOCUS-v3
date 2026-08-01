@@ -1,11 +1,11 @@
 # RecoveryDescriptor And Recovery-Bundle Design
 
-Status: P2.1 formats, strict codecs, schemas, and canonical vectors implemented
-on 2026-08-01 under D001, D003, D014, and D015. D015 supersedes the former
-personal-cloud-account and Google Drive choices in D002 and D006. Discovery,
-storage adapters, public admission, clean-client recovery, and security
-evidence remain later gates. This design does not supersede the implemented
-baseline or current manuscript.
+Status: P2.1 formats and P2.2 discovery/trust-bootstrap validation, strict
+codecs, schemas, and canonical vectors implemented on 2026-08-01 under D001,
+D003, D014, and D015. D015 supersedes the former personal-cloud-account and
+Google Drive choices in D002 and D006. Storage adapters, public admission,
+complete clean-client recovery, and security evidence remain later gates. This
+design does not supersede the imported baseline or current manuscript.
 
 ## Purpose
 
@@ -264,12 +264,16 @@ This is the approved default for the account-scoped provider profile. A
 personal AWS or other storage-provider account is not required. Admission,
 capability issuance, and storage availability are explicit prerequisites, not
 cues, TPASS shares, or cryptographic factors. The deterministic local reviewer
-profile implements the same interface without an external account.
+profile will implement the same interface without an external account in
+P2.3/P3. P2.2 authenticates already supplied gateway response bytes; it does
+not simulate capability issuance or provider retrieval early.
 
 ### Exported recovery receipt
 
-Enrollment exports a QR, file, or printed receipt containing a locator and
-trusted public configuration.
+`LOCUS-recovery-receipt-v1` is an optional operator-signed QR, file, or printed
+object. It contains the pseudonymous subject, recovery handle, bootstrap
+profile, exact discovery endpoint, issuer/key ID, issuance time, and an
+optional initial backup/epoch/configuration/descriptor digest anchor.
 
 Advantages:
 
@@ -284,24 +288,61 @@ Costs:
 
 ### Combined profile
 
-Account discovery is the default and the receipt is an optional disaster path.
+Account discovery is the default and the receipt is optional bootstrap input.
 This direction is approved by D001--D003. The receipt may identify the provider
 profile, account/recovery scope, high-entropy recovery handle, and an issuer or
 initial public digest binding. It contains no cues, candidate hints, private
-key material, or credentials.
+key material, or credentials. It is not an independent freshness witness: a
+later epoch still requires a live party-current-state quorum.
 
-## Authenticity
+## P2.2 installed trust and authenticity
 
-Recommended layers:
+`LOCUS-bootstrap-trust-config-v1` is a canonical file delivered with the
+trusted LOCUS application installation or update. It contains exactly:
 
-1. an application-pinned issuer/operator root authenticates the descriptor;
-2. the descriptor authenticates configuration and endpoint identities;
-3. recovery parties independently sign current epoch/configuration summaries;
-4. the client requires a consistent threshold/current-state result before
-   secret-dependent recovery.
+- profile, generation, validity interval, and previous-configuration SHA-256;
+- one operator issuer, Ed25519 key ID, and public key;
+- one HTTPS discovery endpoint and audience; and
+- a sorted exact authorizer set with HTTPS endpoint, identity-key ID, and
+  Ed25519 public key for each party.
 
-The clean client must not bootstrap trust from an unauthenticated key in the
-same descriptor.
+The initial generation has no predecessor. A later generation must be exactly
+one greater and bind the exact previous bytes. This continuity check does not
+authenticate an update downloaded from an untrusted source: replacement trust
+configuration must arrive through the application's trusted installation or
+update channel. Endpoint, operator-key, party-key, and root rotation therefore
+fail closed until such an installed replacement exists.
+
+The implemented bootstrap order is:
+
+1. strictly decode the installed configuration and check its validity;
+2. require the observed discovery endpoint to equal the installed endpoint;
+3. authenticate the signed current pointer and bundle/descriptor with the
+   installed operator key and verify all P2.1 cross-bindings;
+4. require the external subject and recovery handle to match the pointer and
+   descriptor, and authenticate the optional receipt if supplied;
+5. require every descriptor party endpoint and identity-key ID to equal the
+   installed exact party directory; and
+6. verify short-lived party current-state summaries and require the
+   descriptor's authorization quorum to match the cloud descriptor before any
+   cue processing.
+
+The descriptor authenticates configuration content but introduces no trusted
+key or endpoint. `LOCUS-party-current-summary-v1` binds active state, party,
+subject, backup, recovery identity, epoch, descriptor digest, configuration
+digest, CuePolicy, and recovery suite. It has its own
+`LOCUS-party-current-signature-v1` domain and a maximum 300-second validity
+window. Valid signed dissent is reported separately. Four matching summaries
+in the current 4-of-5 authorization profile permit bootstrap even if a fifth
+party is unavailable or reports different state; fewer than four matching
+summaries fail explicitly as unavailable or cloud/party mismatch.
+
+The normative P2.2 schemas are
+`schemas/bootstrap-trust-config-v1.schema.json`,
+`schemas/recovery-receipt-v1.schema.json`, and
+`schemas/party-current-summary-v1.schema.json`. The executable validator is
+`prototype/locus/recovery_bootstrap.py`; its canonical public-object vector is
+`prototype/test-vectors/recovery-bootstrap-v1.txt`.
 
 Provider authentication and access control authorize ordinary retrieval but do
 not authenticate LOCUS contents. An application-operator or provider snapshot
@@ -318,16 +359,31 @@ profile.
 A valid old signature proves that an old descriptor was once issued; it does not
 prove freshness to a client with no trusted current state.
 
-The base profile should:
+The base profile now:
 
-- query current party state;
-- reject descriptor/party disagreement;
-- reject mixed epochs/configurations;
-- disclose that coordinated rollback of authoritative party state remains
+- requires a fresh authorization quorum of party state;
+- rejects descriptor/party disagreement below that matching quorum;
+- rejects mixed epochs/configurations and untrusted endpoints/keys;
+- discloses that coordinated rollback of authoritative party state remains
   outside the demonstrated boundary.
 
 A monotonic external witness may be designed as a separate profile. It is not
 silently required by the core thesis.
+
+An operator-key compromise can forge cloud objects and receipts but cannot
+forge the independently pinned party quorum. Compromise of the operator and
+the required party quorum defeats this bootstrap profile. Likewise, a
+coordinated restoration of cloud state, required party states and keys, and
+the client clock/trust view can present a consistent old world; signed version
+numbers and short-lived summaries do not provide a global monotonic anchor.
+
+Account/admission loss, gateway outage, storage loss, and insufficient live
+party summaries are availability failures. Discovery and current-state
+queries expose the pseudonymous subject/handle, endpoint set, backup/epoch,
+configuration and descriptor digests, timing, and access pattern to the
+operator and contacted parties. None of the P2.2 formats contains cue input,
+`Z_M`, `p_M`, a verifier, party secret state, `S_R`, `K_wrap`, a plaintext key,
+or provider/admission credentials.
 
 ## Publication sequence
 

@@ -23,8 +23,10 @@ implementation and evidence obligations without promoting unsupported claims.
 
 P2.1 now implements the strict descriptor, signed current-pointer,
 two-entry manifest, and deterministic bounded ZIP codecs described below.
-Discovery, DescriptorStore adapters, clean-client bootstrap, and descriptor
-security evidence remain P2.2--P2.4.
+P2.2 implements strict installed-trust, optional-receipt, party-current-summary,
+and pure clean-client bootstrap validation over supplied discovery bytes.
+DescriptorStore adapters, admitted retrieval, and descriptor security evidence
+remain P2.3--P2.4 and P3.
 
 ## Design principle
 

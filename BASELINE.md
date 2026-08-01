@@ -192,11 +192,13 @@ v2 evidence remains unchanged and non-transferable.
 ## Post-baseline RecoveryDescriptor note
 
 P2.1 adds new strict descriptor, current-pointer, manifest, and deterministic
-bundle codecs, schemas, and synthetic canonical vectors. These are
+bundle codecs. P2.2 adds an application-installed trust configuration,
+optional signed receipt, party-current-summary format, and a pure clean-client
+bootstrap validator over already supplied discovery bytes. These are
 post-baseline formats and do not change the frozen backup, Yi, CuePolicy,
-deployment, manuscript, or retained evidence. Discovery, storage publication,
-clean-client bootstrap, admission, and descriptor security scenarios remain
-unimplemented until P2.2--P2.4 and P3.
+deployment, manuscript, or retained evidence. Storage publication, admitted
+gateway retrieval, complete clean-client recovery, and descriptor evidence
+remain unimplemented until P2.3--P4.
 
 ## Excluded material
 

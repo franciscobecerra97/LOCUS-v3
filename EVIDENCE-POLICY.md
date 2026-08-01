@@ -29,11 +29,12 @@ privacy-safe observation, and interpretation limit into the assigned scenario
 methodology and narrow them for the exact profile. The matrix itself is not
 evidence and cannot promote a claim.
 
-P2.1's descriptor disclosure analysis and unit positive control are design and
-implementation checks, not collected C03/C06/C07/C21 evidence. P2.4 must use
-the exact registered descriptor, pointer, manifest, and bundle bytes; include
-the complete persistent role view; run the bounded networkless candidate test;
-and retain only the privacy-safe observation defined by the security matrix.
+P2.1/P2.2 descriptor/bootstrap disclosure analyses, canonical vectors, and
+unit positive controls are design and implementation checks, not collected
+C03/C06/C07/C21 evidence. P2.4 must use the exact registered trust,
+receipt/summary, descriptor, pointer, manifest, and bundle bytes; include the
+complete persistent role view; run the bounded networkless candidate test; and
+retain only the privacy-safe observation defined by the security matrix.
 
 ## Required scenario contract
 
