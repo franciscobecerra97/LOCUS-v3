@@ -119,8 +119,9 @@ authorization / 2-of-3 recovery topology without conflating its parameters.
 
 ## Client state-machine contracts
 
-P1.3 freezes public phase names and state snapshots, not workflow
-implementations.
+P1.3 freezes public phase names and state snapshots. P3.1 now implements the
+ordered enrollment state machine with public-metadata-only, idempotent event
+retries; transport and admission remain P3.2--P3.4.
 
 P2.2 implements the `bootstrap -> descriptor verification -> current state`
 prefix as one pure validator over already retrieved bytes. It returns the

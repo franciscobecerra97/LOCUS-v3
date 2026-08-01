@@ -751,7 +751,7 @@ Completion record (2026-08-01):
 
 ### P3.1 Refactor enrollment into a stable state machine
 
-Status: `Proposed`
+Status: `Complete`
 
 States:
 
@@ -772,6 +772,26 @@ Acceptance:
 - Unsafe transitions fail closed.
 - Safe retries are idempotent.
 - Secret state is never serialized for retry.
+
+Completion record (2026-08-01):
+
+- `prototype/locus/enrollment_state.py` implements the P1.3
+  `EnrollmentClientStateMachine` contract across the exact ordered P3.1 phase
+  sequence. It retains only operation ID, phase, backup ID, and epoch.
+- Transition events contain only an event ID, completed phase, and optional
+  public backup/epoch binding. Exact event retries return the same state;
+  event-ID reuse with different metadata, stale states, skipped/reordered
+  phases, changed epoch bindings, incomplete publication, and post-completion
+  advances fail closed.
+- Threaded exact-retry tests converge on one result. Dataclass field audits and
+  negative tests confirm that retry state has no field for keys, cues,
+  passwords, suite state, shares, secrets, or credentials.
+- P3.1 introduces no external serialization or protocol identifier and does
+  not change enrollment transport, admission, frozen Yi behavior, evidence, or
+  manuscript wording.
+- The complete pinned repository gate passes with 206 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
 
 ### P3.2 Implement authenticated enrollment transport
 

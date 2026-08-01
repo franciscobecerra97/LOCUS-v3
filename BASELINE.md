@@ -203,6 +203,9 @@ complete clean-client recovery, and descriptor evidence remain unimplemented
 until P3--P4 and the later evidence gates. P2.4 adds a strict aggregate-only
 development scenario report and bounded networkless direct-verifier regression
 with positive controls; it is not P9 evidence and changes no baseline claim.
+P3.1 adds a post-baseline suite-neutral enrollment phase coordinator with
+idempotent public-metadata events. It does not alter imported enrollment,
+transport, frozen Yi state, retained evidence, or manuscript behavior.
 
 ## Excluded material
 

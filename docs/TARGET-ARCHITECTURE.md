@@ -31,6 +31,10 @@ service boundary. Admitted retrieval remains P3 because its capability profile
 is intentionally unassigned. P2.4 supplies aggregate development regression
 scenarios; formal evidence remains under the later evidence gates.
 
+P3.1 implements the suite-neutral enrollment phase machine as a secret-free
+public retry-state coordinator. It does not serialize protocol secret state or
+replace the P3.2 transport boundary.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior
