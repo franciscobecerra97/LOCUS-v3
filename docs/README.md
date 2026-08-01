@@ -27,10 +27,10 @@ For proposed architecture, start with:
   `version-registry-v1.json`
 
 `schemas/` contains inherited active evidence schemas, the P1.4/P1.5
-governance schemas, the P2.1 descriptor/current-pointer/manifest schemas, and
-the P2.2 installed-trust/recovery-receipt/party-current-summary schemas. New
-schemas must receive new identifiers rather than changing the meaning of
-existing versions.
+governance schemas, the P2.1 descriptor/current-pointer/manifest schemas, the
+P2.2 installed-trust/recovery-receipt/party-current-summary schemas, and the
+P2.4 aggregate descriptor-security development schema. New schemas must receive
+new identifiers rather than changing the meaning of existing versions.
 
 `prototype/test-vectors/descriptor-store-v1.txt` pins the P2.3 provider-neutral
 descriptor, bundle, and hashed-handle current-pointer key grammar to the P2.1

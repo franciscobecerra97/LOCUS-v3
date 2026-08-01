@@ -1,0 +1,55 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "LOCUS-descriptor-security-scenarios-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["candidate_test", "cleanup_passed", "detected_count", "interpretation", "output_scan_passed", "positive_control_count", "profile", "scenarios", "versions", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-descriptor-security-scenarios-v1"},
+    "profile": {"const": "LOCUS-descriptor-security-scenarios-v1"},
+    "detected_count": {"const": 16},
+    "positive_control_count": {"const": 16},
+    "cleanup_passed": {"const": true},
+    "output_scan_passed": {"const": true},
+    "interpretation": {"const": "implementation-regression-only-not-cryptographic-proof"},
+    "candidate_test": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["candidates_tested", "local_predicate_found", "network_access", "positive_control_detected"],
+      "properties": {
+        "candidates_tested": {"const": 2},
+        "local_predicate_found": {"const": false},
+        "network_access": {"const": false},
+        "positive_control_detected": {"const": true}
+      }
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bootstrap", "bundle", "descriptor", "pointer", "store"],
+      "properties": {
+        "bootstrap": {"const": "LOCUS-account-scoped-bootstrap-v1"},
+        "bundle": {"const": "LOCUS-recovery-bundle-v1"},
+        "descriptor": {"const": "LOCUS-recovery-descriptor-v1"},
+        "pointer": {"const": "LOCUS-descriptor-current-pointer-v1"},
+        "store": {"const": "LOCUS-descriptor-bundle-store-v1"}
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 16,
+      "maxItems": 16,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["detected", "failure_category", "id", "positive_control"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1, "maxLength": 64},
+          "failure_category": {"type": "string", "minLength": 1, "maxLength": 64},
+          "detected": {"const": true},
+          "positive_control": {"const": true}
+        }
+      }
+    }
+  }
+}

@@ -3,9 +3,10 @@
 Status: P2.1 formats and P2.2 discovery/trust-bootstrap validation, strict
 codecs, schemas, and canonical vectors implemented on 2026-08-01 under D001,
 D003, D014, and D015. D015 supersedes the former personal-cloud-account and
-Google Drive choices in D002 and D006. Storage adapters, public admission,
-complete clean-client recovery, and security evidence remain later gates. This
-design does not supersede the imported baseline or current manuscript.
+Google Drive choices in D002 and D006. P2.3 storage and P2.4 development
+security regressions are implemented; public admission, complete clean-client
+recovery, and formal evidence remain later gates. This design does not
+supersede the imported baseline or current manuscript.
 
 ## Purpose
 

@@ -699,7 +699,7 @@ Completion record (2026-08-01):
 
 ### P2.4 Implement descriptor security scenarios
 
-Status: `Approved`
+Status: `Complete`
 
 Scenarios:
 
@@ -722,6 +722,28 @@ Scenarios:
 Acceptance:
 
 - Results use a new aggregate-only descriptor-security schema.
+
+Completion record (2026-08-01):
+
+- `LOCUS-descriptor-security-scenarios-v1` defines a strict aggregate-only
+  development regression report for all sixteen approved detector families,
+  one positive control per family, exact P2.1--P2.3 versions, cleanup/output
+  gates, and a bounded two-candidate networkless direct-verifier check.
+- The synthetic scenarios exercise wrong handle/scope, altered authentication,
+  stale or cross-bound state, policy/suite/membership mismatches, backup and
+  party-state disagreement, malformed bundle classes, and stale bundle/pointer
+  rollback using the registered P2.1--P2.3 validators and stores.
+- The report retains only identifiers, safe failure categories, counts, and
+  Boolean observations. Validators reject unknown fields, missing/failed
+  controls, reordered scenarios, version changes, secret-bearing output, and
+  contradictory counts.
+- This is implementation-regression output, not P9 evidence, cryptographic
+  proof, a general offline-oracle proof, entropy analysis, production-security
+  evidence, or coordinated-rollback resistance. The P9 result family remains
+  reserved and no manuscript wording is authorized.
+- The complete pinned repository gate passes with 201 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
 
 ---
 
@@ -1635,21 +1657,20 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0, P1.1--P1.5 and P2.1--P2.3 are complete; begin
-with P2.4 and do not begin a later phase while an applicable predecessor gate is incomplete,
+Execution is chronological. P0, P1.1--P1.5, and P2.1--P2.4 are complete; begin
+with P3.1 and do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P2.4 — descriptor security scenarios (P2.1--P2.3 complete);
-2. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
-3. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
+1. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
+2. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
    successor publication; P4.4 remains deferred unless D011 is approved;
-4. P5.1--P5.4 — CuePolicy and resolver generality without changing either
+3. P5.1--P5.4 — CuePolicy and resolver generality without changing either
    recovery suite;
-5. P5A.1--P5A.7 — aPPSS implementation, authenticated integration, migration,
+4. P5A.1--P5A.7 — aPPSS implementation, authenticated integration, migration,
    comparative boundary validation, and active-profile cutover; and
-6. P6 onward — storage/deployment expansion, UI, assurance, performance,
+5. P6 onward — storage/deployment expansion, UI, assurance, performance,
    external review, artifact, and separately approved manuscript changes.
 
 Do not begin the graphical UI, external provider run, expanded deployment

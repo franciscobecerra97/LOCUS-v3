@@ -29,6 +29,7 @@
     "LOCUS-cue-policy-corpus-v1",
     "LOCUS-descriptor-bundle-store-v1",
     "LOCUS-descriptor-current-pointer-v1",
+    "LOCUS-descriptor-security-scenarios-v1",
     "LOCUS-deterministic-directory-v1",
     "LOCUS-deterministic-directory-v2",
     "LOCUS-deterministic-fixture-v1",

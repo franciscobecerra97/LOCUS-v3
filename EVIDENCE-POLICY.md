@@ -37,6 +37,11 @@ receipt/summary, descriptor, pointer, manifest, and bundle bytes; include the
 complete persistent role view; run the bounded networkless candidate test; and
 retain only the privacy-safe observation defined by the security matrix.
 
+P2.4 now supplies `LOCUS-descriptor-security-scenarios-v1` as an aggregate-only
+development regression contract with positive controls and a bounded
+networkless direct-digest candidate check. It does not allocate the P9 result
+family or promote C03/C06/C07/C21 to supported evidence.
+
 ## Required scenario contract
 
 Every security-sensitive experiment records:

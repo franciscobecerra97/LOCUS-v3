@@ -95,6 +95,16 @@ content. Changed key grammar, mutability, retry, or CAS semantics require a new
 profile identifier. The profile has a canonical locator vector and shared
 filesystem/S3 tests; it does not assign the P3 capability or gateway profile.
 
+### P2.4 assigned development scenario contract
+
+`LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only
+implementation-regression report for the sixteen approved P2.4 detector
+families, their positive controls, and a two-candidate networkless direct-
+verifier check. It retains only scenario/category identifiers, Boolean gates,
+counts, and exact public profile versions. It is not a P9 evidence result,
+cryptographic proof, entropy claim, or production-security result; P9 retains
+the separately reserved evidence-result allocation gate.
+
 ### Syntax and collision rules
 
 - Assigned identifiers use printable ASCII and the form

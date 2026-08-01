@@ -28,7 +28,8 @@ and pure clean-client bootstrap validation over supplied discovery bytes.
 P2.3 implements the provider-neutral filesystem/S3-compatible descriptor and
 bundle stores, exact-key profile, and current-pointer CAS below a same-host
 service boundary. Admitted retrieval remains P3 because its capability profile
-is intentionally unassigned; descriptor security evidence remains P2.4.
+is intentionally unassigned. P2.4 supplies aggregate development regression
+scenarios; formal evidence remains under the later evidence gates.
 
 ## Design principle
 

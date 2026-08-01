@@ -230,6 +230,9 @@ implemented behavior.
   separate from the mutable current pointer. Exact-byte retries are idempotent;
   differing immutable bytes conflict; current replacement requires CAS; and
   S3 ETags are concurrency tokens rather than authenticity or content digests.
+- P2.4 descriptor-security output is aggregate-only development regression
+  data. Passing detectors and direct-digest positive controls do not prove the
+  absence of every offline predicate or promote a manuscript/evidence claim.
 - A client receives no storage-provider credential. The application gateway
   accepts only an unexpired D004/D015 capability bound to subject, backup,
   prefix, operation, client proof key, nonce, and audience.

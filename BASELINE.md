@@ -200,7 +200,9 @@ current-pointer CAS below a same-host service boundary. These are
 post-baseline formats and do not change the frozen backup, Yi, CuePolicy,
 deployment, manuscript, or retained evidence. Admitted gateway retrieval,
 complete clean-client recovery, and descriptor evidence remain unimplemented
-until P2.4--P4.
+until P3--P4 and the later evidence gates. P2.4 adds a strict aggregate-only
+development scenario report and bounded networkless direct-verifier regression
+with positive controls; it is not P9 evidence and changes no baseline claim.
 
 ## Excluded material
 
