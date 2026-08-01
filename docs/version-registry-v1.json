@@ -13,6 +13,7 @@
     "LOCUS-authorization-certificate-v1",
     "LOCUS-backup-associated-data-v1",
     "LOCUS-backup-digest-v1",
+    "LOCUS-bootstrap-signature-v1",
     "LOCUS-cloud-backup-object-v1",
     "LOCUS-cloud-backup-reference-v1",
     "LOCUS-cloud-snapshot-input-v1",
@@ -24,6 +25,7 @@
     "LOCUS-compose-recovery-v1",
     "LOCUS-compose-recovery-v2",
     "LOCUS-cue-policy-corpus-v1",
+    "LOCUS-descriptor-current-pointer-v1",
     "LOCUS-deterministic-directory-v1",
     "LOCUS-deterministic-directory-v2",
     "LOCUS-deterministic-fixture-v1",
@@ -56,6 +58,10 @@
     "LOCUS-prepare-certificate-v1",
     "LOCUS-profile-trace-policy-v1",
     "LOCUS-provision-metric-v1",
+    "LOCUS-recovery-bundle-manifest-v1",
+    "LOCUS-recovery-bundle-v1",
+    "LOCUS-recovery-configuration-v1",
+    "LOCUS-recovery-descriptor-v1",
     "LOCUS-reference-backup-v3",
     "LOCUS-reference-backup-v4",
     "LOCUS-reference-group-secret-v1",
@@ -108,7 +114,7 @@
         "D014",
         "D015"
       ],
-      "required_gate": "Approve the descriptor, current-pointer, bundle, manifest, and suite-binding schemas with bounded canonical vectors.",
+      "required_gate": "P2.1 v1 allocation required the descriptor, current-pointer, bundle, manifest, trust, limit, and suite-binding profiles with bounded canonical vectors; every later semantic change repeats that gate.",
       "compatibility_rule": "New bundle members and pointers do not reinterpret frozen backup or cloud-object formats; semantic changes require a new epoch and identifier."
     },
     {
@@ -131,7 +137,7 @@
         "D003",
         "D014"
       ],
-      "required_gate": "Approve the strict RecoveryDescriptor and authenticated current-pointer schemas, trust-root rules, limits, signatures, and canonical vectors.",
+      "required_gate": "P2.1 v1 allocation required strict RecoveryDescriptor and authenticated current-pointer schemas, external trust-root rules, limits, signatures, and canonical vectors; every later semantic change repeats that gate.",
       "compatibility_rule": "A descriptor version binds one suite and epoch and never changes frozen backup, CuePolicy, or Yi formats."
     },
     {

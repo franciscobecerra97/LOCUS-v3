@@ -1,0 +1,195 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:recovery-descriptor:v1",
+  "title": "LOCUS RecoveryDescriptor v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["payload", "signature", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-recovery-descriptor-v1"},
+    "payload": {"$ref": "#/$defs/payload"},
+    "signature": {"$ref": "#/$defs/signature"}
+  },
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[!-~]{1,255}$"
+    },
+    "hex16": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{32}$"
+    },
+    "hex32": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "positiveInteger": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 9223372036854775807
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value", "version"],
+      "properties": {
+        "algorithm": {"const": "Ed25519"},
+        "key_id": {"$ref": "#/$defs/identifier"},
+        "value": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{128}$"
+        },
+        "version": {"const": "LOCUS-bootstrap-signature-v1"}
+      }
+    },
+    "holder": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorizer_id", "holder_id"],
+      "properties": {
+        "authorizer_id": {"type": "integer", "minimum": 1, "maximum": 255},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 255}
+      }
+    },
+    "authorizer": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["authorizer_id", "endpoint", "identity_key_id"],
+      "properties": {
+        "authorizer_id": {"type": "integer", "minimum": 1, "maximum": 255},
+        "endpoint": {
+          "type": "string",
+          "pattern": "^https://[!-~]{1,500}$",
+          "maxLength": 512
+        },
+        "identity_key_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "authorization",
+        "backup",
+        "backup_id",
+        "cue_policy",
+        "epoch",
+        "expires_at",
+        "issued_at",
+        "issuer",
+        "lifecycle",
+        "recovery_id",
+        "recovery_suite",
+        "subject_id"
+      ],
+      "properties": {
+        "authorization": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "admission_profile",
+            "audience",
+            "authorizers",
+            "operation_namespace",
+            "quorum",
+            "security_policy"
+          ],
+          "properties": {
+            "admission_profile": {"$ref": "#/$defs/identifier"},
+            "audience": {"$ref": "#/$defs/identifier"},
+            "authorizers": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 255,
+              "items": {"$ref": "#/$defs/authorizer"}
+            },
+            "operation_namespace": {"$ref": "#/$defs/identifier"},
+            "quorum": {"type": "integer", "minimum": 1, "maximum": 255},
+            "security_policy": {"$ref": "#/$defs/identifier"}
+          }
+        },
+        "backup": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["format", "length", "member", "sha256"],
+          "properties": {
+            "format": {"$ref": "#/$defs/identifier"},
+            "length": {"type": "integer", "minimum": 1, "maximum": 1048576},
+            "member": {"const": "backup.json"},
+            "sha256": {"$ref": "#/$defs/hex32"}
+          }
+        },
+        "backup_id": {"$ref": "#/$defs/hex16"},
+        "cue_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["id", "public_parameters_hex", "resolver_profile"],
+          "properties": {
+            "id": {"$ref": "#/$defs/identifier"},
+            "public_parameters_hex": {
+              "type": "string",
+              "pattern": "^(?:[0-9a-f]{2})+$",
+              "maxLength": 524288
+            },
+            "resolver_profile": {"$ref": "#/$defs/identifier"}
+          }
+        },
+        "epoch": {"$ref": "#/$defs/positiveInteger"},
+        "expires_at": {"$ref": "#/$defs/positiveInteger"},
+        "issued_at": {"$ref": "#/$defs/positiveInteger"},
+        "issuer": {"$ref": "#/$defs/identifier"},
+        "lifecycle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["configuration_digest", "predecessor_descriptor_digest"],
+          "properties": {
+            "configuration_digest": {"$ref": "#/$defs/hex32"},
+            "predecessor_descriptor_digest": {
+              "oneOf": [
+                {"type": "null"},
+                {"$ref": "#/$defs/hex32"}
+              ]
+            }
+          }
+        },
+        "recovery_id": {"$ref": "#/$defs/identifier"},
+        "recovery_suite": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "holders",
+            "id",
+            "public_state_format",
+            "public_state_hex",
+            "threshold"
+          ],
+          "properties": {
+            "holders": {
+              "type": "array",
+              "minItems": 1,
+              "maxItems": 255,
+              "items": {"$ref": "#/$defs/holder"}
+            },
+            "id": {"$ref": "#/$defs/identifier"},
+            "public_state_format": {"$ref": "#/$defs/identifier"},
+            "public_state_hex": {
+              "type": "string",
+              "pattern": "^(?:[0-9a-f]{2})+$",
+              "maxLength": 524288
+            },
+            "threshold": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["k", "n"],
+              "properties": {
+                "k": {"type": "integer", "minimum": 1, "maximum": 255},
+                "n": {"type": "integer", "minimum": 1, "maximum": 255}
+              }
+            }
+          }
+        },
+        "subject_id": {"$ref": "#/$defs/hex32"}
+      }
+    }
+  }
+}

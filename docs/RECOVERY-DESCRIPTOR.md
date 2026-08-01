@@ -1,10 +1,11 @@
 # RecoveryDescriptor And Recovery-Bundle Design
 
-Status: owner-approved target-design direction under D001, D003, D014, and
-D015. D015 supersedes the former personal-cloud-account and Google Drive
-choices in D002 and D006. No final identifier has been assigned, and this
-design does not supersede the implemented baseline or current manuscript until
-implementation and evidence gates pass.
+Status: P2.1 formats, strict codecs, schemas, and canonical vectors implemented
+on 2026-08-01 under D001, D003, D014, and D015. D015 supersedes the former
+personal-cloud-account and Google Drive choices in D002 and D006. Discovery,
+storage adapters, public admission, clean-client recovery, and security
+evidence remain later gates. This design does not supersede the implemented
+baseline or current manuscript.
 
 ## Purpose
 
@@ -31,65 +32,109 @@ backup, signed descriptor, and a manifest for portability. Logical backup,
 descriptor, and current-pointer contracts remain separate even when the same
 provider stores them.
 
-## Proposed public fields
+## P2.1 registered formats
 
-### Envelope
+| Boundary | Identifier | Maximum canonical size | Compatibility rule |
+| --- | --- | --- | --- |
+| Signed descriptor | `LOCUS-recovery-descriptor-v1` | 65,536 bytes | New payload field or interpretation requires a new descriptor identifier |
+| Signed current pointer | `LOCUS-descriptor-current-pointer-v1` | 16,384 bytes | Mutable replacement uses P2.3 compare-and-swap; signed bytes remain canonical and immutable per value |
+| Bootstrap signature | `LOCUS-bootstrap-signature-v1` | Ed25519, 64-byte signature | Key comes from the installed trust root, never from the signed object |
+| Configuration digest | `LOCUS-recovery-configuration-v1` | SHA-256 output | Binds subject, backup, epoch, recovery ID, backup member, policy, suite, and authorization configuration |
+| Bundle manifest | `LOCUS-recovery-bundle-manifest-v1` | 16,384 bytes | Binds only `backup.json` and `descriptor.json`; never itself |
+| Bundle container | `LOCUS-recovery-bundle-v1` | 2,097,152 bytes | Exact deterministic three-member stored ZIP; any changed ZIP profile receives a new identifier |
 
-- format identifier and version;
-- issuer identifier;
-- subject/account scope or pseudonymous recovery scope;
-- issuance and expiry/refresh policy;
-- canonical payload;
-- signature and algorithm identifier.
+The normative JSON schemas are:
 
-### Recovery binding
+- `schemas/recovery-descriptor-v1.schema.json`;
+- `schemas/descriptor-current-pointer-v1.schema.json`; and
+- `schemas/recovery-bundle-manifest-v1.schema.json`.
 
-- backup identifier;
-- positive epoch;
-- recovery identity;
-- predecessor/configuration digest where applicable.
+The strict executable codec is `prototype/locus/recovery_descriptor.py`. The
+synthetic canonical vector is
+`prototype/test-vectors/recovery-descriptor-v1.txt`.
 
-### Cloud binding
+## Canonical signed-object envelope
 
-- backend/profile identifier;
-- logical immutable backup reference (`backup.json` in the bundle profile);
-- exact canonical backup-member digest;
-- bundle-manifest format;
-- backup format identifier.
+The descriptor and current pointer use the same exact outer shape:
 
-The provider-assigned immutable bundle locator and exact uploaded bundle digest
-belong to the separately authenticated current pointer, not to the descriptor
-inside that bundle.
+```json
+{
+  "payload": {},
+  "signature": {
+    "algorithm": "Ed25519",
+    "key_id": "externally-pinned-key-id",
+    "value": "128 lowercase hexadecimal characters",
+    "version": "LOCUS-bootstrap-signature-v1"
+  },
+  "version": "object-specific identifier"
+}
+```
 
-### Cue-policy binding
+The Ed25519 message is the ASCII domain
+`LOCUS/bootstrap-signed-object/v1`, a zero byte, and the canonical encoding of
+the object version, complete payload, and signature metadata excluding only the
+signature value. This binds the algorithm, key ID, object type, and payload.
+The decoder receives the expected issuer, key ID, and Ed25519 public key from
+the installed application trust configuration. No public key or trust root is
+accepted from the descriptor, pointer, bundle, provider, or admission result.
 
-- CuePolicy identifier;
-- public policy parameters needed to parse user input;
-- resolver profile and version;
-- no selected cue or selection identifier.
+## Exact `RecoveryDescriptor` payload
 
-### TPASS binding
+The v1 payload has exactly these top-level members:
 
-- canonical public parameters;
-- TPASS-holder identities;
-- threshold;
-- endpoint/directory references;
-- TPASS protocol/wire profile.
+| Member | Meaning |
+| --- | --- |
+| `issuer`, `issued_at`, `expires_at` | Externally expected issuer and positive integer validity interval |
+| `subject_id` | 32-byte lowercase-hex pseudonymous admission/storage scope; never an email, phone, label, or cue-derived identifier |
+| `backup_id`, `epoch`, `recovery_id` | 16-byte backup ID, positive epoch, and bounded public recovery identity |
+| `backup` | Exact `backup.json` member name, registered backup format, byte length, and ordinary SHA-256 digest |
+| `cue_policy` | Registered policy ID, opaque canonical public-parameter bytes encoded as lowercase hex, and resolver profile |
+| `recovery_suite` | Suite ID, public-state format and canonical bytes, typed `k,n`, and sorted holder-to-authorizer membership |
+| `authorization` | Sorted authorizer IDs, HTTPS endpoints, external identity-key IDs, distinct quorum, admission profile, audience, operation namespace, and security policy |
+| `lifecycle` | Configuration digest and nullable predecessor-descriptor digest |
 
-### Authorization binding
+The descriptor uses opaque canonical hex for CuePolicy public parameters and
+suite public state so their own registered adapters—not the descriptor—own
+their semantics. The descriptor still binds their exact bytes and identifiers.
+Holder membership is separate from authorizer membership; every holder maps to
+one authorizer, while recovery `k,n` and authorization quorum are validated as
+different values.
 
-- authorizer identities;
-- quorum;
-- admission profile;
-- audience/operation namespace;
-- security-policy version.
+The configuration digest is:
 
-### Lifecycle binding
+```text
+HashBytes(
+  "LOCUS-recovery-configuration-v1",
+  Encode({
+    version, subject_id, backup_id, epoch, recovery_id,
+    backup, cue_policy, recovery_suite, authorization
+  })
+)
+```
 
-- configuration digest;
-- predecessor descriptor digest;
-- phase/active-state assertion;
-- successor pointer only when the publication protocol defines it safely.
+Validity timestamps limit acceptance but do not by themselves establish
+freshness. The P2.2 party-current-state check remains mandatory.
+
+The canonical vector uses `test-only:unassigned-p3.3` as a non-deployable
+admission-profile fixture because P3.3 has not assigned the real admission
+identifier. The descriptor grammar can carry a registered admission profile,
+but no implementation may treat that test value as usable admission.
+
+## Exact authenticated current pointer
+
+The current-pointer payload contains exactly:
+
+- issuer, pseudonymous subject ID, backup ID, epoch, issuance, and expiry;
+- `LOCUS-recovery-bundle-v1`, provider-assigned immutable locator, exact ZIP
+  byte length, and ordinary SHA-256 digest;
+- exact descriptor SHA-256 digest; and
+- exact configuration digest.
+
+It contains no backup-member digest because the signed descriptor supplies that
+binding, and no concurrency token because the P2.3 store keeps ETag/provider
+version state outside the canonical LOCUS pointer. Verification requires the
+pointer, bundle, descriptor, subject, backup, epoch, and configuration bindings
+to agree before any cue-dependent work.
 
 ## Forbidden fields
 
@@ -131,6 +176,27 @@ binds the active bundle locator, bundle byte length and digest, descriptor
 digest, backup identifier, epoch, and configuration digest. This avoids both a
 self-referential digest cycle and an upload-assigned-locator cycle.
 
+P2.1 freezes deterministic ZIP transport metadata rather than treating multiple
+ZIP encodings as equivalent:
+
+- member order is exactly `backup.json`, `descriptor.json`, `manifest.json`;
+- all three are regular files at the archive root;
+- compression method is `ZIP_STORED`;
+- timestamp is 1980-01-01 00:00:00;
+- creator system is Unix, creator/extractor version is 2.0, and regular-file
+  mode is `0600`;
+- general-purpose flags, internal attributes, extra fields, member comments,
+  and archive comment are empty; and
+- no ZIP64, prefix, suffix, encryption, data descriptor, nested archive, or
+  alternate member order is accepted.
+
+The maximum canonical member sizes are 1,048,576 bytes for `backup.json`,
+65,536 bytes for `descriptor.json`, and 16,384 bytes for `manifest.json`.
+Aggregate member bytes and the 2,097,152-byte ZIP limit are checked before
+reading. A compression-ratio ceiling of 20 is checked before rejecting a
+non-stored method, so an over-compressed input receives a bounded failure even
+though compression is unsupported by v1.
+
 The ZIP decoder must reject:
 
 - missing, duplicate, unknown, nested, or directory members;
@@ -142,10 +208,32 @@ The ZIP decoder must reject:
   compression-ratio limit violations; and
 - noncanonical member bytes or any manifest/digest/length mismatch.
 
-ZIP timestamps, entry order, platform attributes, and compression choices are
-transport metadata rather than descriptor semantics. The bundle profile must
-either freeze them for deterministic generation or exclude them from semantic
-identity while the current pointer still binds the exact uploaded ZIP bytes.
+The ZIP's exact uploaded bytes are its identity in the current pointer. Member
+digests are ordinary SHA-256 because the signed objects provide contextual
+authentication; the configuration digest uses the separately registered LOCUS
+domain. The manifest does not contain a `manifest.json` entry or any digest of
+itself.
+
+## P2.1 disclosure analysis
+
+The descriptor, manifest, bundle metadata, and current pointer disclose a
+pseudonymous subject scope, backup ID, epoch, public formats, policy category,
+suite, thresholds, membership, endpoints, issuer/key IDs, validity, object
+sizes, locators, and digests. The application operator, provider, issuer, and
+parties may therefore correlate recovery activity and configuration. This is a
+privacy and enumeration limitation.
+
+They contain no raw cue, selected record, per-cue descriptor, cue hash,
+candidate hint, `Z_M`, `p_M`, password-derived authenticator, party secret
+state, `S_R`, `K_wrap`, plaintext private key, credential, or final recovery
+outcome. Ordinary SHA-256 digests bind already-public canonical objects; none
+is computed over cue-derived or password-derived material. Within the declared
+cloud/descriptor snapshot model, these fields add no local predicate for cue
+candidates. That conclusion remains conditional on the suite assumptions and
+must be tested again against the exact P2.4 persistent-state surface with a
+positive control. It does not cover client compromise, online party access,
+side channels, weak cue distributions, issuer compromise, or coordinated
+rollback.
 
 ## Approved discovery profile
 

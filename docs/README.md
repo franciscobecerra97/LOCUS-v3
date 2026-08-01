@@ -26,9 +26,10 @@ For proposed architecture, start with:
 - root `VERSION-REGISTRY.md` plus machine-readable
   `version-registry-v1.json`
 
-`schemas/` contains inherited active evidence schemas plus the P1.4/P1.5
-machine-registry and security-matrix governance schemas. New schemas must
-receive new identifiers rather than changing the meaning of existing versions.
+`schemas/` contains inherited active evidence schemas, the P1.4/P1.5
+governance schemas, and the P2.1 descriptor/current-pointer/manifest schemas.
+New schemas must receive new identifiers rather than changing the meaning of
+existing versions.
 
 The lower-case baseline documents remain active and must be synchronized with
 approved implementation and manuscript changes. An upper-case target-design

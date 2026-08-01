@@ -51,6 +51,23 @@ claim and information-flow contract in `docs/security-matrix-v1.json`, with its
 schema introduced in the same change. It is not a protocol, trace, result, or
 evidence-profile identifier and does not advance any claim status.
 
+### P2.1 assigned descriptor and bundle profiles
+
+| Identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-recovery-descriptor-v1` | Canonical signed public recovery configuration with separate recovery-holder and authorizer memberships | New field or interpretation requires a new descriptor identifier; it never changes a frozen backup, CuePolicy, or suite format |
+| `LOCUS-descriptor-current-pointer-v1` | Canonical signed mutable binding to one exact uploaded bundle, descriptor, subject, backup, epoch, and configuration | P2.3 concurrency token remains provider metadata outside these bytes; changed pointer semantics require a new identifier |
+| `LOCUS-bootstrap-signature-v1` | Ed25519 signature metadata and domain for descriptor/current-pointer objects | Expected issuer, key ID, and public key come from the installed trust configuration, never the signed object |
+| `LOCUS-recovery-configuration-v1` | Domain-separated SHA-256 binding of the complete public descriptor configuration | Any change to the included field set or framing requires a new digest-domain identifier |
+| `LOCUS-recovery-bundle-manifest-v1` | Canonical two-entry manifest binding `backup.json` and `descriptor.json` only | It never lists or hashes itself; changed membership or digest semantics require a new identifier |
+| `LOCUS-recovery-bundle-v1` | Deterministic bounded three-member `ZIP_STORED` container | Exact ZIP metadata and limits are frozen; another encoding or member set requires a new bundle identifier |
+
+All six P2.1 identifiers are introduced with strict schemas or an exact binary
+profile, canonical vector, decoder, compatibility rules, and negative tests.
+They do not assign the P3.3 admission profile or implement P2.2 discovery/P2.3
+storage. The canonical vector's `test-only:unassigned-p3.3` value is explicitly
+non-deployable and is not a LOCUS admission identifier.
+
 ### Syntax and collision rules
 
 - Assigned identifiers use printable ASCII and the form
@@ -140,12 +157,12 @@ assigns no new protocol, wire-format, deployment, or evidence identifier. The
 frozen Yi, CuePolicy, backup, deployment, and retained-evidence identifiers
 remain unchanged.
 
-## Approved but unassigned families
+## Approved family gates
 
 D001, D003--D005, D007--D010, and D014--D017 approve the architecture direction
-for the following families without assigning final protocol identifiers. D015
-supersedes the unassigned personal-cloud-account and Google Drive families from
-D002/D006:
+for the following families. P2.1 assignments are listed above; remaining exact
+identifiers stay unassigned until their recorded gate passes. D015 supersedes
+the unassigned personal-cloud-account and Google Drive families from D002/D006:
 
 | Family | Approved semantic boundary | Compatibility rule |
 | --- | --- | --- |

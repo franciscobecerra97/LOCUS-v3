@@ -192,6 +192,12 @@ implemented behavior.
 - Recovery-suite identity, public parameters, holder membership, threshold,
   backup, policy, recovery identity, and epoch bind to one enrollment.
 - A descriptor never authenticates its own trust root.
+- `LOCUS-recovery-descriptor-v1` and
+  `LOCUS-descriptor-current-pointer-v1` verify only against an externally
+  supplied expected issuer, key ID, and Ed25519 public key. The descriptor
+  binds `backup.json`; the two-entry manifest binds backup and descriptor but
+  never itself; the signed pointer alone binds the exact uploaded ZIP and its
+  provider-assigned locator.
 - The client validates a current consistent epoch before secret-dependent
   recovery.
 - Cloud substitution is checked against current honest party metadata.

@@ -21,6 +21,11 @@ P1.5 completes the prospective six-phase/twelve-view information-flow matrix
 and the schema-checked C01--C26 security contracts. These define later
 implementation and evidence obligations without promoting unsupported claims.
 
+P2.1 now implements the strict descriptor, signed current-pointer,
+two-entry manifest, and deterministic bounded ZIP codecs described below.
+Discovery, DescriptorStore adapters, clean-client bootstrap, and descriptor
+security evidence remain P2.2--P2.4.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

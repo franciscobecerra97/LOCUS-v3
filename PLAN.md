@@ -481,7 +481,7 @@ Completion record (2026-08-01):
 
 ### P2.1 Specify `RecoveryDescriptor`
 
-Status: `Approved`
+Status: `Complete`
 
 Specify:
 
@@ -525,6 +525,40 @@ Acceptance:
 - Bundle vectors cover exact membership, bounded decompression, member digest
   binding, and the absence of self-referential digest computation.
 - Disclosure analysis finds no new offline predicate within the declared model.
+
+Completion record (2026-08-01):
+
+- P2.1 assigns separate immutable identifiers for the signed descriptor,
+  signed current pointer, bootstrap signature, configuration digest, two-entry
+  manifest, and deterministic bundle. `VERSION-REGISTRY.md` records exact
+  compatibility rules; no P3.3 admission identifier is assigned early.
+- Strict JSON schemas freeze exact descriptor, current-pointer, and manifest
+  shapes and bounds. `prototype/locus/recovery_descriptor.py` implements
+  duplicate-rejecting canonical JSON, external-root Ed25519 verification,
+  configuration/cross-object digest binding, and exact membership/quorum
+  validation.
+- The descriptor contains public policy/suite bytes and distinct recovery
+  holder/authorizer sets but no trust key, cue hint/hash, password-derived
+  authenticator, party secret state, `S_R`, `K_wrap`, credential, or plaintext
+  key. The expected issuer, key ID, and public key are external inputs.
+- `LOCUS-recovery-bundle-v1` freezes exact member order, stored compression,
+  timestamps, attributes, flags, and size/ratio limits. Its manifest lists only
+  `backup.json` and `descriptor.json`; the signed pointer outside the ZIP binds
+  its uploaded locator, bytes, descriptor, subject, backup, epoch, and
+  configuration.
+- The synthetic canonical vector pins member, signature, descriptor, pointer,
+  manifest, and bundle digests/lengths without retaining a private signing key.
+  Negative tests cover missing, duplicate, unknown, noncanonical, nested,
+  encrypted, flagged, unsupported, oversized, over-compressed, trailing,
+  signature, issuer/key, membership/quorum, digest, and cross-binding cases.
+- `docs/RECOVERY-DESCRIPTOR.md` records exact formats, signature/configuration
+  framing, limits, publication boundary, forbidden fields, visible metadata,
+  linkability, and the conditional no-offline-predicate disclosure analysis.
+- The complete pinned repository gate passes with 180 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
+- P2.1 does not implement discovery, DescriptorStore/CAS, admission,
+  clean-client recovery, security evidence, or manuscript wording.
 
 ### P2.2 Specify discovery and trust bootstrap
 
@@ -1532,14 +1566,14 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0 and P1.1--P1.5 are complete; begin with P2.1 and
-do not begin a later phase while an applicable predecessor gate is incomplete,
+Execution is chronological. P0, P1.1--P1.5, and P2.1 are complete; begin with
+P2.2 and do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
-   scenarios;
+1. P2.2--P2.4 — trust bootstrap, descriptor store, and security scenarios
+   (P2.1 complete);
 2. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
 3. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
    successor publication; P4.4 remains deferred unless D011 is approved;
