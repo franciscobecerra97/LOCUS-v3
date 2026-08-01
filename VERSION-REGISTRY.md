@@ -57,6 +57,11 @@ The following families are reserved conceptually:
 Record the exact identifier, schema, compatibility rule, owner decision, and
 first implementing commit here before collecting evidence.
 
+P1.3 implements only typed, in-memory boundaries for these planned families.
+It assigns no protocol, schema, wire-format, deployment, or evidence identifier.
+The frozen Yi, CuePolicy, backup, deployment, and retained-evidence identifiers
+above remain unchanged; P1.4 is the first identifier-assignment step.
+
 ## Approved but unassigned families
 
 D001, D003--D005, D007--D010, and D014--D017 approve the architecture direction

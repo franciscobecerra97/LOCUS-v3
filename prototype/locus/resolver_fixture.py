@@ -6,6 +6,8 @@ import re
 import unicodedata
 from typing import Any
 
+from .contracts import ResolverResult
+from .cue_policy import POLICY_VERSION as CUE_POLICY_VERSION
 from .cue_policy import CuePolicyError, canonical_recovery_input
 
 RESOLVER_PROFILE_VERSION = "LOCUS-deterministic-directory-v1"
@@ -80,3 +82,17 @@ def canonical_resolver_input(response: object) -> bytes:
         return canonical_recovery_input(cues)
     except CuePolicyError as exc:
         raise _fail() from exc
+
+
+class DeterministicResolverAdapter:
+    """P1.3 adapter for the frozen deterministic resolver fixture."""
+
+    profile_id = RESOLVER_PROFILE_VERSION
+    policy_id = CUE_POLICY_VERSION
+
+    def resolve(self, query_result: object) -> ResolverResult:
+        return ResolverResult(
+            resolver_profile=self.profile_id,
+            policy_id=self.policy_id,
+            canonical_bytes=canonical_resolver_input(query_result),
+        )

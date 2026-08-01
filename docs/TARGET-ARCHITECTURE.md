@@ -6,6 +6,12 @@ supersede the implemented baseline architecture or current manuscript until the 
 implementation/evidence gates and a separate exact manuscript delta are
 approved by the owner.
 
+P1.3 now implements the suite-neutral in-memory contract layer described here,
+including a thin frozen-Yi compatibility adapter and typed CuePolicy/resolver
+adapters. See `SYSTEM-INTERFACES.md`. Descriptor, admission, gateway, lifecycle,
+and client-state-machine entries remain contracts only until their later
+chronological phases implement and evaluate them.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

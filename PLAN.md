@@ -313,7 +313,7 @@ Completion record (2026-08-01):
 
 ### P1.3 Create typed system interfaces
 
-Status: `Proposed`
+Status: `Complete`
 
 Define interfaces for:
 
@@ -343,6 +343,32 @@ Acceptance:
 - Interface tests compile/run without changing current native Yi recovery
   results.
 - Existing cue and Yi TPASS vectors remain byte-identical.
+
+Completion record (2026-08-01):
+
+- `prototype/locus/contracts.py` defines distinct typed boundaries for
+  recovery-suite public/party/request/response/client-session state,
+  CuePolicy, Resolver, backup/descriptor storage, admission/storage
+  capability validation, application storage gateway, party directory,
+  enrollment/recovery state machines, and lifecycle management.
+- `YiTpassRecoveryAdapter` wraps the unchanged `NativeTpassBackend` under the
+  suite-neutral `PasswordProtectedSecretRecovery` protocol. Its in-memory
+  opaque wrappers preserve embedded `LOCUS-TPASS-wire-v1` parameter and party
+  state bytes and assign no new external format.
+- The frozen location-person policy and deterministic resolver now have thin
+  adapters that delegate to their existing functions without changing bytes or
+  failure behavior. `BackupObjectStore` remains the existing compatibility
+  contract and is now runtime-checkable.
+- Interface tests pin the frozen TPASS and CuePolicy vector-file digests,
+  exercise native 2-of-3 recovery through the Yi adapter, preserve exact vector
+  payloads, reject malformed/cross-suite opaque state, and keep authorizer and
+  recovery-holder memberships/thresholds distinct.
+- `docs/SYSTEM-INTERFACES.md` records which contracts are implemented adapters
+  and which remain interface-only for P2--P4. No aPPSS, descriptor, admission,
+  new policy, UI, evidence, or manuscript behavior is claimed.
+- The complete default gate passed with 160 Python tests (one expected opt-in
+  live-S3 skip), 17 Rust core tests, the fixed-vector integration test, native
+  binding build, formatting, lint, type, and repository-boundary checks.
 
 ### P1.4 Freeze a new profile namespace
 
@@ -1449,14 +1475,14 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0 and P1.1--P1.2 are complete; begin with P1.3 and
+Execution is chronological. P0 and P1.1--P1.3 are complete; begin with P1.4 and
 do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P1.3--P1.5 — suite-neutral interfaces, version namespace, and
-   security/information-flow matrices (P1.1--P1.2 complete);
+1. P1.4--P1.5 — version namespace and security/information-flow matrices
+   (P1.1--P1.3 complete);
 2. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
    scenarios;
 3. P3.1--P3.4 — generic enrollment and authenticated admission/transport;

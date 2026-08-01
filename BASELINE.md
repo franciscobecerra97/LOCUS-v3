@@ -162,6 +162,15 @@ not tracked or included in an artifact, and its redistribution status has not
 been established. None of these planning facts changes the inherited Yi TPASS
 baseline described above.
 
+## Post-baseline interface note
+
+P1.3 adds suite-neutral in-memory contracts and a thin frozen-Yi compatibility
+adapter in the integrated project. It also wraps the existing CuePolicy and
+deterministic resolver functions behind typed interfaces. This is post-baseline
+scaffolding, not an imported capability, new wire format, aPPSS implementation,
+deployment result, or evidence profile. The adapter delegates to the unchanged
+native Yi backend and preserves the frozen TPASS and cue vectors byte-for-byte.
+
 ## Excluded material
 
 The portable copy excludes:

@@ -176,6 +176,13 @@ reconstruct the secret path and return the recovered protected key.
 
 ## Cross-role invariants
 
+P1.3 represents these boundaries as typed, in-memory contracts. The generic
+recovery-suite contract carries opaque suite-bound state and messages, while
+the frozen-Yi adapter delegates to the unchanged native backend and wire
+profile. These contracts are not new serialization formats. They require one
+suite per epoch and preserve distinct recovery-holder membership/threshold and
+authorizer membership/quorum fields.
+
 - Recovery-suite threshold and authorization quorum are different types.
 - Recovery-suite identity, public parameters, holder membership, threshold,
   backup, policy, recovery identity, and epoch bind to one enrollment.

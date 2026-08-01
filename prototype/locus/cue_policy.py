@@ -8,6 +8,7 @@ from decimal import ROUND_HALF_EVEN, Decimal, InvalidOperation
 from typing import Any
 
 from .codec import encode
+from .contracts import CuePolicyResult
 from .crypto import hash_bytes
 
 POLICY_VERSION = "LOCUS-location-person-set-v1"
@@ -126,3 +127,15 @@ def canonical_recovery_input(cues: object) -> bytes:
         ),
     )
     return encode({"pairs": ordered, "version": POLICY_VERSION})
+
+
+class FrozenLocationPersonCuePolicy:
+    """P1.3 adapter for the byte-frozen v1 CuePolicy implementation."""
+
+    policy_id = POLICY_VERSION
+
+    def process(self, recovery_input: object) -> CuePolicyResult:
+        return CuePolicyResult(
+            policy_id=self.policy_id,
+            canonical_bytes=canonical_recovery_input(recovery_input),
+        )
