@@ -111,6 +111,10 @@ not authorized while the v2 release checklist remains pending.
 - The deployment's "fresh client" mounts surviving `client-data` containing
   configuration, CA material, a coordinator certificate, and a coordinator
   private key. It proves a fresh process, not complete clean-device recovery.
+- P4.2 adds a separate bounded isolation profile in which Client A's credential
+  root is removed and Client B uses a distinct sanitized process/root and fresh
+  transport identity. This does not reinterpret the retained Compose evidence
+  or establish forensic erasure.
 - No `RecoveryDescriptor` or discovery protocol exists.
 - P3.3/P3.4 specify and implement the provider-neutral local admission
   contract, deterministic synthetic issuer, proof-key validation, independent

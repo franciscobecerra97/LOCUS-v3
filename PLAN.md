@@ -1003,7 +1003,7 @@ Completion record (2026-08-01):
 
 ### P4.2 Implement Client A/Client B isolation
 
-Status: `Proposed`
+Status: `Complete`
 
 Procedure:
 
@@ -1022,6 +1022,31 @@ Acceptance:
 - Client B has no Client A mounts, environment, process state, or credentials
   beyond the approved bootstrap model.
 - A deliberate inherited-state positive control fails the isolation gate.
+
+Completion record (2026-08-01):
+
+- `LOCUS-clean-client-isolation-v1` defines an exact Client B surface containing
+  only the authenticated public recovery configuration, installed CA, and a
+  fresh recovery-only transport certificate/key. Client B receives recovery
+  input transiently over standard input; neither it nor the recovered key is
+  persisted or printed.
+- A synthetic Client A provisions five separate P3.2 party processes, three
+  holding recipient-specific Yi state. The processes are stopped, Client A's
+  complete credential root is removed, and the parties restart with a distinct
+  Client B identity before recovery.
+- Client B runs as a separate sanitized-environment subprocess, reads no party
+  database or Client A path, and recovers through an authenticated 2-of-3
+  subset. It emits only a private-key SHA-256 oracle and Ed25519 public-key
+  fingerprint; both exactly match values recorded outside LOCUS at enrollment.
+- The isolation audit requires the exact four-file Client B allowlist, rejects
+  symlinks/special files, requires Client A's root to be unavailable, and scans
+  for the synthetic private key, Client A credential, recovery input, and every
+  party state. A deliberately added inherited-state file fails the gate.
+- The scenario consumes already authenticated public recovery configuration;
+  P2.2 separately verifies how a clean client obtains that configuration from
+  the signed pointer/bundle and party-current quorum. This phase does not claim
+  forensic erasure, independent administration, or production process
+  isolation and changes no retained evidence or manuscript wording.
 
 ### P4.3 Complete post-recovery successor publication
 

@@ -223,8 +223,8 @@ evidence.
 
 ## Clean-client boundary
 
-Client B may receive only the inputs approved in D001--D003 and the eventual
-D004 admission decision, such as:
+Client B may receive only the inputs approved in D001--D004 and the implemented
+local D004 admission decision, such as:
 
 - installed application and pinned trust root;
 - admission/identity authentication capability and a short-lived scoped

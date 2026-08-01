@@ -21,6 +21,7 @@
     "LOCUS-backup-digest-v1",
     "LOCUS-bootstrap-signature-v1",
     "LOCUS-bootstrap-trust-config-v1",
+    "LOCUS-clean-client-isolation-v1",
     "LOCUS-cloud-backup-object-v1",
     "LOCUS-cloud-backup-reference-v1",
     "LOCUS-cloud-snapshot-input-v1",

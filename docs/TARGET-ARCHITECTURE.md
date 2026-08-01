@@ -49,6 +49,12 @@ backup/epoch after descriptor verification, enforces exact ordered retries,
 and keeps suite/decryption outcomes out of persisted state and party-visible
 messages. P4.2 and P4.3 supply isolation and successor orchestration.
 
+P4.2 implements a bounded clean-client isolation harness. Enrollment and
+recovery use different client roots and transport identities; Client A's root
+is absent before Client B starts in a sanitized subprocess. Client B receives
+only public recovery configuration, installed trust material, a fresh key, and
+transient recovery input, while all Yi state remains behind party APIs.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

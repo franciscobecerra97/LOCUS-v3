@@ -131,6 +131,12 @@ P3.4 implements these exact local profiles without assigning an external
 provider identifier; its fixed local signature/proof vector cannot be used as
 evidence for OIDC, multifactor authentication, or production identity.
 
+P4.2 assigns `LOCUS-clean-client-isolation-v1` to the bounded local process/
+persistent-surface scenario. Its exact Client B inputs are authenticated public
+recovery configuration, an installed CA, and a fresh recovery-only transport
+identity; recovery input is transient. It is not a deployment, evidence,
+forensic-erasure, or independent-administration profile.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a
