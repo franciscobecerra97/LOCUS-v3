@@ -44,6 +44,11 @@ gateway keeps independent digest-only replay state. The gateway validates
 before its storage backend call. This local test double adds no external IdP,
 recovery factor, CuePolicy input, or recovery-suite transformation.
 
+P4.1 implements the recovery state-machine spine. It fixes the authenticated
+backup/epoch after descriptor verification, enforces exact ordered retries,
+and keeps suite/decryption outcomes out of persisted state and party-visible
+messages. P4.2 and P4.3 supply isolation and successor orchestration.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

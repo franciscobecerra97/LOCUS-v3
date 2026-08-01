@@ -117,6 +117,9 @@ not authorized while the v2 release checklist remains pending.
   replay stores, and an admitted storage-gateway wrapper. It is component-level
   same-host research behavior, not external identity-provider or production
   admission evidence.
+- P4.1 implements the stable, secret-free recovery phase/retry state machine
+  and generic secret-path rejection boundary. It does not itself perform the
+  P4.2 clean-client isolation scenario or P4.3 successor publication.
 - P3.2 implements authenticated, recipient-bound initial enrollment across
   clean same-host party processes. The retained/evaluated v2 deployment still
   uses its frozen trusted networkless provisioner and direct volume writes, so

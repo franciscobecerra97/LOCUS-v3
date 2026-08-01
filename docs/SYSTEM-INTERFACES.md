@@ -147,6 +147,12 @@ bootstrap -> descriptor verification -> current state -> backup retrieval
 -> decryption -> key identity -> successor -> complete
 ```
 
+P4.1 implements this exact order. Descriptor verification fixes the public
+backup/epoch binding; subsequent phases cannot replace it. Retry events and
+state deliberately contain no secret-path value or final suite/AEAD outcome,
+and wrong input or malformed remote secret-path state normalizes to one public
+rejection.
+
 The corresponding dataclasses contain only operation, phase, backup, epoch,
 and recovery-handle metadata. They contain no field for private-key bytes,
 canonical cues, password input, client blinders, recovery secrets, or wrapping

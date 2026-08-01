@@ -956,7 +956,7 @@ Completion record (2026-08-01):
 
 ### P4.1 Refactor recovery into a stable state machine
 
-Status: `Proposed`
+Status: `Complete`
 
 States:
 
@@ -979,6 +979,27 @@ Acceptance:
 - Wrong input and malformed remote state expose only the approved error
   boundary.
 - The client does not disclose the final recovery-suite/AEAD outcome to parties.
+
+Completion record (2026-08-01):
+
+- `StableRecoveryStateMachine` implements the P1.3 recovery contract across
+  the exact ordered P4.1 sequence. Its retry state contains only operation,
+  phase, recovery handle, authenticated backup identifier, and epoch.
+- The backup/epoch binding is required immediately after descriptor
+  verification and cannot change. Exact event retries converge; stale states,
+  skipped/reordered phases, event-ID reuse, changed handles, and post-complete
+  transitions fail closed.
+- Transition events contain no cues, credentials, suite state, keys, secret
+  values, or suite/AEAD success bit. The state machine is local to the client,
+  so parties receive no final recovery or decryption outcome.
+- `normalize_recovery_failure` collapses wrong-input and malformed secret-path
+  failures to the same public `recovery rejected` boundary without copying
+  internal exception text.
+- P4.1 changes no bootstrap codec, recovery suite, admission protocol, retained
+  evidence, or manuscript wording.
+- The complete pinned repository gate passes with 223 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
 
 ### P4.2 Implement Client A/Client B isolation
 
