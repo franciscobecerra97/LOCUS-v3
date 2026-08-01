@@ -55,6 +55,13 @@ is absent before Client B starts in a sanitized subprocess. Client B receives
 only public recovery configuration, installed trust material, a fresh key, and
 transient recovery input, while all Yi state remains behind party APIs.
 
+P4.3 implements the durable post-recovery successor coordinator. Its public
+journal binds exact predecessor/successor metadata and digests, drives one
+deterministically idempotent effect at a time, verifies the prepared successor
+recovers the original key before cutover, and defaults to no key rotation. The
+frozen party lifecycle then performs its existing atomic retire/activate
+transaction; the following logical retirement phase confirms that result.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

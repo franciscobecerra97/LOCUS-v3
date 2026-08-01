@@ -123,7 +123,12 @@ not authorized while the v2 release checklist remains pending.
   admission evidence.
 - P4.1 implements the stable, secret-free recovery phase/retry state machine
   and generic secret-path rejection boundary. It does not itself perform the
-  P4.2 clean-client isolation scenario or P4.3 successor publication.
+  P4.2 clean-client isolation scenario.
+- P4.3 adds a durable secret-free successor-publication journal, exact action
+  retries, prepared-package recovery verification, and explicit no-rotation by
+  default over the existing same-membership lifecycle boundary. Its crash
+  adapter is synthetic and does not establish external-provider, rollback, or
+  general-replacement evidence.
 - P3.2 implements authenticated, recipient-bound initial enrollment across
   clean same-host party processes. The retained/evaluated v2 deployment still
   uses its frozen trusted networkless provisioner and direct volume writes, so

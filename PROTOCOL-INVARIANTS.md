@@ -217,6 +217,12 @@ implemented behavior.
 - Error responses do not reveal the client's final TPASS or AEAD outcome to
   parties.
 - A predecessor is not retired before the successor is durably recoverable.
+- P4.3 enforces that client-side ordering by verifying the prepared successor
+  against the original recovered-key identity before invoking the frozen
+  lifecycle's atomic predecessor-retirement/successor-activation operation.
+  Its durable journal retains only public bindings and digests, and key
+  rotation remains an explicit Boolean choice that defaults to false in the
+  implemented path.
 - Historical protocol identifiers are never reinterpreted.
 - Every externally serialized identifier is allocated through
   `VERSION-REGISTRY.md`; reserved families have no usable identifier until the

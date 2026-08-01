@@ -174,13 +174,26 @@ service, and restart reconstructs only an `ACTIVE` package.
   predecessor-context party state, pauses after activation so the host runner
   can restart party 1, refuses the retired predecessor, completes successor
   recovery, validates the exact report, scans output, and removes all resources.
+- P4.3 adds `DurableSuccessorPublication`, a secret-free SQLite client journal
+  for the complete post-recovery publication order. It binds one operation to
+  exact epoch/configuration/backup/descriptor/key digests, derives one stable
+  idempotency key per action, verifies recovery from the prepared package before
+  cutover, and defaults to preserving the original recovered key without
+  rotation. Because this v1 lifecycle deliberately combines local retirement
+  and activation, the later journal retirement phase confirms the certified
+  atomic result rather than introducing a second state transition.
+- Deterministic P4.3 tests crash after every effect boundary and reopen the
+  journal. Each prefix retains an authorized recoverable epoch; retry produces
+  one activation and one retirement confirmation, while changed binding under
+  the same operation identifier fails closed.
 
 ## Remaining implementation work
 
 - Public user/admin authorization, lifecycle idempotency retention/compaction,
   automated reconciliation, party replacement, and rollback anchors remain.
-- The simple client helper regenerates a package if called again; a public client
-  must durably retain and exactly retry one prepared package instead.
+- The P4.3 coordinator now retains exact public progress, but its external
+  adapter still relies on the separately tested storage and party lifecycle
+  operations; a future deployed profile must wire and evidence that composition.
 
 ## Evaluation and paper implications
 

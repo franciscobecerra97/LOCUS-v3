@@ -1050,7 +1050,7 @@ Completion record (2026-08-01):
 
 ### P4.3 Complete post-recovery successor publication
 
-Status: `Proposed`
+Status: `Complete`
 
 Order:
 
@@ -1067,6 +1067,39 @@ Acceptance:
 
 - Crash tests at every boundary leave at least one authorized epoch recoverable.
 - Exact retries complete without double activation or stale reauthorization.
+
+Completion record (2026-08-01):
+
+- `LOCUS-successor-publication-journal-v1` durably binds one operation to the
+  predecessor/successor epochs and exact configuration, backup, descriptor,
+  and recovered-key digests. The journal contains no protected-key bytes,
+  recovery input, suite secret, wrapping key, party state, or authorization
+  credential.
+- The coordinator orders original-key identity preservation, party
+  preparation, immutable backup publication, authenticated descriptor/current
+  publication, readiness, prepared-successor recovery verification, certified
+  activation, predecessor-retirement confirmation, and the explicit optional
+  rotation choice. The default path preserves the recovered original key and
+  performs no key rotation.
+- Every external action receives a deterministic binding-and-phase
+  idempotency key. Reopening the SQLite journal resumes the exact action;
+  changing any bound digest or epoch under the same operation identifier fails
+  before another authorization or publication.
+- The existing `LOCUS-epoch-lifecycle-policy-v1` party operation intentionally
+  activates the successor and retires the predecessor atomically. P4.3 first
+  verifies recovery from the prepared successor package while the predecessor
+  remains authorized, then performs that atomic switch; its logical retirement
+  step confirms/retries the certified result rather than creating a second
+  non-atomic party transition.
+- Synthetic crash injection after each of the nine effect boundaries, including
+  an explicitly selected rotation path, leaves an authorized predecessor or
+  successor recoverable and resumes with exactly one activation and retirement
+  confirmation. The ordinary no-rotation path, secret-free journal property,
+  changed-binding rejection, and wrong-key early failure are separate tests.
+- This is a component-level orchestration and deterministic failure result over
+  the existing same-membership lifecycle/storage interfaces. It does not add
+  general replacement, coordinated rollback resistance, external-provider
+  evidence, or manuscript wording.
 
 ### P4.4 General party replacement
 

@@ -137,6 +137,13 @@ recovery configuration, an installed CA, and a fresh recovery-only transport
 identity; recovery input is transient. It is not a deployment, evidence,
 forensic-erasure, or independent-administration profile.
 
+P4.3 assigns `LOCUS-successor-publication-journal-v1` to the secret-free durable
+client progress record and deterministic phase-action idempotency domain for one
+exact same-membership successor. It binds public epochs and configuration,
+backup, descriptor, and recovered-key digests; it stores no recovered key or
+suite secret. It does not change `LOCUS-epoch-lifecycle-policy-v1`, authorize
+party replacement, or establish rollback-resistant publication.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a

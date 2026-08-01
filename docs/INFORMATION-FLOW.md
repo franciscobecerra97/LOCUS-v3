@@ -125,11 +125,12 @@ networkless, synthetic-state experiments; they are not online guessing tools.
 
 The active client prepares and verifies fresh successor party state, immutable
 backup/bundle, signed descriptor, and current summaries before current-pointer
-activation. The predecessor remains recoverable until successor recovery is
-verified and activation is durable. Exact retries are idempotent. Each crash
-boundary must be inspected for mixed suite/epoch/configuration state. This does
-not authorize automatic downgrade, share conversion, general replacement, or
-global rollback-resistance claims.
+activation. P4.3 verifies recovery against the prepared successor package while
+the predecessor remains authorized, then invokes the frozen party lifecycle's
+atomic predecessor-retirement/successor-activation transaction. Exact retries
+are derived from one immutable public binding, and the durable journal stores
+only public metadata and digests. This does not authorize automatic downgrade,
+share conversion, general replacement, or global rollback-resistance claims.
 
 ### Party replacement phase contract
 

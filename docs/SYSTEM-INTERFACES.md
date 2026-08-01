@@ -164,6 +164,15 @@ retire-predecessor operations around a consecutive-epoch `LifecycleBinding`.
 Its interface does not replace the existing lifecycle implementation or
 authorize general membership replacement.
 
+P4.3 implements the stricter client-side sequencing boundary as
+`DurableSuccessorPublication` and `SuccessorPublicationBackend`. The durable
+journal contains only the exact public operation binding, digests, explicit
+rotation choice, and current phase. Backend effects receive deterministic
+idempotency keys; prepared-package recovery verification precedes the frozen
+lifecycle's atomic retire/activate operation. No protected-key bytes, recovery
+input, suite secret, wrapping key, party state, or capability is serializable
+through this interface.
+
 ## Decoder and compatibility requirements
 
 Every concrete external decoder behind these interfaces must:
