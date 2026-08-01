@@ -4,6 +4,11 @@ This matrix separates what the retained baseline supports from what a changed
 improvement profile would need. Baseline evidence never transfers merely
 because code was derived from the same repository.
 
+P1.4 protects the existing identifier corpus and reserves future evidence
+families, but it creates no implementation or security evidence. A reservation
+does not advance any claim status, and later claims must cite the exact assigned
+profile and result schema.
+
 Status values include `Supported for exact baseline`, `Partial for exact
 baseline`, `Unsupported in improvement profile`, `In progress`, `Disproved`,
 and `Explicit non-claim`.

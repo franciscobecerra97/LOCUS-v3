@@ -171,6 +171,16 @@ scaffolding, not an imported capability, new wire format, aPPSS implementation,
 deployment result, or evidence profile. The adapter delegates to the unchanged
 native Yi backend and preserves the frozen TPASS and cue vectors byte-for-byte.
 
+## Post-baseline namespace note
+
+P1.4 adds a machine-checkable protected-identifier ledger and future-family
+allocation gates. This is integrated-project governance, not an imported
+capability or new protocol profile. The registry protects historical,
+development, test, trace, result, and artifact identifiers from reuse without
+changing their original status or meaning. Future descriptor, admission,
+policy, aPPSS, deployment, trace, result, and artifact identifiers remain
+unassigned until their chronological schema/vector gates pass.
+
 ## Excluded material
 
 The portable copy excludes:

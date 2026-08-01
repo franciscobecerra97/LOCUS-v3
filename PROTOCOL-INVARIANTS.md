@@ -197,6 +197,10 @@ authorizer membership/quorum fields.
   parties.
 - A predecessor is not retired before the successor is durably recoverable.
 - Historical protocol identifiers are never reinterpreted.
+- Every externally serialized identifier is allocated through
+  `VERSION-REGISTRY.md`; reserved families have no usable identifier until the
+  named schema/vector gate passes, and unknown versions fail before dependent
+  fields are interpreted.
 - A recovery bundle is a transport container, not a trust root: the descriptor
   binds the canonical backup member, the externally authenticated current
   pointer binds the exact active bundle and descriptor, and the client rejects

@@ -20,6 +20,12 @@ format or profile is approved.
 | `LOCUS-anonymous-artifact-v1` | Sealed imported anonymous artifact and manifest envelope | Frozen; verification only |
 | `LOCUS-anonymous-artifact-v2` | Integrated-repository anonymous package with package-specific reviewer documents and strict manifest schema | Active audit profile; release pending |
 
+The table highlights the principal upstream boundaries. The complete protected
+ledger, including superseded development, internal wire, lifecycle, snapshot,
+trace, result, and synthetic-fixture identifiers, is
+`docs/version-registry-v1.json`. Inclusion in that ledger prevents reuse; it
+does not promote a historical or test-only identifier to an active profile.
+
 ## Rules
 
 - Do not rename an identifier for readability.
@@ -30,6 +36,72 @@ format or profile is approved.
 - A policy change normally requires a new policy identifier and recovery epoch.
 - A topology, admission, descriptor, trace-policy, or metric-definition change
   requires a new deployment/evidence profile.
+
+## P1.4 namespace and allocation contract
+
+The machine-readable registry is `docs/version-registry-v1.json`, validated by
+`docs/schemas/version-registry-v1.schema.json`. Its own identifier,
+`LOCUS-version-registry-v1`, is the only new identifier assigned by P1.4; its
+schema and tests are introduced in the same change. Later protocol and evidence
+families remain reservations without candidate identifiers until their named
+schema/vector gate passes.
+
+### Syntax and collision rules
+
+- Assigned identifiers use printable ASCII and the form
+  `LOCUS-<semantic-name>-v<unsigned-integer>`.
+- Matching is exact and case-sensitive, while allocation also rejects a
+  case-folded collision to avoid identifiers that differ only by case.
+- A protected identifier is never deleted or reused, including when its format
+  is superseded, experimental, development-only, or test-only.
+- The numeric suffix versions one semantic family; it is not a global release
+  number and does not imply compatibility with another family.
+- Prefix similarity does not establish compatibility. Compatibility exists
+  only when the registered adapter or decoder rule says so.
+- Domain-separation labels, canonical wire/state formats, deployment profiles,
+  trace policies, result schemas, and artifact manifests are separate versioned
+  boundaries even when they are introduced together.
+
+### Allocation states
+
+| State | Meaning | Permitted transition |
+| --- | --- | --- |
+| Protected existing | Identifier already occurs in the imported or integrated project and cannot be reinterpreted | May be documented as active, frozen, superseded, or test-only; never returns to an allocatable state |
+| Reserved family | Semantic boundary and allocation phase are approved, but no exact identifier exists | Becomes assigned only with its strict schema, compatibility rule, and canonical vectors/tests |
+| Assigned | Exact identifier, meaning, schema/profile, and first implementation are reviewed together | Becomes frozen or superseded; its original meaning remains permanent |
+| Frozen/superseded | No new enrollment/evidence uses the profile, but compatible legacy reads may remain | Never changes meaning and never transfers evidence to a successor |
+
+### Registered family gates
+
+| Family | Current protected boundary | Future allocation gate |
+| --- | --- | --- |
+| Recovery suite | Frozen Yi suite and wire identifiers | P5A.1 assigns aPPSS suite/domain/state/message/wire identifiers only with D017 schemas and fixed vectors |
+| CuePolicy/resolver | Frozen composite, atom, and deterministic-resolver identifiers | P5.2 assigns each atomic policy and `NoResolver` only after its grammar, domain, and vectors are approved |
+| Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
+| Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
+| Admission | No implemented public-admission identifier | P3.3 assigns the provider-neutral capability and local-issuer profiles after binding/replay schemas and vectors are approved |
+| Deployment | Frozen same-host Yi deployment identifier | P6.3 assigns exact suite/topology/provider profiles; host separation and independent administration remain distinct |
+| Trace | Frozen retained trace-policy identifier | P8.3 assigns a new trace profile only after the collection and retained-output schema is approved |
+| Result | Frozen retained attack/performance/evidence families | P9.2 assigns new schemas before collection and keeps Yi/aPPSS and topology results disjoint |
+| Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | P10.3 assigns a later portable-artifact identifier with a new manifest and allowlist |
+
+### Upgrade and compatibility rules
+
+1. A decoder accepts only an explicit allowlist of exact identifiers and must
+   reject unknown, malformed, or unsupported versions before interpreting
+   dependent fields.
+2. An in-family reader may support multiple immutable versions through explicit
+   adapters. It must not silently reinterpret old bytes as a new version.
+3. A changed CuePolicy, recovery suite, threshold/topology, descriptor binding,
+   admission contract, or backup semantics requires a new recovery epoch and
+   every affected profile identifier.
+4. One epoch selects exactly one recovery suite. Yi and aPPSS state, messages,
+   shares, and evidence cannot be mixed, converted in place, or used as an
+   automatic downgrade path.
+5. Evidence compatibility is stricter than implementation compatibility. A
+   legacy decoder does not authorize pooling or relabeling historical results.
+6. Publication is additive: new schemas, vectors, results, and artifacts use
+   new paths. Frozen files and retained v1/v2 evidence are never overwritten.
 
 ## Planned version families
 
@@ -58,9 +130,10 @@ Record the exact identifier, schema, compatibility rule, owner decision, and
 first implementing commit here before collecting evidence.
 
 P1.3 implements only typed, in-memory boundaries for these planned families.
-It assigns no protocol, schema, wire-format, deployment, or evidence identifier.
-The frozen Yi, CuePolicy, backup, deployment, and retained-evidence identifiers
-above remain unchanged; P1.4 is the first identifier-assignment step.
+P1.4 protects all existing identifiers and records the future family gates but
+assigns no new protocol, wire-format, deployment, or evidence identifier. The
+frozen Yi, CuePolicy, backup, deployment, and retained-evidence identifiers
+remain unchanged.
 
 ## Approved but unassigned families
 

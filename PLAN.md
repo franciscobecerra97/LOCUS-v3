@@ -372,7 +372,7 @@ Completion record (2026-08-01):
 
 ### P1.4 Freeze a new profile namespace
 
-Status: `Proposed`
+Status: `Complete`
 
 Actions:
 
@@ -384,6 +384,34 @@ Actions:
 Acceptance:
 
 - No new identifier collides with or reinterprets a frozen upstream identifier.
+
+Completion record (2026-08-01):
+
+- `docs/version-registry-v1.json` is the machine-readable P1.4 allocation
+  ledger, and `docs/schemas/version-registry-v1.schema.json` freezes its exact
+  shape. `LOCUS-version-registry-v1` is the only new identifier assigned by
+  this phase, with its schema and tests introduced in the same change.
+- The ledger protects 76 existing and registry identifiers against exact or
+  case-folded collision. Protection includes frozen, superseded, development,
+  test, wire, lifecycle, snapshot, trace, result, and artifact identifiers but
+  does not promote their status or reinterpret their meaning.
+- Nine future families—recovery suite, policy/resolver, descriptor,
+  backup/bundle, admission, deployment, trace, result, and artifact—are
+  reserved by owner decision and chronological allocation phase without
+  premature candidate identifiers.
+- `VERSION-REGISTRY.md` defines syntax, allocation states, schema/vector gates,
+  and upgrade rules. Unknown versions fail closed; suite/policy/topology and
+  evidence changes receive distinct identifiers and, where applicable, a new
+  epoch. Frozen evidence is never pooled or relabeled.
+- `prototype/tests/test_version_registry.py` checks the registry/schema shape,
+  canonical ordering, exact and case-folded uniqueness, frozen minimum set,
+  active-source coverage, reservation completeness, and absence of identifier
+  fields from pre-schema reservations.
+- No recovery protocol, wire format, descriptor, admission mechanism,
+  deployment, evidence corpus, or manuscript wording changes in P1.4.
+- The complete default gate passed with 164 Python tests (one expected opt-in
+  live-S3 skip), 17 Rust core tests, the fixed-vector integration test, native
+  binding build, formatting, lint, type, and repository-boundary checks.
 
 ### P1.5 Create security and information-flow matrices
 
@@ -1475,14 +1503,13 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0 and P1.1--P1.3 are complete; begin with P1.4 and
+Execution is chronological. P0 and P1.1--P1.4 are complete; begin with P1.5 and
 do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P1.4--P1.5 — version namespace and security/information-flow matrices
-   (P1.1--P1.3 complete);
+1. P1.5 — security and information-flow matrices (P1.1--P1.4 complete);
 2. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
    scenarios;
 3. P3.1--P3.4 — generic enrollment and authenticated admission/transport;

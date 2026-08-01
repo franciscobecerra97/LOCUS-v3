@@ -1,0 +1,180 @@
+{
+  "artifact": "LOCUS-version-registry-v1",
+  "namespace": "LOCUS",
+  "protected_identifiers": [
+    "LOCUS-AES-256-GCM-v0",
+    "LOCUS-AES-256-GCM-v1",
+    "LOCUS-anonymous-artifact-v1",
+    "LOCUS-anonymous-artifact-v2",
+    "LOCUS-attack-report-v1",
+    "LOCUS-attempt-config-v2",
+    "LOCUS-attempt-entry-v1",
+    "LOCUS-attempt-model-report-v1",
+    "LOCUS-authorization-certificate-v1",
+    "LOCUS-backup-associated-data-v1",
+    "LOCUS-backup-digest-v1",
+    "LOCUS-cloud-backup-object-v1",
+    "LOCUS-cloud-backup-reference-v1",
+    "LOCUS-cloud-snapshot-input-v1",
+    "LOCUS-combined-snapshot-input-v1",
+    "LOCUS-compose-benchmark-v1",
+    "LOCUS-compose-deployment-v2",
+    "LOCUS-compose-performance-result-v1",
+    "LOCUS-compose-profile-evidence-v1",
+    "LOCUS-compose-recovery-v1",
+    "LOCUS-compose-recovery-v2",
+    "LOCUS-cue-policy-corpus-v1",
+    "LOCUS-deterministic-directory-v1",
+    "LOCUS-deterministic-directory-v2",
+    "LOCUS-deterministic-fixture-v1",
+    "LOCUS-development-backup-v1",
+    "LOCUS-development-context-v1",
+    "LOCUS-entry-vote-v1",
+    "LOCUS-epoch-activation-certificate-v1",
+    "LOCUS-epoch-approval-v1",
+    "LOCUS-epoch-lifecycle-policy-v1",
+    "LOCUS-epoch-ready-v2",
+    "LOCUS-epoch-transition-v1",
+    "LOCUS-experiment-metadata-v1",
+    "LOCUS-improvement-portable-contents-v4",
+    "LOCUS-in-process-walkthrough-v1",
+    "LOCUS-install-vote-v1",
+    "LOCUS-loc-id-v1",
+    "LOCUS-local-context-v0",
+    "LOCUS-local-context-v1",
+    "LOCUS-location-person-pair-v1",
+    "LOCUS-location-person-set-v1",
+    "LOCUS-party-service-config-v1",
+    "LOCUS-party-snapshot-input-v1",
+    "LOCUS-performance-client-samples-v1",
+    "LOCUS-performance-latex-rows-v1",
+    "LOCUS-performance-paper-inputs-v1",
+    "LOCUS-performance-paper-inputs-v2",
+    "LOCUS-performance-processed-v1",
+    "LOCUS-performance-processed-v2",
+    "LOCUS-person-id-v1",
+    "LOCUS-prepare-certificate-v1",
+    "LOCUS-profile-trace-policy-v1",
+    "LOCUS-provision-metric-v1",
+    "LOCUS-reference-backup-v3",
+    "LOCUS-reference-backup-v4",
+    "LOCUS-reference-group-secret-v1",
+    "LOCUS-reference-party-v1",
+    "LOCUS-resolver-drift-corpus-v1",
+    "LOCUS-resolver-fixture-v1",
+    "LOCUS-response-freshness-certificate-v1",
+    "LOCUS-response-freshness-request-v1",
+    "LOCUS-response-freshness-vote-v1",
+    "LOCUS-runtime-epoch-package-v1",
+    "LOCUS-security-policy-v0",
+    "LOCUS-security-policy-v1",
+    "LOCUS-storage-metric-v1",
+    "LOCUS-synthetic-combined-candidate-alpha-v1",
+    "LOCUS-synthetic-combined-candidate-beta-v1",
+    "LOCUS-synthetic-offline-candidate-alpha-v1",
+    "LOCUS-synthetic-offline-candidate-beta-v1",
+    "LOCUS-synthetic-party-candidate-alpha-v1",
+    "LOCUS-synthetic-party-candidate-beta-v1",
+    "LOCUS-TPASS-wire-v1",
+    "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+    "LOCUS-version-registry-v1"
+  ],
+  "reservations": [
+    {
+      "family": "admission",
+      "allocation_phase": "P3.3",
+      "decisions": [
+        "D004",
+        "D015"
+      ],
+      "required_gate": "Approve the strict capability schema, proof-key and replay bindings, canonical vectors, and local issuer/verifier profile.",
+      "compatibility_rule": "The provider-neutral contract and every optional provider adapter use distinct identifiers; admission never changes CuePolicy or recovery-suite bytes."
+    },
+    {
+      "family": "artifact",
+      "allocation_phase": "P10.3",
+      "decisions": [
+        "D016"
+      ],
+      "required_gate": "Approve the revised portable-artifact manifest, allowlist, provenance rules, and deterministic package tests.",
+      "compatibility_rule": "Frozen anonymous-artifact v1 and v2 packages remain immutable; later evidence is packaged under a new artifact identifier."
+    },
+    {
+      "family": "backup-and-bundle",
+      "allocation_phase": "P2.1",
+      "decisions": [
+        "D001",
+        "D014",
+        "D015"
+      ],
+      "required_gate": "Approve the descriptor, current-pointer, bundle, manifest, and suite-binding schemas with bounded canonical vectors.",
+      "compatibility_rule": "New bundle members and pointers do not reinterpret frozen backup or cloud-object formats; semantic changes require a new epoch and identifier."
+    },
+    {
+      "family": "deployment",
+      "allocation_phase": "P6.3",
+      "decisions": [
+        "D007",
+        "D008",
+        "D015",
+        "D016"
+      ],
+      "required_gate": "Freeze exact suite, topology, authorization quorum, host scope, provider, runtime package, and test matrix.",
+      "compatibility_rule": "Same-host, host-separated, independently administered, provider, suite, and threshold profiles are never pooled or relabeled."
+    },
+    {
+      "family": "descriptor",
+      "allocation_phase": "P2.1",
+      "decisions": [
+        "D001",
+        "D003",
+        "D014"
+      ],
+      "required_gate": "Approve the strict RecoveryDescriptor and authenticated current-pointer schemas, trust-root rules, limits, signatures, and canonical vectors.",
+      "compatibility_rule": "A descriptor version binds one suite and epoch and never changes frozen backup, CuePolicy, or Yi formats."
+    },
+    {
+      "family": "policy-and-resolver",
+      "allocation_phase": "P5.2",
+      "decisions": [
+        "D005"
+      ],
+      "required_gate": "Approve each atomic input grammar, cardinality, canonicalization, ambiguity rule, domain, NoResolver profile, and vectors.",
+      "compatibility_rule": "Every semantic policy change receives a new policy identifier and epoch; the frozen composite policy remains byte-identical."
+    },
+    {
+      "family": "recovery-suite",
+      "allocation_phase": "P5A.1",
+      "decisions": [
+        "D007",
+        "D016",
+        "D017"
+      ],
+      "required_gate": "Approve the complete aPPSS suite, password domain, OPRF, field, state, message, wire, error, and fixed-vector schemas.",
+      "compatibility_rule": "A suite is immutable and bound one-to-one with an epoch; Yi and aPPSS state cannot mix, convert in place, or downgrade automatically."
+    },
+    {
+      "family": "result",
+      "allocation_phase": "P9.2",
+      "decisions": [
+        "D007",
+        "D008",
+        "D016",
+        "D017"
+      ],
+      "required_gate": "Approve exact evidence scenarios, aggregate fields, provenance, metric definitions, positive controls, and result schemas before collection.",
+      "compatibility_rule": "New suite and deployment results use separate families; retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
+    },
+    {
+      "family": "trace",
+      "allocation_phase": "P8.3",
+      "decisions": [
+        "D004",
+        "D008",
+        "D009"
+      ],
+      "required_gate": "Approve the privacy-safe collection boundary, synthetic topology, retained aggregate fields, exclusions, and trace schema.",
+      "compatibility_rule": "A changed collection boundary, topology, role view, or retained field set requires a new trace and evidence profile."
+    }
+  ]
+}

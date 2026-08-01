@@ -1,0 +1,77 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://locus.invalid/schemas/version-registry-v1.schema.json",
+  "title": "LOCUS version registry v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "artifact",
+    "namespace",
+    "protected_identifiers",
+    "reservations"
+  ],
+  "properties": {
+    "artifact": {
+      "const": "LOCUS-version-registry-v1"
+    },
+    "namespace": {
+      "const": "LOCUS"
+    },
+    "protected_identifiers": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^LOCUS-[A-Za-z0-9_-]+-v[0-9]+$",
+        "maxLength": 255
+      }
+    },
+    "reservations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "family",
+          "allocation_phase",
+          "decisions",
+          "required_gate",
+          "compatibility_rule"
+        ],
+        "properties": {
+          "family": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9-]*$",
+            "maxLength": 80
+          },
+          "allocation_phase": {
+            "type": "string",
+            "pattern": "^P[0-9]+(?:A)?(?:\\.[0-9]+)?$",
+            "maxLength": 16
+          },
+          "decisions": {
+            "type": "array",
+            "minItems": 1,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^D[0-9]{3}$"
+            }
+          },
+          "required_gate": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          },
+          "compatibility_rule": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 500
+          }
+        }
+      }
+    }
+  }
+}

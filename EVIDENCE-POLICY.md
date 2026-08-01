@@ -17,6 +17,11 @@ Raw records remain immutable. Deterministic verification and processing may be
 rerun. Changed profiles use new identifiers and paths and must never be mixed
 with the inherited corpora.
 
+P1.4 records protected identifiers and reserved evidence families in
+`docs/version-registry-v1.json`. Reservation is not evidence authorization:
+trace and result identifiers remain unassigned until P8.3/P9.2 approve the
+exact privacy boundary, schema, positive controls, metrics, and provenance.
+
 ## Required scenario contract
 
 Every security-sensitive experiment records:

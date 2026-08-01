@@ -12,6 +12,11 @@ adapters. See `SYSTEM-INTERFACES.md`. Descriptor, admission, gateway, lifecycle,
 and client-state-machine entries remain contracts only until their later
 chronological phases implement and evaluate them.
 
+P1.4 freezes the allocation rules and protected-identifier ledger in
+`VERSION-REGISTRY.md` and `version-registry-v1.json`. Future architecture
+families are reserved by decision and chronological schema gate, not assigned
+usable identifiers in advance.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior

@@ -22,9 +22,12 @@ For proposed architecture, start with:
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`
 - root `PROTOCOL-INVARIANTS.md`
+- root `VERSION-REGISTRY.md` plus machine-readable
+  `version-registry-v1.json`
 
-`schemas/` contains inherited active evidence schemas. New schemas must receive
-new identifiers rather than changing the meaning of existing versions.
+`schemas/` contains inherited active evidence schemas plus the P1.4
+machine-registry governance schema. New schemas must receive new identifiers
+rather than changing the meaning of existing versions.
 
 The lower-case baseline documents remain active and must be synchronized with
 approved implementation and manuscript changes. An upper-case target-design
