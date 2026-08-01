@@ -113,8 +113,10 @@ not authorized while the v2 release checklist remains pending.
   private key. It proves a fresh process, not complete clean-device recovery.
 - No `RecoveryDescriptor` or discovery protocol exists.
 - No public-client admission exists.
-- Evaluated enrollment uses a trusted networkless provisioner and direct volume
-  writes rather than authenticated remote enrollment.
+- P3.2 implements authenticated, recipient-bound initial enrollment across
+  clean same-host party processes. The retained/evaluated v2 deployment still
+  uses its frozen trusted networkless provisioner and direct volume writes, so
+  its historical evidence is not reinterpreted as P3.2 evidence.
 - Only one CuePolicy is implemented.
 - No graphical UI exists.
 - No real-provider result is retained.

@@ -795,7 +795,7 @@ Completion record (2026-08-01):
 
 ### P3.2 Implement authenticated enrollment transport
 
-Status: `Proposed`
+Status: `Complete`
 
 Replace paper-facing direct volume provisioning with:
 
@@ -815,6 +815,35 @@ Acceptance:
 - No coordinator persists all recovery-suite secret states. An aPPSS production
   enrollment has each server create and retain its own OPRF key; a central
   fixture may exist only for bounded unit tests.
+
+Completion record (2026-08-01):
+
+- `LOCUS-authenticated-enrollment-transport-v1` adds an exact initial-epoch
+  enrollment route to the existing pinned mutual-TLS 1.3 party API. The
+  authenticated coordinator delivers only one explicitly named recipient's
+  package per request; the service verifies its local signer, frozen Yi suite,
+  authorizer configuration, role, budget, parameters, and native state.
+- `LOCUS-party-service-config-v2` starts party processes with public topology,
+  local service/signing credentials, separate databases, and no suite secret
+  state. Native holders receive their individual Yi state only through the
+  authenticated route; authorizer-only parties receive an explicit null suite
+  package. The v1 boot format remains readable for the frozen deployment.
+- The route inherits bounded duplicate-free canonical JSON, exact certificate
+  pinning, authenticated client roles, generic external errors, and durable
+  idempotency bound to certificate, route, and canonical request body. Success
+  returns only recipient, profile, and package digest; local audit retains the
+  public configuration digest rather than suite state.
+- A subprocess test starts clean services with separate SQLite files, performs
+  exact retry, and rejects wrong-party state and changed-body key reuse.
+  Post-stop inspection confirms each database contains only its own package.
+  Existing endpoint, identity, malformed-body, unknown-route, and replay
+  negatives remain applicable to the shared HTTP boundary.
+- P5A must still implement D017 aPPSS server-local OPRF-key generation. P3.2
+  creates no production aPPSS key, public admission, evidence result, or
+  manuscript wording.
+- The complete pinned repository gate passes with 207 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
 
 ### P3.3 Specify the admission contract
 

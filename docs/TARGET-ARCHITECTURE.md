@@ -32,8 +32,10 @@ is intentionally unassigned. P2.4 supplies aggregate development regression
 scenarios; formal evidence remains under the later evidence gates.
 
 P3.1 implements the suite-neutral enrollment phase machine as a secret-free
-public retry-state coordinator. It does not serialize protocol secret state or
-replace the P3.2 transport boundary.
+public retry-state coordinator. P3.2 implements its authenticated provisioning
+boundary: clean party processes accept only recipient-bound initial packages
+over pinned mutual TLS 1.3 with durable exact-request idempotency. The frozen Yi
+codec is active; aPPSS server-local OPRF-key creation remains P5A.
 
 ## Design principle
 

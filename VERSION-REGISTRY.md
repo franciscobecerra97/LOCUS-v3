@@ -107,6 +107,18 @@ the separately reserved evidence-result allocation gate.
 
 ### Syntax and collision rules
 
+P3.2 assigns `LOCUS-authenticated-enrollment-transport-v1` to the strict
+recipient-bound initial-epoch operation carried by the existing party API. It
+uses mutual TLS 1.3, exact identities, canonical bounded JSON, and durable
+certificate/route/body-bound idempotency. It supports the frozen Yi runtime
+package or an explicit authorizer-only null package; it assigns no aPPSS state
+format or admission capability.
+
+P3.2 also assigns `LOCUS-party-service-config-v2` to a clean party boot
+configuration containing public topology, local service credentials, and
+native-role network configuration but no initial suite state. Version 1 stays
+protected and readable; v2 state arrives through authenticated enrollment.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a

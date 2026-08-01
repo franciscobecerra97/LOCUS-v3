@@ -119,9 +119,10 @@ authorization / 2-of-3 recovery topology without conflating its parameters.
 
 ## Client state-machine contracts
 
-P1.3 freezes public phase names and state snapshots. P3.1 now implements the
+P1.3 freezes public phase names and state snapshots. P3.1 implements the
 ordered enrollment state machine with public-metadata-only, idempotent event
-retries; transport and admission remain P3.2--P3.4.
+retries. P3.2 implements recipient-specific initial provisioning over the
+existing authenticated party API; admission remains P3.3--P3.4.
 
 P2.2 implements the `bootstrap -> descriptor verification -> current state`
 prefix as one pure validator over already retrieved bytes. It returns the
@@ -193,7 +194,8 @@ that P2, P3, P4, and P5A will add.
 
 These tests establish interface compatibility and rejection behavior. They do
 not implement aPPSS, RecoveryDescriptor, public admission, clean-client
-recovery, new CuePolicies, remote enrollment, or a new cryptographic proof.
+recovery, new CuePolicies, or a new cryptographic proof. P3.2 separately adds
+remote initial enrollment without changing these P1 interface tests.
 
 ## Manuscript and evidence boundary
 

@@ -60,8 +60,10 @@ from .party_store import (
     RequestInProgress,
     SessionLost,
 )
+from .yi_compat import YI_RECOVERY_SUITE_ID
 
 API_VERSION = "locus-party-api-v1"
+ENROLLMENT_TRANSPORT_PROFILE = "LOCUS-authenticated-enrollment-transport-v1"
 MAX_MESSAGE_BYTES = 1_048_576
 MAX_TPASS_OBJECT_BYTES = 262_144
 
@@ -530,6 +532,86 @@ class _PartyRequestHandler(BaseHTTPRequestHandler):
 
     def _dispatch(self, request: dict[str, Any], role: str) -> object:
         context = self.server.party_context
+        if self.path == "/v1/enrollment/epochs":
+            self._require_role(role, {"coordinator"})
+            parsed = _exact_dict(
+                request,
+                {
+                    "authorizer_config",
+                    "budget",
+                    "native_party",
+                    "profile_id",
+                    "recipient_party_id",
+                    "recovery_suite_id",
+                },
+                "initial enrollment request",
+            )
+            if parsed["profile_id"] != ENROLLMENT_TRANSPORT_PROFILE:
+                raise _RequestError("unsupported enrollment transport profile")
+            recipient = parsed["recipient_party_id"]
+            if (
+                isinstance(recipient, bool)
+                or not isinstance(recipient, int)
+                or recipient != context.signer.party_id
+            ):
+                raise _RequestError("enrollment recipient mismatch")
+            budget = parsed["budget"]
+            if isinstance(budget, bool) or not isinstance(budget, int) or budget < 1:
+                raise _RequestError("invalid enrollment budget")
+            authorizer_config = AuthorizerConfig.from_dict(parsed["authorizer_config"])
+            if (
+                authorizer_config != context.boot_config
+                or authorizer_config.public_keys.get(recipient)
+                != context.signer.public_key_hex
+            ):
+                raise InvalidState("enrollment configuration mismatch")
+            enrollment_parameters: bytes | None = None
+            enrollment_party_state: bytes | None = None
+            if (parsed["native_party"] is not None) != context.native_role:
+                raise InvalidState("enrollment changes the local recovery role")
+            expected_suite = YI_RECOVERY_SUITE_ID if context.native_role else None
+            if parsed["recovery_suite_id"] != expected_suite:
+                raise InvalidState("enrollment recovery suite mismatch")
+            if parsed["native_party"] is not None:
+                native_package = _exact_dict(
+                    parsed["native_party"],
+                    {"parameters", "state"},
+                    "initial native runtime package",
+                )
+                enrollment_parameters = _decode_base64url(
+                    native_package["parameters"], "public parameters"
+                )
+                enrollment_party_state = _decode_base64url(
+                    native_package["state"], "party state"
+                )
+                parameters = native.PublicParameters.from_bytes(enrollment_parameters)
+                state = native.PartyState.from_secret_bytes(enrollment_party_state)
+                if (
+                    state.party_id != recipient
+                    or state.party_id > parameters.parties
+                    or parameters.threshold > parameters.parties
+                ):
+                    raise InvalidState("native runtime package belongs elsewhere")
+            epoch_config = EpochConfig(
+                bid=authorizer_config.bid,
+                epoch=authorizer_config.epoch,
+                party_id=recipient,
+                config_digest=authorizer_config.digest,
+                backup_digest=authorizer_config.backup_digest,
+                budget=budget,
+            )
+            context.store.enroll_epoch(epoch_config)
+            package_digest = context.store.register_initial_runtime_package(
+                epoch_config,
+                authorizer_config,
+                parameters=enrollment_parameters,
+                party_state=enrollment_party_state,
+            )
+            return {
+                "package_digest": package_digest,
+                "profile_id": ENROLLMENT_TRANSPORT_PROFILE,
+                "recipient_party_id": recipient,
+            }
         if self.path == "/v1/lifecycle/epoch-approvals":
             self._require_role(role, {"coordinator"})
             parsed = _exact_dict(
@@ -1007,6 +1089,58 @@ class RemoteAuthorizerNode:
         except (CertificateError, _RequestError) as exc:
             raise PartyProtocolError("invalid state-summary response") from exc
 
+    def enroll_initial_epoch(
+        self,
+        authorizer_config: AuthorizerConfig,
+        *,
+        budget: int,
+        recovery_suite_id: str | None,
+        parameters: bytes | None,
+        party_state: bytes | None,
+        idempotency_key: str | None = None,
+    ) -> str:
+        """Deliver exactly one recipient's initial state over pinned mutual TLS."""
+
+        if (parameters is None) != (party_state is None):
+            raise ValueError("incomplete native enrollment package")
+        if (parameters is None) != (recovery_suite_id is None):
+            raise ValueError("recovery suite and native package mismatch")
+        try:
+            authorizer_config.validate()
+            result = _exact_dict(
+                self._post(
+                    "/v1/enrollment/epochs",
+                    {
+                        "authorizer_config": authorizer_config.to_dict(),
+                        "budget": budget,
+                        "native_party": (
+                            None
+                            if parameters is None
+                            else {
+                                "parameters": _encode_base64url(parameters),
+                                "state": _encode_base64url(cast(bytes, party_state)),
+                            }
+                        ),
+                        "profile_id": ENROLLMENT_TRANSPORT_PROFILE,
+                        "recipient_party_id": self.party_id,
+                        "recovery_suite_id": recovery_suite_id,
+                    },
+                    idempotency_key=idempotency_key,
+                ),
+                {"package_digest", "profile_id", "recipient_party_id"},
+                "initial enrollment result",
+            )
+            if (
+                result["profile_id"] != ENROLLMENT_TRANSPORT_PROFILE
+                or result["recipient_party_id"] != self.party_id
+            ):
+                raise PartyProtocolError("enrollment response binding mismatch")
+            return _hex_text(
+                result["package_digest"], "runtime package digest", bytes_length=32
+            )
+        except _RequestError as exc:
+            raise PartyProtocolError("invalid initial enrollment response") from exc
+
     def create_entry_vote(
         self,
         entry: AttemptEntry,
@@ -1293,7 +1427,11 @@ def _load_server(path: str | Path) -> tuple[PartyHttpServer, PartyStore]:
         },
         "party service configuration",
     )
-    if config_file["version"] != "LOCUS-party-service-config-v1":
+    service_config_version = config_file["version"]
+    if service_config_version not in {
+        "LOCUS-party-service-config-v1",
+        "LOCUS-party-service-config-v2",
+    }:
         raise _RequestError("unsupported party service configuration")
     tls = _exact_dict(
         config_file["tls"],
@@ -1328,24 +1466,17 @@ def _load_server(path: str | Path) -> tuple[PartyHttpServer, PartyStore]:
     )
     store = PartyStore(config_file["store_path"])
     try:
-        store.enroll_epoch(
-            EpochConfig(
-                bid=config.bid,
-                epoch=config.epoch,
-                party_id=signer.party_id,
-                config_digest=config.digest,
-                backup_digest=config.backup_digest,
-                budget=config_file["budget"],
-            )
-        )
         parameters_bytes: bytes | None = None
         party_state_bytes: bytes | None = None
         peer_nodes: list[AuthorizerPeer] = []
         encoded_native = config_file["native_party"]
         if encoded_native is not None:
+            native_fields = {"outbound_tls", "peers"}
+            if service_config_version == "LOCUS-party-service-config-v1":
+                native_fields.update({"parameters", "state"})
             native_config = _exact_dict(
                 encoded_native,
-                {"outbound_tls", "parameters", "peers", "state"},
+                native_fields,
                 "native party configuration",
             )
             outbound_tls = _exact_dict(
@@ -1395,30 +1526,35 @@ def _load_server(path: str | Path) -> tuple[PartyHttpServer, PartyStore]:
             expected_peer_ids = sorted(set(config.public_keys) - {signer.party_id})
             if peer_ids != expected_peer_ids:
                 raise _RequestError("noncanonical authorizer peer set")
-            parameters_bytes = _decode_base64url(
-                native_config["parameters"], "public parameters"
+            if service_config_version == "LOCUS-party-service-config-v1":
+                parameters_bytes = _decode_base64url(
+                    native_config["parameters"], "public parameters"
+                )
+                party_state_bytes = _decode_base64url(
+                    native_config["state"], "party state"
+                )
+                parameters = native.PublicParameters.from_bytes(parameters_bytes)
+                state = native.PartyState.from_secret_bytes(party_state_bytes)
+                if state.party_id != signer.party_id:
+                    raise CertificateError("TPASS state belongs to another party")
+                if state.party_id > parameters.parties:
+                    raise CertificateError("TPASS state exceeds configured parties")
+        if service_config_version == "LOCUS-party-service-config-v1":
+            initial_epoch = EpochConfig(
+                bid=config.bid,
+                epoch=config.epoch,
+                party_id=signer.party_id,
+                config_digest=config.digest,
+                backup_digest=config.backup_digest,
+                budget=config_file["budget"],
             )
-            party_state_bytes = _decode_base64url(native_config["state"], "party state")
-            parameters = native.PublicParameters.from_bytes(parameters_bytes)
-            state = native.PartyState.from_secret_bytes(party_state_bytes)
-            if state.party_id != signer.party_id:
-                raise CertificateError("TPASS state belongs to another party")
-            if state.party_id > parameters.parties:
-                raise CertificateError("TPASS state exceeds configured parties")
-        initial_epoch = EpochConfig(
-            bid=config.bid,
-            epoch=config.epoch,
-            party_id=signer.party_id,
-            config_digest=config.digest,
-            backup_digest=config.backup_digest,
-            budget=config_file["budget"],
-        )
-        store.register_initial_runtime_package(
-            initial_epoch,
-            config,
-            parameters=parameters_bytes,
-            party_state=party_state_bytes,
-        )
+            store.enroll_epoch(initial_epoch)
+            store.register_initial_runtime_package(
+                initial_epoch,
+                config,
+                parameters=parameters_bytes,
+                party_state=party_state_bytes,
+            )
         store.mark_open_phases_lost()
         context = PartyServerContext(
             store=store,
