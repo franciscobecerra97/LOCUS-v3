@@ -639,7 +639,7 @@ Completion record (2026-08-01):
 
 ### P2.3 Implement `DescriptorStore`
 
-Status: `Approved`
+Status: `Complete`
 
 Required operations:
 
@@ -665,6 +665,37 @@ Acceptance:
 - Backup-object immutability and current-pointer mutation remain separate.
 - Bundle upload/download preserves exact canonical member bytes and never
   treats provider access control as descriptor authenticity.
+
+Completion record (2026-08-01):
+
+- `LOCUS-descriptor-bundle-store-v1` freezes the exact provider-neutral key
+  grammar and semantics for immutable descriptors, immutable bundles, and the
+  separately mutable hashed-handle current pointer. A synthetic locator vector
+  pins the P2.1 descriptor/bundle inputs to their exact storage keys.
+- `prototype/locus/descriptor_store.py` implements strict structural storage
+  validation, exact SHA-256/length/subject/backup/epoch/manifest bindings,
+  filesystem and S3-compatible adapters, a typed recovery-bundle contract, and
+  a same-host service-shaped adapter. Storage never treats an S3 ETag, ACL, or
+  successful read as descriptor authenticity.
+- Immutable descriptor and bundle publication is create-only and idempotent
+  only for exact bytes. Current-pointer creation and replacement use exact-byte
+  compare-and-swap; the S3 adapter binds replacement to the observed ETag while
+  treating it only as an opaque concurrency token.
+- Shared tests cover exact retry, immutable conflict, absent objects,
+  corruption/substitution, oversize, outage, exact-byte preservation, no-list
+  S3 behavior, initial/current pointer separation, stale writers, two-writer
+  concurrency, and an injected ETag race.
+- `ObjectStale` is a separate failure from not-found, immutable conflict,
+  unavailable, corrupt, and oversized outcomes. The frozen backup-object store
+  remains a separate unchanged contract and namespace.
+- The complete pinned repository gate passes with 199 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
+- P2.3 exposes the same-host storage service below admission. It does not
+  invent the still-unassigned P3.3 capability format: the application gateway
+  will consume P3's independently validated D004/D015 grant before invoking
+  this service. No AWS execution, external credential, or manuscript wording
+  is included.
 
 ### P2.4 Implement descriptor security scenarios
 
@@ -1604,13 +1635,13 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0, P1.1--P1.5, P2.1, and P2.2 are complete; begin
-with P2.3 and do not begin a later phase while an applicable predecessor gate is incomplete,
+Execution is chronological. P0, P1.1--P1.5 and P2.1--P2.3 are complete; begin
+with P2.4 and do not begin a later phase while an applicable predecessor gate is incomplete,
 except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P2.3--P2.4 — descriptor store and security scenarios (P2.1/P2.2 complete);
+1. P2.4 — descriptor security scenarios (P2.1--P2.3 complete);
 2. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
 3. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
    successor publication; P4.4 remains deferred unless D011 is approved;

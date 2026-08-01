@@ -27,6 +27,7 @@
     "LOCUS-compose-recovery-v1",
     "LOCUS-compose-recovery-v2",
     "LOCUS-cue-policy-corpus-v1",
+    "LOCUS-descriptor-bundle-store-v1",
     "LOCUS-descriptor-current-pointer-v1",
     "LOCUS-deterministic-directory-v1",
     "LOCUS-deterministic-directory-v2",

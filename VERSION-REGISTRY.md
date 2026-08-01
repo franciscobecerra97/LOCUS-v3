@@ -84,6 +84,17 @@ canonical synthetic vectors, bounded decoders, and negative tests. P2.2 does
 not assign the P3 admission/capability format, implement P2.3 storage/CAS, or
 claim coordinated rollback resistance.
 
+### P2.3 assigned storage profile
+
+`LOCUS-descriptor-bundle-store-v1` freezes the provider-neutral exact-key
+grammar and behavior for immutable descriptors, immutable recovery bundles,
+hashed-handle current pointers, exact retry, and current-pointer compare-and-
+swap. Filesystem and S3-compatible adapters share the profile. S3 ETags are
+opaque CAS tokens only; storage authorization never authenticates LOCUS
+content. Changed key grammar, mutability, retry, or CAS semantics require a new
+profile identifier. The profile has a canonical locator vector and shared
+filesystem/S3 tests; it does not assign the P3 capability or gateway profile.
+
 ### Syntax and collision rules
 
 - Assigned identifiers use printable ASCII and the form

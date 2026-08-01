@@ -437,10 +437,11 @@ called complete.
 
 ## Provider profiles
 
-The deterministic filesystem and same-host adapters are the reproducible
-reference path. The common S3 contract uses create-only immutable publication
-for bundles and descriptors, exact no-list retrieval, and ETag/version-bound
-compare-and-swap for the mutable current pointer.
+P2.3 implements the deterministic filesystem and same-host service adapters as
+the reproducible reference path. The common S3-compatible contract uses
+create-only immutable publication for bundles and descriptors, exact no-list
+retrieval, and ETag-bound compare-and-swap for the mutable current pointer.
+Both implement `LOCUS-descriptor-bundle-store-v1` and preserve exact P2.1 bytes.
 
 Conceptually, the admitted namespace contains only exact pseudonymous keys:
 
@@ -449,11 +450,12 @@ Conceptually, the admitted namespace contains only exact pseudonymous keys:
 <subject-scope>/<backup-id>/current.json
 ```
 
-The final key grammar and limits require a new registered provider profile. No
-key contains an email address, phone number, location, display label, cue hash,
-or other secret-derived identifier.
+The registered key grammar hashes the recovery handle for the mutable pointer
+and uses only pseudonymous subject/backup IDs and public content digests. No key
+contains an email address, phone number, location, display label, cue hash, or
+other secret-derived identifier.
 
-Required S3 behavior:
+Implemented S3-compatible behavior:
 
 - create an immutable bundle only when its exact object key is absent;
 - create an initial current pointer only when absent;

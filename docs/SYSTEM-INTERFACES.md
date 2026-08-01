@@ -93,10 +93,10 @@ persist a verifier.
 | Contract | P1.3 responsibility | Current implementation status |
 | --- | --- | --- |
 | `BackupObjectStore` | Immutable create, exact read, and exact delete through `BackupReference` | Existing filesystem and S3-compatible implementations; now runtime-checkable without semantic change |
-| `DescriptorStore` | Immutable descriptor publication/read plus authenticated current-pointer read/CAS | P2.1 strict descriptor/pointer/manifest/bundle codecs are implemented; store adapters and CAS remain P2.3 |
+| `DescriptorStore` | Immutable descriptor publication/read plus authenticated current-pointer read/CAS | P2.3 filesystem and S3-compatible adapters implement exact-byte immutable publication/read and current-pointer CAS; authentication remains the P2.2 client check |
 | `AdmissionVerifier` | Validate an opaque capability against the complete D004 binding and client proof | Interface only; P3 implements the local issuer/verifier |
 | `StorageCapabilityVerifier` | Same validation signature at a distinct storage-gateway trust boundary | Separate structural protocol; no capability format or implementation assigned |
-| `ApplicationStorageGateway` | Execute one exact admitted storage operation | Interface only; P2/P3 implement it above the storage adapter |
+| `ApplicationStorageGateway` | Execute one exact admitted storage operation | P2.3 supplies the same-host storage service below this boundary; P3.3 implements the still-unassigned capability verifier and admitted routing above it |
 | `PartyDirectory` | Resolve authenticated authorizer and suite-holder membership for one epoch | P2.2 supplies an exact bootstrap-bound adapter after installed endpoint/key checks and a matching current-state authorization quorum |
 
 `AdmissionBinding` contains exactly the D004 fields: subject, backup, epoch,

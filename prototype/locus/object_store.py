@@ -46,6 +46,10 @@ class ObjectConflict(ObjectStoreError):
     """An immutable object key already contains different bytes."""
 
 
+class ObjectStale(ObjectStoreError):
+    """A mutable-object compare-and-swap expectation is no longer current."""
+
+
 class ObjectTooLarge(ObjectStoreError):
     """A backup object exceeds the frozen storage bound."""
 

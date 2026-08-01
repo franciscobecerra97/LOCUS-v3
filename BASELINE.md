@@ -194,11 +194,13 @@ v2 evidence remains unchanged and non-transferable.
 P2.1 adds new strict descriptor, current-pointer, manifest, and deterministic
 bundle codecs. P2.2 adds an application-installed trust configuration,
 optional signed receipt, party-current-summary format, and a pure clean-client
-bootstrap validator over already supplied discovery bytes. These are
+bootstrap validator over already supplied discovery bytes. P2.3 adds
+filesystem and S3-compatible immutable descriptor/bundle stores and exact-byte
+current-pointer CAS below a same-host service boundary. These are
 post-baseline formats and do not change the frozen backup, Yi, CuePolicy,
-deployment, manuscript, or retained evidence. Storage publication, admitted
-gateway retrieval, complete clean-client recovery, and descriptor evidence
-remain unimplemented until P2.3--P4.
+deployment, manuscript, or retained evidence. Admitted gateway retrieval,
+complete clean-client recovery, and descriptor evidence remain unimplemented
+until P2.4--P4.
 
 ## Excluded material
 

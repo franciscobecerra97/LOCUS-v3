@@ -25,8 +25,10 @@ P2.1 now implements the strict descriptor, signed current-pointer,
 two-entry manifest, and deterministic bounded ZIP codecs described below.
 P2.2 implements strict installed-trust, optional-receipt, party-current-summary,
 and pure clean-client bootstrap validation over supplied discovery bytes.
-DescriptorStore adapters, admitted retrieval, and descriptor security evidence
-remain P2.3--P2.4 and P3.
+P2.3 implements the provider-neutral filesystem/S3-compatible descriptor and
+bundle stores, exact-key profile, and current-pointer CAS below a same-host
+service boundary. Admitted retrieval remains P3 because its capability profile
+is intentionally unassigned; descriptor security evidence remains P2.4.
 
 ## Design principle
 

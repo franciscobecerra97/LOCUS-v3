@@ -226,6 +226,10 @@ implemented behavior.
   binds the canonical backup member, the externally authenticated current
   pointer binds the exact active bundle and descriptor, and the client rejects
   every cross-binding mismatch before secret-dependent recovery.
+- `LOCUS-descriptor-bundle-store-v1` keeps immutable descriptors and bundles
+  separate from the mutable current pointer. Exact-byte retries are idempotent;
+  differing immutable bytes conflict; current replacement requires CAS; and
+  S3 ETags are concurrency tokens rather than authenticity or content digests.
 - A client receives no storage-provider credential. The application gateway
   accepts only an unexpired D004/D015 capability bound to subject, backup,
   prefix, operation, client proof key, nonce, and audience.

@@ -32,6 +32,10 @@ the P2.2 installed-trust/recovery-receipt/party-current-summary schemas. New
 schemas must receive new identifiers rather than changing the meaning of
 existing versions.
 
+`prototype/test-vectors/descriptor-store-v1.txt` pins the P2.3 provider-neutral
+descriptor, bundle, and hashed-handle current-pointer key grammar to the P2.1
+public vectors. It contains no provider credential or secret material.
+
 The lower-case baseline documents remain active and must be synchronized with
 approved implementation and manuscript changes. An upper-case target-design
 file may record an owner-approved architecture direction in its status line,
