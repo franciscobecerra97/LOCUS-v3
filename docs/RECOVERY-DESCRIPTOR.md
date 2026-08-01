@@ -240,7 +240,7 @@ rollback.
 
 ### Account-scoped discovery
 
-The user first authenticates through the eventual owner-approved D004 LOCUS
+The user first authenticates through the owner-approved D004 LOCUS
 admission/identity profile. The client then receives a short-lived capability
 limited to that subject, backup identifier, object prefix, operation, client
 proof key, nonce, and expiry. The application storage gateway validates the

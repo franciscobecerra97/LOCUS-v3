@@ -213,8 +213,9 @@ Each adversary entry gives capabilities, information obtained, claimed property,
    and its fixed vector specify subject/backup/epoch/operation/audience/key/
    nonce/time/prefix bindings. P3.3 negatives cover cross-account/prefix use,
    malformed scope, excessive lifetime, and noncanonical input. Issuance,
-   proof validation, replay persistence, and false-lockout behavior remain P3.4
-   implementation work and support no paper claim.
+   P3.4 implements proof validation and digest-only replay persistence across
+   separate verifier databases. It does not establish deployment-wide false-
+   lockout prevention or a paper claim.
 6. **Limitations:** preventing guessing and preventing lockout are conflicting goals; no design eliminates denial of service by sufficiently privileged parties.
 
 ### A13 Endpoint compromise
@@ -256,8 +257,8 @@ Each adversary entry gives capabilities, information obtained, claimed property,
    action/head metadata. These roles do not receive cues, TPASS
    passwords/shares, recovered secrets, wrapping keys, or private keys by
    design.
-3. **Claimed property:** none for issuer or administrator compromise because
-   those roles are not yet implemented. CLM-14 has partial evidence for the
+3. **Claimed property:** none for issuer or administrator compromise. The local
+   synthetic issuer is implemented only as a research test double. CLM-14 has partial evidence for the
    implemented cloud, party, resolver, and coordinator roles only; the design
    observation that a future IdP or administrator role would lack recovery
    material is not implementation evidence.
@@ -268,8 +269,11 @@ Each adversary entry gives capabilities, information obtained, claimed property,
    can request permitted online attempts and cause lockout; issuer compromise
    can mint such capabilities; issuer unavailability denies new capabilities;
    and the issuer/authorizers/gateway observe pseudonymous subject, scope, and
-   timing. P3.4 must test these boundaries. Administrator-threshold work stays
-   separate. OIDC/DPoP tests apply only if that optional adapter is added.
+   timing. P3.4 tests exact-scope theft/key/replay negatives, unauthorized
+   synthetic subjects, digest-only state, and independent verifier databases.
+   It cannot model external account recovery, issuer outages beyond denial,
+   or production abuse. Administrator-threshold work stays separate. OIDC/DPoP
+   tests apply only if that optional adapter is added.
 6. **Limitations:** LOCUS does not solve real issuer account recovery or prove
    multifactor/phishing resistance. Multi-administrator approval distributes
    but does not eliminate administrative trust.

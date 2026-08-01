@@ -94,9 +94,9 @@ persist a verifier.
 | --- | --- | --- |
 | `BackupObjectStore` | Immutable create, exact read, and exact delete through `BackupReference` | Existing filesystem and S3-compatible implementations; now runtime-checkable without semantic change |
 | `DescriptorStore` | Immutable descriptor publication/read plus authenticated current-pointer read/CAS | P2.3 filesystem and S3-compatible adapters implement exact-byte immutable publication/read and current-pointer CAS; authentication remains the P2.2 client check |
-| `AdmissionVerifier` | Validate an opaque capability against the complete D004 binding and client proof | Interface only; P3 implements the local issuer/verifier |
-| `StorageCapabilityVerifier` | Same validation signature at a distinct storage-gateway trust boundary | Separate structural protocol; no capability format or implementation assigned |
-| `ApplicationStorageGateway` | Execute one exact admitted storage operation | P2.3 supplies the same-host storage service below this boundary; P3.3 implements the still-unassigned capability verifier and admitted routing above it |
+| `AdmissionVerifier` | Validate a capability and client proof against the complete D004 binding, exact request, and verifier time | P3.4 implements the project-controlled local profile with durable replay state |
+| `StorageCapabilityVerifier` | Same validation signature at a distinct storage-gateway trust boundary | P3.4 uses an independent verifier/database rather than accepting an authorizer's decision |
+| `ApplicationStorageGateway` | Validate and execute one exact admitted storage operation | P3.4 checks operation, prefix, request digest, proof, and replay state before invoking the P2.3 storage backend |
 | `PartyDirectory` | Resolve authenticated authorizer and suite-holder membership for one epoch | P2.2 supplies an exact bootstrap-bound adapter after installed endpoint/key checks and a matching current-state authorization quorum |
 
 `AdmissionBinding` contains exactly the D004 fields: subject, backup, epoch,
@@ -122,7 +122,8 @@ authorization / 2-of-3 recovery topology without conflating its parameters.
 P1.3 freezes public phase names and state snapshots. P3.1 implements the
 ordered enrollment state machine with public-metadata-only, idempotent event
 retries. P3.2 implements recipient-specific initial provisioning over the
-existing authenticated party API; admission remains P3.3--P3.4.
+existing authenticated party API. P3.3/P3.4 implement the strict local
+admission contract and component boundary.
 
 P2.2 implements the `bootstrap -> descriptor verification -> current state`
 prefix as one pure validator over already retrieved bytes. It returns the

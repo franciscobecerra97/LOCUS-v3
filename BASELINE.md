@@ -112,9 +112,11 @@ not authorized while the v2 release checklist remains pending.
   configuration, CA material, a coordinator certificate, and a coordinator
   private key. It proves a fresh process, not complete clean-device recovery.
 - No `RecoveryDescriptor` or discovery protocol exists.
-- P3.3 specifies and vector-tests the strict provider-neutral admission
-  contract; issuer, proof, replay, authorizer, and gateway enforcement remain
-  unimplemented until P3.4.
+- P3.3/P3.4 specify and implement the provider-neutral local admission
+  contract, deterministic synthetic issuer, proof-key validation, independent
+  replay stores, and an admitted storage-gateway wrapper. It is component-level
+  same-host research behavior, not external identity-provider or production
+  admission evidence.
 - P3.2 implements authenticated, recipient-bound initial enrollment across
   clean same-host party processes. The retained/evaluated v2 deployment still
   uses its frozen trusted networkless provisioner and direct volume writes, so
@@ -181,15 +183,16 @@ P1.4 adds a machine-checkable protected-identifier ledger and future-family
 allocation gates. This is integrated-project governance, not an imported
 capability or new protocol profile. The registry protects historical,
 development, test, trace, result, and artifact identifiers from reuse without
-changing their original status or meaning. Future descriptor, admission,
-policy, aPPSS, deployment, trace, result, and artifact identifiers remain
-unassigned until their chronological schema/vector gates pass.
+changing their original status or meaning. Descriptor and local-admission
+identifiers are now assigned by P2/P3; remaining future policy, aPPSS,
+deployment, trace, result, artifact, and optional provider-admission identifiers
+stay unassigned until their chronological schema/vector gates pass.
 
 ## Post-baseline security-matrix note
 
 P1.5 adds prospective phase/view and claim-security contracts for the
 improvement project. These matrices preserve the retained baseline boundary:
-they do not make unimplemented descriptor, admission, clean-client, aPPSS,
+they do not make later descriptor/admission components, clean-client, aPPSS,
 provider, multi-host, UI, replacement, or production claims supported. Frozen
 v2 evidence remains unchanged and non-transferable.
 

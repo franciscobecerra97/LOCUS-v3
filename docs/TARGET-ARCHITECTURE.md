@@ -37,6 +37,13 @@ boundary: clean party processes accept only recipient-bound initial packages
 over pinned mutual TLS 1.3 with durable exact-request idempotency. The frozen Yi
 codec is active; aPPSS server-local OPRF-key creation remains P5A.
 
+P3.3/P3.4 implement the provider-neutral local admission component boundary:
+an allowlisted synthetic subject receives an Ed25519-signed, proof-key-bound,
+short-lived exact-scope capability; each authorizer verifier and the storage
+gateway keeps independent digest-only replay state. The gateway validates
+before its storage backend call. This local test double adds no external IdP,
+recovery factor, CuePolicy input, or recovery-suite transformation.
+
 ## Design principle
 
 Keep the cryptographic data path stable and build realistic system behavior
@@ -127,7 +134,7 @@ configuration changes across epochs.
 
 ### Application storage gateway
 
-Validates the eventual D004/D015 proof-key-bound storage capability and maps
+P3.4 validates the D004/D015 proof-key-bound storage capability before mapping
 one exact authorized operation to the provider-neutral backup, descriptor,
 current-pointer, or bundle interface. It exposes no bucket listing, retains no
 client credential, and returns only bounded LOCUS failure categories. Provider

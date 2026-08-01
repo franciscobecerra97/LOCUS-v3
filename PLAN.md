@@ -573,7 +573,7 @@ Approved profile:
 - party-signed current epoch/digest summaries;
 - explicit behavior when cloud and parties disagree.
 
-The user authenticates through the eventual owner-approved D004
+The user authenticates through the owner-approved D004 local
 admission/identity profile
 and presents a short-lived proof-key-bound capability to the application
 storage gateway. The gateway scopes exact operations to the
@@ -900,7 +900,7 @@ Completion record (2026-08-01):
 
 ### P3.4 Implement local admission
 
-Status: `Proposed`
+Status: `Complete`
 
 Implement the D004 provider-neutral contract with a project-controlled
 deterministic local synthetic issuer/test double. An OIDC Authorization Code
@@ -918,6 +918,37 @@ Acceptance:
 - Reviewer workflows need no external identity provider.
 - Adding or omitting an external OIDC adapter does not change CuePolicy,
   recovery-suite correctness, or the offline-oracle claim.
+
+Completion record (2026-08-01):
+
+- `LocalSyntheticAdmissionIssuer` authenticates an explicit allowlist of
+  project-generated pseudonymous subjects and deterministically signs the
+  exact P3.3 binding with Ed25519. It has no network or external identity-
+  provider dependency and receives no cue, suite-state, recovery-secret, or
+  final-success value.
+- Each `LocalAdmissionVerifier` independently validates the issuer key and
+  signature, exact expected binding, current time, client public-key
+  thumbprint, sender signature, capability/nonce/request digests, and its own
+  durable replay database. Exact retry returns the same grant; changed-request
+  nonce reuse fails.
+- `LocalAdmissionStorageGateway` independently checks the storage audience,
+  exact operation, backup, epoch, derived object prefix, traversal, and
+  request-bound proof before invoking its backend. Negative tests confirm the
+  backend is untouched on wrong key or operation.
+- Three separately stored authorizer verifier instances accept their own exact
+  audiences and retain independent replay records. A separate gateway verifier
+  implements the same contract without trusting an authorizer decision.
+- Tests reject wrong subject, proof key, audience, operation, backup, epoch,
+  prefix, signature, expiry, request, and nonce reuse. Replay databases contain
+  only domain-separated digests, not raw subjects, capabilities, proofs, or
+  requests. A fixed signature/proof vector freezes deterministic behavior.
+- The local issuer is a research test double, not OIDC, multifactor
+  authentication, production identity, or false-lockout prevention. It adds no
+  recovery factor and changes no CuePolicy, suite, offline-oracle argument,
+  retained evidence, or manuscript wording.
+- The complete pinned repository gate passes with 217 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
 
 ---
 

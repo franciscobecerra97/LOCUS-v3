@@ -1,11 +1,11 @@
 # LOCUS Recovery-Request And Administrative Authorization
 
-Status: D004 approves the provider-neutral admission boundary and a
-project-controlled local synthetic issuer as the required reference profile.
-The detailed OIDC/PKCE/DPoP material below is retained only as an optional later
-adapter design. Neither admission profile is part of the frozen Cycle 1
-implementation or positive manuscript claims, and no manuscript wording is
-authorized here.
+Status: P3.3 freezes the D004 provider-neutral admission boundary and P3.4
+implements its project-controlled local synthetic issuer, client proof,
+independent verifier/replay stores, and admitted storage-gateway wrapper. The
+detailed OIDC/PKCE/DPoP material below remains only an optional later adapter.
+Local component tests are not frozen Cycle 1 evidence or positive manuscript
+claims, and no manuscript wording is authorized here.
 
 ## Decision Summary
 
@@ -119,8 +119,10 @@ fields.
 The fixed P3.3 vector and schema are
 `prototype/test-vectors/admission-binding-v1.txt` and
 `docs/schemas/admission-binding-v1.schema.json`. They specify wire behavior,
-not identity-provider, production-security, or paper evidence. P3.4 implements
-the local issuer, signatures, independent verification, and replay state.
+not identity-provider, production-security, or paper evidence. P3.4 adds the
+fixed `prototype/test-vectors/local-admission-v1.txt` issuer/proof vector and
+implements the local signatures, independent verification, replay state, and
+pre-backend storage checks.
 
 ## Optional OIDC/PKCE/DPoP adapter design
 

@@ -127,6 +127,9 @@ are valid only for their exact issuer, pseudonymous subject, backup, epoch,
 operation, audience, proof key, nonce, time window, and optional derived
 storage prefix. They carry no provider credential, listing authority, cue
 material, or offline verifier. Any OIDC adapter requires a distinct identifier.
+P3.4 implements these exact local profiles without assigning an external
+provider identifier; its fixed local signature/proof vector cannot be used as
+evidence for OIDC, multifactor authentication, or production identity.
 
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.

@@ -366,6 +366,9 @@ class AdmissionVerifier(Protocol):
         capability: AdmissionCapability,
         expected: AdmissionBinding,
         client_proof: bytes,
+        request: bytes,
+        *,
+        now: int,
     ) -> AdmissionGrant: ...
 
 
@@ -378,6 +381,9 @@ class StorageCapabilityVerifier(Protocol):
         capability: AdmissionCapability,
         expected: AdmissionBinding,
         client_proof: bytes,
+        request: bytes,
+        *,
+        now: int,
     ) -> AdmissionGrant: ...
 
 
@@ -417,7 +423,13 @@ class GatewayResult:
 @runtime_checkable
 class ApplicationStorageGateway(Protocol):
     def execute(
-        self, request: GatewayRequest, admission: AdmissionGrant
+        self,
+        request: GatewayRequest,
+        capability: AdmissionCapability,
+        expected: AdmissionBinding,
+        client_proof: bytes,
+        *,
+        now: int,
     ) -> GatewayResult: ...
 
 
