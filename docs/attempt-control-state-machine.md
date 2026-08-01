@@ -14,7 +14,12 @@ This specification defines:
 - epoch retirement, budget extension, and party/configuration replacement;
 - fail-closed behavior for ambiguous or conflicting state.
 
-P5.4 selects the user-facing recovery-admission and administrative mechanisms in `docs/recovery-authorization.md`. This protocol consumes independently validated OIDC/DPoP admission evidence and binds its stable policy/result to the request; the credential is not the cue-derived TPASS password.
+The active improvement plan uses the D004 provider-neutral admission contract
+in `docs/recovery-authorization.md`. This protocol consumes independently
+validated, proof-key-bound admission evidence and binds its stable
+policy/result to the request; the credential is not the cue-derived
+recovery-suite password. The default future profile uses a local synthetic
+issuer; OIDC/PKCE/DPoP is optional.
 
 ## Roles And Fault Assumptions
 
@@ -149,7 +154,7 @@ For a proposal `E`, the authorizer verifies:
 3. a valid installed predecessor certificate matching `E.previous_head_hash`;
 4. `E.log_index = predecessor.log_index + 1`;
 5. entry-type transition rules and budget arithmetic;
-6. OIDC/DPoP admission evidence for `ATTEMPT`, using the P5.4 validation and replay interface;
+6. D004 admission evidence for `ATTEMPT`, using the validation and replay interface;
 7. canonical request and entry encodings;
 8. no conflicting `sid` or request idempotency record;
 9. no conflicting local slot lock.
@@ -353,7 +358,7 @@ Reconfiguration begins only with no unresolved next-slot conflict. If the old qu
 ## Budget Extension, Exhaustion, And Retirement
 
 - Ordinary recovery cannot change `B_eff`.
-- `BUDGET_EXTENSION` requires fresh enrolled-user OIDC/DPoP admission, the enrollment-pinned administrator signature threshold, the ledger authorization quorum, and the configured cumulative `X_max` bound from P5.4/P5.12.
+- `BUDGET_EXTENSION` requires fresh D004 user admission, the enrollment-pinned administrator signature threshold, the ledger authorization quorum, and the configured cumulative `X_max` bound from P5.4/P5.12.
 - Extensions increase `X`; the paper's guessing equation uses the resulting `B_eff`.
 - Budget exhaustion produces a generic refusal before a new proposal lock.
 - `RETIRE_EPOCH` is irreversible in the certified chain.
@@ -432,7 +437,7 @@ The P5.13 executable model now enumerates the frozen compact-profile interleavin
 
 ## Remaining Inputs, Not P5.2 Ambiguities
 
-- P5.4 selects OIDC/DPoP ordinary admission and threshold-signed, policy-bounded administrative authorization; implementation remains pending.
+- D004 selects provider-neutral proof-key-bound ordinary admission with a local synthetic issuer, while threshold-signed, policy-bounded administrative authorization remains a separate design; implementation remains pending.
 - P2.3 freezes the canonical binary encoding used by signed objects.
 - P1.4/P2.8 select exact maintained libraries for signatures, hashing, database access, and service integration.
 - P5.5 onward implements and tests the specified transitions.

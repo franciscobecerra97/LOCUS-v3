@@ -20,7 +20,7 @@ partial, and make retirement irreversible at each honest party.
 - Old-authorizer signatures and new-party readiness signatures are
   unforgeable. Each honest store durably locks one transition per predecessor.
 - Re-enrollment is an explicitly authorized creation of a fresh per-epoch
-  attempt budget; it is not a reset of the predecessor. Public OIDC/DPoP and
+  attempt budget; it is not a reset of the predecessor. Public D004 admission and
   administrator authorization are still absent, so this is not yet a safe
   public re-enrollment API.
 - A malicious client, coordinator, cloud, or minority of parties may replay,

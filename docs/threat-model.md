@@ -32,7 +32,12 @@ The prototype includes a quorum-certified, hash-chained attempt-ledger slice rep
 
 ### Identity provider and recovery admission
 
-OIDC/DPoP recovery admission is a future design in `docs/recovery-authorization.md`; it is not implemented. The current deployment authenticates a synthetic coordinator with pinned mTLS credentials and therefore does not establish public-client admission, account recovery, or third-party lockout prevention.
+D004 provider-neutral recovery admission with a local synthetic issuer is a
+future design in `docs/recovery-authorization.md`; it is not implemented. An
+OIDC/PKCE/DPoP adapter is optional. The current deployment authenticates a
+synthetic coordinator with pinned mTLS credentials and therefore does not
+establish public-client admission, account recovery, or third-party lockout
+prevention.
 
 ### Administrative authorizers
 
@@ -77,7 +82,7 @@ Normal profiles must redact secrets. An unsafe educational mode may reveal synth
 10. Client-side erasure is best effort and does not protect against an already compromised endpoint, swap capture, crash dumps, or forensic recovery outside the platform's guarantees.
 11. Human cue min-entropy is not assumed or measured. Any online guessing equation is conditional on an explicitly assumed `h`.
 12. Software dependencies, container images, build tools, and the host platform are not malicious. Supply-chain security is checked operationally but is not proved by LOCUS.
-13. The active client and current synthetic coordinator credentials are trusted in the present prototype. OIDC/DPoP behavior is not assumed as an implemented property.
+13. The active client and current synthetic coordinator credentials are trusted in the present prototype. D004 local-issuer or optional OIDC-adapter behavior is not assumed as an implemented property.
 14. Lifecycle and false-lockout administration are deployment responsibilities outside the scoped claim; current coordinator-only lifecycle evidence is explicitly same-host and same-membership.
 
 ## Security Properties
@@ -166,7 +171,7 @@ Each adversary entry gives capabilities, information obtained, claimed property,
 2. **Information obtained:** endpoints, timing, sizes, availability patterns, and any plaintext traffic if transport is misconfigured.
 3. **Claimed property:** S3/S6 - authenticated confidential transport and session/epoch/request binding reject alteration, impersonation, and replay as fresh work. Claim ID CLM-24.
 4. **Residual risk:** traffic analysis and denial of service remain; compromised endpoint credentials allow impersonation.
-5. **Evidence:** ledger, live freshness, native commitment, and native response operations use TLS 1.3, mutual CA validation, exact client/server certificate pins, bounded duplicate-free JSON, canonical signed objects, strict base64url TPASS encodings, and exact remote retries across five local subprocesses. Every mutating POST now requires a 32-byte HTTP idempotency key durably bound to the authenticated certificate, route, and canonical body before dispatch; exact status/body bytes survive restart. Tests reject a missing key, changed-body reuse, cross-session reuse, delayed transcript replay, same-CA but unpinned clients, duplicate JSON, coordinator freshness, mismatched party-freshness identity, and cross-session response use. Two logical coordinator clients receive the same stored result, and a completed commitment can be redelivered after restart without reviving its lost volatile response state. Enrollment/DPoP admission transport, arbitrary packet scheduling, certificate lifecycle, and rollback tests remain.
+5. **Evidence:** ledger, live freshness, native commitment, and native response operations use TLS 1.3, mutual CA validation, exact client/server certificate pins, bounded duplicate-free JSON, canonical signed objects, strict base64url TPASS encodings, and exact remote retries across five local subprocesses. Every mutating POST now requires a 32-byte HTTP idempotency key durably bound to the authenticated certificate, route, and canonical body before dispatch; exact status/body bytes survive restart. Tests reject a missing key, changed-body reuse, cross-session reuse, delayed transcript replay, same-CA but unpinned clients, duplicate JSON, coordinator freshness, mismatched party-freshness identity, and cross-session response use. Two logical coordinator clients receive the same stored result, and a completed commitment can be redelivered after restart without reviving its lost volatile response state. Enrollment/D004 admission transport, arbitrary packet scheduling, certificate lifecycle, and rollback tests remain.
 6. **Limitations:** the current evidence is a same-host test using synthetic credentials and test-provisioned configuration. Transport security does not fix an authorized malicious client, compromised party process, leaked service key, rollback, denial of service, or traffic analysis.
 
 ### A9 Cloud and party-state rollback attacker
@@ -200,9 +205,13 @@ Each adversary entry gives capabilities, information obtained, claimed property,
 
 1. **Capabilities:** target a known/public backup or account identifier with authorized-looking requests to exhaust attempt budget without knowing cues.
 2. **Information obtained:** admission decisions, cooldown/lockout timing, and service availability.
-3. **Claimed property:** none in the current prototype. Public-identifier lockout prevention requires the unimplemented OIDC/DPoP design and deployment abuse controls.
-4. **Residual risk:** compromise of the authenticated account/DPoP key, identity provider, administrator threshold, or sufficient parties can still cause false lockout; pre-authentication bandwidth denial remains.
-5. **Evidence:** `docs/recovery-authorization.md` specifies a possible OIDC/DPoP design, but no implementation evidence supports a paper claim.
+3. **Claimed property:** none in the current prototype. Public-identifier lockout prevention requires the unimplemented D004 design and deployment abuse controls.
+4. **Residual risk:** compromise of the admitted identity/client proof key,
+   selected issuer, administrator threshold, or sufficient parties can still
+   cause false lockout; pre-authentication bandwidth denial remains.
+5. **Evidence:** `docs/recovery-authorization.md` specifies the approved D004
+   local-issuer direction and an optional OIDC adapter, but no implementation
+   evidence supports a paper claim.
 6. **Limitations:** preventing guessing and preventing lockout are conflicting goals; no design eliminates denial of service by sufficiently privileged parties.
 
 ### A13 Endpoint compromise
@@ -234,16 +243,29 @@ Each adversary entry gives capabilities, information obtained, claimed property,
 
 ### A16 Identity-provider or administrative-authority compromise
 
-1. **Capabilities:** a compromised identity provider can mint or deny ordinary admission tokens, observe authentication, and correlate its pairwise subject; a compromised administrator threshold can sign configured high-impact actions.
-2. **Information obtained:** account identity/authentication metadata, recovery timing and identifiers exposed to the issuer, or administrative action/head metadata. These roles do not receive cues, TPASS passwords/shares, recovered secrets, wrapping keys, or private keys by design.
-3. **Claimed property:** none for identity-provider or administrator compromise
-   because those roles are unimplemented. CLM-14 has partial evidence for the
+1. **Capabilities:** a compromised D004 issuer can mint or deny ordinary
+   admission capabilities, observe bounded authentication metadata, and
+   correlate its pseudonymous subject; a compromised administrator threshold
+   can sign configured high-impact actions. An optional OIDC adapter adds its
+   provider's observations and account behavior.
+2. **Information obtained:** pseudonymous identity/authentication metadata,
+   recovery timing and identifiers exposed to the issuer, or administrative
+   action/head metadata. These roles do not receive cues, TPASS
+   passwords/shares, recovered secrets, wrapping keys, or private keys by
+   design.
+3. **Claimed property:** none for issuer or administrator compromise because
+   those roles are unimplemented. CLM-14 has partial evidence for the
    implemented cloud, party, resolver, and coordinator roles only; the design
    observation that a future IdP or administrator role would lack recovery
    material is not implementation evidence.
 4. **Residual risk:** bounded online guessing, lockout, account denial, identity correlation, emergency retirement, and policy-bounded budget extension are possible; collusion with sufficient recovery parties or endpoint compromise is stronger.
-5. **Evidence:** P5.4 design only; required synthetic-issuer compromise tests, DPoP replay/theft tests, administrator-threshold tests, extension-boundary tests, state/log inspection, and end-to-end evaluation.
-6. **Limitations:** LOCUS does not improve the IdP's own account-recovery security or prove phishing resistance. Multi-administrator approval distributes but does not eliminate administrative trust.
+5. **Evidence:** D004/P5.4 design only; required local synthetic-issuer
+   compromise, capability replay/theft, administrator-threshold,
+   extension-boundary, state/log, and end-to-end tests. OIDC/DPoP tests apply
+   only if the optional adapter is added.
+6. **Limitations:** LOCUS does not solve real issuer account recovery or prove
+   multifactor/phishing resistance. Multi-administrator approval distributes
+   but does not eliminate administrative trust.
 
 ## Cross-Adversary Composition
 

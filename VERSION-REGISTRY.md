@@ -59,13 +59,14 @@ first implementing commit here before collecting evidence.
 
 ## Approved but unassigned families
 
-D001, D003, D005, D014, D015, and D016 approve the architecture direction for the
-following families without assigning protocol identifiers. D015 supersedes the
-unassigned personal-cloud-account and Google Drive families from D002/D006:
+D001, D003--D005, D007--D010, and D014--D017 approve the architecture direction
+for the following families without assigning final protocol identifiers. D015
+supersedes the unassigned personal-cloud-account and Google Drive families from
+D002/D006:
 
 | Family | Approved semantic boundary | Compatibility rule |
 | --- | --- | --- |
-| aPPSS recovery-suite successor | Section 3 aPPSS supplies the high-entropy `S_R` for new enrollments after P5A; exact OPRF, field, hash, wire, robustness, and theorem profile remain gated by D017 | New identifiers and epoch only; frozen Yi TPASS remains legacy-recovery compatible and is never reinterpreted |
+| aPPSS recovery-suite successor | D017 freezes Figure 4 aPPSS with RFC 9497 OPRF-mode ristretto255/SHA-512 as the concrete 2HashDH realization, `lambda=128`, canonical polynomial-basis GF(2^128), SHA-256-derived 16-byte `C` and 16-byte `S_R`, abort-only robustness, and first `k=2,n=3` evaluation | Final identifiers are assigned with schemas/vectors at P5A.1; new epoch only; frozen Yi TPASS remains legacy-recovery compatible and is never reinterpreted |
 | Recovery-suite password derivation | CuePolicy output enters an immutable suite-specific password-input domain | New domain per suite; identical CuePolicy bytes do not authorize cross-suite message or state reuse |
 | Yi-to-aPPSS migration | Recover the old epoch client-side, create and verify a fresh aPPSS successor, activate it, then retire the predecessor | No share conversion, mixed-suite threshold, dual-state fallback, automatic downgrade, or in-place backup migration |
 | aPPSS evidence | Correctness, below-threshold, matching combined, exact-threshold offline-dictionary, migration, and performance results for one exact profile | New schemas and paths; retained v2 Yi evidence remains frozen and cannot be pooled or relabeled |
@@ -78,6 +79,12 @@ unassigned personal-cloud-account and Google Drive families from D002/D006:
 | Canonical-email set | Exactly three distinct values under a frozen constrained ASCII email grammar | New policy identifier and domain; frozen email atom behavior remains compatible |
 | NoResolver | Explicit declaration that policy processing performs no resolver lookup | New resolver profile; no implicit fallback or enumeration |
 | Storage capability | Short-lived subject/backup/prefix/operation/client-key/nonce/expiry-bound authority validated by the application storage gateway | New admission/storage profile; no client provider credential or direct pre-signed bearer URL |
+| Local synthetic admission issuer | Project-controlled issuer supplies the D004 pseudonymous, proof-key-bound capability for the default prototype and reviewer path | New provider-neutral capability/local-issuer profiles; no external identity provider, recovery-factor, or CuePolicy semantics |
+| Optional OIDC admission adapter | A later Authorization Code with PKCE/DPoP adapter may produce evidence for the same D004 admission contract | Separate adapter/profile/evidence only; never required by the default artifact and cannot change the core request binding |
+| Evaluated recovery-suite topology | Frozen Yi 2-of-3 baseline; aPPSS 2-of-3 first; aPPSS 3-of-5 only after configuration generalization | Each topology receives distinct deployment/evidence identity; authorization quorum remains a separate typed field |
+| Host/administration scope | Same-host process separation, later host separation, and actual independent administration are distinct meanings | A changed topology or administrative principal set requires a new deployment/evidence profile |
+| Local attempt audit | Signed local records are diagnostic evidence without a global rollback-resistant bound | Existing frozen attempt formats are not reinterpreted; any monotonic authority is a separate D012 profile |
+| Thin cross-platform UI | UI calls stable client APIs and contains no protocol/canonicalization logic | Framework/profile assigned only after API freeze; no change to protocol bytes or usability claim |
 | AWS S3 provider | Supplemental application-operated implementation of the logical backup, descriptor, current-pointer, and bundle contracts | New provider profile; local/S3-compatible identifiers unchanged |
 
 ## Assigned artifact package profiles

@@ -48,6 +48,12 @@ guessing but does not directly reveal `S_R` before a correct password guess.
 It does not claim that low-entropy cues remain safe, rate-limited, or
 unrecoverable after threshold compromise.
 
+D017 and `docs/APPSS-PROFILE.md` freeze the initial successor recovery contract:
+Figure 4 aPPSS with a concrete ristretto255/SHA-512 2HashDH OPRF,
+`GF(2^128)`, a SHA-256-derived 16-byte commitment and 16-byte `S_R`, first
+2-of-3 evaluation, and abort-only robustness. This is an approved design input
+to later P5A work, not implemented behavior, evidence, or manuscript wording.
+
 ## What is inherited
 
 - TPASS construction and security assumptions.

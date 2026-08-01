@@ -74,8 +74,9 @@ below remain the active implementation and paper boundary. Successor work must:
   cross-suite mixing, and in-place share conversion;
 - treat fewer-than-reconstruction-threshold no-offline-predicate behavior and
   reconstruction-threshold offline-dictionary behavior as separate claims; and
-- obtain D017 approval for the exact OPRF, field, hash, wire, robustness, and
-  theorem profile before cryptographic implementation.
+- preserve the approved D017/P1.2 OPRF, field, hash, robustness, corruption,
+  and theorem profile in `docs/APPSS-PROFILE.md`; assign final wire identifiers,
+  schemas, and vectors together at P5A.1 before cryptographic implementation.
 
 The aPPSS and Yi constructions are inherited cryptographic work, not LOCUS
 novelty. D016 does not authorize M-APPPSS-001 or any other manuscript wording.

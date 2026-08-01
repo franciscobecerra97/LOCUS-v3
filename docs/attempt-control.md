@@ -58,7 +58,7 @@ return the exact stored status/body bytes. Changed caller, route, session, phase
 epoch, request, selection, or commitment fields conflict before protocol state is
 re-entered. An interrupted HTTP record is retryable only after exclusive process
 restart; the lower durable ledger/phase record then returns the same result or
-fails closed. This layer does not provide DPoP admission replay protection and
+fails closed. This layer does not provide D004 admission replay protection and
 does not add rollback resistance.
 
 The implemented P4.8 transport policy retries only transport-ambiguous outcomes,
@@ -190,7 +190,15 @@ The analytic success bound must use `B_eff = B + X`. Administrative extensions m
 
 The attempt bound limits guesses even if an attacker can spend the whole budget, but it does not by itself prevent a third party from locking out the user. Before reserving a scarce attempt, the deployment must require a recovery-request authorization signal stronger than knowledge of a public account or backup identifier.
 
-P5.4 defines the credential, challenge, privacy leakage, lost-device behavior, revocation, and abuse assumptions in `docs/recovery-authorization.md`. Ordinary admission uses an audience-restricted OIDC access token sender-bound with DPoP; high-impact actions additionally require enrollment-pinned threshold administrator signatures and policy bounds. Pre-authorization requests require separate throttling. These mechanisms gate attempts but are neither cue-password verifiers nor capabilities to reconstruct the private key.
+D004 defines the provider-neutral credential, challenge, privacy leakage,
+lost-client behavior, revocation, and abuse assumptions in
+`docs/recovery-authorization.md`. Ordinary admission uses a short-lived,
+audience-restricted capability bound to a fresh client proof key; the default
+future profile uses a local synthetic issuer and OIDC/PKCE/DPoP is optional.
+High-impact actions additionally require enrollment-pinned threshold
+administrator signatures and policy bounds. Pre-authorization requests
+require separate throttling. These mechanisms gate attempts but are neither
+cue-password verifiers nor capabilities to reconstruct the private key.
 
 ## Security Argument Shape
 

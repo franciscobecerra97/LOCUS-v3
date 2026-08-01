@@ -117,7 +117,7 @@ availability dependency. It is future work, not part of the scoped architecture.
 
 ### Admission and authorization
 
-OIDC/DPoP admission, credential replay protection, public administrator
+D004 provider-neutral admission, credential replay protection, public administrator
 authorization, and false-lockout administration are specified but not
 implemented. The current mTLS coordinator is a research harness, not an account
 recovery authorization system.

@@ -28,8 +28,12 @@ Every security-sensitive experiment records:
   versions;
 - reconstruction threshold `k`, holder identities, and any source-paper
   threshold-notation mapping;
-- for aPPSS, the exact OPRF/field/hash/theorem profile and whether the view is
-  below threshold or at/above threshold;
+- for aPPSS, the D017/P1.2 profile from `docs/APPSS-PROFILE.md`, including
+  final P5A.1 identifiers, and whether the view is below threshold or at/above
+  threshold;
+- for admission, the exact D004 issuer/adapter and capability profile; the
+  local synthetic issuer does not support claims about OIDC, multifactor
+  authentication, external account recovery, or identity privacy;
 - authorizer quorum and identities;
 - cloud/storage backend class;
 - topology;
@@ -123,11 +127,23 @@ The underlying cryptographic statements come from the cited constructions and
 their reviewed LOCUS mappings; experiments show only the behavior of the exact
 implementation and persistent-state boundary.
 
+The first aPPSS evidence profile is `k=2,n=3` and is limited to static
+read-only persistent-state compromise. It must separately record conformance
+to the RFC 9497 OPRF-mode ristretto255/SHA-512 realization, canonical
+`GF(2^128)` operations, 16-byte mask/commitment/secret values, SHA-256 domain
+framing, and abort-only robustness. Tests are not evidence for Theorem 2 itself
+or for a stronger adaptive, proactive, or side-channel model.
+
 ## External services
 
 External provider experiments are benign functional/performance operations
 using disposable research accounts and synthetic data. Adversarial testing
 remains within the explicitly authorized local/disposable boundary.
+
+The default admission evidence uses only the project-controlled local
+synthetic issuer. An optional OIDC/PKCE/DPoP adapter is an external-service
+profile with separate authorization, versioning, provenance, privacy analysis,
+and results; it is never silently included in the default result family.
 
 The approved supplemental AWS S3 profile must first pass the complete contract
 against the deterministic local S3-compatible service. Any live execution

@@ -1,8 +1,8 @@
 # aPPSS Successor Analysis and Migration Contract
 
-Status: Owner-approved migration direction under D016; exact cryptographic
-profile pending D017; no aPPSS implementation, evidence, or manuscript change
-is complete.
+Status: Owner-approved migration direction under D016 and exact P1.2 recovery
+contract under D017. No aPPSS implementation, evidence, active-profile cutover,
+or manuscript change is complete.
 
 ## Source and scope
 
@@ -180,27 +180,34 @@ role-state separation, error normalization, and lifecycle composition.
 - Party state is never translated in place. A client or service never interprets
   a Yi scalar share as an OPRF key or an aPPSS message as a Yi wire object.
 
-## D017 decisions still required
+## Approved D017 profile
 
-The exact profile must be owner-approved before cryptographic implementation:
+`docs/APPSS-PROFILE.md` is the exact P1.2 contract. D017 selects:
 
-1. concrete OPRF: the paper's 2HashDH mapping or a separately justified
-   standardized VOPRF profile;
-2. group, hash-to-group, proof assumptions, validation, and canonical encoding;
-3. `lambda`, the Shamir field, representation, and vetted implementation
-   strategy;
-4. random-oracle hash inputs, output split, domain labels, and length-prefixing;
-5. authoritative placement and digest binding of public `omega`;
-6. request/response, party-state, public-parameter, and client-session formats;
-7. authenticated initialization and recovery endpoint/session bindings;
-8. exact retry and malicious-server failure behavior, including whether to add
-   a reviewed verifiable-OPRF robustness extension;
-9. corruption timing, erasure, lifecycle, and server-key rotation assumptions;
-   and
-10. the first evaluated `k,n` profile and the exact theorem-to-LOCUS claim.
+1. Section 3/Figure 4 aPPSS only, excluding aptSIG;
+2. the paper's 2HashDH shape with RFC 9497 OPRF-mode
+   `ristretto255-SHA512`, independent per-server/per-epoch keys, canonical
+   32-byte Ristretto encodings, and identity rejection;
+3. `lambda=128` and degree-`k-1` Shamir sharing over polynomial-basis
+   `GF(2^128)` modulo `x^128+x^7+x^2+x+1`, encoded in exactly 16 big-endian
+   bytes;
+4. a suite/epoch-derived 32-byte password input, 16-byte OPRF masks, and
+   domain-separated SHA-256 for Figure 4's 16-byte `C` plus 16-byte `S_R`;
+5. canonical public `omega=(e,C)` digest-bound across party, backup, and
+   descriptor state;
+6. authenticated initialization and request/response bindings covering suite,
+   backup, epoch, policy, membership, threshold, configuration, party,
+   operation, authorization, and fresh online session;
+7. strict canonical decoding, generic recovery rejection, and base Figure 4
+   abort-only malicious-server behavior, without the optional VOPRF extension;
+8. a first evaluated `k=2,n=3` profile; and
+9. a first implementation/evidence claim limited to static persistent-state
+   compromise, while separately recording the theorem's hybrid/random-oracle
+   basis and the concrete OPRF assumptions.
 
-No final aPPSS identifier is assigned until these choices, schemas, and vectors
-are reviewed together.
+Final suite/wire identifiers, schemas, bounds, and canonical vectors remain a
+P5A.1 gate and must be assigned together. They may not change the approved
+primitives, state split, threshold mapping, or claim boundary.
 
 ## Implementation impact
 

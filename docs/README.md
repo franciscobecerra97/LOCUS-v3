@@ -16,6 +16,7 @@ For proposed architecture, start with:
 
 - `TARGET-ARCHITECTURE.md`
 - `APPSS-MIGRATION.md`
+- `APPSS-PROFILE.md`
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`

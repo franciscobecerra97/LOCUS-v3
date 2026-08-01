@@ -26,9 +26,9 @@ for new successor epochs:
 
 ```text
 CuePolicy_vM(M) -> Z_M or failure
-p_M = suite-domain-separated password input(ID_R, epoch, Z_M)
-aPPSS.Initialize / aPPSS.Recover -> high-entropy output sk_appss
-S_R = sk_appss
+p_M = SHA-256(Tuple(aPPSS password domain, bound epoch context, Z_M))
+aPPSS.Initialize / aPPSS.Recover -> 16-byte high-entropy output sk_appss
+S_R = sk_appss (exactly 16 bytes)
 K_wrap = HKDF-SHA-256(S_R, recovery nonce, backup context)
 C_U = AES-256-GCM.Enc(K_wrap, sk_U, authenticated backup metadata)
 ```
@@ -39,6 +39,15 @@ epoch binds exactly one recovery suite. Existing Yi epochs use only the frozen
 Yi path, and an aPPSS epoch never falls back to or combines shares/messages with
 Yi. Migration is client-side recovery followed by fresh successor enrollment,
 not state conversion.
+
+D017 freezes the exact recovery contract in `docs/APPSS-PROFILE.md`:
+`lambda=128`, first profile `k=2,n=3`, RFC 9497 OPRF-mode
+ristretto255/SHA-512 as the paper's 2HashDH realization, canonical
+polynomial-basis `GF(2^128)` sharing, and domain-separated SHA-256 split into a
+16-byte commitment `C` and 16-byte `S_R`. The public `omega=(e,C)` is
+suite/epoch/configuration bound. The first profile is abort-only and has no
+VOPRF robustness extension. Final wire identifiers and schemas remain a P5A.1
+gate; none may reuse a Yi identifier or domain.
 
 ## Role-state invariants
 
@@ -138,6 +147,21 @@ states are explicitly modeled as enabling offline dictionary tests.
 
 May hold identity, configuration, phase, admission, idempotency, and local audit
 state. It holds no TPASS secret state.
+
+### Admission issuer and verifier
+
+The D004 reference profile uses a project-controlled local synthetic issuer to
+authenticate a synthetic pseudonymous subject and issue a short-lived
+proof-key-bound capability. Authorizers and the application storage gateway
+validate the capability independently for the exact subject, backup, epoch,
+operation, audience, client proof key, nonce, issuance time, and expiry.
+
+The issuer/verifier must not receive or persist cue input, `Z_M`, `p_M`,
+recovery-suite secret state, `S_R`, `K_wrap`, the plaintext protected key, or
+the final recovery outcome. Admission is an access-control and availability
+prerequisite, not an additional recovery factor or offline cue verifier. OIDC
+Authorization Code with PKCE/DPoP is an optional later adapter and is not
+required by the reference profile.
 
 ### Resolver
 

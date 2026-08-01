@@ -223,7 +223,7 @@ Completion record (2026-07-31):
 
 ### P1.1 Approve the initial decision set
 
-Status: `Proposed`
+Status: `Complete`
 
 Required decisions:
 
@@ -233,18 +233,36 @@ Required decisions:
   S3 profile, plus a versioned aPPSS successor with frozen Yi compatibility.
   D015 supersedes the personal-cloud-account and Google Drive choices in D002
   and D006.
-- Pending: D004, D007--D010, and D017 cover admission, deployed profiles,
-   independence wording, attempt role, UI platform, and the exact aPPSS
-   instantiation.
+- Approved: D004, D007--D010, and D017 select the local provider-neutral
+  admission profile, evaluated suite order, exact independence wording, local
+  audit boundary, thin cross-platform UI direction, and exact initial aPPSS
+  recovery contract.
 
 Acceptance:
 
 - Approved decision records include trust, privacy, version, compatibility, and
   evidence consequences.
 
+Completion record (2026-08-01):
+
+- The owner approved the complete recommended P1.1 bundle. `DECISIONS.md`
+  records every selected option and its trust, privacy, compatibility,
+  evidence, implementation, and manuscript boundary.
+- D004 makes the project-controlled local synthetic issuer the required
+  reference implementation of one proof-key-bound admission contract. OIDC
+  Authorization Code with PKCE/DPoP is an optional later adapter, not an
+  external dependency, recovery factor, traceability feature, or paper
+  contribution.
+- D007--D010 preserve the Yi 2-of-3 baseline, evaluate aPPSS 2-of-3 first,
+  reserve independent-administration wording for actual independent operators,
+  keep attempt control local/audit-only, and defer UI-framework choice until
+  the client APIs are frozen.
+- D017 authorizes the exact P1.2 profile but no manuscript wording. Final aPPSS
+  identifiers and wire schemas remain a P5A.1 gate with canonical vectors.
+
 ### P1.2 Freeze the password-protected recovery contract
 
-Status: `Proposed`
+Status: `Complete`
 
 Before implementation, map the aPPSS construction in Section 3, Figure 4, and
 Theorem 2 of *Password-Protected Threshold Signatures* to LOCUS:
@@ -274,6 +292,24 @@ Acceptance:
   canonical formats, robustness choice, and theorem-to-LOCUS claim mapping.
 - `docs/APPSS-MIGRATION.md` and the claim/evidence matrix agree on thresholds,
   assumptions, claims, and non-claims.
+
+Completion record (2026-08-01):
+
+- `docs/APPSS-PROFILE.md` freezes the D017 contract: Figure 4 aPPSS only;
+  RFC 9497 OPRF-mode ristretto255/SHA-512 as the concrete 2HashDH realization;
+  `lambda=128`; canonical polynomial-basis `GF(2^128)` Shamir sharing;
+  domain-separated SHA-256 for 16-byte `C` and 16-byte `S_R`; canonical public
+  `omega`; authenticated epoch/session bindings; generic rejection; and
+  abort-only robustness without the optional VOPRF extension.
+- The first evaluated profile is `k=2,n=3`, mapping to `t_paper=1,n=3`.
+  `S_R` is the aPPSS output and feeds the existing HKDF/AES path directly.
+- The first LOCUS implementation/evidence claim is limited to static
+  persistent-state compromise. Theorem 2's hybrid/random-oracle statement and
+  the concrete RFC 9497 OPRF assumptions remain separate from implementation
+  tests and require independent review.
+- Final identifiers, strict wire schemas, size bounds, vectors, and native
+  library selection remain intentionally deferred to P5A.1; the approved
+  primitives and claim boundary may not change there without a new decision.
 
 ### P1.3 Create typed system interfaces
 
@@ -584,8 +620,11 @@ Acceptance:
 
 Status: `Proposed`
 
-Start with a deterministic local issuer/test double. Then implement the approved
-OIDC/PKCE/DPoP profile.
+Implement the D004 provider-neutral contract with a project-controlled
+deterministic local synthetic issuer/test double. An OIDC Authorization Code
+with PKCE/DPoP adapter is optional later work under a distinct profile and is
+not required for the core prototype, artifact, paper assumption, or reviewer
+workflow.
 
 Acceptance:
 
@@ -595,6 +634,8 @@ Acceptance:
 - Replay, wrong key, wrong subject, wrong audience, wrong operation, wrong
   backup, wrong epoch, wrong prefix, expired token, and nonce reuse fail.
 - Reviewer workflows need no external identity provider.
+- Adding or omitting an external OIDC adapter does not change CuePolicy,
+  recovery-suite correctness, or the offline-oracle claim.
 
 ---
 
@@ -1408,14 +1449,14 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended first execution slice
 
-Execution is chronological. P0 is complete; begin with P1.1 and do not begin a
-later phase while an applicable predecessor gate is incomplete, except for a
-task explicitly marked deferred and not named as a dependency.
+Execution is chronological. P0 and P1.1--P1.2 are complete; begin with P1.3 and
+do not begin a later phase while an applicable predecessor gate is incomplete,
+except for a task explicitly marked deferred and not named as a dependency.
 
 The next sequence is:
 
-1. P1.1--P1.5 — decisions, exact recovery contract, suite-neutral interfaces,
-   version namespace, and security/information-flow matrices;
+1. P1.3--P1.5 — suite-neutral interfaces, version namespace, and
+   security/information-flow matrices (P1.1--P1.2 complete);
 2. P2.1--P2.4 — suite-bound RecoveryDescriptor, bootstrap, store, and security
    scenarios;
 3. P3.1--P3.4 — generic enrollment and authenticated admission/transport;

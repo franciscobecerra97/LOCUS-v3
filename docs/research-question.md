@@ -189,7 +189,7 @@ The scoped thesis must be weakened further if:
 
 - a global or lifetime online-attempt bound;
 - party-state rollback resistance;
-- public-client OIDC/DPoP admission or false-lockout administration;
+- public-client D004 admission or false-lockout administration;
 - general party replacement or proactive share refresh;
 - protection after compromise of `t` parties or the active endpoint;
 - guaranteed availability or denial-of-service prevention;

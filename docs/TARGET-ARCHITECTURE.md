@@ -1,9 +1,8 @@
 # Target Architecture
 
-Status: owner-approved target-design direction for D001, D003, D005, D014, and
-D015, with other decision gates still pending. D015 supersedes D002 and D006.
-It does not supersede the implemented baseline architecture or current
-manuscript until the affected
+Status: owner-approved P1 target-design direction for D001, D003--D005,
+D007--D010, and D014--D017. D015 supersedes D002 and D006. It does not
+supersede the implemented baseline architecture or current manuscript until the affected
 implementation/evidence gates and a separate exact manuscript delta are
 approved by the owner.
 
@@ -17,16 +16,16 @@ flowchart LR
     UI["Enrollment / Recovery UI"] --> Client["Client state machines"]
     Client --> Policy["CuePolicy registry"]
     Policy --> Resolver["Resolver adapters"]
-    Client --> TPASS["Native TPASS client"]
-    Client --> Admission["Admission / identity provider"]
+    Client --> Suite["Recovery-suite client"]
+    Client --> Admission["Admission issuer / verifier"]
     Admission --> Gateway["Application storage gateway"]
     Client --> Gateway
     Gateway --> Backup["BackupObjectStore"]
     Gateway --> Descriptor["DescriptorStore"]
     Gateway --> Bundle["RecoveryBundleStore"]
     Client --> Directory["Authenticated party directory"]
-    Directory --> Parties["Authorizers and TPASS holders"]
-    TPASS --> Parties
+    Directory --> Parties["Authorizers and suite holders"]
+    Suite --> Parties
     Parties --> Audit["Local signed audit state"]
     Client --> Lifecycle["Lifecycle manager"]
     Lifecycle --> Gateway
@@ -41,7 +40,7 @@ Owns:
 
 - enrollment and recovery state machines;
 - local CuePolicy invocation;
-- TPASS client phases;
+- recovery-suite client phases through a suite-neutral interface;
 - backup encryption/decryption;
 - descriptor validation;
 - threshold and epoch consistency;
@@ -122,10 +121,12 @@ control is not a descriptor trust root.
 Provides authenticated service identity and endpoint information. It must be
 rooted in trust outside any unauthenticated descriptor.
 
-### Authorizers and TPASS holders
+### Authorizers and recovery-suite holders
 
 Every service is an authorizer. A configured subset additionally stores one
-native TPASS state. Authorization quorum and TPASS threshold remain separate.
+native recovery-suite state. The frozen Yi holder and planned D017 aPPSS holder
+are disjoint adapters and state types. Authorization quorum and recovery
+threshold remain separate.
 
 ### Admission
 
@@ -133,7 +134,7 @@ Authenticates and authorizes a client request independently from TPASS. The
 default research path uses a deterministic local issuer; an external OIDC/DPoP
 profile is optional.
 
-The eventual D004 profile also issues short-lived storage capabilities bound to
+The D004 profile also issues short-lived storage capabilities bound to
 subject, backup identifier, object prefix, operation, client proof key, nonce,
 and expiry. An application storage gateway validates the capability and
 performs the exact S3 operation. Clients receive no provider credential and
@@ -155,6 +156,7 @@ activation, predecessor retirement, and eventual membership replacement.
 - fictional resolver fixture;
 - same-host containers;
 - 2-of-3 TPASS;
+- first aPPSS evaluation at 2-of-3 after P5A implementation/cutover gates;
 - five authorizers;
 - no external accounts.
 
@@ -183,14 +185,16 @@ credentials.
 
 ## Architecture boundaries
 
-- Provider choice must not change CuePolicy or TPASS semantics.
+- Provider choice must not change CuePolicy or recovery-suite semantics.
 - Normal clients must not require bucket-list permission or a long-lived cloud
   credential.
 - Physical bundle colocation must not collapse the immutable-backup,
   immutable-descriptor, and mutable-current-pointer contracts.
 - UI choice must not change canonical bytes.
-- Admission failure must not become a TPASS correctness result.
+- Admission failure must not become a recovery-suite correctness result.
 - A descriptor cannot introduce a local cue test.
-- An external identity account is an explicit prerequisite.
+- The selected admission issuer is an explicit availability prerequisite. The
+  default profile uses the local synthetic issuer; an external identity account
+  exists only in an optional separately versioned adapter profile.
 - A global attempt authority is not mandatory core architecture.
 - A multi-host deployment is not automatically independently administered.

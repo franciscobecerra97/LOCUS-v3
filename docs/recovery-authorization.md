@@ -1,48 +1,58 @@
 # LOCUS Recovery-Request And Administrative Authorization
 
-Status: deferred future security design, originally selected by P5.4 on
-2026-07-16. Public OIDC/DPoP admission and administrative authorization are
-outside the frozen Cycle 1 implementation and positive claims. This document
-specifies a possible future interface only; it is not implementation,
-deployment, or attempt-bound evidence.
+Status: D004 approves the provider-neutral admission boundary and a
+project-controlled local synthetic issuer as the required reference profile.
+The detailed OIDC/PKCE/DPoP material below is retained only as an optional later
+adapter design. Neither admission profile is part of the frozen Cycle 1
+implementation or positive manuscript claims, and no manuscript wording is
+authorized here.
 
 ## Decision Summary
 
 LOCUS separates two kinds of authority:
 
-1. **Ordinary recovery admission** uses a short-lived, audience-restricted OAuth/OIDC access token bound to a fresh client key with DPoP. Every recovery-party authorizer independently validates the token, sender proof, stable enrolled subject binding, and exact LOCUS request before it votes to consume an attempt.
+1. **Ordinary recovery admission** uses a short-lived capability bound to an
+   authenticated pseudonymous subject, exact LOCUS request, audience, and fresh
+   client proof key. Every recovery-party authorizer independently validates
+   it before voting. The application storage gateway independently validates a
+   separate exact-operation capability. The reference implementation uses a
+   project-controlled local synthetic issuer.
 2. **High-impact administration** uses an enrollment-pinned `m_admin`-of-`k_admin` signature policy, in addition to the recovery-party ledger quorum. Budget extension additionally requires a fresh ordinary user admission proof and is bounded by a disclosed lifetime `X_max`.
 
-The former target profile used a pairwise OIDC subject, a JWT access token
+An optional future adapter may use a pairwise OIDC subject, a JWT access token
 intended only for the LOCUS recovery audience, OAuth Authorization Code with
 PKCE for browser-capable clients, and the Device Authorization Grant only for
 genuinely headless CLI use. Tokens would be sender-constrained with DPoP. The
-current Compose artifact does not run an identity provider and does not
-implement this profile.
+default prototype, artifact, and reviewer workflow do not run or require an
+identity provider.
 
-This future design would introduce an identity provider as an admission and
-availability dependency. It would not give that provider cue or key material,
-but compromise could authorize guesses and cause lockout. No statement that
-such guesses are bounded by `B_eff` applies to the current prototype: P5.13
-demonstrates rollback counterexamples in the quorum-only ledger.
+The selected issuer is an admission and availability dependency. It receives
+no cue or key material, but compromise can authorize online guesses or cause
+lockout. An optional external adapter adds its provider's account, privacy, and
+outage behavior. No statement that guesses are globally bounded by `B_eff`
+applies: the inherited quorum-only ledger has a rollback counterexample.
 
 ## Problem Statement
 
 If knowledge of a public account or backup identifier is sufficient to reserve an attempt, any outsider can spend the entire scarce budget and lock out the legitimate user. Conversely, if recovery admission requires a secret stored only on the lost device, fresh-device recovery fails.
 
-The selected solution relies on a separately recoverable account-authentication system for ordinary admission. This matches the intended CLI flow in which the user first enters or completes account credentials and then independently supplies LOCUS cues. The two inputs have different purposes:
+The selected solution assumes an authenticated pseudonymous admission subject
+for ordinary admission. The local profile supplies only synthetic subjects for
+reproducible research; it does not claim to solve real account recovery. A
+future deployment may map an external account into the same contract. The
+admission evidence and LOCUS cues have different purposes:
 
-- the account credential decides who may spend a scarce online attempt;
+- admission decides who may request an online attempt;
 - the cue-derived TPASS password decides whether the threshold recovery succeeds.
 
-The account credential is not included in key derivation and is not a verifier for the cues.
+Admission is not included in key derivation and is not a verifier for the cues.
 
 ## Security Objectives
 
 The design must ensure:
 
 1. a public identifier alone cannot reserve an attempt;
-2. a stolen access token alone is insufficient when the DPoP private key is not stolen;
+2. a stolen capability alone is insufficient without its bound client proof key;
 3. admission is bound to one enrolled identity, backup, epoch, session, and blinded TPASS request;
 4. the coordinator cannot mint admission evidence;
 5. every authorizer independently checks the evidence before voting;
@@ -52,11 +62,32 @@ The design must ensure:
 9. administrative changes preserve the certified attempt head and disclosed `B_eff`;
 10. no authorization component becomes a key custodian or receives cue/password material;
 11. tokens and personally identifying claims are minimized and never stored or logged in raw form;
-12. the failure and availability costs of identity-provider or administrator loss are explicit.
+12. the failure and availability costs of issuer or administrator loss are explicit.
+
+## Core D004 capability contract
+
+The core capability binds subject, backup identifier, epoch, operation,
+audience, client proof-key thumbprint, nonce, issuance time, expiry, issuer, and
+authorization-profile version. Storage capabilities additionally bind the
+exact pseudonymous object prefix and prohibit listing. Authorizers and the
+storage gateway validate independently and retain only bounded digests and
+replay/idempotency state.
+
+The local issuer authenticates only project-generated synthetic identities. It
+is a protocol test double, not a substitute identity provider, second factor,
+new user identity, or traceability service. It cannot receive raw cues,
+`Z_M`, `p_M`, party state, recovered secrets, or final recovery success.
+
+## Optional OIDC/PKCE/DPoP adapter design
+
+The remainder of the OIDC-specific credential and browser-flow design applies
+only if a later, separately versioned adapter is implemented. It is not a core
+acceptance criterion and cannot change the capability fields above.
 
 ## Enrollment-Time Authorization Policy
 
-The certified `AttemptConfig` records:
+For the optional OIDC adapter, the certified `AttemptConfig` additionally
+records:
 
 - exact permitted issuer identifier;
 - issuer-metadata/JWKS policy and allowed asymmetric signature algorithms;
@@ -78,9 +109,10 @@ The identity-provider account and recovery-party configuration should be operate
 
 ## Ordinary Admission Credential
 
-### Access-token profile
+### Optional access-token profile
 
-The baseline requires a signed JWT access token compatible with the OAuth JWT access-token profile. Authorizers validate, at minimum:
+The optional adapter requires a signed JWT access token compatible with the
+OAuth JWT access-token profile. Authorizers validate, at minimum:
 
 - exact issuer and configured verification key/algorithm;
 - token type and signature;
@@ -196,7 +228,7 @@ An `AdminAction` contains:
 
 A budget extension requires all of:
 
-1. a fresh ordinary OIDC/DPoP admission proof for the enrolled user, meeting the configured higher-assurance rule;
+1. a fresh ordinary D004 admission proof for the enrolled user, meeting the configured higher-assurance rule;
 2. a valid `m_admin`-of-`k_admin` action certificate;
 3. the normal attempt-ledger authorization quorum;
 4. positive extension amount within per-action and cumulative `X_max` limits;
@@ -283,7 +315,11 @@ Admission authorization prevents inexpensive unauthenticated budget exhaustion; 
 
 ## Required Tests
 
-P5.5-P5.13 and P6 must include:
+The required D004 local profile covers valid issuance and every wrong
+subject/backup/epoch/operation/audience/client-key/nonce/time/replay binding,
+independent verifier decisions, issuer outage, and privacy-safe state/output
+inspection. If the optional OIDC adapter is implemented, its separate test
+profile must additionally include:
 
 - valid browser/PKCE and headless/device flows using synthetic accounts;
 - wrong issuer, key, algorithm, audience, client, subject, scope, assurance, expiry, and clock skew;
@@ -317,21 +353,35 @@ Measure and report:
 - privacy-minimized persistent bytes per admission;
 - compact/resilient end-to-end recovery latency with and without authorization overhead.
 
+For the default local profile, measure capability issuance/validation cost,
+bytes, replay-store growth, outage behavior, and privacy-minimized persistent
+state without reporting OIDC timings. OIDC/JWKS/browser measurements apply only
+to the optional adapter.
+
 Human usability, passkey recovery success, IdP account-recovery quality, and phishing resistance are not established by these system experiments.
 
-## Paper Implications
+## Potential Paper Implications (Not Authorized)
 
 The manuscript must state:
 
-- ordinary LOCUS recovery is not publicly callable: it requires separate account admission before a cue attempt is consumed;
-- the account credential gates scarce attempts but does not decrypt the key or replace the cue-derived TPASS password;
-- the IdP is a central admission/availability dependency and can cause bounded guessing or lockout if compromised;
+- ordinary LOCUS recovery is not publicly callable: it assumes separate
+  authenticated admission before a cue attempt is consumed;
+- admission gates attempts but does not decrypt the key or replace the
+  cue-derived recovery-suite password;
+- the selected issuer is an admission/availability dependency and can
+  authorize guessing or cause lockout if compromised;
 - administrative extensions change `B_eff` and require threshold operator approval;
 - the baseline does not eliminate lockout or IdP account-recovery risk;
 - optional offline admission adds a separate retained secret and is not silently part of the baseline;
-- OIDC/OAuth/DPoP integration is an operational mechanism, not LOCUS's cryptographic novelty.
+- a local issuer or optional OIDC/OAuth/DPoP integration is an operational
+  mechanism, not LOCUS's cryptographic novelty.
 
-Until implemented and attacked, the paper may describe this as the selected design only. It may not claim that public lockout abuse, token replay, or administrative extension abuse is already prevented by the artifact.
+No paper change is authorized by D004. If a later manuscript delta is approved,
+the paper may assume the abstract admission functionality and describe the
+exact implemented local profile. It must not imply that OIDC, multifactor
+authentication, real-account recovery, public lockout prevention, token replay
+defense, or administrative-extension abuse has been evaluated unless the
+corresponding separately versioned evidence exists.
 
 ## Source Basis
 

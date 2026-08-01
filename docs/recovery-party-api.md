@@ -31,7 +31,8 @@ attempt authorization and live freshness evidence before it calls
 
 - A fresh **client** creates the blinded TPASS request and checks the final result.
   It has no client certificate in the baseline; HTTPS server authentication plus
-  OIDC/DPoP admission authenticates its right to spend attempts.
+  D004 proof-key-bound admission authenticates its right to spend attempts;
+  the default future profile uses the local synthetic issuer.
 - The untrusted **coordinator** sequences proposals, relays party-specific
   admission proofs, collects votes/certificates, and relays public TPASS messages.
   It cannot sign as a party or authorizer.
@@ -52,7 +53,7 @@ those in `docs/attempt-control-state-machine.md`, `docs/attempt-control.md`, and
 - TLS 1.3 is required. Peer, coordinator, enrollment, audit, and administrative
   routes require mutually authenticated service certificates pinned by deployment
   configuration. Client-facing nonce and TPASS routes require server-authenticated
-  TLS and the specified DPoP-bound admission context.
+  TLS and the specified client-proof-key-bound admission context.
 - Requests and responses use `application/json`; exact object key sets are
   required. Unknown, duplicate, missing, or type-coerced fields are rejected.
 - Cryptographic protocol objects are their canonical binary encodings represented
@@ -77,8 +78,9 @@ those in `docs/attempt-control-state-machine.md`, `docs/attempt-control.md`, and
   cryptographic identifier.
 
 Raw cues, canonical cue descriptors, resolver results, TPASS passwords, client
-blinders, whole secrets, wrapping/private keys, raw access tokens, and raw DPoP
-proofs never appear in response bodies, status, audit output, or ordinary logs.
+blinders, whole secrets, wrapping/private keys, raw admission capabilities, and
+raw client proof material never appear in response bodies, status, audit
+output, or ordinary logs.
 
 ### Implemented idempotency and replay bindings
 
@@ -175,7 +177,7 @@ epoch. Test fixtures provision synthetic state through the same contract.
 Caller: client or coordinator relay over server-authenticated TLS.
 
 Input contains only the syntactically bounded `bid`, `epoch`, `sid`, and
-`request_digest`. The party returns a short-lived party-specific DPoP nonce and
+`request_digest`. The party returns a short-lived party-specific proof nonce and
 opaque handle. This route is independently throttled and does not mutate the
 attempt ledger.
 
@@ -193,7 +195,7 @@ bounded pagination. A missing party is never interpreted as an empty slot.
 Caller: configured coordinator over mutual TLS.
 
 Input contains one canonical proposed entry, predecessor certificate, and, for an
-`ATTEMPT`, the party-specific access token and DPoP proof plus nonce handle. The
+`ATTEMPT`, the party-specific D004 capability and client proof plus nonce handle. The
 party validates admission independently, persists its replay record and durable
 slot lock in one transaction, and only then returns the stored `EntryVote`. An
 exact retry returns the same vote. A conflicting slot or `sid` returns no
@@ -411,7 +413,7 @@ after authorization aborts generically and leaves the attempt consumed.
 
 - Schema/bounds tests for every route, unknown fields, oversized bodies and
   collections, invalid base64url/hex, type coercion, and certificate bombs.
-- Mutual-TLS role/identity tests and client OIDC/DPoP nonce, audience, endpoint,
+- Mutual-TLS role/identity tests and client D004 nonce, audience, endpoint,
   replay, expiry, subject, and request-binding tests.
 - Idempotency tests for every mutating route and changed-payload key reuse.
 - Crash injection before/after every admission, lock, vote, certificate install,
@@ -479,7 +481,7 @@ idempotency key and stores the exact completed result before release. Party
 schema v5 binds the backup/configuration digest, signed attempt state, and exact
 active runtime epoch package. The default Compose path combines these parties
 with the S3-compatible adapter and disjoint volumes; the lifecycle Compose
-scenario passed with a party restart and complete cleanup. OIDC/DPoP admission,
+scenario passed with a party restart and complete cleanup. D004 admission,
 administrator authorization, rollback anchors, certificate lifecycle management,
 and broad
 malicious-network scheduling remain absent.
@@ -497,7 +499,7 @@ independent-operator evidence, or a practicality result.
 
 The following items are future extensions, not scoped Cycle 1 gates:
 
-1. public-client OIDC/DPoP admission and replay protection;
+1. public-client D004 local-issuer admission and replay protection;
 2. an independent monotonic witness, witness-receipt validation, and party-history reconciliation;
 3. broader formal state-machine exploration plus systematic interleaving/crash tests;
 4. general party replacement and administrator authorization;
