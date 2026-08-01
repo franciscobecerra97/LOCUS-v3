@@ -112,7 +112,9 @@ not authorized while the v2 release checklist remains pending.
   configuration, CA material, a coordinator certificate, and a coordinator
   private key. It proves a fresh process, not complete clean-device recovery.
 - No `RecoveryDescriptor` or discovery protocol exists.
-- No public-client admission exists.
+- P3.3 specifies and vector-tests the strict provider-neutral admission
+  contract; issuer, proof, replay, authorizer, and gateway enforcement remain
+  unimplemented until P3.4.
 - P3.2 implements authenticated, recipient-bound initial enrollment across
   clean same-host party processes. The retained/evaluated v2 deployment still
   uses its frozen trusted networkless provisioner and direct volume writes, so

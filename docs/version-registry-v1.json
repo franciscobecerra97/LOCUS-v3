@@ -3,6 +3,10 @@
   "namespace": "LOCUS",
   "protected_identifiers": [
     "LOCUS-account-scoped-bootstrap-v1",
+    "LOCUS-admission-binding-v1",
+    "LOCUS-admission-capability-v1",
+    "LOCUS-admission-client-proof-v1",
+    "LOCUS-admission-replay-v1",
     "LOCUS-AES-256-GCM-v0",
     "LOCUS-AES-256-GCM-v1",
     "LOCUS-anonymous-artifact-v1",
@@ -49,6 +53,7 @@
     "LOCUS-loc-id-v1",
     "LOCUS-local-context-v0",
     "LOCUS-local-context-v1",
+    "LOCUS-local-synthetic-admission-v1",
     "LOCUS-location-person-pair-v1",
     "LOCUS-location-person-set-v1",
     "LOCUS-party-current-signature-v1",

@@ -205,13 +205,16 @@ Each adversary entry gives capabilities, information obtained, claimed property,
 
 1. **Capabilities:** target a known/public backup or account identifier with authorized-looking requests to exhaust attempt budget without knowing cues.
 2. **Information obtained:** admission decisions, cooldown/lockout timing, and service availability.
-3. **Claimed property:** none in the current prototype. Public-identifier lockout prevention requires the unimplemented D004 design and deployment abuse controls.
+3. **Claimed property:** none in the current prototype. P3.3 specifies that a public identifier alone is insufficient: admission additionally requires an issuer-signed, short-lived, exact-scope capability and its bound client proof key. Deployment abuse controls remain required.
 4. **Residual risk:** compromise of the admitted identity/client proof key,
    selected issuer, administrator threshold, or sufficient parties can still
    cause false lockout; pre-authentication bandwidth denial remains.
-5. **Evidence:** `docs/recovery-authorization.md` specifies the approved D004
-   local-issuer direction and an optional OIDC adapter, but no implementation
-   evidence supports a paper claim.
+5. **Evidence:** `docs/recovery-authorization.md`, the strict P3.3 codec/schema,
+   and its fixed vector specify subject/backup/epoch/operation/audience/key/
+   nonce/time/prefix bindings. P3.3 negatives cover cross-account/prefix use,
+   malformed scope, excessive lifetime, and noncanonical input. Issuance,
+   proof validation, replay persistence, and false-lockout behavior remain P3.4
+   implementation work and support no paper claim.
 6. **Limitations:** preventing guessing and preventing lockout are conflicting goals; no design eliminates denial of service by sufficiently privileged parties.
 
 ### A13 Endpoint compromise
@@ -254,15 +257,19 @@ Each adversary entry gives capabilities, information obtained, claimed property,
    passwords/shares, recovered secrets, wrapping keys, or private keys by
    design.
 3. **Claimed property:** none for issuer or administrator compromise because
-   those roles are unimplemented. CLM-14 has partial evidence for the
+   those roles are not yet implemented. CLM-14 has partial evidence for the
    implemented cloud, party, resolver, and coordinator roles only; the design
    observation that a future IdP or administrator role would lack recovery
    material is not implementation evidence.
 4. **Residual risk:** bounded online guessing, lockout, account denial, identity correlation, emergency retirement, and policy-bounded budget extension are possible; collusion with sufficient recovery parties or endpoint compromise is stronger.
-5. **Evidence:** D004/P5.4 design only; required local synthetic-issuer
-   compromise, capability replay/theft, administrator-threshold,
-   extension-boundary, state/log, and end-to-end tests. OIDC/DPoP tests apply
-   only if the optional adapter is added.
+5. **Evidence:** D004 and P3.3 now freeze the provider-neutral contract. A
+   stolen bearer capability must still satisfy the exact audience/operation/
+   backup/epoch/prefix and possess its proof key; a malicious admitted client
+   can request permitted online attempts and cause lockout; issuer compromise
+   can mint such capabilities; issuer unavailability denies new capabilities;
+   and the issuer/authorizers/gateway observe pseudonymous subject, scope, and
+   timing. P3.4 must test these boundaries. Administrator-threshold work stays
+   separate. OIDC/DPoP tests apply only if that optional adapter is added.
 6. **Limitations:** LOCUS does not solve real issuer account recovery or prove
    multifactor/phishing resistance. Multi-administrator approval distributes
    but does not eliminate administrative trust.

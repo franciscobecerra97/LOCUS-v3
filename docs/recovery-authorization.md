@@ -78,6 +78,50 @@ is a protocol test double, not a substitute identity provider, second factor,
 new user identity, or traceability service. It cannot receive raw cues,
 `Z_M`, `p_M`, party state, recovered secrets, or final recovery success.
 
+### P3.3 normative provider-neutral profile
+
+P3.3 assigns five immutable identifiers:
+
+- `LOCUS-admission-binding-v1` is the canonical JSON authorization scope;
+- `LOCUS-admission-capability-v1` is the issuer-signed envelope over that
+  exact binding;
+- `LOCUS-admission-client-proof-v1` is the sender proof over the capability,
+  nonce, and exact service request;
+- `LOCUS-local-synthetic-admission-v1` is the required project-controlled
+  issuer/verifier profile; and
+- `LOCUS-admission-replay-v1` is the local exact-use replay-state profile.
+
+The binding contains exactly `format_id`, a 32-byte pseudonymous `subject`,
+16-byte `backup_id`, positive `epoch`, enumerated `operation`, exact
+`audience`, 32-byte `client_key_thumbprint`, 32-byte `nonce`, `issued_at`,
+`expires_at`, `issuer`, `profile_id`, and nullable `object_prefix`. Binary
+identifiers are canonical lower-case hexadecimal. All serialized objects use
+bounded duplicate-free canonical JSON and reject unknown or missing members.
+
+The only recovery operation is `recovery_attempt`; it requires a null prefix.
+Storage operations are `storage_create_immutable`, `storage_read_exact`,
+`storage_compare_and_swap`, and `storage_delete_exact`; no listing operation
+exists. Each storage binding requires the exact prefix
+`subjects/H_subject/backups/backup_id/`, where `H_subject` is domain-separated
+from the 32-byte pseudonymous subject. Therefore a capability is not a provider
+credential and cannot authorize another account, backup, prefix, audience, or
+operation. The gateway still validates the requested exact key is beneath that
+prefix before invoking its storage adapter.
+
+Capabilities live for at most 300 seconds. Verifiers compare the entire
+expected binding, require the proof public key to match its thumbprint, verify
+the proof over the capability and exact request digest, and durably reserve the
+issuer/subject/nonce/audience tuple before authorizing work. Exact delivery of
+the same capability, proof, and request may return its stored result; nonce use
+with a changed request fails. Raw capability and proof bytes are never audit
+fields.
+
+The fixed P3.3 vector and schema are
+`prototype/test-vectors/admission-binding-v1.txt` and
+`docs/schemas/admission-binding-v1.schema.json`. They specify wire behavior,
+not identity-provider, production-security, or paper evidence. P3.4 implements
+the local issuer, signatures, independent verification, and replay state.
+
 ## Optional OIDC/PKCE/DPoP adapter design
 
 The remainder of the OIDC-specific credential and browser-flow design applies

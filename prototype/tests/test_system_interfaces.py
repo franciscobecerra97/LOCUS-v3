@@ -7,6 +7,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
+from locus.admission import RECOVERY_OPERATION, AdmissionContractError
 from locus.contracts import (
     MAX_OPAQUE_PUBLIC_BYTES,
     AdmissionBinding,
@@ -255,21 +256,21 @@ class SystemInterfaceTests(unittest.TestCase):
         self.assertEqual(RecoveryPhase.AUTHORIZATION.value, "authorization")
 
         binding = AdmissionBinding(
-            subject="synthetic-subject",
+            subject="11" * 32,
             backup_id="00000000000000000000000000000000",
             epoch=1,
-            operation="recover",
+            operation=RECOVERY_OPERATION,
             audience="party-1",
-            client_key_thumbprint="synthetic-thumbprint",
-            nonce="nonce-1",
+            client_key_thumbprint="22" * 32,
+            nonce="33" * 32,
             issued_at=1,
             expires_at=2,
             issuer="local-test-issuer",
-            profile_id="local-test-profile",
         )
-        self.assertEqual(binding.operation, "recover")
-        with self.assertRaises(ContractError):
-            AdmissionBinding(**{**binding.__dict__, "expires_at": 1})
+        binding.validate()
+        self.assertEqual(binding.operation, RECOVERY_OPERATION)
+        with self.assertRaises(AdmissionContractError):
+            AdmissionBinding(**{**binding.__dict__, "expires_at": 1}).validate()
 
 
 if __name__ == "__main__":

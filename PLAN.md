@@ -847,7 +847,7 @@ Completion record (2026-08-01):
 
 ### P3.3 Specify the admission contract
 
-Status: `Proposed`
+Status: `Complete`
 
 Bind:
 
@@ -872,6 +872,31 @@ Acceptance:
 - Threat model covers replay, stolen bearer token, malicious client,
   cross-account use, false-lockout attempts, identity-provider unavailability,
   and privacy leakage.
+
+Completion record (2026-08-01):
+
+- The provider-neutral binding is frozen as bounded canonical JSON under
+  `LOCUS-admission-binding-v1`. It binds a 32-byte pseudonymous subject,
+  backup, epoch, enumerated operation, audience, Ed25519 proof-key thumbprint,
+  32-byte nonce, issuance/expiry with a 300-second maximum lifetime, issuer,
+  profile, and operation-dependent object prefix.
+- Recovery admits only `recovery_attempt` with no prefix. Storage admits four
+  exact operations and derives one subject/backup-specific prefix; there is no
+  listing operation or provider credential.
+- The capability, client-proof, local-issuer, and replay identifiers are
+  assigned with their exact validation semantics for P3.4. The client proof
+  binds the signed capability to the exact service request; exact replay may
+  return a stored result, while nonce reuse with changed work fails.
+- A strict codec, JSON schema, and fixed digest/prefix vectors reject unknown,
+  duplicate, noncanonical, cross-profile, malformed, overlong-lifetime, and
+  wrong-prefix scopes before cryptographic work.
+- `docs/threat-model.md` now covers replay and stolen-capability behavior,
+  malicious admitted clients, cross-account/prefix use, false lockout, issuer
+  compromise/unavailability, and pseudonymous scope/timing leakage. These are
+  specified risks and requirements, not implementation or manuscript claims.
+- The complete pinned repository gate passes with 210 Python tests (one
+  intentional skip), 17 native Rust tests, the frozen Rust protocol vector,
+  formatting, linting, strict typing, and source-boundary validation.
 
 ### P3.4 Implement local admission
 

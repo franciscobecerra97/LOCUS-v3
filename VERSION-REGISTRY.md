@@ -119,6 +119,15 @@ configuration containing public topology, local service credentials, and
 native-role network configuration but no initial suite state. Version 1 stays
 protected and readable; v2 state arrives through authenticated enrollment.
 
+P3.3 assigns `LOCUS-admission-binding-v1`,
+`LOCUS-admission-capability-v1`, `LOCUS-admission-client-proof-v1`,
+`LOCUS-local-synthetic-admission-v1`, and `LOCUS-admission-replay-v1` together
+with the strict binding schema and fixed vector. The provider-neutral objects
+are valid only for their exact issuer, pseudonymous subject, backup, epoch,
+operation, audience, proof key, nonce, time window, and optional derived
+storage prefix. They carry no provider credential, listing authority, cue
+material, or offline verifier. Any OIDC adapter requires a distinct identifier.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a
@@ -150,7 +159,7 @@ protected and readable; v2 state arrives through authenticated enrollment.
 | CuePolicy/resolver | Frozen composite, atom, and deterministic-resolver identifiers | P5.2 assigns each atomic policy and `NoResolver` only after its grammar, domain, and vectors are approved |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
-| Admission | No implemented public-admission identifier | P3.3 assigns the provider-neutral capability and local-issuer profiles after binding/replay schemas and vectors are approved |
+| Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
 | Deployment | Frozen same-host Yi deployment identifier | P6.3 assigns exact suite/topology/provider profiles; host separation and independent administration remain distinct |
 | Trace | Frozen retained trace-policy identifier | P8.3 assigns a new trace profile only after the collection and retained-output schema is approved |
 | Result | Frozen retained attack/performance/evidence families | P9.2 assigns new schemas before collection and keeps Yi/aPPSS and topology results disjoint |

@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import ClassVar, Protocol, runtime_checkable
 
+from .admission import AdmissionBinding
 from .object_store import BackupObjectStore, BackupReference
 
 MAX_OPAQUE_PUBLIC_BYTES = 1024 * 1024
@@ -331,39 +332,6 @@ class StorageOperation(Enum):
     READ_EXACT = "read_exact"
     COMPARE_AND_SWAP = "compare_and_swap"
     DELETE_EXACT = "delete_exact"
-
-
-@dataclass(frozen=True)
-class AdmissionBinding:
-    subject: str
-    backup_id: str
-    epoch: int
-    operation: str
-    audience: str
-    client_key_thumbprint: str
-    nonce: str
-    issued_at: int
-    expires_at: int
-    issuer: str
-    profile_id: str
-
-    def __post_init__(self) -> None:
-        for value, label in (
-            (self.subject, "admission subject"),
-            (self.backup_id, "admission backup identifier"),
-            (self.operation, "admission operation"),
-            (self.audience, "admission audience"),
-            (self.client_key_thumbprint, "client-key thumbprint"),
-            (self.nonce, "admission nonce"),
-            (self.issuer, "admission issuer"),
-            (self.profile_id, "admission profile"),
-        ):
-            _identifier(value, label)
-        _positive_int(self.epoch, "admission epoch")
-        _positive_int(self.issued_at, "admission issuance time")
-        _positive_int(self.expires_at, "admission expiry")
-        if self.expires_at <= self.issued_at:
-            raise ContractError("admission expiry is not after issuance")
 
 
 @dataclass(frozen=True)
