@@ -2,10 +2,12 @@
 
 Status: implemented local cryptographic format for P2.5 and filesystem plus
 S3-compatible object-storage adapters for P4.5/P4.6. P5A.3--P5A.5 additionally
-implement an inactive suite-neutral backup-v5 component for Yi and aPPSS. This
-is research-grade composition and local conformance evidence, not an audit,
-released selectable-suite deployment, independent cloud deployment,
-real-provider result, or production-readiness claim.
+implement the suite-neutral backup-v5 application component for Yi and aPPSS.
+D020 activates the exact selector/component interface after provisional
+internal mapping acceptance. This is research-grade composition and local
+conformance evidence, not an audit, paired selectable-suite deployment,
+independent cloud deployment, real-provider result, or production-readiness
+claim.
 
 ## Problem Statement
 

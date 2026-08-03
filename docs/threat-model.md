@@ -71,7 +71,7 @@ Normal profiles must redact secrets. An unsafe educational mode may reveal synth
 ## Cryptographic And Operational Assumptions
 
 1. Ristretto255 discrete logarithm and DDH assumptions are adequate for the selected TPASS instantiation.
-2. The Yi et al. zero-knowledge variant's stated non-interactive proof-of-knowledge assumption holds for the faithfully mapped proof equation; D019's independent claim-focused mapping review must confirm the equation mapping while retaining that inherited assumption.
+2. The Yi et al. zero-knowledge variant's stated non-interactive proof-of-knowledge assumption holds for the faithfully mapped proof equation; D020's internal assessment provisionally accepts the equation mapping, while D019 independent human confirmation remains required and the inherited assumption is retained.
 3. `G2` has no known discrete logarithm relative to `G1`; LOCUS derives it transparently by domain-separated hash-to-group rather than the source paper's multiparty ceremony.
 4. SHA-512 transcript hashing, HKDF-SHA-256, and AES-256-GCM are used with correct domains, encodings, keys, associated data, and nonce uniqueness.
 5. Enrollment and recovery transport authenticates endpoints and protects confidential messages.

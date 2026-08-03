@@ -422,13 +422,14 @@ Successor:
 The final ordering must be validated by crash analysis before implementation is
 called complete.
 
-P5A.5 implements this ordering as an inactive component for all four Yi/aPPSS
+P5A.5 implements this ordering as an application/component path for all four Yi/aPPSS
 same-suite and cross-suite directions. The prepared successor is recovered
 before cutover and must yield the predecessor's protected-key digest. Its
 descriptor commits to the predecessor descriptor digest; fresh suite state is
 created rather than translated or combined. The existing P4.3 journal supplies
-durable exact retry and crash-prefix tests. The released application and
-deployment remain Yi-only pending the complete P5A gate.
+durable exact retry and crash-prefix tests. D020 activates this exact interface
+after provisional internal mapping acceptance. The frozen Yi-only Compose
+deployment remains unchanged until P6 assigns paired profiles.
 
 ## Required tests
 

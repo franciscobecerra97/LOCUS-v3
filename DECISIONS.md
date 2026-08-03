@@ -25,6 +25,7 @@ gates before their affected implementation work.
 | D017 | Exact aPPSS instantiation | Figure 4 aPPSS with a ristretto255/SHA-512 2HashDH OPRF, GF(2^128), SHA-256 commitment/secret derivation, abort-only robustness, and first 2-of-3 profile | Approved |
 | D018 | Selectable recovery suites and paired profiles | Keep Yi TPASS and aPPSS as independent first-class suites; select exactly one per enrollment/epoch; evaluate both under paired 2-of-3 and 3-of-5 conditions | Approved |
 | D019 | Recovery-suite review scope | Independent claim-focused mapping review of both Yi TPASS and aPPSS, including their LOCUS composition and documented deviations; not a full production cryptographic audit | Approved |
+| D020 | Provisional internal review and deferred human validation | Permit an explicitly non-independent internal mapping assessment to close P5A implementation chronology and allow P6 work, while retaining human cryptographic validation as a mandatory pre-manuscript/pre-release gate | Approved |
 
 ## Approved architecture records
 
@@ -650,6 +651,57 @@ Manuscript implication: None authorized. M-SELECTABLE-SUITES-001 may cite the
 completed mapping review as a basis only after P8/P9 and a separate exact owner
 approval.
 
+### D020 — Provisional internal review and deferred human validation
+
+Decision ID: D020
+Date: 2026-08-03
+Status: Approved
+Chosen option: At the owner's request, Codex may perform and record a rigorous
+paper-to-specification-to-code mapping assessment for frozen Yi TPASS, D017
+aPPSS, and the LOCUS outer composition. Because Codex contributed to the
+implementation and documentation, this assessment is explicitly internal and
+non-independent. If it finds no unresolved claim-blocking or
+correction-required issue, P5A.7 may be marked complete for implementation
+chronology, the existing explicit selectable-suite application interface may
+be activated, and work may continue to P6. Independent human cryptographic
+validation remains mandatory before the project describes the mapping as
+independently reviewed, relies on it in manuscript wording, promotes the
+comparative result as paper evidence, or makes a final reviewed release or
+submission.
+Alternatives considered: Stop all work until an external reviewer is
+available; treat Codex as an independent reviewer; remove the review gate; or
+continue to P6 without recording the assessment and residual validation debt.
+New trust assumptions: None for either recovery construction. This decision
+changes project sequencing and assurance labeling only. It does not strengthen
+the Yi or aPPSS source results, convert tests into proofs, or broaden the
+persistent-state adversary model.
+Privacy implications: The internal assessment uses repository-controlled
+source, public specifications, the owner-supplied aPPSS paper, synthetic
+fixtures, and aggregate-only tests. It requires no real cue, credential,
+private key, account, or production service state.
+Compatibility/version impact: No cryptographic identifier, wire format,
+threshold, state, vector, backup, descriptor, retained evidence, or frozen Yi
+behavior changes. The P5A.5 selectable-suite application interface becomes an
+active post-baseline component. Exact paired deployment identifiers and
+profiles remain assigned chronologically in P6.3; the frozen Yi-only Compose
+deployment and retained v2 evidence are not reinterpreted.
+Required evidence: An attributable internal assessment bound to an exact
+reviewed commit and source sections; a provisionally completed deviations
+register; explicit dispositions for Yi, aPPSS, and the LOCUS composition; no
+open claim-blocking or correction-required finding; the complete regression
+gate after documentation/activation; and a clearly recorded human-validation
+checklist that remains open.
+Files or components authorized: Review/deviation/readiness records, planning,
+baseline, protocol, architecture, information-flow, lifecycle, API, storage,
+evidence, artifact, version, and project-instruction documentation; tests and
+the existing explicit selectable-suite application boundary. No semantic
+change to either cryptographic core and no retained P9 collection are
+authorized.
+Manuscript implication: None authorized. The internal assessment must not be
+cited as independent review. Any selectable-suite manuscript delta still
+requires P8/P9, independent human validation, and a separate exact owner
+approval before `paper/` changes.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -670,7 +722,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D019 authorizes only the recorded architecture or
+Approval of D001--D020 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:
@@ -748,7 +800,7 @@ threshold-compromise outcomes: matching Yi threshold state reconstructs its
 shared input and protected recovery secret without a dictionary search, while
 matching aPPSS threshold state plus public `omega` enables unrate-limited
 offline dictionary testing and yields `S_R` for a correct candidate.
-Claim and evidence basis: D017--D019; the Section 3/Figure 4 aPPSS construction
+Claim and evidence basis: D017--D020; the Section 3/Figure 4 aPPSS construction
 and Theorem 2 from *Password-Protected Threshold Signatures*; the frozen Yi
 construction; the exact reviewed paper-to-code mappings; suite-neutral
 conformance, selection/no-fallback, successor, and common-condition tests; new
@@ -764,8 +816,9 @@ attack whose residual protection depends on the conditional cue distribution;
 make no proactive/adaptive, side-channel, production-security, memorability,
 usability, independent-administration, or global attempt-bound claim; and do
 not reuse retained v2 Yi results for aPPSS or selectable-suite claims.
-Owner status: Draft — not offered for approval until D019's claim-focused
-mapping review and the P8/P9 evidence gates complete
+Owner status: Draft — not offered for approval until D019 independent human
+mapping validation and the P8/P9 evidence gates complete; D020 internal
+assessment is insufficient
 Implementation/evidence commit: P5A implementation through `8795947`; clean
 checkout normalization `36ea1fe`; P8/P9 evidence pending
 Applied commit:

@@ -23,3 +23,9 @@ The v2 allowlist excludes repository-facing planning documents and includes
 only its package-specific reviewer guides. The anonymity scan remains unchanged
 and fail closed. Extracted-tree verification continues to accept the sealed v1
 manifest while the active builder emits only the new v2 identifier.
+
+D020's provisional internal Yi/aPPSS mapping assessment and active
+selectable-suite application/component interface do not reinterpret either
+historical artifact. A later artifact may include them only after P6/P8/P9,
+independent human validation, a new allowlist/profile, and explicit owner
+release approval.

@@ -1,7 +1,7 @@
 # TPASS/aPPSS Construction and Security-Claim Mapping Review
 
-Status: `Ready for independent claim-focused review`; no disposition has been
-issued.
+Status: D020 internal mapping assessment issued with provisional qualified
+acceptance; independent human validation remains pending.
 
 ## Purpose
 
@@ -15,8 +15,9 @@ offline cue-testing predicate.
 This is not a full cryptographic audit, production-readiness certification,
 side-channel assessment, or new proof. It does not review every service,
 storage adapter, deployment control, UI, or operational feature. Automated
-tests, vectors, and an AI-assisted self-review do not satisfy the independent
-mapping-review gate.
+tests, vectors, and the D020 internal assessment do not satisfy the independent
+human-validation gate. The internal record is
+`docs/P5A7-INTERNAL-MAPPING-ASSESSMENT.md`.
 
 The implementation basis is P5A.1--P5A.6 plus the P5A.7 preparation through
 commit `7fbed83`; the final finding must record the exact commit actually
@@ -150,8 +151,9 @@ Primary implementation/specification files are `docs/APPSS-PROFILE.md`,
 The reviewer should inspect `PROTOCOL-INVARIANTS.md`,
 `docs/backup-cryptography.md`, `docs/SYSTEM-INTERFACES.md`,
 `docs/INFORMATION-FLOW.md`, `docs/suite-compromise-regression.md`,
-`prototype/locus/recovery_suite_registry.py`, `suite_epoch_factory.py`,
-`suite_successor.py`, and the backup-v5/selectable-suite tests. The finding
+`prototype/locus/recovery_suite_registry.py`,
+`prototype/locus/selectable_suite_lifecycle.py`, and the
+backup-v5/selectable-suite tests. The finding
 must answer:
 
 1. Does CuePolicy output remain client-local and enter only a suite-bound
@@ -203,7 +205,10 @@ The final attributable record must include:
 - residual assumptions and properties the review does not establish; and
 - a digest, signature, or equivalent integrity binding to the final record.
 
-P5A.7 cannot release selectable suites until every claim-blocking or
-correction-required item is resolved and, where applicable, re-reviewed. An
-accepted mapping review still does not authorize a manuscript edit, create P9
-evidence, prove either construction, or certify LOCUS for production use.
+Under D020, P5A.7 may complete for implementation chronology after the internal
+assessment finds no unresolved claim-blocking or correction-required item and
+the release regression/documentation gates pass. Independent human validation
+still must complete before manuscript reliance, an independently-reviewed
+label, or final reviewed release/submission. An accepted mapping review does
+not itself authorize a manuscript edit, create P9 evidence, prove either
+construction, or certify LOCUS for production use.

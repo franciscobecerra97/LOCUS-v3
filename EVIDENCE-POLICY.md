@@ -152,11 +152,13 @@ The underlying cryptographic statements come from the cited constructions and
 their reviewed LOCUS mappings; experiments show only the behavior of the exact
 implementation and persistent-state boundary.
 
-D019 requires one independent, claim-focused mapping review of frozen Yi,
-aPPSS, and the common LOCUS composition. The review may accept documented
-engineering choices, but an unresolved claim-critical deviation prevents the
-affected source result or LOCUS claim from being used. P8/P9 measurements do
-not repair a rejected mapping and do not replace the review.
+D019 requires one independent, claim-focused human mapping review of frozen
+Yi, aPPSS, and the common LOCUS composition before manuscript reliance or a
+final reviewed release. D020 permits a clearly labeled internal assessment to
+close P5A implementation chronology and start P6; it does not satisfy that
+independence requirement. An unresolved claim-critical deviation still
+prevents the affected source result or LOCUS claim from being used. P8/P9
+measurements do not repair a rejected mapping and do not replace human review.
 
 D018 requires paired profiles rather than a sole-suite cutover. The first pair
 is Yi/aPPSS `k=2,n=3`; the second pair is Yi/aPPSS `k=3,n=5` after P6.3. Within

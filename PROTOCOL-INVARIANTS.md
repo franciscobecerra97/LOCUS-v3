@@ -20,10 +20,10 @@ There is no independent symmetric recovery key between TPASS and `K_wrap`.
 
 ### Approved selectable recovery-suite path
 
-The TPASS path above remains the only implemented invariant until P5A's
-selectable-suite release gate passes. D017 authorizes the following separately
-versioned aPPSS path, while D018 keeps both Yi and aPPSS selectable for new
-enrollments and successor epochs:
+The TPASS path above remains frozen and supported. D017 authorizes the following
+separately versioned aPPSS path, D018 keeps both Yi and aPPSS selectable for new
+enrollments and successor epochs, and D020 activates the exact
+application/component selector after provisional internal mapping acceptance:
 
 ```text
 CuePolicy_vM(M) -> Z_M or failure
@@ -43,7 +43,8 @@ successor enrollment under the selected suite, never state conversion.
 Protected-key generation/import, key identity, HKDF-SHA-256, and AES-256-GCM
 retain the same suite-neutral meaning in both paths.
 
-P5A.5 implements that switching invariant in an inactive component path. The
+P5A.5 implements that switching invariant in the active application/component
+path. The
 authenticated predecessor descriptor selects the only recovery adapter; the
 new-epoch selector is consulted only after predecessor recovery. Fresh Yi
 party state or fresh aPPSS holder/public state is created, the common backup
@@ -61,6 +62,11 @@ VOPRF robustness extension. D018 pairs Yi and aPPSS at `k=2,n=3` first and
 `k=3,n=5` after configuration generalization, using the same outer system
 conditions within each comparison. Final wire identifiers and schemas remain a
 P5A.1 gate; none may reuse a Yi identifier or domain.
+
+D020's assessment is non-independent and does not prove either construction.
+D019 independent human confirmation remains mandatory before manuscript
+reliance or a final reviewed release. The frozen Yi-only Compose deployment and
+retained v2 evidence remain unchanged; paired deployment profiles begin in P6.
 
 ## Role-state invariants
 

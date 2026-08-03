@@ -20,6 +20,8 @@ For proposed architecture, start with:
 - `APPSS-PROFILE.md`
 - `RECOVERY-SUITE-MAPPING-REVIEW.md` for D019's claim-focused Yi/aPPSS and
   LOCUS-composition review packet
+- `P5A7-INTERNAL-MAPPING-ASSESSMENT.md` for D020's explicitly
+  non-independent provisional assessment and mandatory human follow-up
 - `RECOVERY-SUITE-DEVIATIONS.md` for the required engineering-versus-
   claim-critical mapping register
 - `P5A7-RELEASE-READINESS.md` for the candidate build/release gate record

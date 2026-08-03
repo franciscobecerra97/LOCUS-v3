@@ -186,7 +186,9 @@ service, and restart reconstructs only an `ACTIVE` package.
   journal. Each prefix retains an authorized recoverable epoch; retry produces
   one activation and one retirement confirmation, while changed binding under
   the same operation identifier fails closed.
-- P5A.5 adds an inactive selectable-suite adapter over that same P4.3 journal.
+- P5A.5 adds a selectable-suite adapter over that same P4.3 journal. D020
+  activates it at the application/component boundary after provisional internal
+  mapping acceptance.
   The client recovers the predecessor through its authenticated descriptor-bound
   suite, freshly enrolls an explicitly selected Yi or aPPSS successor, verifies
   the original protected-key digest through the prepared successor, and only
@@ -203,10 +205,11 @@ service, and restart reconstructs only an `ACTIVE` package.
 - The P4.3 coordinator now retains exact public progress, but its external
   adapter still relies on the separately tested storage and party lifecycle
   operations; a future deployed profile must wire and evidence that composition.
-- The P5A.5 selectable adapter is not wired into the released Yi-only
-  application or Compose profile. Its component tests do not establish a
-  released selectable-suite deployment, independent administration, or
-  rollback resistance.
+- The P5A.5 selectable adapter is an active application/component interface but
+  is not wired into the frozen Yi-only Compose profile. Its component tests do
+  not establish a paired selectable-suite deployment, independent
+  administration, or rollback resistance; P6.3 owns the new deployment
+  profiles.
 
 ## Evaluation and paper implications
 

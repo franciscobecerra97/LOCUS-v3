@@ -246,7 +246,7 @@
       "asset": "Truthful non-claim about independent cryptographic assurance of the Yi and aPPSS implementations and mappings.",
       "adversary": "Undetected proof-to-code, domain, transcript, group, field, threshold, wire, or secret-lifecycle error.",
       "assumptions": "Internal tests and paper reading are not an independent qualified audit.",
-      "boundary": "P10.1 external review of the exact source-paper mapping, concrete profiles, vectors, state formats, and compromise claims.",
+      "boundary": "D020 records a provisional internal mapping assessment; P10.1/D019 still requires independent human review of the exact source-paper mapping, concrete profiles, vectors, state formats, and compromise claims.",
       "positive_control": "A seeded synthetic mapping or vector defect must be detectable by the independent review process.",
       "expected_observation": "The project remains an explicit non-claim until a qualified independent report exists and findings are resolved.",
       "interpretation_limit": "Passing tests, type checks, or internal analysis cannot be described as an independent cryptographic audit."
@@ -333,7 +333,7 @@
       "boundary": "New-enrollment selection, descriptor-bound recovery dispatch, same-suite or cross-suite fresh successor setup, authenticated provisioning, backup/descriptor publication, readiness verification, activation, retirement, and recovery regression.",
       "positive_control": "New Yi and aPPSS enrollments plus Yi-to-Yi, aPPSS-to-aPPSS, Yi-to-aPPSS, and aPPSS-to-Yi successors preserve the protected-key identity; every fallback, suite override, cross-suite mix, converted-state, and unready-successor variant fails.",
       "expected_observation": "Both accepted suites are independently selectable for new enrollment, recovery uses exactly the descriptor-bound suite, explicit successor switching creates fresh state, and each epoch uses one suite.",
-      "interpretation_limit": "No selectable-suite release is active until every P5A gate passes; paired conditions do not make suite security properties equivalent, prove general replacement, or transfer frozen Yi evidence to aPPSS."
+      "interpretation_limit": "D020 activates only the application/component interface after provisional internal assessment; paired deployment/evidence profiles, independent human validation, and manuscript reliance remain gated. Paired conditions do not make suite security properties equivalent, prove general replacement, or transfer frozen Yi evidence to aPPSS."
     }
   ]
 }

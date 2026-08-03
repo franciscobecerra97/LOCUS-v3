@@ -185,11 +185,13 @@ and a pinned mutual-TLS subprocess recovery path. P5A.4 adds authenticated
 distributed aPPSS initialization: each clean process creates only its own key,
 the client installs one common public state after exact context-bound OPRF
 evaluation, and durable caller/route/body idempotency protects the new `/v1`
-component routes. P5A.5 adds an inactive explicit-selector
+component routes. P5A.5 adds an explicit-selector
 epoch factory and P4.3-backed same-suite/cross-suite successor component. All
 four Yi/aPPSS directions preserve the protected-key identity with fresh native
-state and reject fallback and mixed state. The existing application and
-deployment remain Yi-only pending P5A.7. P5A.6 adds one zero-argument,
+state and reject fallback and mixed state. D020 activates this post-baseline
+application interface after an explicitly non-independent internal mapping
+assessment. The frozen Compose deployment remains Yi-only until P6 assigns new
+paired deployment profiles. P5A.6 adds one zero-argument,
 aggregate-only, non-retained paired 2-of-3 compromise regression. It covers all
 below-threshold coalitions and all exact-threshold subsets, confirms the
 suite-specific threshold-compromise behavior, and emits no candidate, holder,
@@ -202,10 +204,13 @@ changing a frozen/public vector or expected digest, and the corrected fresh
 Windows checkout passes the complete gate. D019 now defines the remaining
 external gate as an independent, claim-focused mapping review of frozen Yi,
 aPPSS, and their LOCUS composition rather than a full production cryptographic
-audit. Its review packet, deviations register, and release checklist are
-prepared, but no review disposition, application/deployment activation,
-retained P9 evidence, or manuscript authorization exists. The released
-application and deployment therefore remain Yi-only. The locally supplied
+audit. D020's internal assessment provisionally accepts all three boundaries
+with required qualifications and no correction-required finding, but is not an
+independent review. Its human confirmation remains mandatory before manuscript
+reliance or final reviewed release. The explicit selector is active at the
+post-baseline application/component boundary; the frozen Yi-only Compose
+deployment and retained evidence are not reinterpreted. No retained P9
+evidence or manuscript authorization exists. The locally supplied
 2024 paper is an ignored research input; it is not tracked or included in an
 artifact, and its redistribution status has not been established. None of these
 planning facts changes the inherited Yi TPASS baseline described above.

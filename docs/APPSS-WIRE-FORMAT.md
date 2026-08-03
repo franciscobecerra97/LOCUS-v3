@@ -3,8 +3,9 @@
 Status: P5A.1 exact format contract with the separate P5A.2 native core and
 narrow binding implemented. D017 fixes the construction and D018 fixes
 selectable coexistence with frozen Yi TPASS. Authenticated distributed
-integration, selector release, evidence, and D019's claim-focused Yi/aPPSS
-mapping review remain later gates.
+integration and the exact selector application interface are implemented.
+D020 records provisional internal mapping acceptance; D019 independent human
+confirmation, paired deployment, and retained evidence remain later gates.
 
 ## Assigned profile
 

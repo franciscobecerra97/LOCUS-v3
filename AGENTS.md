@@ -20,9 +20,11 @@ converts structured recovery input into deterministic bytes through a versioned
 CuePolicy, derives suite-bound password input locally, stores only an encrypted
 private-key backup in a cloud-object role, and distributes native threshold
 state across separately identified recovery parties. The current implementation
-uses the frozen Yi TPASS suite. D017 authorizes a separately versioned aPPSS
-construction, and D018 requires Yi and aPPSS to become independent first-class
-selectable suites after the aPPSS gates pass.
+preserves the frozen Yi TPASS suite and adds the separately versioned aPPSS
+suite. D018 keeps both independently selectable. D020 permits P6 work after a
+non-independent internal mapping assessment while retaining mandatory
+independent human validation before manuscript reliance or a final reviewed
+release.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered
@@ -88,6 +90,12 @@ and paper boundary. Selectable-suite work must:
 - preserve the approved D017/P1.2 OPRF, field, hash, robustness, corruption,
   and theorem profile in `docs/APPSS-PROFILE.md`; assign final wire identifiers,
   schemas, and vectors together at P5A.1 before cryptographic implementation.
+
+D020 does not satisfy D019's independence requirement. The internal assessment
+may close P5A implementation chronology only. Never describe it as an
+independent review, audit, proof, or final cryptographic validation. A qualified
+human reviewer must confirm or change every provisional mapping classification
+before manuscript reliance, a final reviewed release, or submission.
 
 The aPPSS and Yi constructions are inherited cryptographic work, not LOCUS
 novelty. D019 requires an independent, claim-focused review of both

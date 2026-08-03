@@ -210,14 +210,16 @@ context and pins certificate identities; it is not a portable deployment or
 evidence profile. Deployment, trace, result, and artifact identifiers remain
 unassigned.
 
-P5A.5 implements inactive explicit selection and same-suite/cross-suite
+P5A.5 implements explicit selection and same-suite/cross-suite
 successor preparation using only the assigned selector, backup-v5, descriptor,
 bundle, suite-state, and P4.3 journal boundaries. The existing successor journal
 already commits the exact successor configuration, backup, and descriptor
 digests; the authenticated descriptor commits the one selected suite. No state
 conversion, dual-suite object, fallback format, deployment profile, or evidence
-identifier is introduced. Release/deployment, trace, result, and artifact
-identifiers remain unassigned.
+identifier is introduced. D020 activates this exact application/component
+interface after provisional internal mapping acceptance. It assigns no
+deployment, trace, result, or artifact identifier; paired deployment profiles
+remain P6.3 work.
 
 P5A.6 assigns `LOCUS-recovery-suite-compromise-regression-v1` solely to the
 strict aggregate-only development report in
@@ -256,7 +258,7 @@ separate suite/topology evidence paths before collection.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers | P5A.2--P5A.7 implement, validate, complete D019's claim-focused mapping review, and release the assigned formats; 3-of-5, deployment, and retained-evidence identities remain at later gates |
+| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers; D020 internal mapping assessment provisionally accepted with human validation pending | P5A.2--P5A.7 implement and validate the active application interface; D019 independent human confirmation remains mandatory before manuscript/final reviewed release, while 3-of-5, deployment, and retained-evidence identities remain at later gates |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |

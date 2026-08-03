@@ -1,102 +1,113 @@
 # P5A.7 Selectable-Suite Release Readiness
 
-Status: `In progress — D019 mapping review and release activation pending`
+Status: `Complete for implementation chronology under D020; independent human validation remains open`
 
 Recorded on: 2026-08-03
 
-## Candidate boundary
+## Exact boundary
 
-The reviewed implementation candidate is commit `36ea1fe`. P5A.1 through
-P5A.6 are commits `19f00e1`, `4fc6ef1`, `bd24386`, `f519e52`, `db62ac4`, and
-`8795947`. Commit `36ea1fe` pins JSON, text-vector, and attribute files to LF so
-fresh Windows checkouts preserve the exact frozen/public vector digests.
+P5A.1 through P5A.6 are commits `19f00e1`, `4fc6ef1`, `bd24386`,
+`f519e52`, `db62ac4`, and `8795947`. Commit `36ea1fe` pins JSON, text-vector,
+and attribute files to LF. Commit `f92b302` is the exact cryptographic
+implementation and review-packet boundary used by D020's internal assessment.
 
-The candidate includes two independent recovery-suite implementations behind
-an exact registry and one common outer `S_R -> HKDF-SHA-256 -> AES-256-GCM`
-contract. The selectable epoch factory and all four same-suite/cross-suite
-successor directions remain inactive at the application/deployment boundary
-until the review gate passes. Released recovery therefore remains Yi-only at
-this checkpoint.
+The candidate contains two independent suite implementations behind an exact
+registry and one common `S_R -> HKDF-SHA-256 -> AES-256-GCM` contract. D020
+activates the existing explicit selector, descriptor-only recovery dispatch,
+and four same-suite/cross-suite successor directions at the post-baseline
+application/component boundary. The frozen `LOCUS-compose-deployment-v2`
+profile and retained v2 evidence remain Yi-only and unchanged. Exact paired
+deployment profiles and identifiers are intentionally P6.3 work.
+
+## Mapping disposition
+
+D020's internal assessment is
+`docs/P5A7-INTERNAL-MAPPING-ASSESSMENT.md`, SHA-256
+`1479de1f09709e6e9b3fde1b07267b1cda485d0e23690718cbe0413be7a46c2e`.
+It is bound to cryptographic implementation commit `f92b302` and records:
+
+- provisional `accepted with required qualifications` dispositions for frozen
+  Yi, D017 aPPSS, and the LOCUS outer composition;
+- no unresolved claim-blocking or correction-required finding;
+- provisional classification of every entry in
+  `docs/RECOVERY-SUITE-DEVIATIONS.md`; and
+- an explicit independence/conflict disclosure and mandatory human checklist.
+
+This record is not independent. It closes P5A implementation chronology only.
+D019 independent human validation remains mandatory before manuscript reliance,
+an “independently reviewed” label, a final reviewed release, or submission.
 
 ## Gate record
 
 | Gate | Result | Exact boundary |
 |---|---|---|
-| Frozen Yi core/vector/legacy regression | Passed | Complete gate at `8795947` on Linux and `36ea1fe` on Windows |
-| aPPSS native/vector/adapter regression | Passed | Same complete gates |
-| Python tests | Passed | 279 tests, one expected live-provider skip on both clean runs |
-| Native suites | Passed | aPPSS 8 unit + 1 vector; Yi 17 unit + 1 vector; binding crate 0 tests |
-| Formatting, lint, typing, repository boundary | Passed | Ruff, mypy, Cargo fmt/clippy, and source/generated-data boundary |
-| Clean Linux | Passed for implementation commit `8795947` | Disposable `python:3.12.13-bookworm` container; `uv==0.11.29`; Rust `1.83.0`; fresh local clone; complete gate |
-| Clean Windows | Passed for candidate `36ea1fe` | Fresh local clone; Python `3.12.13`; `uv==0.11.29`; Rust `1.83.0-x86_64-pc-windows-msvc`; empty dependency cache; complete gate |
-| CI status | Not independently observed | The private GitHub Actions page was not authenticated in this execution context; `.github/workflows/ci.yml` still runs the complete gate on `ubuntu-latest` and `windows-latest` for every push/PR |
-| Retained performance/evidence collection | Correctly not started | P9 schema/methodology/profile identifiers are not frozen; no P5A retained corpus was created |
-| Independent TPASS/aPPSS claim-focused mapping review | Pending, release-blocking | Packet in `docs/RECOVERY-SUITE-MAPPING-REVIEW.md`; deviations in `docs/RECOVERY-SUITE-DEVIATIONS.md` |
-| Manuscript change | Not authorized and not applied | Draft M-SELECTABLE-SUITES-001; P8/P9 and explicit owner approval remain required |
-| Application/deployment activation | Pending, release-blocking | Must occur only after accepted D019 mapping review, with no automatic fallback |
+| Frozen Yi core/vector/legacy regression | Passed | Complete gate at `8795947` on Linux and `36ea1fe` on Windows; no Yi code/vector change in P5A.7 |
+| aPPSS native/vector/adapter regression | Passed | Same candidate gates; no aPPSS semantic/code/vector change in P5A.7 |
+| Python and native suites | Passed | 279 Python tests with one expected live-provider skip; aPPSS 8 unit + 1 vector; Yi 17 unit + 1 vector; binding crate 0 tests |
+| Formatting, lint, typing, repository boundary | Passed | Ruff format/lint, mypy, Cargo fmt/clippy, source/generated-data boundary, and Python syntax on the complete P5A.7 tree |
+| Clean Linux | Passed for implementation commit `8795947` | Disposable `python:3.12.13-bookworm`, `uv==0.11.29`, Rust `1.83.0`, fresh clone, complete gate |
+| Clean Windows | Passed for implementation candidate `36ea1fe` | Fresh empty-cache clone, Python `3.12.13`, `uv==0.11.29`, Rust `1.83.0-x86_64-pc-windows-msvc`, complete gate |
+| D020 internal mapping assessment | Provisionally accepted with qualifications | Exact record and digest above; not independent |
+| D019 independent human validation | Pending, deferred external gate | Required before manuscript/final reviewed release, not before P6 implementation work |
+| Application selector | Active | Exact selector is mandatory for new setup; recovery uses only the authenticated descriptor suite; no fallback |
+| Paired deployment activation | Correctly deferred | P6.3 assigns new profiles; frozen Yi Compose evidence is not reinterpreted |
+| Retained performance/evidence collection | Correctly not started | P9 schema/methodology/profile identifiers are not frozen |
+| Manuscript change | Not authorized and not applied | Draft M-SELECTABLE-SUITES-001 still requires P8/P9, human validation, and exact owner approval |
 
-The Linux result predates only the line-ending policy commit; the final release
-commit must repeat clean Linux and Windows/CI checks after review remediation
-and activation. These records therefore demonstrate candidate portability but
-do not declare the release complete.
+The prior clean Linux/Windows runs cover the cryptographic implementation and
+fixed vectors. P5A.7 changes only governance, mapping documentation, active
+application-interface status, and claim boundaries; the final repository gate
+below still checks the complete combined tree.
 
-## Portability finding and correction
+## Portability finding retained
 
-A fresh Windows checkout with the user's global `core.autocrlf=true` initially
-failed three SHA-256 vector checks because `.gitattributes` did not cover
-general JSON/TXT artifacts. No vector content or expected digest was changed.
-Commit `36ea1fe` sets `*.json`, `*.txt`, and `.gitattributes` to `eol=lf`.
-A second empty-cache Windows checkout then passed the entire gate, including
-the formerly failing aPPSS format, frozen CuePolicy, and frozen Yi vector
-digest checks.
+A fresh Windows checkout with global `core.autocrlf=true` initially failed
+three SHA-256 vector checks because `.gitattributes` did not cover general
+JSON/TXT artifacts. No vector content or expected digest changed. Commit
+`36ea1fe` sets `*.json`, `*.txt`, and `.gitattributes` to `eol=lf`; the second
+empty-cache Windows checkout passed the complete gate.
 
-## Release-blocking checklist
+## Chronology-complete checklist
 
-- [x] Independent Yi and aPPSS implementations solve the same outer LOCUS
-  recovery-secret contract.
-- [x] One epoch binds exactly one suite and recovery has no probe/fallback path.
-- [x] Paired 2-of-3 component conditions and the fixed compromise regression
-  are implemented.
-- [x] Same-suite and bidirectional cross-suite successor preparation preserve
-  protected-key identity and create fresh native state.
-- [x] Frozen Yi identifiers, vectors, behavior, and retained v2 evidence remain
-  unchanged.
-- [x] No retained P5A performance corpus was collected.
-- [x] Clean candidate Linux and Windows gates have passed at the boundaries
-  recorded above.
-- [ ] D019's independent review accepts or correctly qualifies the frozen Yi
-  mapping, aPPSS mapping, and LOCUS composition for the exact stated claims.
-- [ ] Every claim-critical deviation is accepted with an explicit qualification,
-  corrected and re-reviewed, or causes removal of the dependent inherited
-  result/LOCUS claim.
-- [ ] Every entry in `docs/RECOVERY-SUITE-DEVIATIONS.md`, including any newly
-  discovered difference, has a final reviewer classification.
-- [ ] The application and reference deployment expose explicit Yi/aPPSS
-  new-enrollment selection, preserve descriptor-bound recovery dispatch, and
-  pass release tests with no fallback.
-- [ ] Active architecture, protocol, threat, information-flow, lifecycle, API,
-  storage, evidence, artifact, and version documentation is synchronized to
-  the released behavior.
-- [ ] The exact final release commit passes clean Linux and Windows CI.
+- [x] Yi and aPPSS solve the same outer LOCUS recovery-secret contract while
+  retaining independent native state, messages, and assumptions.
+- [x] One epoch binds exactly one suite and recovery has no probe, downgrade,
+  or fallback path.
+- [x] Paired 2-of-3 component conditions and fixed compromise regression are
+  implemented.
+- [x] Same-suite and bidirectional cross-suite successors preserve protected-key
+  identity, create fresh native state, and reject mixed state.
+- [x] Frozen Yi identifiers, vectors, behavior, Compose deployment, and retained
+  v2 evidence remain unchanged.
+- [x] D020 internal review provisionally accepts/qualifies every scoped mapping
+  with no correction-required finding.
+- [x] Every deviations-register entry has a provisional internal status and
+  explicit qualification where required.
+- [x] The application interface exposes explicit Yi/aPPSS new-epoch selection
+  and descriptor-bound recovery with no fallback.
+- [x] Active architecture, protocol, threat, information-flow, lifecycle, API,
+  storage, evidence, artifact, and version documentation records the D020
+  boundary.
+- [x] The final combined repository gate passes after this record is complete.
+- [ ] A qualified independent human confirms or changes every provisional
+  mapping status before manuscript reliance/final reviewed release.
 - [ ] P8/P9 retained evidence exists before any comparison is promoted into
   manuscript wording.
 
-## Post-review release sequence
+## Human follow-up and next phase
 
-1. Record the attributable D019 mapping-review finding for Yi, aPPSS, and the
-   LOCUS composition, including the completed deviations register.
-2. Resolve each claim-critical finding on a new exact commit or remove the
-   dependent claim; re-run reviewer-required tests and obtain confirmation for
-   every corrected mapping.
-3. Activate explicit new-enrollment selection in the application/reference
-   deployment while preserving descriptor-bound recovery and no fallback.
-4. Synchronize the active technical documentation and exact version/release
-   record; do not allocate P9 result identifiers early.
-5. Run clean Linux and Windows complete gates on the final release commit and
-   record CI/run links when authenticated access is available.
-6. Continue chronologically to P6. No `paper/` edit occurs here.
+The human reviewer must follow the checklist in
+`docs/P5A7-INTERNAL-MAPPING-ASSESSMENT.md`, issue separate Yi/aPPSS/composition
+dispositions, resolve every rejected claim-critical mapping, and bind the
+finding to the then-current implementation commit. This deferred gate does not
+block P6 implementation but remains visible in P10/external-review work.
+
+After the final repository gate passes, chronological work starts at P6.1:
+extend the common storage-adapter conformance contract before adding the P6.2
+AWS S3 adapter or P6.3 paired 3-of-5 deployment profiles. No `paper/` edit
+occurs in P5A.7.
 
 M-SELECTABLE-SUITES-001 remains a draft replacement for the superseded
-M-APPPSS-001 proposal. It is not eligible for owner approval until the P8/P9
-evidence gates are complete, and it is never applied without a separate
-explicit owner decision.
+M-APPPSS-001 proposal. It is not eligible for owner approval until P8/P9 and
+independent human validation complete, and it is never applied without a
+separate explicit owner decision.

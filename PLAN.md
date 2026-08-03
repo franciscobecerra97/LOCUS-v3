@@ -315,8 +315,9 @@ Completion record (2026-08-01):
 - The first LOCUS implementation/evidence claim is limited to static
   persistent-state compromise. Theorem 2's hybrid/random-oracle statement and
   the concrete RFC 9497 OPRF assumptions remain separate from implementation
-  tests and require D019's independent claim-focused mapping review together
-  with the frozen Yi mapping and LOCUS composition.
+  tests. D020 permits provisional internal mapping acceptance for chronology;
+  D019 independent human confirmation of aPPSS, frozen Yi, and the LOCUS
+  composition remains mandatory before manuscript/final reviewed release.
 - Final identifiers, strict wire schemas, size bounds, vectors, and native
   library selection remain intentionally deferred to P5A.1; the approved
   primitives and claim boundary may not change there without a new decision.
@@ -1531,7 +1532,7 @@ Acceptance:
   and aPPSS-to-Yi successors preserve the protected-key identity and create
   fresh independent suite state.
 
-Completed 2026-08-03: the selector registry now drives an inactive
+Completed 2026-08-03: the selector registry now drives an explicit
 suite-neutral epoch factory that accepts exactly one Yi or aPPSS choice, creates
 fresh selected-suite state, seals backup v5 through the common HKDF/AES path,
 and emits one signed RecoveryDescriptor v1 and deterministic recovery bundle.
@@ -1554,8 +1555,8 @@ old/new Yi state, mixed old/new aPPSS endpoints, and all cross-suite state, and
 resume after an injected crash following every selected publication effect
 without double activation or retirement. The journal contains neither the
 canonical recovery input nor protected-key bytes. This is a prepared component
-path; the existing released application/deployment remains Yi-only until the
-complete P5A release gate passes.
+path. D020 later activates it at the application/component boundary. The frozen
+Yi-only Compose deployment remains unchanged until P6 assigns paired profiles.
 
 ### P5A.6 Validate the comparative security boundary
 
@@ -1617,7 +1618,7 @@ result.
 
 ### P5A.7 Complete selectable-suite documentation and review gates
 
-Status: `In progress — D019 mapping review and release activation pending`
+Status: `Complete for implementation chronology under D020; independent human validation remains a mandatory pre-manuscript/pre-release gate`
 
 Actions:
 
@@ -1626,11 +1627,11 @@ Actions:
   and result schema;
 - update active architecture, protocol, threat, information-flow, lifecycle,
   API, storage, evidence, artifact, and version documentation at suite release;
-- obtain D019's independent, claim-focused
-  paper-to-specification-to-code mapping review for both frozen Yi TPASS and
-  aPPSS before attributing either implementation to its source result or
-  promoting the comparative result; distinguish acceptable engineering
-  choices from claim-critical deviations in a completed register;
+- perform D020's explicitly non-independent internal
+  paper-to-specification-to-code assessment for both frozen Yi TPASS and aPPSS,
+  provisionally classify every deviation, and retain D019's independent human
+  confirmation as a later mandatory gate before manuscript reliance or final
+  reviewed release;
 - prepare a replacement for superseded M-APPPSS-001 that describes selectable
   paired suites, but do not edit `paper/` until the replacement change set has
   separate owner approval and the P8/P9 evidence gates are complete.
@@ -1640,14 +1641,14 @@ Acceptance:
 - Frozen Yi regression and retained-v2 verification remain unchanged.
 - The selectable-suite release commit, selector/profile identifiers,
   clean-host results, review findings, and known limitations are recorded.
-- The reviewer accepts or explicitly qualifies the Yi mapping, the aPPSS
-  mapping, the two below-threshold claim boundaries, both distinct
-  reconstruction-threshold compromise outcomes, and the common LOCUS
-  composition. Every claim-critical deviation is corrected and re-reviewed or
-  the dependent inherited result/LOCUS claim is removed.
+- The internal assessment provisionally accepts or explicitly qualifies the Yi
+  mapping, the aPPSS mapping, the two below-threshold claim boundaries, both
+  distinct reconstruction-threshold compromise outcomes, and the common LOCUS
+  composition, with no unresolved claim-blocking or correction-required item.
+  Independent human confirmation remains required under D020.
 - Yi remains available for new enrollment alongside aPPSS; neither suite is a
   fallback for an epoch enrolled under the other.
-- Manuscript wording remains unchanged unless a new D018/D019-aligned exact change
+- Manuscript wording remains unchanged unless a new D018--D020-aligned exact change
   set is explicitly approved and later applied under P10.6.
 
 Implementation note (2026-08-03): the P5A.1--P5A.6 implementation candidate
@@ -1664,12 +1665,20 @@ cryptographic audit. The attributable review packet is ready in
 `docs/RECOVERY-SUITE-DEVIATIONS.md`, the release checklist is in
 `docs/P5A7-RELEASE-READINESS.md`, and draft
 M-SELECTABLE-SUITES-001 replaces the stale sole-active-aPPSS proposal without
-authorizing or applying any `paper/` change. P5A.7 cannot complete until an
-independent reviewer accepts or correctly qualifies both construction mappings
-and the LOCUS claim boundary, every claim-critical finding is resolved, explicit
-application/deployment selection is activated without fallback, active release
-documentation is synchronized, and the final release commit passes clean
-Linux/Windows gates.
+authorizing or applying any `paper/` change. D020 records the owner's decision
+to use a rigorous but explicitly non-independent internal assessment to close
+P5A implementation chronology while deferring independent human validation.
+The internal assessment in `docs/P5A7-INTERNAL-MAPPING-ASSESSMENT.md`
+provisionally accepts Yi, aPPSS, and the outer composition with required
+qualifications; every deviations-register entry is provisionally classified
+and no claim-blocking or correction-required item remains. The already
+implemented exact selector, authenticated descriptor dispatch, and
+four-direction successor interface are active application components with no
+fallback. The frozen Yi-only Compose profile and retained v2 evidence remain
+unchanged; exact paired deployment identities and profiles are P6.3 work. No
+retained P9 corpus or manuscript change was made. A qualified independent human
+must confirm the mapping before manuscript reliance, a final reviewed release,
+or submission.
 
 ---
 
@@ -2019,6 +2028,11 @@ Status: `Proposed`
 
 Review:
 
+- independently confirm, change, or reject every provisional D020 status in
+  `docs/RECOVERY-SUITE-DEVIATIONS.md` using the mandatory checklist in
+  `docs/P5A7-INTERNAL-MAPPING-ASSESSMENT.md`;
+- disclose reviewer identity/qualifications, independence, and conflicts and
+  bind the finding to the exact final implementation commit;
 - the aPPSS Section 3/Figure 4/Theorem 2 paper-to-code mapping;
 - the concrete OPRF, field, hashes, domains, authenticated initialization, and
   threshold-notation translation;
@@ -2033,6 +2047,9 @@ Review:
 Acceptance:
 
 - Findings are tracked and resolved.
+- Separate Yi, aPPSS, LOCUS-composition, and overall dispositions satisfy
+  D019, with correction/re-review or claim removal for every rejected
+  claim-critical mapping.
 - The project uses "reviewed" or "audited" only to the exact degree performed.
 
 ### P10.2 Independent systems review

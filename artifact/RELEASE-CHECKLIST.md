@@ -20,4 +20,6 @@ approved.
 - [ ] Licenses and third-party inventory are complete.
 - [ ] Deterministic archive and extracted-tree validation pass.
 - [ ] One unfamiliar reviewer completes the smoke workflow.
+- [ ] A qualified independent human confirms the provisional D020 recovery-suite
+      mapping assessment before any reviewed selectable-suite release claim.
 - [ ] Owner explicitly approves release.

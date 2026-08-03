@@ -171,8 +171,9 @@ independent-administration claims.
   verified before artifact-source release.
 - `paper/main.pdf` must be rebuilt and visually checked after source edits.
 - The corrected v2 paper-facing experiment set is frozen. Anonymous packaging,
-  clean-host reproduction, remote CI, and D019's claim-focused Yi/aPPSS and
-  LOCUS-composition mapping review remain incomplete.
+  clean-host reproduction, remote CI, and D019's independent human
+  Yi/aPPSS/LOCUS mapping validation remain incomplete. D020's internal
+  assessment is provisional and does not replace them.
   The project-owner authorization and Apache-2.0/CC-BY-4.0 artifact license
   split are complete.
 
@@ -187,7 +188,7 @@ independent-administration claims.
    Linux and Windows/CI environments; rerun Docker-backed gates where available.
 4. Add no new attack or performance breadth unless a retained claim requires
    it; the current P6/P7 corpus is frozen.
-5. Complete the anonymous package, D019 mapping review, and final
+5. Complete the anonymous package, D019 human mapping validation, and final
    page/anonymity gates under the approved license split.
 
 This scope permits the project to continue without pretending that an

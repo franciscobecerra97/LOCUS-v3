@@ -40,7 +40,8 @@ threshold, or their matching persistent snapshots do not gain an offline test
 for candidate cues.
 
 D018 supersedes D016's sole-aPPSS cutover without changing that below-threshold
-system thesis. After P5A's release gate, frozen Yi TPASS and D017 aPPSS are
+system thesis. D020 activates the P5A application/component interface after a
+provisional internal mapping assessment: frozen Yi TPASS and D017 aPPSS are
 independent first-class suites selected explicitly for each enrollment or fresh
 successor epoch. Both solve the same password-protected recovery-secret problem
 and feed the same HKDF/AES protected-key path, but retain distinct state,
@@ -55,8 +56,10 @@ Figure 4 aPPSS with a concrete ristretto255/SHA-512 2HashDH OPRF,
 `GF(2^128)`, a SHA-256-derived 16-byte commitment and 16-byte `S_R`, first
 2-of-3 evaluation, and abort-only robustness. D018 additionally requires paired
 Yi/aPPSS 2-of-3 and later 3-of-5 profiles under matching system conditions.
-These are approved design inputs to later P5A/P6 work, not implemented aPPSS
-behavior, evidence, or manuscript wording.
+The 2-of-3 application/component path is implemented and provisionally accepted
+with explicit qualifications under D020. This is not independent human
+validation, retained evidence, a paired deployment profile, or manuscript
+wording. The 3-of-5 and paired deployment work remains P6.
 
 ## What is inherited
 

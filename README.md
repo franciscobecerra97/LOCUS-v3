@@ -78,7 +78,15 @@ resources.
 | `artifact/` | Active installation, evaluation, packaging, and release planning |
 | `dist/` | Sealed verified v1 anonymous-artifact release and manifest |
 
-## Immediate development priority
+## Current chronological priority
+
+P1--P5A are complete for implementation chronology. D020's internal
+recovery-suite mapping assessment is provisional; independent human validation
+remains mandatory before manuscript reliance or final reviewed release. The
+next task is P6.1 storage conformance, followed by the approved supplemental
+AWS S3 adapter and paired deployment/topology profiles.
+
+## Foundation sequence
 
 The first implementation milestone is not the graphical interface or a real
 cloud provider. It is:

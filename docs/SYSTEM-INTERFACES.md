@@ -4,8 +4,10 @@ Status: P1.3 typed interface layer implemented and tested on 2026-08-01; P5.1
 completed frozen-policy application routing, P5.3 added the exact four-policy
 registry, P5A.3 implemented the separate aPPSS adapter and no-fallback suite
 registry, P5A.4 added authenticated distributed aPPSS initialization, and P5A.5
-added inactive explicit selection and four-direction successor preparation on
-2026-08-03. P5A is not released until all of its gates pass.
+added explicit selection and four-direction successor preparation on
+2026-08-03. D020 activates this application/component interface after
+provisional internal mapping acceptance; independent human validation and new
+paired deployment profiles remain pending.
 
 ## Purpose
 
@@ -21,7 +23,7 @@ and aPPSS work. The implementation lives in:
 - `prototype/locus/appss_party.py` and `prototype/locus/appss_party_http.py`
   for durable per-holder state and pinned mutual-TLS transport;
 - `prototype/locus/suite_backup.py` for the common backup-v5 HKDF/AES path;
-- `prototype/locus/selectable_suite_lifecycle.py` for inactive explicit
+- `prototype/locus/selectable_suite_lifecycle.py` for active explicit
   enrollment selection and P4.3 successor integration;
 - `FrozenLocationPersonCuePolicy` in `prototype/locus/cue_policy.py`; and
 - `DeterministicResolverAdapter` in
@@ -165,8 +167,9 @@ roles cannot be inferred from one threshold number. The snapshot validates:
 
 This represents the current five authorizers / three recovery holders / 4-of-5
 authorization / 2-of-3 recovery topology without conflating its parameters.
-The released deployment remains Yi-only; P5A.3's aPPSS subprocess test is a
-component profile rather than a deployment release.
+The frozen Compose deployment remains Yi-only and is not reinterpreted.
+P5A.3's aPPSS subprocess path and the active selector are application/component
+profiles; P6.3 assigns exact paired deployment profiles.
 
 ## Client state-machine contracts
 

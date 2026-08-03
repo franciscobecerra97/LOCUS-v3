@@ -267,7 +267,7 @@ distributed initialization through the authenticated party transport: every
 clean holder derives the exact public epoch context, creates its own OPRF key,
 returns a blinded evaluation only after durable authenticated request binding,
 installs the common public state, and acknowledges the exact installed digest.
-P5A.5 adds inactive explicit Yi/aPPSS enrollment selection, signed
+P5A.5 adds explicit Yi/aPPSS enrollment selection, signed
 descriptor/bundle preparation, and all four same-suite/cross-suite successor
 directions through the P4.3 journal. It recovers the predecessor client-side,
 creates fresh native state, verifies the unchanged protected-key identity, and
@@ -283,8 +283,9 @@ retained evidence or proof of either construction.
 Tests and snapshots do not prove the aPPSS theorem, cue entropy, human
 memorability, production security, side-channel resistance, proactive security,
 or a rollback-resistant global attempt bound. The result is inherited from the
-paper and limited to the concrete profile and LOCUS composition accepted by
-D019's claim-focused Yi/aPPSS mapping review.
+paper and limited to the concrete profile and LOCUS composition provisionally
+accepted by D020's internal assessment. Independent D019 human confirmation is
+still required before manuscript reliance or final reviewed release.
 
 ## Manuscript boundary
 

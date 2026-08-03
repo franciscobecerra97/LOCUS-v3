@@ -5,6 +5,11 @@ This is a design/evidence contract. Entries marked as gated do not claim that
 the corresponding descriptor, admission, aPPSS, UI, provider, multi-host, or
 replacement behavior is implemented or evidenced.
 
+D020 activates the already implemented selectable-suite application/component
+interface after provisional internal mapping acceptance. This does not promote
+any gated paired-deployment or retained-evidence cell, and independent human
+validation remains pending.
+
 This table is the starting contract. Update it before implementing new roles or
 retained observations.
 
