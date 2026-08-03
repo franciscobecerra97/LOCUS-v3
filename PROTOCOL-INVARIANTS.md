@@ -138,9 +138,9 @@ Must not hold:
   wrapping key, or plaintext key;
 - a local cue verifier.
 
-### Planned aPPSS holder
+### Implemented P5A.3 aPPSS holder boundary
 
-After P5A release, an aPPSS holder may keep only its own independent OPRF secret
+The P5A.3 component implementation keeps only its own independent OPRF secret
 state, its party/index binding, the common public `omega=(e,C)`, and the same
 bounded public identity, epoch, policy, configuration, lifecycle, and audit
 metadata permitted for a recovery party. It must not hold another server's OPRF

@@ -109,6 +109,33 @@ are, an enrolled caller can grow a party database with unique failed requests.
 Compaction must never delete the underlying counted ledger/phase binding or make
 a completed key executable again.
 
+### P5A.3 aPPSS component route
+
+P5A.3 adds the separate component route
+`POST /v1/recovery-suites/appss/evaluations`. It accepts exactly one bounded
+canonical `LOCUS-APPSS-request-v1` body over TLS 1.3 after mutual-certificate
+authentication and returns exactly one `LOCUS-APPSS-response-v1` body. Both
+client and server certificates are pinned by SHA-256 fingerprint. The route
+does not accept Yi objects, a suite preference list, client-session state, raw
+cues, or an exported OPRF key.
+
+Each process opens one holder-bound SQLite database. The database contains only
+that holder's pending or installed P5A.1 state, public `omega`, exact request
+hash/bindings, authorization-grant digest, and stored response. It commits the
+authorization metadata before invoking the secret-dependent OPRF evaluation.
+Exact request retry returns the durable response after restart; changed reuse,
+wrong recipient/context/suite/omega, malformed group input, and use before
+state installation fail closed. The transient client validates the complete
+response binding before finalization and normalizes wrong input and remote
+protocol errors.
+
+This route is a P5A.3 component boundary, not the released party API or a new
+deployment/evidence profile. P5A.4 must reuse the P3 authenticated enrollment
+transport for distributed initialization and exact state installation. P5A.5
+must integrate descriptor-bound new enrollment and successor switching. The
+existing Yi ledger/commitment/response API and retained deployment are
+unchanged.
+
 ## Common error contract
 
 Unauthenticated or client-facing failures return one of two coarse bodies:

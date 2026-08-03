@@ -81,6 +81,7 @@ class RecoveryContext:
     policy_id: str
     configuration_digest: str
     digest_context: str
+    suite_context_digest: str | None = None
 
     def __post_init__(self) -> None:
         _identifier(self.suite_id, "recovery suite identifier")
@@ -90,6 +91,12 @@ class RecoveryContext:
         _identifier(self.policy_id, "CuePolicy identifier")
         _identifier(self.configuration_digest, "configuration digest")
         _identifier(self.digest_context, "digest context")
+        if self.suite_context_digest is not None:
+            if len(self.suite_context_digest) != 64 or any(
+                character not in "0123456789abcdef"
+                for character in self.suite_context_digest
+            ):
+                raise ContractError("invalid suite context digest")
 
 
 @dataclass(frozen=True)

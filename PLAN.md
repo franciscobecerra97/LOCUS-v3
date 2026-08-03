@@ -1408,7 +1408,7 @@ initialization evidence. Frozen Yi source and vectors remain unchanged.
 
 ### P5A.3 Integrate the generic client and party protocol
 
-Status: `Proposed`
+Status: `Complete`
 
 Actions:
 
@@ -1437,6 +1437,26 @@ Acceptance:
 - Selecting Yi or aPPSS changes only the suite adapter and suite-bound
   state/messages; the protected-key, HKDF, AES, storage, and client-state
   interfaces remain common.
+
+Completed 2026-08-03: `AppssRecoveryAdapter` and the frozen
+`YiTpassRecoveryAdapter` are independently registered behind the suite-neutral
+contract. New-epoch selection is explicit; recovery lookup accepts only the
+authenticated suite identifier and has no fallback. Backup v5 carries either
+suite's opaque public state through the same HKDF-SHA-256/AES-256-GCM and
+protected-key interfaces. The separate aPPSS client emits only the P5A.1
+request/response formats, maintains its blinder in transient native state, and
+normalizes wrong input and remote protocol failure. Each durable holder creates
+and stores only its own OPRF key in a separate SQLite database; authorization
+metadata is committed before the first OPRF evaluation, exact request retry
+returns the stored response after restart, changed reuse fails, and partial
+public-state installation is not ready. A pinned mutual-TLS 1.3 route with
+explicit client/server certificate fingerprints exercises correct and
+wrong-input recovery across three distinct subprocesses and recipient
+databases. Cross-suite selection/substitution fails before recovery dispatch.
+The new route and database use only the already assigned P5A.1 request,
+response, pending-state, party-state, install, and ready formats; no deployment
+or evidence identifier is assigned. Frozen Yi source, vectors, backup v4,
+deployment, and retained v2 evidence remain unchanged.
 
 ### P5A.4 Integrate authenticated initialization
 

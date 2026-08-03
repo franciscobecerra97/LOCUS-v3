@@ -194,6 +194,14 @@ the narrow Python binding. It assigns no new protocol identifier. Deployment,
 trace, result, artifact, 3-of-5 topology, and retained-performance identifiers
 remain unassigned until their later gates.
 
+P5A.3 implements the exact selector registry, aPPSS adapter, backup-v5 common
+composition, durable holder state, transient client, and pinned mutual-TLS
+evaluation route using only the assigned request, response, pending-state,
+party-state, install, and ready formats. The `/v1` route does not introduce a
+new protocol object or deployment profile. Its subprocess test is component
+verification, not retained evidence. Runtime deployment, evidence, trace, and
+artifact identifiers remain unassigned.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a

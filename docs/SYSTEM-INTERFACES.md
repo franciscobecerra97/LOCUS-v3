@@ -1,11 +1,9 @@
 # Suite-Neutral System Interfaces
 
 Status: P1.3 typed interface layer implemented and tested on 2026-08-01; P5.1
-completed frozen-policy application routing and P5.3 added the exact four-policy
-registry on 2026-08-03. This document freezes interface responsibilities, not
-external recovery-suite wire schemas. The frozen Yi implementation remains the
-only implemented recovery path; aPPSS and the D018 selector are not implemented
-or released.
+completed frozen-policy application routing, P5.3 added the exact four-policy
+registry, and P5A.3 implemented the separate aPPSS adapter and no-fallback suite
+registry on 2026-08-03. P5A is not released until all of its gates pass.
 
 ## Purpose
 
@@ -14,6 +12,13 @@ and aPPSS work. The implementation lives in:
 
 - `prototype/locus/contracts.py` for typed values and structural protocols;
 - `prototype/locus/yi_compat.py` for the frozen Yi compatibility adapter;
+- `prototype/locus/appss.py` and `prototype/locus/appss_client.py` for the
+  independent aPPSS adapter and transient distributed client;
+- `prototype/locus/recovery_suite_registry.py` for exact selection and
+  descriptor-bound dispatch;
+- `prototype/locus/appss_party.py` and `prototype/locus/appss_party_http.py`
+  for durable per-holder state and pinned mutual-TLS transport;
+- `prototype/locus/suite_backup.py` for the common backup-v5 HKDF/AES path;
 - `FrozenLocationPersonCuePolicy` in `prototype/locus/cue_policy.py`; and
 - `DeterministicResolverAdapter` in
   `prototype/locus/resolver_fixture.py`.
@@ -58,10 +63,9 @@ redacted from object representations. P1.3 does not invent a generic wire
 envelope or serialize client-session state. Multi-phase Yi and aPPSS message
 semantics remain owned by their suite adapters and later versioned schemas.
 
-### Frozen Yi compatibility adapter
+### Independent recovery-suite adapters
 
-`YiTpassRecoveryAdapter` is the only implemented recovery-suite adapter in
-P1.3. It:
+`YiTpassRecoveryAdapter` remains the frozen compatibility adapter. It:
 
 - binds to frozen suite `LOCUS-TPASS-YI-ZK-RISTRETTO255-v1`;
 - calls the unchanged `NativeTpassBackend` setup/recovery methods;
@@ -79,8 +83,19 @@ The adapter's canonical wrapper is an internal compatibility representation,
 not a newly assigned external Yi format. It cannot be persisted or described
 as a migration of frozen Yi state.
 
-No aPPSS adapter exists yet. P5A must create it under new identifiers after the
-chronological descriptor, enrollment, recovery, and CuePolicy prerequisites.
+`AppssRecoveryAdapter` separately consumes only the assigned P5A.1 aPPSS
+formats and native objects. Its central `initialize` method is explicitly a
+unit fixture, not distributed-initialization evidence. The P5A.3 network client
+keeps its OPRF blinder transient, validates every response binding, and recovers
+through exactly two authenticated holder endpoints. Each holder generates and
+persists only its own OPRF key. The registry uses the selector only for new
+epochs; recovery dispatches from one authenticated suite identifier and never
+tries the other adapter.
+
+Both adapters return their native high-entropy output to `suite_backup.py`,
+which applies the same existing HKDF-SHA-256 and AES-256-GCM functions and
+preserves the same protected-key interface. Their password domains, native
+state, wire messages, compromise behavior, and errors remain disjoint.
 
 ## CuePolicy and Resolver boundaries
 
@@ -143,8 +158,10 @@ roles cannot be inferred from one threshold number. The snapshot validates:
 - holder count equals recovery `n`; and
 - authorization quorum is independently bounded by authorizer membership.
 
-This represents the current five authorizers / three Yi holders / 4-of-5
+This represents the current five authorizers / three recovery holders / 4-of-5
 authorization / 2-of-3 recovery topology without conflating its parameters.
+The released deployment remains Yi-only; P5A.3's aPPSS subprocess test is a
+component profile rather than a deployment release.
 
 ## Client state-machine contracts
 
@@ -221,7 +238,7 @@ that P2, P3, P4, and P5A will add.
 
 ## P1.3 verification boundary
 
-`prototype/tests/test_system_interfaces.py` verifies:
+`prototype/tests/test_system_interfaces.py` and the P5A.3 suite tests verify:
 
 - the Yi adapter satisfies the runtime recovery-suite protocol and recovers
   the same secret through a 2-of-3 subset;
@@ -235,12 +252,19 @@ that P2, P3, P4, and P5A will add.
   existing canonical bytes;
 - the existing filesystem store satisfies the structural backup contract;
 - authorizer quorum and recovery threshold remain separate; and
-- public client-state snapshots contain no secret fields.
+- public client-state snapshots contain no secret fields;
+- both independent adapters satisfy the common recovery-secret contract;
+- selector and descriptor dispatch reject unsupported/cross-suite state with
+  no fallback;
+- backup v5 uses one common protected-key/HKDF/AES path for Yi and aPPSS; and
+- correct and wrong aPPSS recovery cross distinct pinned mutual-TLS party
+  subprocesses whose boot files contain no OPRF key.
 
-These tests establish interface compatibility and rejection behavior. They do
-not implement aPPSS, RecoveryDescriptor, public admission, clean-client
-recovery, new CuePolicies, or a new cryptographic proof. P3.2 separately adds
-remote initial enrollment without changing these P1 interface tests.
+These tests establish interface compatibility and bounded implementation
+behavior. They do not prove aPPSS security, release selectable-suite
+enrollment, complete P5A.4 initialization/P5A.5 switching, or provide retained
+deployment evidence. P3.2 separately adds remote initial Yi enrollment without
+changing the frozen P1 interface tests.
 
 ## Manuscript and evidence boundary
 

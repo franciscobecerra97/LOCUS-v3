@@ -114,7 +114,7 @@ class BackupReference:
 
     @classmethod
     def from_backup(cls, backup: object) -> BackupReference:
-        _validate_backup_shape(backup)
+        _validate_backup_reference_shape(backup)
         assert isinstance(backup, dict)
         return cls(
             bid=backup["bid"],
@@ -167,6 +167,37 @@ def _validate_backup_shape(backup: object) -> None:
         raise ObjectCorrupt("invalid cloud backup object") from exc
     if calculated != digest:
         raise ObjectCorrupt("cloud backup digest mismatch")
+
+
+def _validate_backup_reference_shape(backup: object) -> None:
+    """Validate identity fields without widening frozen cloud-object v1."""
+    if not isinstance(backup, dict):
+        raise ObjectCorrupt("invalid backup reference source")
+    if backup.get("version") == "LOCUS-reference-backup-v5":
+        expected = {
+            "version",
+            "bid",
+            "epoch",
+            "nonce",
+            "ciphertext",
+            "cue_policy",
+            "recovery_suite",
+            "security_policy",
+            "digest",
+        }
+        if set(backup) != expected:
+            raise ObjectCorrupt("invalid backup reference source")
+        _lower_hex(backup["bid"], "backup identifier", byte_length=16)
+        _positive_epoch(backup["epoch"])
+        digest = _lower_hex(backup["digest"], "backup digest", byte_length=32)
+        try:
+            calculated = backup_digest(backup)
+        except (RecursionError, TypeError, ValueError) as exc:
+            raise ObjectCorrupt("invalid backup reference source") from exc
+        if calculated != digest:
+            raise ObjectCorrupt("backup digest mismatch")
+        return
+    _validate_backup_shape(backup)
 
 
 def _reject_duplicate_members(pairs: list[tuple[str, Any]]) -> dict[str, Any]:

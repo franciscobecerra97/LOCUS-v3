@@ -260,6 +260,13 @@ use exact common-condition manifests while retaining separate suite/topology
 result paths. The Yi/aPPSS threshold comparison uses fixed synthetic state and
 fixed candidates and emits aggregate categories only.
 
+P5A.3 now implements the independent adapter, no-fallback registry, common
+backup-v5 encryption composition, transient client protocol, per-holder SQLite
+state, and a pinned mutual-TLS subprocess recovery test. The central native
+setup function remains fixture-only. P5A.4 must still perform initialization
+through the authenticated enrollment boundary, and P5A.5 must still integrate
+new enrollment and successor switching before release.
+
 Tests and snapshots do not prove the aPPSS theorem, cue entropy, human
 memorability, production security, side-channel resistance, proactive security,
 or a rollback-resistant global attempt bound. The result is inherited from the

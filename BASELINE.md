@@ -178,9 +178,12 @@ construction and D018 requires it to coexist with frozen Yi as an independent
 selectable suite in paired 2-of-3 and later 3-of-5 profiles. P5A.1 now assigns
 the exact aPPSS format/profile identifiers, strict schemas, public structural
 vector, and separate native-core boundary. P5A.2 implements that core and its
-narrow binding with public fixed vectors and regression tests, but it is not
-yet integrated with authenticated parties, released through the selector, or
-supported by retained evidence. The locally supplied
+narrow binding with public fixed vectors and regression tests. P5A.3 adds the
+independent aPPSS adapter, exact no-fallback suite registry, suite-neutral
+backup-v5 composition, durable per-holder state, transient distributed client,
+and a pinned mutual-TLS subprocess recovery path. It has not yet completed
+P5A.4 authenticated distributed initialization, P5A.5 lifecycle switching, the
+P5A release gate, or retained evidence. The locally supplied
 2024 paper is an ignored research input; it is not tracked or included in an
 artifact, and its redistribution status has not been established. None of these
 planning facts changes the inherited Yi TPASS baseline described above.
