@@ -20,7 +20,9 @@ APPSS_SUITE_ID = "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"
 APPSS_OPRF_PROFILE = "LOCUS-APPSS-OPRF-RISTRETTO255-SHA512-v1"
 APPSS_PASSWORD_DOMAIN = "LOCUS-APPSS-password-input-v1"
 APPSS_PROFILE_2_OF_3 = "LOCUS-APPSS-2of3-v1"
+APPSS_PROFILE_3_OF_5 = "LOCUS-APPSS-3of5-v1"
 APPSS_WIRE_FORMAT = "LOCUS-APPSS-wire-v1"
+APPSS_WIRE_FORMAT_V2 = "LOCUS-APPSS-wire-v2"
 APPSS_PUBLIC_STATE_FORMAT = "LOCUS-APPSS-public-state-v1"
 APPSS_PARTY_STATE_FORMAT = "LOCUS-APPSS-party-state-v1"
 APPSS_PENDING_STATE_FORMAT = "LOCUS-APPSS-pending-party-state-v1"
@@ -29,13 +31,26 @@ APPSS_RESPONSE_FORMAT = "LOCUS-APPSS-response-v1"
 APPSS_INSTALL_FORMAT = "LOCUS-APPSS-state-install-v1"
 APPSS_READY_FORMAT = "LOCUS-APPSS-state-ready-v1"
 APPSS_CLIENT_SESSION_FORMAT = "LOCUS-APPSS-client-session-v1"
+APPSS_PUBLIC_STATE_FORMAT_V2 = "LOCUS-APPSS-public-state-v2"
+APPSS_PARTY_STATE_FORMAT_V2 = "LOCUS-APPSS-party-state-v2"
+APPSS_PENDING_STATE_FORMAT_V2 = "LOCUS-APPSS-pending-party-state-v2"
+APPSS_REQUEST_FORMAT_V2 = "LOCUS-APPSS-request-v2"
+APPSS_RESPONSE_FORMAT_V2 = "LOCUS-APPSS-response-v2"
+APPSS_INSTALL_FORMAT_V2 = "LOCUS-APPSS-state-install-v2"
+APPSS_READY_FORMAT_V2 = "LOCUS-APPSS-state-ready-v2"
+APPSS_CLIENT_SESSION_FORMAT_V2 = "LOCUS-APPSS-client-session-v2"
 APPSS_FORMAT_VECTORS = "LOCUS-APPSS-format-vectors-v1"
+APPSS_FORMAT_VECTORS_V2 = "LOCUS-APPSS-format-vectors-v2"
 RECOVERY_SUITE_SELECTOR = "LOCUS-recovery-suite-selector-v1"
+RECOVERY_SUITE_SELECTOR_V2 = "LOCUS-recovery-suite-selector-v2"
 REFERENCE_BACKUP_V5 = "LOCUS-reference-backup-v5"
 BACKUP_AAD_V2 = "LOCUS-backup-associated-data-v2"
+REFERENCE_BACKUP_V6 = "LOCUS-reference-backup-v6"
+BACKUP_AAD_V3 = "LOCUS-backup-associated-data-v3"
 
 YI_SUITE_ID = "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1"
 YI_PROFILE_2_OF_3 = "LOCUS-TPASS-YI-2of3-v1"
+YI_PROFILE_3_OF_5 = "LOCUS-TPASS-YI-3of5-v1"
 
 MAX_CONTEXT_BYTES = 4096
 MAX_PUBLIC_STATE_BYTES = 4096
@@ -51,9 +66,57 @@ MAX_IDENTIFIER_CHARS = 255
 MAX_SERVICE_IDENTITY_CHARS = 512
 MAX_PARTIES = 255
 
+_APPSS_TOPOLOGIES = {
+    APPSS_PROFILE_2_OF_3: (2, 3),
+    APPSS_PROFILE_3_OF_5: (3, 5),
+}
+_APPSS_FORMATS = {
+    APPSS_PROFILE_2_OF_3: {
+        "client": APPSS_CLIENT_SESSION_FORMAT,
+        "install": APPSS_INSTALL_FORMAT,
+        "party": APPSS_PARTY_STATE_FORMAT,
+        "pending": APPSS_PENDING_STATE_FORMAT,
+        "public": APPSS_PUBLIC_STATE_FORMAT,
+        "ready": APPSS_READY_FORMAT,
+        "request": APPSS_REQUEST_FORMAT,
+        "response": APPSS_RESPONSE_FORMAT,
+    },
+    APPSS_PROFILE_3_OF_5: {
+        "client": APPSS_CLIENT_SESSION_FORMAT_V2,
+        "install": APPSS_INSTALL_FORMAT_V2,
+        "party": APPSS_PARTY_STATE_FORMAT_V2,
+        "pending": APPSS_PENDING_STATE_FORMAT_V2,
+        "public": APPSS_PUBLIC_STATE_FORMAT_V2,
+        "ready": APPSS_READY_FORMAT_V2,
+        "request": APPSS_REQUEST_FORMAT_V2,
+        "response": APPSS_RESPONSE_FORMAT_V2,
+    },
+}
+
 
 class AppssFormatError(ValueError):
     """A public aPPSS object is malformed, unsupported, or misbound."""
+
+
+def appss_profile(k: int, n: int) -> str:
+    for profile_id, topology in _APPSS_TOPOLOGIES.items():
+        if topology == (k, n):
+            return profile_id
+    raise AppssFormatError("unsupported aPPSS topology")
+
+
+def appss_topology(profile_id: str) -> tuple[int, int]:
+    try:
+        return _APPSS_TOPOLOGIES[profile_id]
+    except (KeyError, TypeError) as exc:
+        raise AppssFormatError("unsupported aPPSS profile") from exc
+
+
+def appss_format(profile_id: str, role: str) -> str:
+    try:
+        return _APPSS_FORMATS[profile_id][role]
+    except (KeyError, TypeError) as exc:
+        raise AppssFormatError("unsupported aPPSS format role") from exc
 
 
 @dataclass(frozen=True)
@@ -278,12 +341,19 @@ def omega_digest(
     ).digest()
 
 
-def _validate_common(value: dict[str, Any], version: str) -> None:
-    if value["version"] != version or value["suite_id"] != APPSS_SUITE_ID:
+def _validate_common(
+    value: dict[str, Any], versions: dict[str, str]
+) -> tuple[int, int]:
+    if value["suite_id"] != APPSS_SUITE_ID:
         raise AppssFormatError("unsupported aPPSS object")
-    if value["profile_id"] != APPSS_PROFILE_2_OF_3:
+    try:
+        expected_profile = versions[value["version"]]
+    except (KeyError, TypeError) as exc:
+        raise AppssFormatError("unsupported aPPSS object") from exc
+    if value["profile_id"] != expected_profile:
         raise AppssFormatError("unsupported aPPSS profile")
     _lower_hex(value["context_digest"], "context digest", bytes_length=32)
+    return appss_topology(expected_profile)
 
 
 def validate_public_state(value: object) -> dict[str, Any]:
@@ -303,14 +373,20 @@ def validate_public_state(value: object) -> dict[str, Any]:
         },
         "aPPSS public state",
     )
-    _validate_common(state, APPSS_PUBLIC_STATE_FORMAT)
+    k, n = _validate_common(
+        state,
+        {
+            APPSS_PUBLIC_STATE_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_PUBLIC_STATE_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        },
+    )
     if (
         state["oprf_profile"] != APPSS_OPRF_PROFILE
-        or state["k"] != 2
-        or state["n"] != 3
+        or state["k"] != k
+        or state["n"] != n
     ):
         raise AppssFormatError("unsupported aPPSS public parameters")
-    if not isinstance(state["masked_shares"], list) or len(state["masked_shares"]) != 3:
+    if not isinstance(state["masked_shares"], list) or len(state["masked_shares"]) != n:
         raise AppssFormatError("invalid aPPSS masked shares")
     shares: list[tuple[int, bytes]] = []
     for expected, raw in enumerate(state["masked_shares"], start=1):
@@ -349,10 +425,18 @@ def validate_party_state(value: object, *, pending: bool = False) -> dict[str, A
     if not pending:
         fields |= {"omega_digest", "public_state_digest"}
     state = _exact_dict(value, fields, "aPPSS party state")
-    _validate_common(
-        state, APPSS_PENDING_STATE_FORMAT if pending else APPSS_PARTY_STATE_FORMAT
-    )
-    _positive_int(state["holder_id"], "holder identifier", maximum=3)
+    if pending:
+        versions = {
+            APPSS_PENDING_STATE_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_PENDING_STATE_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        }
+    else:
+        versions = {
+            APPSS_PARTY_STATE_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_PARTY_STATE_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        }
+    _k, n = _validate_common(state, versions)
+    _positive_int(state["holder_id"], "holder identifier", maximum=n)
     _lower_hex(state["oprf_key"], "OPRF key", bytes_length=32)
     _lower_hex(state["key_commitment"], "OPRF key commitment", bytes_length=32)
     if not pending:
@@ -361,7 +445,7 @@ def validate_party_state(value: object, *, pending: bool = False) -> dict[str, A
     return state
 
 
-def _validate_message_binding(value: dict[str, Any]) -> None:
+def _validate_message_binding(value: dict[str, Any], *, parties: int) -> None:
     _lower_hex(value["session_id"], "session identifier", bytes_length=32)
     _lower_hex(value["operation_id"], "operation identifier", bytes_length=32)
     _lower_hex(value["nonce"], "message nonce", bytes_length=32)
@@ -371,7 +455,7 @@ def _validate_message_binding(value: dict[str, Any]) -> None:
     _lower_hex(
         value["client_proof_key_digest"], "client proof-key digest", bytes_length=32
     )
-    _positive_int(value["holder_id"], "holder identifier", maximum=3)
+    _positive_int(value["holder_id"], "holder identifier", maximum=parties)
     if value["operation"] not in {"initialize", "recover"}:
         raise AppssFormatError("invalid aPPSS operation")
 
@@ -396,8 +480,14 @@ def validate_request(value: object) -> dict[str, Any]:
         },
         "aPPSS request",
     )
-    _validate_common(request, APPSS_REQUEST_FORMAT)
-    _validate_message_binding(request)
+    _k, n = _validate_common(
+        request,
+        {
+            APPSS_REQUEST_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_REQUEST_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        },
+    )
+    _validate_message_binding(request, parties=n)
     _lower_hex(request["blinded_element"], "blinded element", bytes_length=32)
     omega = request["omega_digest"]
     if request["operation"] == "initialize":
@@ -430,8 +520,14 @@ def validate_response(value: object) -> dict[str, Any]:
         },
         "aPPSS response",
     )
-    _validate_common(response, APPSS_RESPONSE_FORMAT)
-    _validate_message_binding(response)
+    _k, n = _validate_common(
+        response,
+        {
+            APPSS_RESPONSE_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_RESPONSE_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        },
+    )
+    _validate_message_binding(response, parties=n)
     _lower_hex(response["evaluated_element"], "evaluated element", bytes_length=32)
     _lower_hex(response["key_commitment"], "OPRF key commitment", bytes_length=32)
     _lower_hex(response["request_digest"], "request digest", bytes_length=32)
@@ -459,8 +555,14 @@ def validate_install(value: object) -> dict[str, Any]:
         },
         "aPPSS state install",
     )
-    _validate_common(install, APPSS_INSTALL_FORMAT)
-    _positive_int(install["holder_id"], "holder identifier", maximum=3)
+    _k, n = _validate_common(
+        install,
+        {
+            APPSS_INSTALL_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_INSTALL_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        },
+    )
+    _positive_int(install["holder_id"], "holder identifier", maximum=n)
     _lower_hex(install["operation_id"], "operation identifier", bytes_length=32)
     _lower_hex(
         install["initialization_transcript_digest"],
@@ -468,7 +570,10 @@ def validate_install(value: object) -> dict[str, Any]:
         bytes_length=32,
     )
     public_state = validate_public_state(install["public_state"])
-    if public_state["context_digest"] != install["context_digest"]:
+    if (
+        public_state["context_digest"] != install["context_digest"]
+        or public_state["profile_id"] != install["profile_id"]
+    ):
         raise AppssFormatError("state install context mismatch")
     return install
 
@@ -488,8 +593,14 @@ def validate_ready(value: object) -> dict[str, Any]:
         },
         "aPPSS state-ready acknowledgement",
     )
-    _validate_common(ready, APPSS_READY_FORMAT)
-    _positive_int(ready["holder_id"], "holder identifier", maximum=3)
+    _k, n = _validate_common(
+        ready,
+        {
+            APPSS_READY_FORMAT: APPSS_PROFILE_2_OF_3,
+            APPSS_READY_FORMAT_V2: APPSS_PROFILE_3_OF_5,
+        },
+    )
+    _positive_int(ready["holder_id"], "holder identifier", maximum=n)
     _lower_hex(ready["operation_id"], "operation identifier", bytes_length=32)
     _lower_hex(ready["party_state_digest"], "party-state digest", bytes_length=32)
     _lower_hex(ready["public_state_digest"], "public-state digest", bytes_length=32)
@@ -511,19 +622,31 @@ def validate_selector(value: object) -> dict[str, Any]:
         },
         "recovery-suite selection",
     )
-    if selector["version"] != RECOVERY_SUITE_SELECTOR:
+    if selector["version"] not in {
+        RECOVERY_SUITE_SELECTOR,
+        RECOVERY_SUITE_SELECTOR_V2,
+    }:
         raise AppssFormatError("unsupported suite selector")
     if selector["suite_id"] == APPSS_SUITE_ID:
-        if selector["profile_id"] != APPSS_PROFILE_2_OF_3:
+        profiles = {
+            APPSS_PROFILE_2_OF_3: (2, 3),
+            APPSS_PROFILE_3_OF_5: (3, 5),
+        }
+        if selector["profile_id"] not in profiles:
             raise AppssFormatError("aPPSS selector profile mismatch")
     elif selector["suite_id"] == YI_SUITE_ID:
-        if selector["profile_id"] != YI_PROFILE_2_OF_3:
+        profiles = {
+            YI_PROFILE_2_OF_3: (2, 3),
+            YI_PROFILE_3_OF_5: (3, 5),
+        }
+        if selector["profile_id"] not in profiles:
             raise AppssFormatError("Yi selector profile mismatch")
     else:
         raise AppssFormatError("unsupported recovery suite")
-    if selector["k"] != 2 or selector["n"] != 3:
+    topology = profiles[selector["profile_id"]]
+    if (selector["k"], selector["n"]) != topology:
         raise AppssFormatError("unsupported recovery topology")
-    if selector["holder_ids"] != [1, 2, 3]:
+    if selector["holder_ids"] != list(range(1, topology[1] + 1)):
         raise AppssFormatError("noncanonical holder membership")
     authorizers = selector["authorizer_ids"]
     if (
@@ -545,6 +668,11 @@ def validate_selector(value: object) -> dict[str, Any]:
     )
     if quorum <= len(authorizers) // 2:
         raise AppssFormatError("authorization quorum is not a majority")
+    if selector["version"] == RECOVERY_SUITE_SELECTOR:
+        if topology != (2, 3):
+            raise AppssFormatError("v1 selector requires 2-of-3")
+    elif authorizers != [1, 2, 3, 4, 5] or quorum != 4:
+        raise AppssFormatError("v2 selector requires D021 authorization topology")
     return selector
 
 
@@ -583,15 +711,22 @@ def encode_checked(
 
 __all__ = [name for name in globals() if name.startswith("APPSS_")] + [
     "BACKUP_AAD_V2",
+    "BACKUP_AAD_V3",
     "REFERENCE_BACKUP_V5",
+    "REFERENCE_BACKUP_V6",
     "RECOVERY_SUITE_SELECTOR",
+    "RECOVERY_SUITE_SELECTOR_V2",
     "YI_PROFILE_2_OF_3",
+    "YI_PROFILE_3_OF_5",
     "YI_SUITE_ID",
     "AppssFormatError",
     "AppssHolderBinding",
     "canonical_decode",
     "canonical_omega",
     "commit_and_secret",
+    "appss_format",
+    "appss_profile",
+    "appss_topology",
     "context_digest",
     "derive_password_input",
     "encode_checked",

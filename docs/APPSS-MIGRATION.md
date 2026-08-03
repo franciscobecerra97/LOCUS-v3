@@ -272,8 +272,8 @@ descriptor/bundle preparation, and all four same-suite/cross-suite successor
 directions through the P4.3 journal. It recovers the predecessor client-side,
 creates fresh native state, verifies the unchanged protected-key identity, and
 rejects mixed or fallback state before activation. The central native setup
-function remains fixture-only, and the existing application/deployment remains
-Yi-only until P5A.7 closes. P5A.6 adds the fixed paired 2-of-3 compromise
+function remains fixture-only, and the inherited deployment remains Yi-only
+under its frozen identifier. P5A.6 adds the fixed paired 2-of-3 compromise
 regression described in `docs/suite-compromise-regression.md`. It covers every
 below-threshold and exact-threshold subset plus all-server views and returns only
 strict aggregate observations. It confirms the implementation distinction
@@ -286,6 +286,15 @@ or a rollback-resistant global attempt bound. The result is inherited from the
 paper and limited to the concrete profile and LOCUS composition provisionally
 accepted by D020's internal assessment. Independent D019 human confirmation is
 still required before manuscript reliance or final reviewed release.
+
+P6.3 implements D018's second topology without converting any state. Yi and
+aPPSS each run as independent 3-of-5 holders across five mutually authenticated
+party processes, while authorization remains a separate 4-of-5 decision. The
+aPPSS client requires all five holders for distributed initialization and an
+exact three-holder subset for recovery; Yi uses the same exact recovery
+threshold. Backup v6 verifies the same synthetic protected-key boundary for
+both suites and both topologies. These are same-host process conformance tests,
+not retained comparative evidence or independent administration.
 
 ## Manuscript boundary
 

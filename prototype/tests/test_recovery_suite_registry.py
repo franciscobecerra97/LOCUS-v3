@@ -4,7 +4,14 @@ import json
 import unittest
 
 from locus.appss import AppssRecoveryAdapter
-from locus.appss_formats import APPSS_SUITE_ID, YI_SUITE_ID
+from locus.appss_formats import (
+    APPSS_PROFILE_3_OF_5,
+    APPSS_SUITE_ID,
+    RECOVERY_SUITE_SELECTOR_V2,
+    YI_PROFILE_3_OF_5,
+    YI_SUITE_ID,
+)
+from locus.contracts import ThresholdParameters
 from locus.recovery_suite_registry import RecoverySuiteRegistry
 from locus.yi_compat import RecoverySuiteError, YiTpassRecoveryAdapter
 
@@ -40,6 +47,23 @@ class RecoverySuiteRegistryTests(unittest.TestCase):
             )
         with self.assertRaises(RecoverySuiteError):
             registry.selector_bytes(suite_id="test-only:unknown-suite")
+
+    def test_v2_selector_freezes_paired_three_of_five_topology(self) -> None:
+        registry = RecoverySuiteRegistry()
+        for suite_id, profile_id in (
+            (YI_SUITE_ID, YI_PROFILE_3_OF_5),
+            (APPSS_SUITE_ID, APPSS_PROFILE_3_OF_5),
+        ):
+            selector = registry.selector_bytes(
+                suite_id=suite_id,
+                threshold=ThresholdParameters(3, 5),
+                selector_version=RECOVERY_SUITE_SELECTOR_V2,
+            )
+            selection, _adapter = registry.select_new_epoch(selector)
+            self.assertEqual(selection.profile_id, profile_id)
+            self.assertEqual(selection.holder_ids, (1, 2, 3, 4, 5))
+            self.assertEqual(selection.authorizer_ids, (1, 2, 3, 4, 5))
+            self.assertEqual(selection.authorization_quorum, 4)
 
     def test_suite_profile_pairing_is_fail_closed(self) -> None:
         registry = RecoverySuiteRegistry()

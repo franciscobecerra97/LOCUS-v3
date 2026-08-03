@@ -8,10 +8,13 @@ from typing import cast
 from .appss import AppssRecoveryAdapter
 from .appss_formats import (
     APPSS_PROFILE_2_OF_3,
+    APPSS_PROFILE_3_OF_5,
     APPSS_SUITE_ID,
     MAX_SELECTOR_BYTES,
     RECOVERY_SUITE_SELECTOR,
+    RECOVERY_SUITE_SELECTOR_V2,
     YI_PROFILE_2_OF_3,
+    YI_PROFILE_3_OF_5,
     YI_SUITE_ID,
     AppssFormatError,
     canonical_decode,
@@ -85,24 +88,46 @@ class RecoverySuiteRegistry:
     def selector_bytes(
         *,
         suite_id: str,
+        threshold: ThresholdParameters | None = None,
+        selector_version: str | None = None,
         authorizer_ids: tuple[int, ...] = (1, 2, 3, 4, 5),
         authorization_quorum: int = 4,
     ) -> bytes:
-        profile_id = {
-            YI_SUITE_ID: YI_PROFILE_2_OF_3,
-            APPSS_SUITE_ID: APPSS_PROFILE_2_OF_3,
-        }.get(suite_id)
+        selected_threshold = (
+            ThresholdParameters(k=2, n=3) if threshold is None else threshold
+        )
+        selected_version = (
+            RECOVERY_SUITE_SELECTOR
+            if selected_threshold == ThresholdParameters(k=2, n=3)
+            else RECOVERY_SUITE_SELECTOR_V2
+        )
+        if selector_version is not None:
+            selected_version = selector_version
+        profiles = {
+            (YI_SUITE_ID, 2, 3): YI_PROFILE_2_OF_3,
+            (YI_SUITE_ID, 3, 5): YI_PROFILE_3_OF_5,
+            (APPSS_SUITE_ID, 2, 3): APPSS_PROFILE_2_OF_3,
+            (APPSS_SUITE_ID, 3, 5): APPSS_PROFILE_3_OF_5,
+        }
+        profile_id = profiles.get(
+            (suite_id, selected_threshold.k, selected_threshold.n)
+        )
         if profile_id is None:
-            raise RecoverySuiteError("unsupported recovery suite")
+            raise RecoverySuiteError("unsupported recovery suite profile")
+        if selected_version not in {
+            RECOVERY_SUITE_SELECTOR,
+            RECOVERY_SUITE_SELECTOR_V2,
+        }:
+            raise RecoverySuiteError("unsupported selector version")
         value = {
             "authorization_quorum": authorization_quorum,
             "authorizer_ids": list(authorizer_ids),
-            "holder_ids": [1, 2, 3],
-            "k": 2,
-            "n": 3,
+            "holder_ids": list(range(1, selected_threshold.n + 1)),
+            "k": selected_threshold.k,
+            "n": selected_threshold.n,
             "profile_id": profile_id,
             "suite_id": suite_id,
-            "version": RECOVERY_SUITE_SELECTOR,
+            "version": selected_version,
         }
         try:
             return encode_checked(

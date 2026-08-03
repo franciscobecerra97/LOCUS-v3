@@ -14,6 +14,7 @@ from typing import cast
 
 from .appss_formats import (
     APPSS_PROFILE_2_OF_3,
+    APPSS_PROFILE_3_OF_5,
     APPSS_SUITE_ID,
     MAX_INSTALL_BYTES,
     MAX_READY_BYTES,
@@ -21,6 +22,7 @@ from .appss_formats import (
     MAX_RESPONSE_BYTES,
     AppssFormatError,
     AppssHolderBinding,
+    appss_topology,
     canonical_decode,
     context_digest,
     validate_request,
@@ -332,7 +334,7 @@ def _load_config(path: Path) -> tuple[_Server, AppssPartyStore]:
         holder_id = value["holder_id"]
         host = value["listen_host"]
         port = value["listen_port"]
-        derived_context, holders = _epoch_context(value["epoch_context"])
+        derived_context, holders, profile_id = _epoch_context(value["epoch_context"])
     except (TypeError, ValueError, AppssFormatError) as exc:
         raise AppssPartyTransportError("invalid aPPSS service binding") from exc
     if (
@@ -356,7 +358,7 @@ def _load_config(path: Path) -> tuple[_Server, AppssPartyStore]:
         or local_holder.service_identity != expected_identity
     ):
         raise AppssPartyTransportError("invalid aPPSS service identity binding")
-    binding = AppssPartyBinding(holder_id, configured_context)
+    binding = AppssPartyBinding(holder_id, configured_context, profile_id)
     store = AppssPartyStore(Path(str(value["store_path"])), binding)
     server = _Server(
         (host, port),
@@ -369,7 +371,9 @@ def _load_config(path: Path) -> tuple[_Server, AppssPartyStore]:
     return server, store
 
 
-def _epoch_context(value: object) -> tuple[bytes, tuple[AppssHolderBinding, ...]]:
+def _epoch_context(
+    value: object,
+) -> tuple[bytes, tuple[AppssHolderBinding, ...], str]:
     if not isinstance(value, dict) or set(value) != {
         "backup_id",
         "configuration_digest",
@@ -382,11 +386,16 @@ def _epoch_context(value: object) -> tuple[bytes, tuple[AppssHolderBinding, ...]
         "suite_id",
     }:
         raise AppssPartyTransportError("invalid aPPSS epoch context")
+    profile_id = value["profile_id"]
+    try:
+        k, n = appss_topology(profile_id)
+    except AppssFormatError as exc:
+        raise AppssPartyTransportError("invalid aPPSS epoch context") from exc
     if (
         value["suite_id"] != APPSS_SUITE_ID
-        or value["profile_id"] != APPSS_PROFILE_2_OF_3
-        or value["k"] != 2
-        or value["n"] != 3
+        or profile_id not in {APPSS_PROFILE_2_OF_3, APPSS_PROFILE_3_OF_5}
+        or value["k"] != k
+        or value["n"] != n
         or isinstance(value["epoch"], bool)
         or not isinstance(value["epoch"], int)
         or not 1 <= value["epoch"] <= 2**63 - 1
@@ -394,7 +403,7 @@ def _epoch_context(value: object) -> tuple[bytes, tuple[AppssHolderBinding, ...]
     ):
         raise AppssPartyTransportError("invalid aPPSS epoch context")
     encoded_holders = value["holders"]
-    if not isinstance(encoded_holders, list) or len(encoded_holders) != 3:
+    if not isinstance(encoded_holders, list) or len(encoded_holders) != n:
         raise AppssPartyTransportError("invalid aPPSS epoch membership")
     holders: list[AppssHolderBinding] = []
     for item in encoded_holders:
@@ -412,7 +421,7 @@ def _epoch_context(value: object) -> tuple[bytes, tuple[AppssHolderBinding, ...]
             )
         )
     holder_tuple = tuple(holders)
-    if [holder.index for holder in holder_tuple] != [1, 2, 3]:
+    if [holder.index for holder in holder_tuple] != list(range(1, n + 1)):
         raise AppssPartyTransportError("invalid aPPSS epoch membership")
     derived = context_digest(
         backup_id=bytes.fromhex(
@@ -421,13 +430,13 @@ def _epoch_context(value: object) -> tuple[bytes, tuple[AppssHolderBinding, ...]
         epoch=value["epoch"],
         policy_id=value["policy_id"],
         holders=holder_tuple,
-        k=2,
-        n=3,
+        k=k,
+        n=n,
         configuration_digest=bytes.fromhex(
             _lower_hex(value["configuration_digest"], "configuration digest")
         ),
     )
-    return derived, holder_tuple
+    return derived, holder_tuple, str(profile_id)
 
 
 def _unique_object(pairs: list[tuple[str, object]]) -> dict[str, object]:

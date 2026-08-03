@@ -41,8 +41,9 @@ creation, durable holder state, and pinned mutual-TLS recovery. P5A.4 adds
 authenticated distributed initialization and common-public-state installation;
 P5A.5 adds descriptor/bundle preparation and P4.3 successor integration in all
 four suite directions. D020 activates this application/component interface
-after provisional internal mapping acceptance. Independent human validation
-and paired deployment profiles remain later gates.
+after provisional internal mapping acceptance. P6.3 adds matched same-host
+process profiles; independent human validation, retained evidence, and actual
+host separation remain later gates.
 
 P3.3/P3.4 implement the provider-neutral local admission component boundary:
 an allowlisted synthetic subject receives an Ed25519-signed, proof-key-bound,

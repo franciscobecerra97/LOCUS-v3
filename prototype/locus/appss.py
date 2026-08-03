@@ -8,13 +8,16 @@ from typing import Any
 from . import _tpass_native as native
 from .appss_formats import (
     APPSS_PARTY_STATE_FORMAT,
-    APPSS_PROFILE_2_OF_3,
+    APPSS_PARTY_STATE_FORMAT_V2,
     APPSS_PUBLIC_STATE_FORMAT,
+    APPSS_PUBLIC_STATE_FORMAT_V2,
     APPSS_SUITE_ID,
     MAX_PARTY_STATE_BYTES,
     MAX_PUBLIC_STATE_BYTES,
     AppssFormatError,
     AppssHolderBinding,
+    appss_format,
+    appss_profile,
     canonical_decode,
     encode_checked,
     instance_id,
@@ -73,9 +76,11 @@ class AppssRecoveryAdapter:
         return password_input
 
     @staticmethod
-    def _topology(threshold: ThresholdParameters) -> None:
-        if threshold != ThresholdParameters(k=2, n=3):
-            raise RecoverySuiteError("unsupported aPPSS topology")
+    def _topology(threshold: ThresholdParameters) -> str:
+        try:
+            return appss_profile(threshold.k, threshold.n)
+        except AppssFormatError as exc:
+            raise RecoverySuiteError("unsupported aPPSS topology") from exc
 
     @staticmethod
     def _key_from_state(state: dict[str, Any]) -> native.AppssServerKey:
@@ -120,6 +125,7 @@ class AppssRecoveryAdapter:
 
     @staticmethod
     def _public_mapping(state: native.AppssPublicState) -> dict[str, Any]:
+        profile_id = appss_profile(state.threshold, state.parties)
         mapping = {
             "commitment": state.commitment.hex(),
             "context_digest": state.context_digest.hex(),
@@ -131,34 +137,37 @@ class AppssRecoveryAdapter:
             "n": state.parties,
             "omega_digest": state.omega_digest.hex(),
             "oprf_profile": "LOCUS-APPSS-OPRF-RISTRETTO255-SHA512-v1",
-            "profile_id": APPSS_PROFILE_2_OF_3,
+            "profile_id": profile_id,
             "suite_id": APPSS_SUITE_ID,
-            "version": APPSS_PUBLIC_STATE_FORMAT,
+            "version": appss_format(profile_id, "public"),
         }
         validate_public_state(mapping)
         return mapping
 
     def decode_public_state(self, state: PublicRecoveryState) -> dict[str, Any]:
-        if (
-            state.suite_id != self.suite_id
-            or state.format_id != self.public_state_format
-        ):
+        if state.suite_id != self.suite_id or state.format_id not in {
+            APPSS_PUBLIC_STATE_FORMAT,
+            APPSS_PUBLIC_STATE_FORMAT_V2,
+        }:
             raise RecoverySuiteError("unsupported aPPSS public state")
         try:
-            return canonical_decode(
+            decoded = canonical_decode(
                 state.payload,
                 maximum=MAX_PUBLIC_STATE_BYTES,
                 validator=validate_public_state,
                 label="aPPSS public state",
             )
+            if decoded["version"] != state.format_id:
+                raise RecoverySuiteError("aPPSS public-state format mismatch")
+            return decoded
         except AppssFormatError as exc:
             raise RecoverySuiteError("invalid aPPSS public state") from exc
 
     def decode_party_state(self, state: PartyRecoveryState) -> dict[str, Any]:
-        if (
-            state.suite_id != self.suite_id
-            or state.format_id != self.party_state_format
-        ):
+        if state.suite_id != self.suite_id or state.format_id not in {
+            APPSS_PARTY_STATE_FORMAT,
+            APPSS_PARTY_STATE_FORMAT_V2,
+        }:
             raise RecoverySuiteError("unsupported aPPSS party state")
         try:
             decoded = canonical_decode(
@@ -171,6 +180,8 @@ class AppssRecoveryAdapter:
             raise RecoverySuiteError("invalid aPPSS party state") from exc
         if decoded["holder_id"] != state.holder_id:
             raise RecoverySuiteError("aPPSS party-state holder mismatch")
+        if decoded["version"] != state.format_id:
+            raise RecoverySuiteError("aPPSS party-state format mismatch")
         return decoded
 
     def initialize(
@@ -180,13 +191,15 @@ class AppssRecoveryAdapter:
         password_input: bytes,
         threshold: ThresholdParameters,
     ) -> RecoverySuiteEnrollment:
-        self._topology(threshold)
+        profile_id = self._topology(threshold)
+        public_format = appss_format(profile_id, "public")
+        party_format = appss_format(profile_id, "party")
         context_digest = self._context_digest(context)
         password = self._password(password_input)
         try:
             keys = tuple(
                 native.appss_generate_server_key(context_digest, holder)
-                for holder in range(1, 4)
+                for holder in range(1, threshold.n + 1)
             )
             masks = self._evaluate_masks(
                 context_digest=context_digest,
@@ -194,7 +207,7 @@ class AppssRecoveryAdapter:
                 keys=keys,
             )
             public, secret = native.appss_initialize_fixture(
-                context_digest, password, 2, 3, masks
+                context_digest, password, threshold.k, threshold.n, masks
             )
             public_mapping = self._public_mapping(public)
             public_payload = encode_checked(
@@ -213,10 +226,10 @@ class AppssRecoveryAdapter:
                     "key_commitment": key.commitment().hex(),
                     "omega_digest": public.omega_digest.hex(),
                     "oprf_key": native_key[39:71].hex(),
-                    "profile_id": APPSS_PROFILE_2_OF_3,
+                    "profile_id": profile_id,
                     "public_state_digest": public_digest,
                     "suite_id": APPSS_SUITE_ID,
-                    "version": APPSS_PARTY_STATE_FORMAT,
+                    "version": party_format,
                 }
                 payload = encode_checked(
                     mapping,
@@ -227,7 +240,7 @@ class AppssRecoveryAdapter:
                 party_states.append(
                     PartyRecoveryState(
                         suite_id=APPSS_SUITE_ID,
-                        format_id=APPSS_PARTY_STATE_FORMAT,
+                        format_id=party_format,
                         holder_id=key.holder_id,
                         payload=payload,
                     )
@@ -235,7 +248,7 @@ class AppssRecoveryAdapter:
             return RecoverySuiteEnrollment(
                 public_state=PublicRecoveryState(
                     suite_id=APPSS_SUITE_ID,
-                    format_id=APPSS_PUBLIC_STATE_FORMAT,
+                    format_id=public_format,
                     payload=public_payload,
                 ),
                 party_states=tuple(party_states),
@@ -257,8 +270,10 @@ class AppssRecoveryAdapter:
         public_mapping = self.decode_public_state(public_state)
         if public_mapping["context_digest"] != context_digest.hex():
             raise RecoverySuiteError("aPPSS public-state context mismatch")
-        if len(party_states) != 2:
-            raise RecoverySuiteError("aPPSS recovery requires exactly two holders")
+        threshold = int(public_mapping["k"])
+        profile_id = str(public_mapping["profile_id"])
+        if len(party_states) != threshold:
+            raise RecoverySuiteError("aPPSS recovery has the wrong holder count")
         if [state.holder_id for state in party_states] != sorted(
             {state.holder_id for state in party_states}
         ):
@@ -268,6 +283,7 @@ class AppssRecoveryAdapter:
         for state in decoded:
             if (
                 state["context_digest"] != context_digest.hex()
+                or state["profile_id"] != profile_id
                 or state["omega_digest"] != public_mapping["omega_digest"]
                 or state["public_state_digest"] != public_digest
             ):

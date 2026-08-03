@@ -16,8 +16,9 @@ registry and one common `S_R -> HKDF-SHA-256 -> AES-256-GCM` contract. D020
 activates the existing explicit selector, descriptor-only recovery dispatch,
 and four same-suite/cross-suite successor directions at the post-baseline
 application/component boundary. The frozen `LOCUS-compose-deployment-v2`
-profile and retained v2 evidence remain Yi-only and unchanged. Exact paired
-deployment profiles and identifiers are intentionally P6.3 work.
+profile and retained v2 evidence remain Yi-only and unchanged. P6.3 later
+assigns separate paired same-host process profiles and does not reinterpret
+either frozen boundary.
 
 ## Mapping disposition
 
@@ -50,7 +51,7 @@ an “independently reviewed” label, a final reviewed release, or submission.
 | D020 internal mapping assessment | Provisionally accepted with qualifications | Exact record and digest above; not independent |
 | D019 independent human validation | Pending, deferred external gate | Required before manuscript/final reviewed release, not before P6 implementation work |
 | Application selector | Active | Exact selector is mandatory for new setup; recovery uses only the authenticated descriptor suite; no fallback |
-| Paired deployment activation | Correctly deferred | P6.3 assigns new profiles; frozen Yi Compose evidence is not reinterpreted |
+| Paired deployment activation | Completed later in P6.3 | New same-host process profiles are separate; frozen Yi Compose evidence is not reinterpreted |
 | Retained performance/evidence collection | Correctly not started | P9 schema/methodology/profile identifiers are not frozen |
 | Manuscript change | Not authorized and not applied | Draft M-SELECTABLE-SUITES-001 still requires P8/P9, human validation, and exact owner approval |
 
@@ -102,10 +103,9 @@ dispositions, resolve every rejected claim-critical mapping, and bind the
 finding to the then-current implementation commit. This deferred gate does not
 block P6 implementation but remains visible in P10/external-review work.
 
-After the final repository gate passes, chronological work starts at P6.1:
-extend the common storage-adapter conformance contract before adding the P6.2
-AWS S3 adapter or P6.3 paired 3-of-5 deployment profiles. No `paper/` edit
-occurs in P5A.7.
+After this historical P5A.7 record, chronology continues through P6.1 storage
+conformance, P6.2 AWS adapter boundaries, and P6.3 paired topology profiles.
+No `paper/` edit occurs in P5A.7 or those implementation steps.
 
 M-SELECTABLE-SUITES-001 remains a draft replacement for the superseded
 M-APPPSS-001 proposal. It is not eligible for owner approval until P8/P9 and

@@ -12,11 +12,7 @@ from typing import Any
 
 from . import _tpass_native as native
 from .appss_formats import (
-    APPSS_PARTY_STATE_FORMAT,
-    APPSS_PENDING_STATE_FORMAT,
     APPSS_PROFILE_2_OF_3,
-    APPSS_READY_FORMAT,
-    APPSS_RESPONSE_FORMAT,
     APPSS_SUITE_ID,
     MAX_INSTALL_BYTES,
     MAX_PARTY_STATE_BYTES,
@@ -26,6 +22,8 @@ from .appss_formats import (
     MAX_REQUEST_BYTES,
     MAX_RESPONSE_BYTES,
     AppssFormatError,
+    appss_format,
+    appss_topology,
     canonical_decode,
     encode_checked,
     validate_install,
@@ -45,9 +43,14 @@ class AppssPartyError(ValueError):
 class AppssPartyBinding:
     holder_id: int
     context_digest: bytes
+    profile_id: str = APPSS_PROFILE_2_OF_3
 
     def __post_init__(self) -> None:
-        if not 1 <= self.holder_id <= 3 or len(self.context_digest) != 32:
+        try:
+            _k, parties = appss_topology(self.profile_id)
+        except AppssFormatError as exc:
+            raise AppssPartyError("invalid aPPSS party binding") from exc
+        if not 1 <= self.holder_id <= parties or len(self.context_digest) != 32:
             raise AppssPartyError("invalid aPPSS party binding")
 
 
@@ -145,9 +148,9 @@ class AppssPartyStore:
                 "holder_id": self.binding.holder_id,
                 "key_commitment": key.commitment().hex(),
                 "oprf_key": secret[39:71].hex(),
-                "profile_id": APPSS_PROFILE_2_OF_3,
+                "profile_id": self.binding.profile_id,
                 "suite_id": APPSS_SUITE_ID,
-                "version": APPSS_PENDING_STATE_FORMAT,
+                "version": appss_format(self.binding.profile_id, "pending"),
             }
             state_bytes = encode_checked(
                 mapping,
@@ -206,7 +209,10 @@ class AppssPartyStore:
                 raise AppssPartyError("aPPSS party state is not installable")
             pending = _decode_party_state(state_bytes, pending=True)
             public = _decode_public_state(public_state_bytes)
-            if public["context_digest"] != self.binding.context_digest.hex():
+            if (
+                public["context_digest"] != self.binding.context_digest.hex()
+                or public["profile_id"] != self.binding.profile_id
+            ):
                 raise AppssPartyError("aPPSS install context mismatch")
             installed = {
                 "context_digest": pending["context_digest"],
@@ -214,10 +220,10 @@ class AppssPartyStore:
                 "key_commitment": pending["key_commitment"],
                 "omega_digest": public["omega_digest"],
                 "oprf_key": pending["oprf_key"],
-                "profile_id": APPSS_PROFILE_2_OF_3,
+                "profile_id": self.binding.profile_id,
                 "public_state_digest": hashlib.sha256(public_state_bytes).hexdigest(),
                 "suite_id": APPSS_SUITE_ID,
-                "version": APPSS_PARTY_STATE_FORMAT,
+                "version": appss_format(self.binding.profile_id, "party"),
             }
             installed_bytes = encode_checked(
                 installed,
@@ -431,6 +437,7 @@ class AppssPartyService:
         if (
             request["context_digest"] != self.binding.context_digest.hex()
             or request["holder_id"] != self.binding.holder_id
+            or request["profile_id"] != self.binding.profile_id
         ):
             raise AppssPartyError("aPPSS request recipient binding mismatch")
         operation = request["operation"]
@@ -474,11 +481,11 @@ class AppssPartyService:
             "omega_digest": request["omega_digest"],
             "operation": operation,
             "operation_id": request["operation_id"],
-            "profile_id": APPSS_PROFILE_2_OF_3,
+            "profile_id": self.binding.profile_id,
             "request_digest": request_digest.hex(),
             "session_id": request["session_id"],
             "suite_id": APPSS_SUITE_ID,
-            "version": APPSS_RESPONSE_FORMAT,
+            "version": appss_format(self.binding.profile_id, "response"),
         }
         response_bytes = encode_checked(
             response,
@@ -505,6 +512,7 @@ class AppssPartyService:
         if (
             install["context_digest"] != self.binding.context_digest.hex()
             or install["holder_id"] != self.binding.holder_id
+            or install["profile_id"] != self.binding.profile_id
         ):
             raise AppssPartyError("aPPSS install recipient binding mismatch")
         public_state_bytes = encode_checked(
@@ -523,10 +531,10 @@ class AppssPartyService:
             "holder_id": self.binding.holder_id,
             "operation_id": install["operation_id"],
             "party_state_digest": hashlib.sha256(state_bytes).hexdigest(),
-            "profile_id": APPSS_PROFILE_2_OF_3,
+            "profile_id": self.binding.profile_id,
             "public_state_digest": hashlib.sha256(public_state_bytes).hexdigest(),
             "suite_id": APPSS_SUITE_ID,
-            "version": APPSS_READY_FORMAT,
+            "version": appss_format(self.binding.profile_id, "ready"),
         }
         return encode_checked(
             ready,

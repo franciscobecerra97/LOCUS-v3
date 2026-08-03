@@ -313,6 +313,8 @@ separate native core/library choice. RecoveryDescriptor v1 is reused only
 through its already suite-neutral fields; no descriptor bytes are
 reinterpreted.
 
-Deployment, trace, result, artifact, retained performance, and 3-of-5 profile
-identifiers remain unassigned at their later chronological gates. P5A.1 does
-not release the selector or establish implemented cryptographic behavior.
+P6.3 later assigns the separate 3-of-5 aPPSS state/message formats, selector
+v2, backup v6/AAD v3, public topology vector, and matched same-host process
+deployment profiles. The v1 2-of-3 family remains unchanged. Trace, result,
+artifact, and retained-performance identifiers remain unassigned at their
+later gates; P6.3 conformance is not retained evidence or cryptographic proof.

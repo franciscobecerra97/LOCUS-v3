@@ -1,17 +1,31 @@
-"""Suite-neutral backup v5 over the unchanged LOCUS HKDF/AES path."""
+"""Versioned suite-neutral backups over the unchanged LOCUS HKDF/AES path."""
 
 from __future__ import annotations
 
 from dataclasses import dataclass
 from typing import Any
 
-from .appss_formats import BACKUP_AAD_V2, REFERENCE_BACKUP_V5
+from .appss_formats import (
+    APPSS_PROFILE_2_OF_3,
+    APPSS_PROFILE_3_OF_5,
+    APPSS_PUBLIC_STATE_FORMAT,
+    APPSS_PUBLIC_STATE_FORMAT_V2,
+    APPSS_SUITE_ID,
+    BACKUP_AAD_V2,
+    BACKUP_AAD_V3,
+    REFERENCE_BACKUP_V5,
+    REFERENCE_BACKUP_V6,
+    YI_PROFILE_2_OF_3,
+    YI_PROFILE_3_OF_5,
+    YI_SUITE_ID,
+)
 from .codec import encode
 from .contracts import (
     PartyRecoveryState,
     PasswordProtectedSecretRecovery,
     RecoveryContext,
     RecoverySuiteEnrollment,
+    ThresholdParameters,
 )
 from .core import SECURITY_POLICY_VERSION, derive_wrap_key
 from .crypto import (
@@ -28,7 +42,7 @@ from .yi_compat import RecoverySuiteError
 
 
 class SuiteBackupError(ValueError):
-    """Backup v5 is malformed, misbound, or cannot be opened."""
+    """A suite backup is malformed, misbound, or cannot be opened."""
 
 
 @dataclass(frozen=True)
@@ -60,9 +74,34 @@ def backup_v5_associated_data(backup: dict[str, Any]) -> bytes:
     )
 
 
-def validate_backup_v5(
+def backup_v6_associated_data(backup: dict[str, Any]) -> bytes:
+    public = dict(backup)
+    public["ciphertext"] = None
+    public["digest"] = None
+    validated = validate_backup_v6(
+        public, require_digest=False, require_ciphertext=False
+    )
+    return encode(
+        {
+            "backup_version": REFERENCE_BACKUP_V6,
+            "bid": validated["bid"],
+            "cue_policy": validated["cue_policy"],
+            "epoch": validated["epoch"],
+            "recovery_nonce": validated["nonce"],
+            "recovery_suite": validated["recovery_suite"],
+            "sealed_algorithm": SEALED_ALGORITHM,
+            "sealed_version": SEALED_VERSION,
+            "security_policy": validated["security_policy"],
+            "version": BACKUP_AAD_V3,
+        }
+    )
+
+
+def _validate_suite_backup(
     value: object,
     *,
+    backup_version: str,
+    topologies: frozenset[tuple[int, int]],
     require_digest: bool = True,
     require_ciphertext: bool = True,
 ) -> dict[str, Any]:
@@ -78,8 +117,8 @@ def validate_backup_v5(
         "version",
     }
     if not isinstance(value, dict) or set(value) != expected:
-        raise SuiteBackupError("invalid backup v5")
-    if value["version"] != REFERENCE_BACKUP_V5:
+        raise SuiteBackupError("invalid suite backup")
+    if value["version"] != backup_version:
         raise SuiteBackupError("unsupported backup version")
     _lower_hex(value["bid"], "backup identifier", 16)
     if (
@@ -111,8 +150,26 @@ def validate_backup_v5(
     for field in ("id", "profile_id", "public_state_format"):
         _identifier(suite[field], f"suite {field}")
     _lower_hex(suite["context_digest"], "suite context digest", 32)
-    if suite["k"] != 2 or suite["n"] != 3:
+    if (suite["k"], suite["n"]) not in topologies:
         raise SuiteBackupError("unsupported backup recovery topology")
+    if backup_version == REFERENCE_BACKUP_V6:
+        expected_profile_and_format = {
+            (YI_SUITE_ID, 2, 3): (YI_PROFILE_2_OF_3, "LOCUS-TPASS-wire-v1"),
+            (YI_SUITE_ID, 3, 5): (YI_PROFILE_3_OF_5, "LOCUS-TPASS-wire-v1"),
+            (APPSS_SUITE_ID, 2, 3): (
+                APPSS_PROFILE_2_OF_3,
+                APPSS_PUBLIC_STATE_FORMAT,
+            ),
+            (APPSS_SUITE_ID, 3, 5): (
+                APPSS_PROFILE_3_OF_5,
+                APPSS_PUBLIC_STATE_FORMAT_V2,
+            ),
+        }.get((suite["id"], suite["k"], suite["n"]))
+        if expected_profile_and_format != (
+            suite["profile_id"],
+            suite["public_state_format"],
+        ):
+            raise SuiteBackupError("backup suite profile mismatch")
     if (
         not isinstance(suite["public_state"], str)
         or not suite["public_state"]
@@ -152,6 +209,36 @@ def validate_backup_v5(
     return value
 
 
+def validate_backup_v5(
+    value: object,
+    *,
+    require_digest: bool = True,
+    require_ciphertext: bool = True,
+) -> dict[str, Any]:
+    return _validate_suite_backup(
+        value,
+        backup_version=REFERENCE_BACKUP_V5,
+        topologies=frozenset({(2, 3)}),
+        require_digest=require_digest,
+        require_ciphertext=require_ciphertext,
+    )
+
+
+def validate_backup_v6(
+    value: object,
+    *,
+    require_digest: bool = True,
+    require_ciphertext: bool = True,
+) -> dict[str, Any]:
+    return _validate_suite_backup(
+        value,
+        backup_version=REFERENCE_BACKUP_V6,
+        topologies=frozenset({(2, 3), (3, 5)}),
+        require_digest=require_digest,
+        require_ciphertext=require_ciphertext,
+    )
+
+
 def enroll_backup_v5(
     *,
     protected_key: bytes,
@@ -186,7 +273,43 @@ def enroll_backup_v5(
     return SuiteBackupEnrollment(backup=backup, party_states=enrollment.party_states)
 
 
-def seal_backup_v5(
+def enroll_backup_v6(
+    *,
+    protected_key: bytes,
+    context: RecoveryContext,
+    cue_policy_id: str,
+    resolver_profile: str,
+    adapter: PasswordProtectedSecretRecovery,
+    enrollment: RecoverySuiteEnrollment,
+    profile_id: str,
+    threshold: ThresholdParameters,
+    bid: bytes | None = None,
+    nonce: bytes | None = None,
+    max_attempts: int = 8,
+    cooldown_seconds: int = 30,
+) -> SuiteBackupEnrollment:
+    if enrollment.public_state.suite_id != adapter.suite_id:
+        raise SuiteBackupError("backup enrollment mixes suites")
+    backup = seal_backup_v6(
+        protected_key=protected_key,
+        context=context,
+        cue_policy_id=cue_policy_id,
+        resolver_profile=resolver_profile,
+        suite_id=adapter.suite_id,
+        public_state_format=enrollment.public_state.format_id,
+        public_state_payload=enrollment.public_state.payload,
+        recovery_secret=enrollment.recovery_secret,
+        profile_id=profile_id,
+        threshold=threshold,
+        bid=bid,
+        nonce=nonce,
+        max_attempts=max_attempts,
+        cooldown_seconds=cooldown_seconds,
+    )
+    return SuiteBackupEnrollment(backup=backup, party_states=enrollment.party_states)
+
+
+def _seal_suite_backup(
     *,
     protected_key: bytes,
     context: RecoveryContext,
@@ -197,6 +320,8 @@ def seal_backup_v5(
     public_state_payload: bytes,
     recovery_secret: bytes,
     profile_id: str,
+    threshold: ThresholdParameters,
+    backup_version: str,
     bid: bytes | None = None,
     nonce: bytes | None = None,
     max_attempts: int = 8,
@@ -206,6 +331,8 @@ def seal_backup_v5(
 
     if not isinstance(protected_key, bytes) or not protected_key:
         raise SuiteBackupError("invalid protected key")
+    if backup_version not in {REFERENCE_BACKUP_V5, REFERENCE_BACKUP_V6}:
+        raise SuiteBackupError("unsupported backup version")
     if (
         context.suite_id != suite_id
         or not isinstance(public_state_payload, bytes)
@@ -232,8 +359,8 @@ def seal_backup_v5(
         "recovery_suite": {
             "context_digest": context.suite_context_digest,
             "id": suite_id,
-            "k": 2,
-            "n": 3,
+            "k": threshold.k,
+            "n": threshold.n,
             "profile_id": profile_id,
             "public_state": public_state_payload.hex(),
             "public_state_format": public_state_format,
@@ -243,21 +370,100 @@ def seal_backup_v5(
             "max_attempts": max_attempts,
             "version": SECURITY_POLICY_VERSION,
         },
-        "version": REFERENCE_BACKUP_V5,
+        "version": backup_version,
     }
-    validate_backup_v5(backup, require_digest=False, require_ciphertext=False)
+    validator = (
+        validate_backup_v5
+        if backup_version == REFERENCE_BACKUP_V5
+        else validate_backup_v6
+    )
+    associated_data = (
+        backup_v5_associated_data
+        if backup_version == REFERENCE_BACKUP_V5
+        else backup_v6_associated_data
+    )
+    validator(backup, require_digest=False, require_ciphertext=False)
     wrap_key = derive_wrap_key(
         recovery_secret,
         backup["bid"],
         backup["epoch"],
         backup["nonce"],
     )
-    backup["ciphertext"] = seal(
-        wrap_key, protected_key, aad=backup_v5_associated_data(backup)
-    )
+    backup["ciphertext"] = seal(wrap_key, protected_key, aad=associated_data(backup))
     backup["digest"] = backup_digest(backup)
-    validate_backup_v5(backup)
+    validator(backup)
     return backup
+
+
+def seal_backup_v5(
+    *,
+    protected_key: bytes,
+    context: RecoveryContext,
+    cue_policy_id: str,
+    resolver_profile: str,
+    suite_id: str,
+    public_state_format: str,
+    public_state_payload: bytes,
+    recovery_secret: bytes,
+    profile_id: str,
+    bid: bytes | None = None,
+    nonce: bytes | None = None,
+    max_attempts: int = 8,
+    cooldown_seconds: int = 30,
+) -> dict[str, Any]:
+    return _seal_suite_backup(
+        protected_key=protected_key,
+        context=context,
+        cue_policy_id=cue_policy_id,
+        resolver_profile=resolver_profile,
+        suite_id=suite_id,
+        public_state_format=public_state_format,
+        public_state_payload=public_state_payload,
+        recovery_secret=recovery_secret,
+        profile_id=profile_id,
+        threshold=ThresholdParameters(k=2, n=3),
+        backup_version=REFERENCE_BACKUP_V5,
+        bid=bid,
+        nonce=nonce,
+        max_attempts=max_attempts,
+        cooldown_seconds=cooldown_seconds,
+    )
+
+
+def seal_backup_v6(
+    *,
+    protected_key: bytes,
+    context: RecoveryContext,
+    cue_policy_id: str,
+    resolver_profile: str,
+    suite_id: str,
+    public_state_format: str,
+    public_state_payload: bytes,
+    recovery_secret: bytes,
+    profile_id: str,
+    threshold: ThresholdParameters,
+    bid: bytes | None = None,
+    nonce: bytes | None = None,
+    max_attempts: int = 8,
+    cooldown_seconds: int = 30,
+) -> dict[str, Any]:
+    return _seal_suite_backup(
+        protected_key=protected_key,
+        context=context,
+        cue_policy_id=cue_policy_id,
+        resolver_profile=resolver_profile,
+        suite_id=suite_id,
+        public_state_format=public_state_format,
+        public_state_payload=public_state_payload,
+        recovery_secret=recovery_secret,
+        profile_id=profile_id,
+        threshold=threshold,
+        backup_version=REFERENCE_BACKUP_V6,
+        bid=bid,
+        nonce=nonce,
+        max_attempts=max_attempts,
+        cooldown_seconds=cooldown_seconds,
+    )
 
 
 def recover_backup_v5(
@@ -297,6 +503,43 @@ def recover_backup_v5(
         raise SuiteBackupError("recovery rejected") from exc
 
 
+def recover_backup_v6(
+    *,
+    backup: dict[str, Any],
+    context: RecoveryContext,
+    password_input: bytes,
+    adapter: PasswordProtectedSecretRecovery,
+    party_states: tuple[PartyRecoveryState, ...],
+) -> bytes:
+    validated = validate_backup_v6(backup)
+    suite = validated["recovery_suite"]
+    if (
+        suite["id"] != adapter.suite_id
+        or context.suite_id != adapter.suite_id
+        or suite["context_digest"] != context.suite_context_digest
+        or validated["bid"] != context.backup_id
+        or validated["epoch"] != context.epoch
+    ):
+        raise SuiteBackupError("backup recovery binding mismatch")
+    from .contracts import PublicRecoveryState
+
+    public_state = PublicRecoveryState(
+        suite_id=suite["id"],
+        format_id=suite["public_state_format"],
+        payload=bytes.fromhex(suite["public_state"]),
+    )
+    try:
+        secret = adapter.recover(
+            context=context,
+            password_input=password_input,
+            public_state=public_state,
+            party_states=party_states,
+        )
+        return open_backup_v6_with_secret(backup=validated, recovery_secret=secret)
+    except (RecoverySuiteError, CryptoError) as exc:
+        raise SuiteBackupError("recovery rejected") from exc
+
+
 def open_backup_v5_with_secret(
     *, backup: dict[str, Any], recovery_secret: bytes
 ) -> bytes:
@@ -314,6 +557,28 @@ def open_backup_v5_with_secret(
             wrap_key,
             validated["ciphertext"],
             aad=backup_v5_associated_data(validated),
+        )
+    except CryptoError as exc:
+        raise SuiteBackupError("recovery rejected") from exc
+
+
+def open_backup_v6_with_secret(
+    *, backup: dict[str, Any], recovery_secret: bytes
+) -> bytes:
+    validated = validate_backup_v6(backup)
+    if not isinstance(recovery_secret, bytes) or not recovery_secret:
+        raise SuiteBackupError("invalid recovery secret")
+    try:
+        wrap_key = derive_wrap_key(
+            recovery_secret,
+            validated["bid"],
+            validated["epoch"],
+            validated["nonce"],
+        )
+        return open_sealed(
+            wrap_key,
+            validated["ciphertext"],
+            aad=backup_v6_associated_data(validated),
         )
     except CryptoError as exc:
         raise SuiteBackupError("recovery rejected") from exc
@@ -345,9 +610,15 @@ __all__ = [
     "SuiteBackupEnrollment",
     "SuiteBackupError",
     "backup_v5_associated_data",
+    "backup_v6_associated_data",
     "enroll_backup_v5",
+    "enroll_backup_v6",
     "open_backup_v5_with_secret",
+    "open_backup_v6_with_secret",
     "recover_backup_v5",
+    "recover_backup_v6",
     "seal_backup_v5",
+    "seal_backup_v6",
     "validate_backup_v5",
+    "validate_backup_v6",
 ]

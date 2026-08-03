@@ -102,15 +102,31 @@ class AppssAdapterTests(unittest.TestCase):
                 party_states=(mixed, enrollment.party_states[1]),
             )
 
-    def test_requires_exact_first_profile_and_explicit_context_digest(self) -> None:
+    def test_supports_separate_three_of_five_profile_and_requires_context(self) -> None:
         adapter = AppssRecoveryAdapter()
         context = appss_context()
-        with self.assertRaises(RecoverySuiteError):
-            adapter.initialize(
+        enrollment = adapter.initialize(
+            context=context,
+            password_input=b"x" * 32,
+            threshold=ThresholdParameters(k=3, n=5),
+        )
+        self.assertEqual(len(enrollment.party_states), 5)
+        self.assertEqual(
+            enrollment.public_state.format_id, "LOCUS-APPSS-public-state-v2"
+        )
+        self.assertEqual(
+            adapter.recover(
                 context=context,
                 password_input=b"x" * 32,
-                threshold=ThresholdParameters(k=3, n=5),
-            )
+                public_state=enrollment.public_state,
+                party_states=(
+                    enrollment.party_states[0],
+                    enrollment.party_states[2],
+                    enrollment.party_states[4],
+                ),
+            ),
+            enrollment.recovery_secret,
+        )
         missing = RecoveryContext(
             suite_id=APPSS_SUITE_ID,
             recovery_id=context.recovery_id,

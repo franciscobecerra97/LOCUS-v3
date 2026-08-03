@@ -57,9 +57,9 @@ Figure 4 aPPSS with a concrete ristretto255/SHA-512 2HashDH OPRF,
 2-of-3 evaluation, and abort-only robustness. D018 additionally requires paired
 Yi/aPPSS 2-of-3 and later 3-of-5 profiles under matching system conditions.
 The 2-of-3 application/component path is implemented and provisionally accepted
-with explicit qualifications under D020. This is not independent human
-validation, retained evidence, a paired deployment profile, or manuscript
-wording. The 3-of-5 and paired deployment work remains P6.
+with explicit qualifications under D020. P6.3 adds matched same-host process
+deployment profiles for 2-of-3 and 3-of-5; this is not independent human
+validation, retained evidence, host independence, or manuscript wording.
 D021 authorizes those paired deployments at 2-of-3 and 3-of-5 over five
 authorizers with a separate 4-of-5 authorization quorum. P6.4 may claim only
 the exact host-separation tier actually demonstrated; administrative

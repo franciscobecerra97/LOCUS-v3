@@ -19,11 +19,12 @@ from locus.appss_client import (
 )
 from locus.appss_formats import (
     APPSS_PROFILE_2_OF_3,
-    APPSS_REQUEST_FORMAT,
+    APPSS_PROFILE_3_OF_5,
     APPSS_SUITE_ID,
     MAX_PUBLIC_STATE_BYTES,
     MAX_REQUEST_BYTES,
     AppssHolderBinding,
+    appss_format,
     canonical_decode,
     context_digest,
     derive_password_input,
@@ -35,7 +36,7 @@ from locus.appss_formats import (
 )
 from locus.appss_party import AppssPartyBinding, AppssPartyStore
 from locus.appss_party_http import AppssPartyTransportError, AppssRemoteParty
-from locus.contracts import RecoveryContext
+from locus.contracts import RecoveryContext, ThresholdParameters
 from locus.party_http import certificate_sha256
 
 from tests.test_party_http import _create_ca, _create_leaf, _free_port
@@ -67,6 +68,9 @@ class _FailInstall:
 
 
 class AuthenticatedAppssInitializationTests(unittest.TestCase):
+    threshold = ThresholdParameters(k=2, n=3)
+    profile_id = APPSS_PROFILE_2_OF_3
+
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
@@ -87,7 +91,7 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
         )
         server_material: list[tuple[Path, Path, int]] = []
         holders: list[AppssHolderBinding] = []
-        for holder_id in range(1, 4):
+        for holder_id in range(1, self.threshold.n + 1):
             certificate, key = _create_leaf(
                 self.root,
                 name=f"appss-initialization-party-{holder_id}",
@@ -113,8 +117,8 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
             epoch=1,
             policy_id="LOCUS-canonical-email-set-v1",
             holders=self.holders,
-            k=2,
-            n=3,
+            k=self.threshold.k,
+            n=self.threshold.n,
             configuration_digest=self.configuration_digest,
         )
         self.context = RecoveryContext(
@@ -156,10 +160,10 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
                         }
                         for holder in self.holders
                     ],
-                    "k": 2,
-                    "n": 3,
+                    "k": self.threshold.k,
+                    "n": self.threshold.n,
                     "policy_id": "LOCUS-canonical-email-set-v1",
-                    "profile_id": APPSS_PROFILE_2_OF_3,
+                    "profile_id": self.profile_id,
                     "suite_id": APPSS_SUITE_ID,
                 },
                 "holder_id": holder_id,
@@ -241,16 +245,20 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
             admission_grant_digest=ADMISSION,
             client_proof_key_digest=PROOF_KEY,
             operation_id="86" * 32,
+            threshold=self.threshold,
         )
 
     def test_each_server_creates_own_key_and_all_ready_before_result(self) -> None:
         initialized = self._initialize()
-        self.assertEqual(len(initialized.ready_digests), 3)
+        self.assertEqual(len(initialized.ready_digests), self.threshold.n)
+        selected = tuple(
+            self.holders[index] for index in range(0, self.threshold.n, 2)
+        )[: self.threshold.k]
         recovered = recover_with_parties(
             context=self.context,
             password_input=self.password,
             public_state=initialized.public_state,
-            holders=(self.holders[0], self.holders[2]),
+            holders=selected,
             endpoints=self.remotes,
             admission_grant_digest=ADMISSION,
             client_proof_key_digest=PROOF_KEY,
@@ -261,13 +269,16 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
         states: list[bytes] = []
         for holder_id, path in enumerate(self.database_paths, start=1):
             store = AppssPartyStore(
-                path, AppssPartyBinding(holder_id, self.context_digest)
+                path,
+                AppssPartyBinding(
+                    holder_id, self.context_digest, profile_id=self.profile_id
+                ),
             )
             state = store.load_state()
             self.assertIsNotNone(state)
             self.assertEqual(state[0], "installed")  # type: ignore[index]
             states.append(state[1])  # type: ignore[index]
-        self.assertEqual(len(set(states)), 3)
+        self.assertEqual(len(set(states)), self.threshold.n)
 
     def test_route_body_recipient_epoch_caller_and_idempotency_bindings(self) -> None:
         initialized = self._initialize()
@@ -290,10 +301,10 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
             "omega_digest": public["omega_digest"],
             "operation": "recover",
             "operation_id": "88" * 32,
-            "profile_id": APPSS_PROFILE_2_OF_3,
+            "profile_id": self.profile_id,
             "session_id": "89" * 32,
             "suite_id": APPSS_SUITE_ID,
-            "version": APPSS_REQUEST_FORMAT,
+            "version": appss_format(self.profile_id, "request"),
         }
         request_bytes = encode_checked(
             request,
@@ -358,7 +369,7 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
 
     def test_interrupted_install_returns_no_active_initialization(self) -> None:
         interrupted: dict[int, AppssPartyEndpoint] = dict(self.remotes)
-        interrupted[3] = _FailInstall(self.remotes[3])
+        interrupted[self.threshold.n] = _FailInstall(self.remotes[self.threshold.n])
         with self.assertRaisesRegex(AppssClientError, "initialization rejected"):
             initialize_with_parties(
                 context=self.context,
@@ -368,17 +379,31 @@ class AuthenticatedAppssInitializationTests(unittest.TestCase):
                 admission_grant_digest=ADMISSION,
                 client_proof_key_digest=PROOF_KEY,
                 operation_id="91" * 32,
+                threshold=self.threshold,
             )
         self._stop_processes()
         phases: list[str] = []
         for holder_id, path in enumerate(self.database_paths, start=1):
             store = AppssPartyStore(
-                path, AppssPartyBinding(holder_id, self.context_digest)
+                path,
+                AppssPartyBinding(
+                    holder_id, self.context_digest, profile_id=self.profile_id
+                ),
             )
             state = store.load_state()
             self.assertIsNotNone(state)
             phases.append(state[0])  # type: ignore[index]
-        self.assertEqual(phases, ["installed", "installed", "pending"])
+        self.assertEqual(
+            phases,
+            ["installed"] * (self.threshold.n - 1) + ["pending"],
+        )
+
+
+class AuthenticatedAppssThreeOfFiveInitializationTests(
+    AuthenticatedAppssInitializationTests
+):
+    threshold = ThresholdParameters(k=3, n=5)
+    profile_id = APPSS_PROFILE_3_OF_5
 
 
 if __name__ == "__main__":

@@ -190,8 +190,9 @@ epoch factory and P4.3-backed same-suite/cross-suite successor component. All
 four Yi/aPPSS directions preserve the protected-key identity with fresh native
 state and reject fallback and mixed state. D020 activates this post-baseline
 application interface after an explicitly non-independent internal mapping
-assessment. The frozen Compose deployment remains Yi-only until P6 assigns new
-paired deployment profiles. P5A.6 adds one zero-argument,
+assessment. The frozen Compose deployment remains Yi-only and unchanged. P6.3
+adds separately identified matched same-host process profiles for Yi/aPPSS at
+2-of-3 and 3-of-5, selector v2, and backup v6 without reinterpreting it. P5A.6 adds one zero-argument,
 aggregate-only, non-retained paired 2-of-3 compromise regression. It covers all
 below-threshold coalitions and all exact-threshold subsets, confirms the
 suite-specific threshold-compromise behavior, and emits no candidate, holder,
@@ -285,6 +286,14 @@ application-gateway backend over the same logical roles. Local fake-S3 tests
 exercise exact capability-bound operations and a no-list prefix policy. The
 live AWS connectivity test remains opt-in and unexecuted; there is still no
 real-provider result or changed retained evidence.
+P6.3 adds post-baseline matched 2-of-3 and 3-of-5 suite deployment controls.
+Both suites use five authorizers with a separate 4-of-5 authorization quorum,
+the same outer policy/admission/storage schedule, and the same protected-key
+composition. Five-process mutual-TLS tests cover aPPSS distributed
+initialization/recovery and Yi 3-of-5 recovery; backup-v6 tests cover exact-
+threshold success and below-threshold rejection for all four suite/topology
+arms. This is same-host process conformance, not retained P9 evidence,
+multi-host behavior, or independent administration.
 
 ## Excluded material
 

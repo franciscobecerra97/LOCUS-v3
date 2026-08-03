@@ -3,9 +3,10 @@
 Status: implemented local cryptographic format for P2.5 and filesystem plus
 S3-compatible object-storage adapters for P4.5/P4.6. P5A.3--P5A.5 additionally
 implement the suite-neutral backup-v5 application component for Yi and aPPSS.
+P6.3 adds backup v6 for the exact matched 2-of-3/3-of-5 profile matrix.
 D020 activates the exact selector/component interface after provisional
 internal mapping acceptance. This is research-grade composition and local
-conformance evidence, not an audit, paired selectable-suite deployment,
+conformance evidence, not an audit, retained comparative evidence,
 independent cloud deployment, real-provider result, or production-readiness
 claim.
 
@@ -26,8 +27,8 @@ be able to modify those fields without detection.
 - GCM tag: the library's full 16-byte tag, appended to the ciphertext.
 - Current paper-facing and released Yi backup format:
   `LOCUS-reference-backup-v4`.
-- Inactive selectable-suite component format:
-  `LOCUS-reference-backup-v5`.
+- Suite-neutral 2-of-3 component format: `LOCUS-reference-backup-v5`.
+- Paired 2-of-3/3-of-5 component format: `LOCUS-reference-backup-v6`.
 - Archived Cycle 1 format: `LOCUS-reference-backup-v3`; immutable historical
   evidence only.
 
@@ -48,6 +49,11 @@ returned by the exact selected suite to the common sealing/opening path. For Yi
 that value is the frozen encoded group secret; for aPPSS it is the correctly
 unmasked `S_R`. Recovery authenticates these public bindings before dispatch and
 never tries another suite after failure.
+
+Backup v6 uses the same high-entropy-suite-output/HKDF/AES path and assigns
+associated-data domain `LOCUS-backup-associated-data-v3`. It accepts only Yi
+or aPPSS at 2-of-3 or 3-of-5, with exact suite/profile/public-state-format
+pairing. Backup v5 remains exact 2-of-3; no existing bytes are widened.
 
 ## Sealed-Ciphertext Format
 
@@ -85,6 +91,8 @@ Backup v5 authenticates the corresponding suite-neutral fields: the backup and
 ciphertext format identifiers, backup identifier and epoch, recovery nonce,
 CuePolicy identifier, exact suite identifier/state format/public-state bytes,
 suite context digest, typed holder membership, and security-policy metadata.
+Backup v6 authenticates the same field set under its distinct v3 associated-
+data domain and additionally permits only the registered 3-of-5 pairs.
 
 The ciphertext and its AES-GCM nonce are not recursively placed in associated
 data; AES-GCM already authenticates both through its ciphertext/tag operation.

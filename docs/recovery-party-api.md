@@ -142,14 +142,14 @@ Every mutating aPPSS component call first commits a transport record binding the
 authenticated client-certificate digest, exact `/v1` route, idempotency key,
 and body digest. An exact completed response survives restart; changed caller,
 route, or body reuse conflicts. The client creates the common public state only
-after all three OPRF responses and returns an initialization result only after
-all three exact ready acknowledgements. Partial installation does not publish
+after all `n` OPRF responses and returns an initialization result only after
+all `n` exact ready acknowledgements. Partial installation does not publish
 or activate a descriptor-bound epoch.
 
-These are component boundaries, not the released party API or a new
-deployment/evidence profile. P5A.5 must integrate descriptor-bound new
-enrollment and successor switching. The existing Yi
-ledger/commitment/response API and retained deployment are unchanged.
+These are component boundaries used by the separately identified P6.3
+same-host process profiles; they are not retained evidence. P5A.5 integrates
+descriptor-bound new enrollment and successor switching. The existing Yi
+ledger/commitment/response API and frozen retained deployment are unchanged.
 
 ## Common error contract
 

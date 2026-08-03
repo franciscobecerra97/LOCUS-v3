@@ -1675,7 +1675,8 @@ and no claim-blocking or correction-required item remains. The already
 implemented exact selector, authenticated descriptor dispatch, and
 four-direction successor interface are active application components with no
 fallback. The frozen Yi-only Compose profile and retained v2 evidence remain
-unchanged; exact paired deployment identities and profiles are P6.3 work. No
+unchanged; the exact paired deployment identities and profiles were assigned
+later by P6.3. No
 retained P9 corpus or manuscript change was made. A qualified independent human
 must confirm the mapping before manuscript reliance, a final reviewed release,
 or submission.
@@ -1786,7 +1787,7 @@ Completion record (2026-08-03):
 
 ### P6.3 Generalize threshold configuration
 
-Status: `Proposed`
+Status: `Complete`
 
 Support:
 
@@ -1806,9 +1807,50 @@ Acceptance:
   schedule, and measurement definitions.
 - Local scaffold tests alone are not treated as deployment evidence.
 
+Completion record (2026-08-03):
+
+- D021 is implemented as two exact comparison-control profiles:
+  `LOCUS-paired-suite-deployment-2of3-v1` and
+  `LOCUS-paired-suite-deployment-3of5-v1`. Each holds constant the direct
+  canonical-email CuePolicy, NoResolver path, synthetic protected-key
+  interface, five authorizers, independent 4-of-5 authorization quorum, local
+  synthetic admission, filesystem provider, network schedule, and measurement
+  definitions for the Yi and aPPSS arms.
+- Selector v1 remains exact 2-of-3. `LOCUS-recovery-suite-selector-v2`
+  authenticates the matched 2-of-3/3-of-5 matrix and still binds exactly one
+  suite to an epoch with no fallback. It rejects suite/profile/topology,
+  holder-membership, authorizer-membership, and quorum mismatches.
+- Frozen Yi native wire/state is unchanged. The 3-of-5 Yi profile receives the
+  distinct label `LOCUS-TPASS-YI-3of5-v1` because the existing native wire
+  already carries and checks `(k,n)`.
+- Frozen aPPSS v1 remains exact 2-of-3. The 3-of-5 aPPSS profile receives
+  separate public/pending/party/request/response/install/ready/client-session
+  v2 formats, strict schema, and public-only topology vector; no v1 object is
+  reinterpreted.
+- Backup v6/AAD v3 preserve the same suite-output to HKDF-SHA-256 to
+  AES-256-GCM protected-key path while permitting only the four exact
+  suite/topology/profile/public-format combinations. Exact-threshold recovery
+  succeeds and below-threshold recovery rejects for every arm.
+- The aPPSS deployment test starts five distinct pinned-mTLS processes, each
+  generating and storing only its own OPRF key, requires all five ready
+  acknowledgements for initialization, and recovers through the non-contiguous
+  exact subset `[1,3,5]`. The Yi 3-of-5 test starts five native-holder plus
+  authorizer processes, obtains a separate 4-of-5 authorization certificate,
+  and recovers through `[1,3,5]`; two responses cannot aggregate.
+- The pre-existing authenticated Yi and aPPSS 2-of-3 process tests remain the
+  matching first-topology deployment paths. These tests are same-host process
+  conformance, not retained P9 evidence, multi-host behavior, or independent
+  administration. The frozen Compose profile and retained v2 corpus remain
+  unchanged.
+- The complete pinned gate passes with 298 Python tests (the local S3 and AWS
+  external-service gates are the two intentional skips), 8 aPPSS core tests
+  plus its fixed vector, 17 Yi core tests plus its frozen vector, native
+  formatting/Clippy, Python formatting, linting, strict typing, syntax, and
+  repository-boundary validation.
+
 ### P6.4 Move parties to separate hosts
 
-Status: `Proposed`
+Status: `Blocked on actual multi-VM or multi-host infrastructure`
 
 Tiers:
 
@@ -1829,6 +1871,20 @@ Validate:
 Acceptance:
 
 - Claims use the exact tier demonstrated.
+
+Readiness record (2026-08-03):
+
+- `docs/P6.4-HOST-SEPARATION.md` records the exact execution checklist and the
+  workstation capability audit. Docker Desktop runs through one engine/VM;
+  WSL has one Ubuntu distribution plus Docker Desktop. No Multipass, Vagrant,
+  Hyper-V PowerShell, QEMU, VirtualBox, or VMware CLI is available.
+- Additional Docker containers or WSL distributions would remain one-host
+  isolation and are deliberately not relabeled as P6.4 evidence.
+- P6.4 can resume without a protocol decision once five disposable local VMs
+  or five disposable network hosts containing synthetic state are available.
+  Tier 3 remains separately dependent on genuine independent operators.
+- No P6.4 deployment result, retained evidence, or manuscript change is
+  claimed.
 
 ---
 

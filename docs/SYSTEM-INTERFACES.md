@@ -6,8 +6,9 @@ registry, P5A.3 implemented the separate aPPSS adapter and no-fallback suite
 registry, P5A.4 added authenticated distributed aPPSS initialization, and P5A.5
 added explicit selection and four-direction successor preparation on
 2026-08-03. D020 activates this application/component interface after
-provisional internal mapping acceptance; independent human validation and new
-paired deployment profiles remain pending.
+provisional internal mapping acceptance. P6.3 adds the matched 2-of-3 and
+3-of-5 same-host process deployment profiles; independent human validation and
+retained evidence remain pending.
 
 ## Purpose
 
@@ -22,7 +23,9 @@ and aPPSS work. The implementation lives in:
   descriptor-bound dispatch;
 - `prototype/locus/appss_party.py` and `prototype/locus/appss_party_http.py`
   for durable per-holder state and pinned mutual-TLS transport;
-- `prototype/locus/suite_backup.py` for the common backup-v5 HKDF/AES path;
+- `prototype/locus/suite_backup.py` for the common backup-v5/v6 HKDF/AES path;
+- `prototype/locus/paired_deployment_profiles.py` for the two matched P6.3
+  comparison-control profiles;
 - `prototype/locus/selectable_suite_lifecycle.py` for active explicit
   enrollment selection and P4.3 successor integration;
 - `prototype/locus/storage_provider.py` for the P6.1 provider-level
@@ -64,8 +67,8 @@ suite setup. Recovery does not take a free suite choice: it dispatches only to
 the suite authenticated in `RecoveryContext` and the descriptor. Both adapters
 return opaque `S_R` bytes to the unchanged HKDF/AES caller; they do not share
 native state, messages, password domains, or compromise semantics. The common
-conformance harness runs both adapters first at 2-of-3 and later at 3-of-5
-under matched outer conditions.
+conformance harness runs both adapters at 2-of-3 and 3-of-5 under the exact
+matched P6.3 outer conditions.
 
 `RecoveryRequest`, `RecoveryResponse`, and `RecoveryClientSession` are distinct
 opaque typed boundaries for P3/P4 transport integration. Their payloads are
@@ -97,8 +100,8 @@ as a migration of frozen Yi state.
 formats and native objects. Its central `initialize` method is explicitly a
 unit fixture, not distributed-initialization evidence. The P5A.3/P5A.4 network
 client keeps each OPRF blinder transient, validates every response binding,
-initializes through all three authenticated holders, installs one common public
-state, and recovers through exactly two authenticated holder endpoints. Each
+initializes through all `n` authenticated holders, installs one common public
+state, and recovers through exactly `k` authenticated holder endpoints. Each
 holder generates and persists only its own OPRF key. The registry uses the
 selector only for new epochs; recovery dispatches from one authenticated suite
 identifier and never tries the other adapter.
@@ -170,11 +173,11 @@ roles cannot be inferred from one threshold number. The snapshot validates:
 - holder count equals recovery `n`; and
 - authorization quorum is independently bounded by authorizer membership.
 
-This represents the current five authorizers / three recovery holders / 4-of-5
-authorization / 2-of-3 recovery topology without conflating its parameters.
-The frozen Compose deployment remains Yi-only and is not reinterpreted.
-P5A.3's aPPSS subprocess path and the active selector are application/component
-profiles; P6.3 assigns exact paired deployment profiles.
+This represents either P6.3 topology without conflating its parameters: five
+authorizers and 4-of-5 authorization, with either three holders/2-of-3 recovery
+or five holders/3-of-5 recovery. The frozen Compose deployment remains Yi-only
+and is not reinterpreted. The paired profiles use distinct selector/backup and
+aPPSS v2 formats for the second topology.
 
 ## Client state-machine contracts
 

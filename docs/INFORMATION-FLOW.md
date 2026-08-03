@@ -167,11 +167,12 @@ design/evidence requirement rather than implemented behavior.
 | First aPPSS above threshold control | `{P1,P2,P3}` | All server states and the same public/matching state | Confirms the at-or-above-threshold behavior only; results remain separate from exact-threshold rows |
 | Matching combined state | One exact cloud/descriptor/gateway snapshot plus one below-threshold coalition from the same suite, backup, epoch, policy, membership, and configuration | Complete union of the declared persistent views, with no client secrets or online honest-server access | C05/C24 only for the exact matching profile; mismatched snapshots are rejection tests, not evidence for the positive claim |
 
-The paired Yi/aPPSS 3-of-5 profiles have no coalition matrices until P6.3
-assigns their exact configurations and evidence profiles. Each comparison pair
-binds matching outer conditions, but suite-specific states and results remain
-separate. Authorization quorum coalitions are not recovery-suite coalitions and
-must be reported separately.
+P6.3 assigns the paired Yi/aPPSS 3-of-5 configuration and same-host process
+profiles. It does not assign a retained coalition-evidence profile; P8/P9 must
+add those rows and paths before claim use. Each comparison pair binds matching
+outer conditions, but suite-specific states and results remain separate.
+Authorization quorum coalitions are not recovery-suite coalitions and must be
+reported separately.
 
 ## Claim security-contract matrix
 

@@ -80,11 +80,13 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A and P6.1--P6.2 are complete for implementation chronology. D020's internal
+P1--P5A and P6.1--P6.3 are complete for implementation chronology. D020's internal
 recovery-suite mapping assessment is provisional; independent human validation
 remains mandatory before manuscript reliance or final reviewed release. The
-next task is the D021-approved P6.3 paired deployment/topology profiles. Live
-AWS validation remains a separately authorized optional gate.
+next task is P6.4 host separation. This workstation currently demonstrates
+same-host process isolation only; actual local VMs or separate hosts are
+required before P6.4 can claim a higher tier. Live AWS validation remains a
+separately authorized optional gate.
 
 ## Foundation sequence
 

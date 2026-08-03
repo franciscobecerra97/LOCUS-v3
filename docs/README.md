@@ -25,6 +25,8 @@ For proposed architecture, start with:
 - `RECOVERY-SUITE-DEVIATIONS.md` for the required engineering-versus-
   claim-critical mapping register
 - `P5A7-RELEASE-READINESS.md` for the candidate build/release gate record
+- `P6.4-HOST-SEPARATION.md` for the exact multi-VM/multi-host readiness gate
+  and current same-host limitation
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`
@@ -50,6 +52,11 @@ composites without merging their distinct object contracts.
 `AWS-S3-PROFILE.md` records the P6.2 TLS-only AWS application profile, admitted
 gateway operations, narrow no-list IAM shape, locally reproducible tests, and
 the still-open separately authorized live-provider gate.
+
+P6.3 adds strict aPPSS wire v2, selector v2, and reference-backup v6 schemas,
+plus a public-only 3-of-5 topology vector. The two paired deployment-control
+profiles are same-host process conformance only; they are not retained evidence
+or independent administration.
 
 The lower-case baseline documents remain active and must be synchronized with
 approved implementation and manuscript changes. An upper-case target-design

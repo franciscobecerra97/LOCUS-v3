@@ -5,7 +5,9 @@ narrow binding implemented. D017 fixes the construction and D018 fixes
 selectable coexistence with frozen Yi TPASS. Authenticated distributed
 integration and the exact selector application interface are implemented.
 D020 records provisional internal mapping acceptance; D019 independent human
-confirmation, paired deployment, and retained evidence remain later gates.
+confirmation and retained evidence remain later gates. P6.3 adds a separate
+3-of-5 format family and matched same-host process deployment profiles without
+changing any v1 object.
 
 ## Assigned profile
 
@@ -28,6 +30,21 @@ confirmation, paired deployment, and retained evidence remain later gates.
 | Public structural vector | `LOCUS-APPSS-format-vectors-v1` |
 | Suite-neutral encrypted backup | `LOCUS-reference-backup-v5` |
 | Backup associated-data domain | `LOCUS-backup-associated-data-v2` |
+
+P6.3 assigns the following non-compatible 3-of-5/topology boundaries:
+
+| Boundary | Identifier |
+| --- | --- |
+| Second topology profile | `LOCUS-APPSS-3of5-v1` |
+| Wire family | `LOCUS-APPSS-wire-v2` |
+| Public/pending/installed state | `LOCUS-APPSS-public-state-v2`, `LOCUS-APPSS-pending-party-state-v2`, `LOCUS-APPSS-party-state-v2` |
+| Request/response | `LOCUS-APPSS-request-v2`, `LOCUS-APPSS-response-v2` |
+| Installation/ready | `LOCUS-APPSS-state-install-v2`, `LOCUS-APPSS-state-ready-v2` |
+| Transient client session | `LOCUS-APPSS-client-session-v2` |
+| Enrollment selector | `LOCUS-recovery-suite-selector-v2` |
+| Public structural vector | `LOCUS-APPSS-format-vectors-v2` |
+| Suite-neutral encrypted backup | `LOCUS-reference-backup-v6` |
+| Backup associated-data domain | `LOCUS-backup-associated-data-v3` |
 
 The frozen Yi suite remains `LOCUS-TPASS-YI-ZK-RISTRETTO255-v1`; its new
 selector label is `LOCUS-TPASS-YI-2of3-v1`. That profile label does not change
@@ -100,9 +117,8 @@ maximum encoded size before JSON parsing and re-encodes the accepted value to
 require byte-for-byte canonical form.
 
 The normative strict shapes are in
-`docs/schemas/appss-wire-v1.schema.json`,
-`docs/schemas/recovery-suite-selector-v1.schema.json`, and
-`docs/schemas/reference-backup-v5.schema.json`. Python validators additionally
+`docs/schemas/appss-wire-v1.schema.json` and its P6.3 v2 counterpart,
+the selector v1/v2 schemas, and the reference-backup v5/v6 schemas. Python validators additionally
 enforce cross-field conditions that JSON Schema cannot express, including
 suite/profile pairing, operation/omega pairing, canonical membership order,
 and recomputation of `omega_digest`.
@@ -135,11 +151,11 @@ require it to be null because `omega` does not yet exist. A response repeats
 the complete binding and adds the exact request digest and the server public-key
 commitment.
 
-After all three initialization OPRF evaluations, the client sends one
-`LOCUS-APPSS-state-install-v1` object to each exact recipient. It carries the
+After all `n` initialization OPRF evaluations, the client sends one profile-
+specific state-install object to each exact recipient. It carries the
 identical validated public state plus an initialization transcript digest.
 The party atomically converts only its matching pending state to installed
-state and returns `LOCUS-APPSS-state-ready-v1`, binding the public-state and
+state and returns the matching ready format, binding the public-state and
 secret-state digests without revealing the state.
 
 ## Suite selection, descriptor, and backup
@@ -150,11 +166,17 @@ fixes `k`, `n`, holder IDs, authorizer IDs, and authorization quorum. The first
 release permits exactly Yi 2-of-3 or aPPSS 2-of-3 with holder IDs 1--3. Recovery
 ignores caller selection and dispatches only from the authenticated descriptor.
 
+Selector v2 additionally permits the exact Yi/aPPSS 3-of-5 pair with holder
+IDs 1--5. Both paired profiles use authorizers 1--5 and a distinct 4-of-5
+authorization quorum. The validator jointly checks suite, profile, `k`, `n`,
+holder membership, authorizer membership, and quorum; it cannot carry a
+fallback suite. Selector v1 remains exact 2-of-3.
+
 RecoveryDescriptor v1 needs no new schema or semantic reinterpretation. Its
 existing suite ID, public-state format/bytes, typed threshold, holder mapping,
 authorizer topology, and lifecycle configuration digest fully bind either
 suite. Cross-field validation must compare those fields with the decoded
-aPPSS public state and backup v5.
+aPPSS public state and the applicable backup version.
 
 Backup v4 remains Yi-only and frozen. Backup v5 replaces the TPASS-named field
 with one suite-neutral recovery-suite object containing the exact suite/profile,
@@ -162,6 +184,10 @@ threshold, context digest, public-state format, and canonical public-state
 bytes. Backup associated data v2 authenticates every v5 public field plus the
 unchanged AES-256-GCM version. The native suite output is still the sole HKDF
 input; no additional recovery key is introduced.
+
+Backup v6 preserves that composition and admits only the exact 2-of-3 and
+3-of-5 suite/profile/public-format matrix. Associated-data v3 authenticates
+its public metadata. Backup v5 is not widened or reinterpreted.
 
 ## Bounds and failures
 
@@ -174,7 +200,7 @@ input; no additional recovery key is introduced.
 | State install | 8,192 |
 | Ready acknowledgement | 4,096 |
 | Suite selector | 16,384 |
-| Backup v5 | 1,048,576 |
+| Backup v5 or v6 | 1,048,576 |
 
 Internal format failures are classified as size, syntax, canonicality, kind,
 version, suite, profile, context, membership, threshold, identity element,
@@ -202,7 +228,10 @@ Python boundary independently decodes the same bytes. It contains no password,
 OPRF key, mask, recovery secret, or protected key. RFC 9497 Appendix A.1.1.1 is
 also reproduced exactly by the native Rust tests.
 
-The future 3-of-5 profile receives a separate profile identifier, topology
-vector, deployment identity, and result path at P6.3. No 3-of-5 identifier is
-assigned here. Deployment, trace, result, and artifact identifiers remain at
-their later chronological gates.
+P6.3's 3-of-5 public vector is
+`prototype/test-vectors/appss-format-v2.json`; a separate test consumes its
+public state and both suite selectors. The paired same-host process deployment
+profiles are `LOCUS-paired-suite-deployment-2of3-v1` and
+`LOCUS-paired-suite-deployment-3of5-v1`. They are implementation conformance,
+not retained evidence. Trace, result, and artifact identifiers remain at their
+later chronological gates.

@@ -11,11 +11,6 @@ from typing import Protocol
 from . import _tpass_native as native
 from .appss import AppssRecoveryAdapter
 from .appss_formats import (
-    APPSS_INSTALL_FORMAT,
-    APPSS_PROFILE_2_OF_3,
-    APPSS_PUBLIC_STATE_FORMAT,
-    APPSS_READY_FORMAT,
-    APPSS_REQUEST_FORMAT,
     APPSS_SUITE_ID,
     MAX_INSTALL_BYTES,
     MAX_PUBLIC_STATE_BYTES,
@@ -24,6 +19,8 @@ from .appss_formats import (
     MAX_RESPONSE_BYTES,
     AppssFormatError,
     AppssHolderBinding,
+    appss_format,
+    appss_profile,
     canonical_decode,
     encode_checked,
     instance_id,
@@ -34,7 +31,7 @@ from .appss_formats import (
     validate_request,
     validate_response,
 )
-from .contracts import PublicRecoveryState, RecoveryContext
+from .contracts import PublicRecoveryState, RecoveryContext, ThresholdParameters
 from .yi_compat import RecoverySuiteError
 
 
@@ -76,6 +73,7 @@ def initialize_with_parties(
     admission_grant_digest: str,
     client_proof_key_digest: str,
     operation_id: str | None = None,
+    threshold: ThresholdParameters | None = None,
 ) -> AppssInitializationResult:
     """Run distributed OPRF setup and install one common omega at every holder."""
 
@@ -85,10 +83,18 @@ def initialize_with_parties(
         password = adapter._password(password_input)  # noqa: SLF001
     except RecoverySuiteError as exc:
         raise AppssClientError("aPPSS initialization rejected") from exc
+    selected_threshold = (
+        ThresholdParameters(k=2, n=3) if threshold is None else threshold
+    )
+    try:
+        profile_id = appss_profile(selected_threshold.k, selected_threshold.n)
+    except AppssFormatError as exc:
+        raise AppssClientError("invalid aPPSS initialization topology") from exc
     selected = tuple(holders)
     if (
-        len(selected) != 3
-        or [holder.index for holder in selected] != [1, 2, 3]
+        len(selected) != selected_threshold.n
+        or [holder.index for holder in selected]
+        != list(range(1, selected_threshold.n + 1))
         or any(endpoints.get(holder.index) is None for holder in selected)
     ):
         raise AppssClientError("invalid aPPSS initialization membership")
@@ -117,10 +123,10 @@ def initialize_with_parties(
                 "omega_digest": None,
                 "operation": "initialize",
                 "operation_id": operation,
-                "profile_id": APPSS_PROFILE_2_OF_3,
+                "profile_id": profile_id,
                 "session_id": session_id,
                 "suite_id": APPSS_SUITE_ID,
-                "version": APPSS_REQUEST_FORMAT,
+                "version": appss_format(profile_id, "request"),
             }
             request_bytes = encode_checked(
                 request,
@@ -148,6 +154,7 @@ def initialize_with_parties(
                 omega_digest=None,
                 operation="initialize",
                 operation_id=operation,
+                profile_id=profile_id,
                 session_id=session_id,
             )
             output = native.appss_finalize(
@@ -160,7 +167,11 @@ def initialize_with_parties(
 
     try:
         public, recovery_secret = native.appss_initialize(
-            context_digest, password, 2, 3, masks
+            context_digest,
+            password,
+            selected_threshold.k,
+            selected_threshold.n,
+            masks,
         )
         public_mapping = adapter._public_mapping(public)  # noqa: SLF001
         public_bytes = encode_checked(
@@ -181,10 +192,10 @@ def initialize_with_parties(
             "holder_id": holder.index,
             "initialization_transcript_digest": transcript_digest,
             "operation_id": operation,
-            "profile_id": APPSS_PROFILE_2_OF_3,
+            "profile_id": profile_id,
             "public_state": public_mapping,
             "suite_id": APPSS_SUITE_ID,
-            "version": APPSS_INSTALL_FORMAT,
+            "version": appss_format(profile_id, "install"),
         }
         try:
             install_bytes = encode_checked(
@@ -203,7 +214,7 @@ def initialize_with_parties(
                 label="aPPSS ready acknowledgement",
             )
             if (
-                ready["version"] != APPSS_READY_FORMAT
+                ready["version"] != appss_format(profile_id, "ready")
                 or ready["context_digest"] != context_digest.hex()
                 or ready["holder_id"] != holder.index
                 or ready["operation_id"] != operation
@@ -218,7 +229,7 @@ def initialize_with_parties(
     return AppssInitializationResult(
         public_state=PublicRecoveryState(
             suite_id=APPSS_SUITE_ID,
-            format_id=APPSS_PUBLIC_STATE_FORMAT,
+            format_id=appss_format(profile_id, "public"),
             payload=public_bytes,
         ),
         ready_digests=tuple(ready_digests),
@@ -237,7 +248,7 @@ def recover_with_parties(
     client_proof_key_digest: str,
     operation_id: str | None = None,
 ) -> bytes:
-    """Recover through exactly two authenticated holders with no suite fallback."""
+    """Recover through exactly the profile threshold with no suite fallback."""
 
     adapter = AppssRecoveryAdapter()
     try:
@@ -248,9 +259,11 @@ def recover_with_parties(
         raise AppssClientError("aPPSS recovery rejected") from exc
     if public["context_digest"] != context_digest.hex():
         raise AppssClientError("aPPSS recovery rejected")
+    profile_id = str(public["profile_id"])
+    threshold = int(public["k"])
     selected = tuple(holders)
     if (
-        len(selected) != 2
+        len(selected) != threshold
         or [holder.index for holder in selected]
         != sorted({holder.index for holder in selected})
         or any(endpoints.get(holder.index) is None for holder in selected)
@@ -281,10 +294,10 @@ def recover_with_parties(
                 "omega_digest": public["omega_digest"],
                 "operation": "recover",
                 "operation_id": operation,
-                "profile_id": APPSS_PROFILE_2_OF_3,
+                "profile_id": profile_id,
                 "session_id": session_id,
                 "suite_id": APPSS_SUITE_ID,
-                "version": APPSS_REQUEST_FORMAT,
+                "version": appss_format(profile_id, "request"),
             }
             request_bytes = encode_checked(
                 request,
@@ -312,6 +325,7 @@ def recover_with_parties(
                 omega_digest=public["omega_digest"],
                 operation="recover",
                 operation_id=operation,
+                profile_id=profile_id,
                 session_id=session_id,
             )
             output = native.appss_finalize(
@@ -364,6 +378,7 @@ def _validate_response_binding(
     omega_digest: str | None,
     operation: str,
     operation_id: str,
+    profile_id: str,
     session_id: str,
 ) -> None:
     if (
@@ -375,6 +390,7 @@ def _validate_response_binding(
         or response["omega_digest"] != omega_digest
         or response["operation"] != operation
         or response["operation_id"] != operation_id
+        or response["profile_id"] != profile_id
         or response["request_digest"] != hashlib.sha256(request_bytes).hexdigest()
         or response["session_id"] != session_id
     ):

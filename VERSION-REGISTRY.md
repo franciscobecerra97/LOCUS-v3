@@ -129,6 +129,35 @@ bounded canonical transport object for an optional exact expected pointer and
 one required replacement pointer. Changed roles, key grammar, admission
 binding, or CAS fields require new identifiers.
 
+### P6.3 assigned paired topology and deployment profiles
+
+`LOCUS-recovery-suite-selector-v2` admits only the matched D021 2-of-3 and
+3-of-5 Yi/aPPSS choices with five authorizers and an independent 4-of-5
+authorization quorum. The frozen selector v1 remains exact 2-of-3. The newly
+assigned `LOCUS-TPASS-YI-3of5-v1` and `LOCUS-APPSS-3of5-v1` profile identifiers
+bind topology only; they do not change either underlying suite construction.
+
+The aPPSS 3-of-5 profile uses distinct `LOCUS-APPSS-*-v2` public, pending,
+party, request, response, install, ready, and client-session formats described
+by `docs/schemas/appss-wire-v2.schema.json` and the public-only
+`LOCUS-APPSS-format-vectors-v2` corpus. No v1 aPPSS byte is reinterpreted.
+Yi continues to use the frozen `LOCUS-TPASS-wire-v1` native encoding because
+that encoding already carries and validates its threshold and party count.
+
+`LOCUS-reference-backup-v6` and `LOCUS-backup-associated-data-v3` extend the
+suite-neutral outer encryption boundary to the two exact topologies. Their
+strict profile/suite/public-format matrix rejects cross-suite and cross-
+topology mixing. Backup v5 remains exact 2-of-3.
+
+`LOCUS-paired-suite-deployment-2of3-v1` and
+`LOCUS-paired-suite-deployment-3of5-v1` freeze the controlled comparison
+settings: one selected suite per epoch, five authorizers, 4-of-5 authorization,
+the same direct email CuePolicy, local synthetic admission, filesystem storage,
+network schedule, and measurement definitions. They are same-host process
+deployment profiles, not independent-administration or retained-evidence
+identifiers. Any provider, admission, policy, quorum, host-tier, schedule, or
+measurement change requires a new deployment profile.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only
@@ -247,8 +276,8 @@ digests; the authenticated descriptor commits the one selected suite. No state
 conversion, dual-suite object, fallback format, deployment profile, or evidence
 identifier is introduced. D020 activates this exact application/component
 interface after provisional internal mapping acceptance. It assigns no
-deployment, trace, result, or artifact identifier; paired deployment profiles
-remain P6.3 work.
+deployment, trace, result, or artifact identifier; the paired deployment
+profiles are assigned separately by the later P6.3 gate.
 
 P5A.6 assigns `LOCUS-recovery-suite-compromise-regression-v1` solely to the
 strict aggregate-only development report in
@@ -287,12 +316,12 @@ separate suite/topology evidence paths before collection.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers; D020 internal mapping assessment provisionally accepted with human validation pending | P5A.2--P5A.7 implement and validate the active application interface; D019 independent human confirmation remains mandatory before manuscript/final reviewed release, while 3-of-5, deployment, and retained-evidence identities remain at later gates |
+| Recovery suite | Frozen Yi suite/wire; exact aPPSS v1 2-of-3 and v2 3-of-5 formats; selector v1/v2; backup v5/v6; D020 internal mapping assessment provisionally accepted with human validation pending | D019 independent human confirmation remains mandatory before manuscript/final reviewed release; retained-evidence identities remain at P9 |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
-| Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
+| Backup/bundle | Frozen backup-v4, suite-neutral backup-v5, paired-topology backup-v6, and P2 bundle/manifest identifiers | Any later suite/topology or bundle semantic change receives a separate identifier |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
-| Deployment | Frozen same-host Yi deployment identifier | P6.3 assigns exact suite/topology/provider profiles; host separation and independent administration remain distinct |
+| Deployment | Frozen same-host Yi profile plus P6.3 matched same-host process profiles for Yi/aPPSS 2-of-3 and 3-of-5 | P6.4 host separation is a distinct profile; independent administration requires actual operators and separate approval |
 | Trace | Frozen retained trace-policy identifier | P8.3 assigns a new trace profile only after the collection and retained-output schema is approved |
 | Result | Frozen retained attack/performance/evidence families | P9.2 assigns new schemas before collection and keeps Yi/aPPSS and topology results disjoint |
 | Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | P10.3 assigns a later portable-artifact identifier with a new manifest and allowlist |
