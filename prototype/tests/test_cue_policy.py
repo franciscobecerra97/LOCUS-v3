@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any, cast
 
 from locus.cue_policy import (
+    FROZEN_LOCATION_PERSON_POLICY,
     CuePolicyError,
     canonical_location,
     canonical_person,
@@ -36,6 +37,36 @@ def sample_cues() -> list[dict]:
 
 
 class CuePolicyTests(unittest.TestCase):
+    def test_frozen_adapter_preserves_valid_bytes_and_invalid_errors(self) -> None:
+        corpus = json.loads(
+            (ROOT / "prototype/test-vectors/cue-policy-v1.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        vector = corpus["valid"][0]
+        expected = bytes.fromhex(vector["canonical_hex"])
+        for order in vector["input_orders"]:
+            cues = [vector["cues"][index] for index in order]
+            result = FROZEN_LOCATION_PERSON_POLICY.process(cues)
+            self.assertEqual(result.policy_id, corpus["policy_version"])
+            self.assertEqual(result.canonical_bytes, expected)
+
+        for mutation in corpus["invalid_mutations"]:
+            cues = copy.deepcopy(vector["cues"])
+            cursor: Any = cues
+            path = cast(list[int | str], mutation["path"])
+            for component in path[:-1]:
+                cursor = cursor[component]
+            cursor[path[-1]] = mutation["replacement"]
+            with self.subTest(mutation=mutation["id"]):
+                with self.assertRaises(CuePolicyError) as direct_error:
+                    canonical_recovery_input(cues)
+                with self.assertRaises(CuePolicyError) as adapter_error:
+                    FROZEN_LOCATION_PERSON_POLICY.process(cues)
+                self.assertEqual(
+                    str(adapter_error.exception), str(direct_error.exception)
+                )
+
     def test_pinned_corpus_matches_resolver_fixture_and_exact_bytes(self) -> None:
         corpus = json.loads(
             (ROOT / "prototype/test-vectors/cue-policy-v1.json").read_text(

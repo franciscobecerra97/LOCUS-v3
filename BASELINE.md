@@ -189,6 +189,10 @@ deterministic resolver functions behind typed interfaces. This is post-baseline
 scaffolding, not an imported capability, new wire format, aPPSS implementation,
 deployment result, or evidence profile. The adapter delegates to the unchanged
 native Yi backend and preserves the frozen TPASS and cue vectors byte-for-byte.
+P5.1 completes application routing through that frozen CuePolicy adapter for
+deployment, lifecycle, walkthrough, and deterministic-resolver paths without
+changing the compatibility function, identifier, canonical bytes, errors,
+password input, backup, or retained evidence.
 
 ## Post-baseline namespace note
 

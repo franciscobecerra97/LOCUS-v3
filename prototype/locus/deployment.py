@@ -42,7 +42,7 @@ from .core import (
     derive_wrap_key,
 )
 from .crypto import hash_bytes, open_sealed, random_bytes, seal
-from .cue_policy import canonical_recovery_input
+from .cue_policy import FROZEN_LOCATION_PERSON_POLICY
 from .deployed_profile import (
     BACKUP_VERSION,
     CONTEXT_POLICY_VERSION,
@@ -255,7 +255,7 @@ def _load_fixture(path: Path) -> list[dict[str, Any]]:
     ):
         raise DeploymentError("invalid resolver fixture")
     cues = value["cues"]
-    canonical_recovery_input(cues)
+    FROZEN_LOCATION_PERSON_POLICY.process(cues)
     return cues
 
 
@@ -317,7 +317,7 @@ def provision(
     if not _claim_empty_layout(party_roots, client_root):
         return "existing"
     cues = _load_fixture(fixture_path)
-    recovery_input = canonical_recovery_input(cues)
+    recovery_input = FROZEN_LOCATION_PERSON_POLICY.process(cues).canonical_bytes
     bid = random_bytes(16).hex()
     epoch = 1
     recovery_identifier = b"LOCUS-compose-recovery-v1:" + bytes.fromhex(bid)
@@ -792,7 +792,7 @@ def _resolver_cues_with_size(url: str) -> tuple[list[dict[str, Any]], int]:
         or not isinstance(value["cues"], list)
     ):
         raise DeploymentError("invalid resolver result")
-    canonical_recovery_input(value["cues"])
+    FROZEN_LOCATION_PERSON_POLICY.process(value["cues"])
     return value["cues"], body_bytes
 
 
@@ -1444,7 +1444,7 @@ def run_client(
     phase_latency_ms["cloud"] = (time.perf_counter() - phase_started) * 1000
     phase_started = time.perf_counter()
     cues, resolver_received_bytes = _resolver_cues_with_size(resolver_url)
-    recovery_input = canonical_recovery_input(cues)
+    recovery_input = FROZEN_LOCATION_PERSON_POLICY.process(cues).canonical_bytes
     if performance_mode == "wrong-input":
         recovery_input = hash_bytes(
             "LOCUS/performance-wrong-input/v1",
@@ -1660,7 +1660,7 @@ def run_cross_epoch_lifecycle(
     if _s3_store().read(old_reference) != old_backup:
         raise DeploymentError("old cloud epoch is not immutable")
     cues = _resolver_cues(resolver_url)
-    recovery_input = canonical_recovery_input(cues)
+    recovery_input = FROZEN_LOCATION_PERSON_POLICY.process(cues).canonical_bytes
     encoded_old_recovery_identifier = deployment.get("recovery_id")
     if not isinstance(encoded_old_recovery_identifier, str):
         raise DeploymentError("invalid predecessor recovery identifier")

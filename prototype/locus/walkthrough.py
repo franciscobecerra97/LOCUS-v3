@@ -14,7 +14,7 @@ from . import _tpass_native as native
 from .codec import encoded_size
 from .core import SECURITY_POLICY_VERSION, backup_associated_data, derive_wrap_key
 from .crypto import CryptoError, hash_bytes, open_sealed, random_bytes, seal
-from .cue_policy import canonical_recovery_input
+from .cue_policy import FROZEN_LOCATION_PERSON_POLICY
 from .deployed_profile import BACKUP_VERSION, CONTEXT_POLICY_VERSION
 from .object_store import backup_digest
 from .redaction import validate_public_output
@@ -182,7 +182,9 @@ def _decode_base64url(value: object) -> bytes:
 def enroll_walkthrough(identifiers: Sequence[int]) -> WalkthroughEnrollment:
     """Enroll one generated test key using the exact three-pair cue policy."""
 
-    recovery_input = canonical_recovery_input(_selected_records(identifiers))
+    recovery_input = FROZEN_LOCATION_PERSON_POLICY.process(
+        _selected_records(identifiers)
+    ).canonical_bytes
     bid = random_bytes(16).hex()
     recovery_identifier = b"LOCUS-compose-recovery-v1:" + bytes.fromhex(bid)
     try:
@@ -281,7 +283,9 @@ def recover_walkthrough(
     ):
         raise WalkthroughError("select exactly two distinct TPASS holders")
 
-    recovery_input = canonical_recovery_input(_selected_records(identifiers))
+    recovery_input = FROZEN_LOCATION_PERSON_POLICY.process(
+        _selected_records(identifiers)
+    ).canonical_bytes
     enrollment.attempts += 1
     success = False
     try:

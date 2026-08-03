@@ -1,9 +1,10 @@
 # Suite-Neutral System Interfaces
 
-Status: P1.3 typed interface layer implemented and tested on 2026-08-01. This
-document freezes interface responsibilities, not external wire schemas or
-identifiers. The frozen Yi implementation remains the only implemented recovery
-path; aPPSS and the D018 selector are not implemented or released.
+Status: P1.3 typed interface layer implemented and tested on 2026-08-01; P5.1
+completed frozen-policy application routing on 2026-08-03. This document
+freezes interface responsibilities, not external wire schemas or identifiers.
+The frozen Yi implementation remains the only implemented recovery path; aPPSS
+and the D018 selector are not implemented or released.
 
 ## Purpose
 
@@ -87,10 +88,18 @@ canonical_bytes)` or fails. `FrozenLocationPersonCuePolicy` delegates directly
 to the existing `canonical_recovery_input` function. It does not alter any
 validation, ordering, canonical bytes, error, or identifier.
 
+P5.1 exposes one typed `FROZEN_LOCATION_PERSON_POLICY` instance and routes
+deployment provisioning/recovery, same-membership successor creation, the
+synthetic walkthrough, and resolver-produced inputs through its `process`
+method. The legacy function remains the internal compatibility implementation
+and direct vector-test oracle; no application path outside `cue_policy.py`
+calls it directly.
+
 `Resolver` maps one bounded provider result to `ResolverResult` or fails.
-`DeterministicResolverAdapter` delegates directly to the existing deterministic
-fixture and binds its output to the frozen location-person policy. Direct-input
-`NoResolver` and additional policies remain P5 work.
+`DeterministicResolverAdapter` maps the existing deterministic fixture into
+structured cues and invokes the same frozen policy instance, binding its output
+to the frozen location-person policy. Direct-input `NoResolver` and additional
+policies remain P5.2--P5.4 work.
 
 The resolver and policy are separate types even though the frozen resolver
 currently produces final canonical policy bytes. Later adapters may return

@@ -7,8 +7,8 @@ import unicodedata
 from typing import Any
 
 from .contracts import ResolverResult
+from .cue_policy import FROZEN_LOCATION_PERSON_POLICY, CuePolicyError
 from .cue_policy import POLICY_VERSION as CUE_POLICY_VERSION
-from .cue_policy import CuePolicyError, canonical_recovery_input
 
 RESOLVER_PROFILE_VERSION = "LOCUS-deterministic-directory-v1"
 _RECORD_ID = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}\Z")
@@ -79,7 +79,7 @@ def canonical_resolver_input(response: object) -> bytes:
             }
         )
     try:
-        return canonical_recovery_input(cues)
+        return FROZEN_LOCATION_PERSON_POLICY.process(cues).canonical_bytes
     except CuePolicyError as exc:
         raise _fail() from exc
 

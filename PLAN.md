@@ -1130,7 +1130,7 @@ Acceptance:
 
 ### P5.1 Wrap the existing policy without semantic change
 
-Status: `Approved`
+Status: `Complete`
 
 Acceptance:
 
@@ -1139,6 +1139,20 @@ Acceptance:
   canonical bytes enter a recovery suite only through that suite's separately
   versioned password-input domain.
 - Existing resolver-drift vectors pass through the new interface.
+
+Completion record (2026-08-03):
+
+- `FROZEN_LOCATION_PERSON_POLICY` exposes the existing implementation through
+  the typed `CuePolicy` interface while retaining
+  `canonical_recovery_input` as the byte-frozen compatibility implementation.
+- Deployment provisioning/recovery, lifecycle successors, the synthetic
+  walkthrough, and the deterministic resolver now obtain canonical bytes only
+  through the frozen adapter.
+- Corpus regression compares adapter and compatibility-function bytes and exact
+  error messages. Frozen cue, Yi, backup, deployment, resolver-drift, and
+  walkthrough tests remain unchanged and pass.
+- No identifier, password domain, backup format, suite behavior, retained
+  evidence, or manuscript wording changed.
 
 ### P5.2 Design three atomic policies
 

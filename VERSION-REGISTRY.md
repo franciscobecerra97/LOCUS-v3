@@ -20,6 +20,11 @@ format or profile is approved.
 | `LOCUS-anonymous-artifact-v1` | Sealed imported anonymous artifact and manifest envelope | Frozen; verification only |
 | `LOCUS-anonymous-artifact-v2` | Integrated-repository anonymous package with package-specific reviewer documents and strict manifest schema | Active audit profile; release pending |
 
+P5.1 routes active application calls through the typed frozen-v1 CuePolicy
+adapter. It assigns no identifier and does not reinterpret
+`LOCUS-location-person-set-v1`, `LOCUS-location-person-pair-v1`, the resolver
+profile, Yi password input, backup formats, deployment profiles, or evidence.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
