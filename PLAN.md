@@ -315,7 +315,8 @@ Completion record (2026-08-01):
 - The first LOCUS implementation/evidence claim is limited to static
   persistent-state compromise. Theorem 2's hybrid/random-oracle statement and
   the concrete RFC 9497 OPRF assumptions remain separate from implementation
-  tests and require independent review.
+  tests and require D019's independent claim-focused mapping review together
+  with the frozen Yi mapping and LOCUS composition.
 - Final identifiers, strict wire schemas, size bounds, vectors, and native
   library selection remain intentionally deferred to P5A.1; the approved
   primitives and claim boundary may not change there without a new decision.
@@ -1616,7 +1617,7 @@ result.
 
 ### P5A.7 Complete selectable-suite documentation and review gates
 
-Status: `In progress — independent review and release activation pending`
+Status: `In progress — D019 mapping review and release activation pending`
 
 Actions:
 
@@ -1625,8 +1626,11 @@ Actions:
   and result schema;
 - update active architecture, protocol, threat, information-flow, lifecycle,
   API, storage, evidence, artifact, and version documentation at suite release;
-- obtain independent cryptographic review of the paper-to-code mapping before
-  calling the profile "augmented" or promoting the comparative result; and
+- obtain D019's independent, claim-focused
+  paper-to-specification-to-code mapping review for both frozen Yi TPASS and
+  aPPSS before attributing either implementation to its source result or
+  promoting the comparative result; distinguish acceptable engineering
+  choices from claim-critical deviations in a completed register;
 - prepare a replacement for superseded M-APPPSS-001 that describes selectable
   paired suites, but do not edit `paper/` until the replacement change set has
   separate owner approval and the P8/P9 evidence gates are complete.
@@ -1636,9 +1640,14 @@ Acceptance:
 - Frozen Yi regression and retained-v2 verification remain unchanged.
 - The selectable-suite release commit, selector/profile identifiers,
   clean-host results, review findings, and known limitations are recorded.
+- The reviewer accepts or explicitly qualifies the Yi mapping, the aPPSS
+  mapping, the two below-threshold claim boundaries, both distinct
+  reconstruction-threshold compromise outcomes, and the common LOCUS
+  composition. Every claim-critical deviation is corrected and re-reviewed or
+  the dependent inherited result/LOCUS claim is removed.
 - Yi remains available for new enrollment alongside aPPSS; neither suite is a
   fallback for an epoch enrolled under the other.
-- Manuscript wording remains unchanged unless a new D018-aligned exact change
+- Manuscript wording remains unchanged unless a new D018/D019-aligned exact change
   set is explicitly approved and later applied under P10.6.
 
 Implementation note (2026-08-03): the P5A.1--P5A.6 implementation candidate
@@ -1648,15 +1657,19 @@ digest tests; commit `36ea1fe` fixed checkout policy only, without changing any
 vector or expected digest, and a second fresh empty-cache Windows checkout
 passed all 279 Python tests (one expected live-provider skip), both native
 suite/vector gates, formatting, lint, typing, and repository-boundary checks.
-No retained performance/evidence corpus was collected. The attributable review
-packet is ready in `docs/APPSS-INDEPENDENT-REVIEW.md`, the release checklist is
-in `docs/P5A7-RELEASE-READINESS.md`, and draft
+No retained performance/evidence corpus was collected. D019 now scopes the
+external gate as a claim-focused review rather than a full production
+cryptographic audit. The attributable review packet is ready in
+`docs/RECOVERY-SUITE-MAPPING-REVIEW.md`, its deviations register is in
+`docs/RECOVERY-SUITE-DEVIATIONS.md`, the release checklist is in
+`docs/P5A7-RELEASE-READINESS.md`, and draft
 M-SELECTABLE-SUITES-001 replaces the stale sole-active-aPPSS proposal without
 authorizing or applying any `paper/` change. P5A.7 cannot complete until an
-independent reviewer accepts the mapping, any mandatory findings are resolved,
-explicit application/deployment selection is activated without fallback,
-active release documentation is synchronized, and the final release commit
-passes clean Linux/Windows gates.
+independent reviewer accepts or correctly qualifies both construction mappings
+and the LOCUS claim boundary, every claim-critical finding is resolved, explicit
+application/deployment selection is activated without fallback, active release
+documentation is synchronized, and the final release commit passes clean
+Linux/Windows gates.
 
 ---
 

@@ -283,11 +283,13 @@ retained evidence or proof of either construction.
 Tests and snapshots do not prove the aPPSS theorem, cue entropy, human
 memorability, production security, side-channel resistance, proactive security,
 or a rollback-resistant global attempt bound. The result is inherited from the
-paper and limited to the reviewed concrete profile and LOCUS composition.
+paper and limited to the concrete profile and LOCUS composition accepted by
+D019's claim-focused Yi/aPPSS mapping review.
 
 ## Manuscript boundary
 
 M-APPPSS-001 in `DECISIONS.md` reflects the superseded sole-active-aPPSS
-direction and is stale under D018. No file under `paper/` may change until the
-owner receives and separately approves a replacement exact change set after the
-implementation, review, and evidence gates close.
+direction and is stale under D018. Draft M-SELECTABLE-SUITES-001 is its D018/D019
+replacement but is not authorized. No file under `paper/` may change until the
+owner receives and separately approves that exact change set after the
+implementation, mapping-review, and evidence gates close.

@@ -24,6 +24,7 @@ gates before their affected implementation work.
 | D016 | Password-protected recovery primitive | Make a new aPPSS suite the active profile for new enrollments after its gates pass; preserve the frozen Yi TPASS profile for legacy recovery; migrate only through a successor epoch | Superseded by D018 |
 | D017 | Exact aPPSS instantiation | Figure 4 aPPSS with a ristretto255/SHA-512 2HashDH OPRF, GF(2^128), SHA-256 commitment/secret derivation, abort-only robustness, and first 2-of-3 profile | Approved |
 | D018 | Selectable recovery suites and paired profiles | Keep Yi TPASS and aPPSS as independent first-class suites; select exactly one per enrollment/epoch; evaluate both under paired 2-of-3 and 3-of-5 conditions | Approved |
+| D019 | Recovery-suite review scope | Independent claim-focused mapping review of both Yi TPASS and aPPSS, including their LOCUS composition and documented deviations; not a full production cryptographic audit | Approved |
 
 ## Approved architecture records
 
@@ -588,6 +589,67 @@ Manuscript implication: None authorized. M-APPPSS-001's sole-active-aPPSS
 wording is stale under D018 and must be superseded by a separately presented
 exact manuscript change set before any file under `paper/` changes.
 
+### D019 — Claim-focused recovery-suite mapping review
+
+Decision ID: D019
+Date: 2026-08-03
+Status: Approved
+Chosen option: Replace P5A.7's aPPSS-only independent cryptographic-audit
+wording with an independent, claim-focused construction and security-mapping
+review covering both frozen Yi TPASS and D017 aPPSS. The review determines
+whether each implementation preserves the source construction semantics and
+assumptions needed for the exact LOCUS security statements, and whether the
+outer LOCUS composition introduces a prohibited local cue-testing predicate.
+It does not certify the primitives as new LOCUS constructions or audit the
+whole system for production use.
+
+The review permits documented engineering latitude in canonical wire formats,
+service APIs, transport envelopes, storage layouts, identifiers, transcript
+framing, and generic error handling when those choices do not alter the
+construction's algebra, secret/state boundary, threshold meaning, corruption
+model, or candidate-testing behavior. It requires independent acceptance of
+all claim-critical mappings: Yi's Protocol 2 equations and proof assumption;
+Yi's Ristretto255/hash/`G2` instantiation choices; aPPSS Figure 4 threshold
+translation, OPRF, field, sharing, mask, commitment, and secret derivation;
+both suites' below-threshold persistent-state boundary; their distinct
+reconstruction-threshold compromise behavior; and the common
+`S_R -> HKDF-SHA-256 -> AES-256-GCM` composition without fallback or a stored
+verifier.
+
+An unresolved claim-critical deviation has only two acceptable outcomes: fix
+the implementation and re-review it, or stop attributing the affected behavior
+to the source construction/result and remove the dependent LOCUS claim. Tests
+and fixed vectors remain implementation evidence, not a substitute for this
+mapping judgment.
+Alternatives considered: Retaining an aPPSS-only review; requiring a full
+production cryptographic/security audit of all LOCUS code; accepting the
+implementation based only on regression tests; or allowing approximate
+claim-critical mappings while continuing to inherit the source results.
+New trust assumptions: None. The review makes the already inherited Yi and
+aPPSS assumptions explicit and separate; it does not strengthen either proof
+or create a combined theorem.
+Privacy implications: The reviewer must verify only the claim-relevant state
+and information-flow boundaries. No real cues, credentials, private keys, or
+secret-bearing traces are supplied. Review records remain attributable but may
+use an owner-held identity reference for public privacy.
+Compatibility/version impact: No protocol identifier, wire format, vector,
+state, or retained evidence changes. D019 supersedes only the review-scope
+wording in D016--D018 and P5A.7. The frozen Yi and assigned aPPSS profiles
+remain unchanged.
+Required evidence: An exact-commit review of both paper-to-specification-to-code
+mappings; a completed deviations register; explicit answers for the two
+below-threshold mappings, both threshold-compromise outcomes, and the outer
+composition; classification and resolution of claim-critical findings; and an
+attributable final disposition. Clean-host tests and P8/P9 suite-separated
+evidence remain separate gates.
+Files or components authorized: Review packet, deviations register, planning,
+claim/evidence, release-readiness, mapping, and technical-documentation updates.
+No frozen Yi implementation change, aPPSS semantic change, retained-evidence
+reinterpretation, or manuscript edit is authorized by this decision.
+Manuscript implication: None authorized. M-SELECTABLE-SUITES-001 may cite the
+completed mapping review as a basis only after P8/P9 and a separate exact owner
+approval.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -608,7 +670,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D018 authorizes only the recorded architecture or
+Approval of D001--D019 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:
@@ -686,7 +748,7 @@ threshold-compromise outcomes: matching Yi threshold state reconstructs its
 shared input and protected recovery secret without a dictionary search, while
 matching aPPSS threshold state plus public `omega` enables unrate-limited
 offline dictionary testing and yields `S_R` for a correct candidate.
-Claim and evidence basis: D017/D018; the Section 3/Figure 4 aPPSS construction
+Claim and evidence basis: D017--D019; the Section 3/Figure 4 aPPSS construction
 and Theorem 2 from *Password-Protected Threshold Signatures*; the frozen Yi
 construction; the exact reviewed paper-to-code mappings; suite-neutral
 conformance, selection/no-fallback, successor, and common-condition tests; new
@@ -702,8 +764,8 @@ attack whose residual protection depends on the conditional cue distribution;
 make no proactive/adaptive, side-channel, production-security, memorability,
 usability, independent-administration, or global attempt-bound claim; and do
 not reuse retained v2 Yi results for aPPSS or selectable-suite claims.
-Owner status: Draft — not offered for approval until the independent review
-and P8/P9 evidence gates complete
+Owner status: Draft — not offered for approval until D019's claim-focused
+mapping review and the P8/P9 evidence gates complete
 Implementation/evidence commit: P5A implementation through `8795947`; clean
 checkout normalization `36ea1fe`; P8/P9 evidence pending
 Applied commit:

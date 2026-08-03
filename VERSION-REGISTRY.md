@@ -256,7 +256,7 @@ separate suite/topology evidence paths before collection.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers | P5A.2--P5A.7 implement, validate, review, and release the assigned formats; 3-of-5, deployment, and retained-evidence identities remain at later gates |
+| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers | P5A.2--P5A.7 implement, validate, complete D019's claim-focused mapping review, and release the assigned formats; 3-of-5, deployment, and retained-evidence identities remain at later gates |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |

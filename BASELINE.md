@@ -199,11 +199,13 @@ clean Linux complete gate; a fresh Windows checkout then found that unpinned
 JSON/TXT line endings changed three byte-digest regressions under
 `core.autocrlf=true`. Commit `36ea1fe` pins those text artifacts to LF without
 changing a frozen/public vector or expected digest, and the corrected fresh
-Windows checkout passes the complete gate. The independent-review packet and
-release checklist are prepared, but no review disposition,
-application/deployment activation, retained P9 evidence, or manuscript
-authorization exists. The released application and deployment therefore
-remain Yi-only. The locally supplied
+Windows checkout passes the complete gate. D019 now defines the remaining
+external gate as an independent, claim-focused mapping review of frozen Yi,
+aPPSS, and their LOCUS composition rather than a full production cryptographic
+audit. Its review packet, deviations register, and release checklist are
+prepared, but no review disposition, application/deployment activation,
+retained P9 evidence, or manuscript authorization exists. The released
+application and deployment therefore remain Yi-only. The locally supplied
 2024 paper is an ignored research input; it is not tracked or included in an
 artifact, and its redistribution status has not been established. None of these
 planning facts changes the inherited Yi TPASS baseline described above.

@@ -81,14 +81,22 @@ and paper boundary. Selectable-suite work must:
 - implement and evaluate both suites first at `k=2,n=3` and later at
   `k=3,n=5` under paired policy, key, authorization, storage, topology,
   failure-schedule, and measurement conditions;
-- treat fewer-than-reconstruction-threshold no-offline-predicate behavior and
-  reconstruction-threshold offline-dictionary behavior as separate claims; and
+- treat fewer-than-reconstruction-threshold no-offline-predicate behavior,
+  reconstruction-threshold Yi direct reconstruction, and
+  reconstruction-threshold aPPSS offline-dictionary behavior as separate
+  claims; and
 - preserve the approved D017/P1.2 OPRF, field, hash, robustness, corruption,
   and theorem profile in `docs/APPSS-PROFILE.md`; assign final wire identifiers,
   schemas, and vectors together at P5A.1 before cryptographic implementation.
 
 The aPPSS and Yi constructions are inherited cryptographic work, not LOCUS
-novelty. D018 does not authorize M-APPPSS-001 or any other manuscript wording.
+novelty. D019 requires an independent, claim-focused review of both
+paper-to-specification-to-code mappings and the common LOCUS composition. It
+is not a full production cryptographic audit: documented engineering choices
+may be accepted when they preserve claim-critical semantics. An unresolved
+claim-critical deviation requires correction and re-review or removal of the
+dependent inherited result and LOCUS claim. D018/D019 do not authorize
+M-APPPSS-001, M-SELECTABLE-SUITES-001, or any other manuscript wording.
 
 ## Protocol invariants
 

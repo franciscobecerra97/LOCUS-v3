@@ -266,7 +266,8 @@ claim is made.
 
 ## Exact security and comparison claims
 
-Subject to the above model and independent cryptographic review:
+Subject to the above model and D019's independent claim-focused mapping review
+of aPPSS, frozen Yi, and the LOCUS composition:
 
 1. Public cloud/descriptor/`omega` state alone supplies no local cue-testing
    predicate.

@@ -1,6 +1,6 @@
 # P5A.7 Selectable-Suite Release Readiness
 
-Status: `In progress — independent review and release activation pending`
+Status: `In progress — D019 mapping review and release activation pending`
 
 Recorded on: 2026-08-03
 
@@ -31,9 +31,9 @@ this checkpoint.
 | Clean Windows | Passed for candidate `36ea1fe` | Fresh local clone; Python `3.12.13`; `uv==0.11.29`; Rust `1.83.0-x86_64-pc-windows-msvc`; empty dependency cache; complete gate |
 | CI status | Not independently observed | The private GitHub Actions page was not authenticated in this execution context; `.github/workflows/ci.yml` still runs the complete gate on `ubuntu-latest` and `windows-latest` for every push/PR |
 | Retained performance/evidence collection | Correctly not started | P9 schema/methodology/profile identifiers are not frozen; no P5A retained corpus was created |
-| Independent cryptographic review | Pending, release-blocking | Packet in `docs/APPSS-INDEPENDENT-REVIEW.md` |
+| Independent TPASS/aPPSS claim-focused mapping review | Pending, release-blocking | Packet in `docs/RECOVERY-SUITE-MAPPING-REVIEW.md`; deviations in `docs/RECOVERY-SUITE-DEVIATIONS.md` |
 | Manuscript change | Not authorized and not applied | Draft M-SELECTABLE-SUITES-001; P8/P9 and explicit owner approval remain required |
-| Application/deployment activation | Pending, release-blocking | Must occur only after accepted independent review, with no automatic fallback |
+| Application/deployment activation | Pending, release-blocking | Must occur only after accepted D019 mapping review, with no automatic fallback |
 
 The Linux result predates only the line-ending policy commit; the final release
 commit must repeat clean Linux and Windows/CI checks after review remediation
@@ -64,8 +64,13 @@ digest checks.
 - [x] No retained P5A performance corpus was collected.
 - [x] Clean candidate Linux and Windows gates have passed at the boundaries
   recorded above.
-- [ ] Independent cryptographic review has an acceptable final disposition.
-- [ ] Blocking/major review findings, if any, are fixed and re-reviewed.
+- [ ] D019's independent review accepts or correctly qualifies the frozen Yi
+  mapping, aPPSS mapping, and LOCUS composition for the exact stated claims.
+- [ ] Every claim-critical deviation is accepted with an explicit qualification,
+  corrected and re-reviewed, or causes removal of the dependent inherited
+  result/LOCUS claim.
+- [ ] Every entry in `docs/RECOVERY-SUITE-DEVIATIONS.md`, including any newly
+  discovered difference, has a final reviewer classification.
 - [ ] The application and reference deployment expose explicit Yi/aPPSS
   new-enrollment selection, preserve descriptor-bound recovery dispatch, and
   pass release tests with no fallback.
@@ -78,10 +83,11 @@ digest checks.
 
 ## Post-review release sequence
 
-1. Record the attributable review finding and resolve every blocking/major
-   item on a new exact commit.
-2. Re-run the reviewer-required tests and obtain confirmation for the corrected
-   commit.
+1. Record the attributable D019 mapping-review finding for Yi, aPPSS, and the
+   LOCUS composition, including the completed deviations register.
+2. Resolve each claim-critical finding on a new exact commit or remove the
+   dependent claim; re-run reviewer-required tests and obtain confirmation for
+   every corrected mapping.
 3. Activate explicit new-enrollment selection in the application/reference
    deployment while preserving descriptor-bound recovery and no fallback.
 4. Synchronize the active technical documentation and exact version/release

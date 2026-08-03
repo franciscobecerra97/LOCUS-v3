@@ -28,7 +28,7 @@ The implementation preserves the source construction's relevant assumptions:
 - the client endpoint is not compromised during enrollment or recovery;
 - at least one party remains honest for claims that depend on the threshold adversary bound.
 
-The source article assumes, rather than reduces to a standard named proof system, the proof-of-knowledge property of its one-equation server proof. Faithfully implementing and testing the verification equation does not independently establish that assumption. This point requires cryptographic review before the paper makes a strong active-security claim.
+The source article assumes, rather than reduces to a standard named proof system, the proof-of-knowledge property of its one-equation server proof. Faithfully implementing and testing the verification equation does not independently establish that assumption. D019's claim-focused mapping review must confirm the equation mapping and preserve this inherited assumption before the paper makes the dependent active-security statement; it is not a full production cryptographic audit.
 
 ## Primitive And Parameter Mapping
 
@@ -206,9 +206,10 @@ local LOCUS flow uses the native backend by default and succeeds for `(2,3)`,
 The frozen vector is regression and cross-language interoperability evidence,
 not an independent implementation of the group algebra. The commitment and
 response encodings now cross the pinned-mTLS party-service boundary in correct
-and wrong-input 2-of-3 tests with per-process secret state. Independent
-cryptographic review, independent-host deployment, and adversarial network evaluation
-remain required before stronger implementation-security claims.
+and wrong-input 2-of-3 tests with per-process secret state. D019's independent
+paper-to-specification-to-code mapping review, independent-host
+deployment, and adversarial network evaluation remain separate gates before
+stronger implementation-security claims.
 
 ## Evaluation Plan
 

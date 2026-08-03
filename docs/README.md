@@ -18,7 +18,10 @@ For proposed architecture, start with:
 - `SYSTEM-INTERFACES.md`
 - `APPSS-MIGRATION.md`
 - `APPSS-PROFILE.md`
-- `APPSS-INDEPENDENT-REVIEW.md` for the P5A.7 external review packet
+- `RECOVERY-SUITE-MAPPING-REVIEW.md` for D019's claim-focused Yi/aPPSS and
+  LOCUS-composition review packet
+- `RECOVERY-SUITE-DEVIATIONS.md` for the required engineering-versus-
+  claim-critical mapping register
 - `P5A7-RELEASE-READINESS.md` for the candidate build/release gate record
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
