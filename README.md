@@ -68,8 +68,9 @@ resources.
 | Path | Purpose |
 | --- | --- |
 | `prototype/` | Python orchestration, storage, services, tests, and evidence tooling |
+| `appss-core/` | Separate Rust aPPSS/OPRF/GF(2¹²⁸) core and public fixed vector |
 | `tpass-core/` | Rust/Ristretto255 TPASS implementation and fixed vectors |
-| `tpass-python/` | PyO3 binding between the Rust protocol and Python |
+| `tpass-python/` | Narrow PyO3 binding for the independent Rust suites |
 | `deploy/` | Existing isolated same-host deployment and synthetic fixtures |
 | `docs/` | Active baseline documentation, target-design drafts, schemas, and provenance snapshots |
 | `experiments/` | Frozen v1/v2 records plus separately versioned future evidence |

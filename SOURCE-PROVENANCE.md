@@ -38,7 +38,11 @@
   and
 - the D015 proof-key-bound application storage gateway, application-operated
   S3 access model, and supplemental AWS S3 provider direction that supersede
-  the earlier unimplemented personal-cloud and Google Drive choices.
+  the earlier unimplemented personal-cloud and Google Drive choices;
+- the D017/D018 aPPSS profile, P5A.1 formats, and independently versioned
+  P5A.2 `locus-appss-core` implementation using the pinned RFC 9497/Ristretto,
+  SHA-2, randomness, error, and zeroization dependencies already present in
+  the project Rust dependency set.
 
 ## Deliberately excluded
 

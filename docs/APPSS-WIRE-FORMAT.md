@@ -1,9 +1,10 @@
 # LOCUS aPPSS Wire and State Format v1
 
-Status: P5A.1 exact format contract. D017 fixes the construction and D018 fixes
-selectable coexistence with frozen Yi TPASS. This document assigns formats; it
-does not claim that the native aPPSS implementation or independent review is
-complete.
+Status: P5A.1 exact format contract with the separate P5A.2 native core and
+narrow binding implemented. D017 fixes the construction and D018 fixes
+selectable coexistence with frozen Yi TPASS. Authenticated distributed
+integration, selector release, evidence, and independent review remain later
+gates.
 
 ## Assigned profile
 
@@ -33,13 +34,19 @@ the Yi suite, wire bytes, backup v4, or retained evidence.
 
 ## Native implementation selection
 
-The implementation is a separate non-published Rust crate named
-`locus-appss-core`. It uses the already pinned `curve25519-dalek 4.1.3`,
+The implementation is the separate non-published Rust crate
+`locus-appss-core`. It uses the pinned `curve25519-dalek 4.1.3`,
 `sha2 0.10.8`, `rand_core 0.6.4`, and `zeroize 1.8.1` dependencies. The core
 implements RFC 9497 OPRF mode directly and is exposed through the existing
 narrow PyO3 extension as separate aPPSS classes and functions. Yi source,
 types, and external encodings remain in the unchanged `locus-tpass-core`
 crate.
+
+The server public-key commitment is
+`SHA-256(Tuple("LOCUS/aPPSS/oprf-key-commitment/v1", context_digest,
+u16be(holder_id), SerializeElement(k_i*G)))`. It binds possession metadata
+without enabling OPRF verification; the selected profile remains base OPRF,
+not VOPRF.
 
 The RFC context string is exactly
 `"OPRFV1-" || 0x00 || "-ristretto255-SHA512"`. Hash-to-group uses
@@ -187,6 +194,12 @@ The canonical public structural vector is
 `prototype/test-vectors/appss-format-v1.json`; one independent test consumer
 recomputes its context, omega digest, and JSON bytes without importing LOCUS.
 It is conformance material, not cryptographic or performance evidence.
+
+`appss-core/test-vectors/appss-2of3-public-v1.txt` is the P5A.2 public-only
+native vector. Rust regenerates it with deterministic test randomness and the
+Python boundary independently decodes the same bytes. It contains no password,
+OPRF key, mask, recovery secret, or protected key. RFC 9497 Appendix A.1.1.1 is
+also reproduced exactly by the native Rust tests.
 
 The future 3-of-5 profile receives a separate profile identifier, topology
 vector, deployment identity, and result path at P6.3. No 3-of-5 identifier is

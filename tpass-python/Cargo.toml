@@ -12,6 +12,7 @@ name = "_tpass_native"
 crate-type = ["cdylib"]
 
 [dependencies]
+locus-appss-core = { path = "../appss-core" }
 locus-tpass-core = { path = "../tpass-core" }
 pyo3 = { version = "=0.29.0", features = ["abi3-py312", "extension-module"] }
 rand_core = { version = "=0.6.4", features = ["getrandom"] }

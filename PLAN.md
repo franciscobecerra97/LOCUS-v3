@@ -1364,7 +1364,7 @@ its implementation/release remains P5A.3--P5A.5.
 
 ### P5A.2 Implement the native aPPSS core
 
-Status: `Proposed`
+Status: `Complete`
 
 Implement a separate research-grade Rust core using the approved profile:
 
@@ -1391,6 +1391,20 @@ Acceptance:
   not count as evidence of authenticated distributed initialization.
 - The shared conformance harness runs against both independent adapters without
   importing one suite's native state or messages into the other.
+
+Completed 2026-08-03: the separate `locus-appss-core` crate implements RFC
+9497 OPRF-mode ristretto255/SHA-512, independent per-server key lifecycle,
+canonical nonidentity group decoding, GF(2^128) Shamir setup/interpolation,
+share masking, commitment verification, and direct 16-byte `S_R` derivation.
+It has strict native codecs, redacted secret types, zeroization where supported,
+production `OsRng` at the binding, and deterministic randomness only in native
+tests. Eight unit tests plus the public fixed-vector integration test cover the
+official RFC vector, every 2-of-3 subset, internal 3-of-5 generality, wrong
+input, malformed/altered/trailing state, identity, duplicate, range, context,
+and direct-versus-oblivious evaluation. The narrow PyO3 boundary exposes only
+separate `Appss*` objects/functions; its centrally orchestrated initialize and
+recover functions are explicitly named fixtures and are not distributed-
+initialization evidence. Frozen Yi source and vectors remain unchanged.
 
 ### P5A.3 Integrate the generic client and party protocol
 

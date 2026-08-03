@@ -1,6 +1,15 @@
 #![forbid(unsafe_code)]
 //! Narrow Python boundary for the versioned LOCUS TPASS wire protocol.
 
+use locus_appss_core::{
+    blind as appss_core_blind, blind_evaluate as appss_core_blind_evaluate,
+    derive_mask as appss_core_derive_mask, finalize as appss_core_finalize,
+    initialize as appss_core_initialize, recover as appss_core_recover,
+    AppssError as CoreAppssError, BlindedElement as CoreAppssBlindedElement,
+    ClientBlind as CoreAppssClientBlind, EvaluatedElement as CoreAppssEvaluatedElement,
+    MaskedShare as CoreAppssMaskedShare, PublicState as CoreAppssPublicState,
+    ServerKey as CoreAppssServerKey,
+};
 use locus_tpass_core::{
     aggregate_responses as core_aggregate_responses, begin_recovery as core_begin_recovery,
     finish_recovery as core_finish_recovery, password_to_scalar,
@@ -20,9 +29,14 @@ use pyo3::{
 use rand_core::OsRng;
 
 create_exception!(_tpass_native, NativeTpassError, PyException);
+create_exception!(_tpass_native, NativeAppssError, PyException);
 
 fn native_error(error: CoreTpassError) -> PyErr {
     NativeTpassError::new_err(error.to_string())
+}
+
+fn appss_error(error: CoreAppssError) -> PyErr {
+    NativeAppssError::new_err(error.to_string())
 }
 
 fn py_bytes(py: Python<'_>, value: &[u8]) -> Py<PyBytes> {
@@ -120,6 +134,249 @@ impl ClientSession {
 #[pyclass(module = "locus._tpass_native")]
 struct PartyEphemeral {
     inner: CorePartyEphemeral,
+}
+
+#[pyclass(module = "locus._tpass_native")]
+struct AppssServerKey {
+    inner: CoreAppssServerKey,
+}
+
+#[pymethods]
+impl AppssServerKey {
+    #[staticmethod]
+    fn from_secret_bytes(encoded: &[u8]) -> PyResult<Self> {
+        Ok(Self {
+            inner: CoreAppssServerKey::from_secret_bytes(encoded).map_err(appss_error)?,
+        })
+    }
+
+    fn to_secret_bytes(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.to_secret_bytes())
+    }
+
+    #[getter]
+    fn holder_id(&self) -> u16 {
+        self.inner.holder_id()
+    }
+
+    #[getter]
+    fn context_digest(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.context_digest())
+    }
+
+    fn commitment(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.commitment())
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "AppssServerKey(holder_id={}, scalar='<redacted>')",
+            self.inner.holder_id()
+        )
+    }
+}
+
+#[pyclass(module = "locus._tpass_native")]
+struct AppssClientBlind {
+    inner: Option<CoreAppssClientBlind>,
+}
+
+#[pymethods]
+impl AppssClientBlind {
+    fn __repr__(&self) -> &'static str {
+        "AppssClientBlind(input='<redacted>', blind='<redacted>')"
+    }
+}
+
+#[pyclass(module = "locus._tpass_native")]
+struct AppssPublicState {
+    inner: CoreAppssPublicState,
+}
+
+#[pymethods]
+impl AppssPublicState {
+    #[staticmethod]
+    fn from_bytes(encoded: &[u8]) -> PyResult<Self> {
+        Ok(Self {
+            inner: CoreAppssPublicState::from_bytes(encoded).map_err(appss_error)?,
+        })
+    }
+
+    fn to_bytes(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.to_bytes())
+    }
+
+    #[getter]
+    fn threshold(&self) -> u16 {
+        self.inner.threshold()
+    }
+
+    #[getter]
+    fn parties(&self) -> u16 {
+        self.inner.parties()
+    }
+
+    #[getter]
+    fn context_digest(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.context_digest())
+    }
+
+    #[getter]
+    fn commitment(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.commitment())
+    }
+
+    #[getter]
+    fn omega_digest(&self, py: Python<'_>) -> Py<PyBytes> {
+        py_bytes(py, &self.inner.omega_digest())
+    }
+
+    #[getter]
+    fn masked_shares(&self) -> Vec<(u16, Vec<u8>)> {
+        self.inner
+            .masked_shares()
+            .iter()
+            .map(|share| (share.index, share.value.to_vec()))
+            .collect()
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "AppssPublicState(profile='2-of-3-v1', threshold={}, parties={})",
+            self.inner.threshold(),
+            self.inner.parties()
+        )
+    }
+}
+
+fn appss_masks(values: Vec<(u16, Vec<u8>)>) -> PyResult<Vec<CoreAppssMaskedShare>> {
+    values
+        .into_iter()
+        .map(|(index, value)| {
+            let value: [u8; 16] = value
+                .try_into()
+                .map_err(|_| NativeAppssError::new_err("invalid aPPSS mask"))?;
+            Ok(CoreAppssMaskedShare { index, value })
+        })
+        .collect()
+}
+
+#[pyfunction]
+fn appss_generate_server_key(context_digest: &[u8], holder_id: u16) -> PyResult<AppssServerKey> {
+    let context_digest: [u8; 32] = context_digest
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS context digest"))?;
+    Ok(AppssServerKey {
+        inner: CoreAppssServerKey::generate(holder_id, context_digest, &mut OsRng)
+            .map_err(appss_error)?,
+    })
+}
+
+#[pyfunction]
+fn appss_blind(py: Python<'_>, input: &[u8]) -> PyResult<(AppssClientBlind, Py<PyBytes>)> {
+    let (inner, blinded) = appss_core_blind(input, &mut OsRng).map_err(appss_error)?;
+    Ok((
+        AppssClientBlind { inner: Some(inner) },
+        py_bytes(py, &blinded.to_bytes()),
+    ))
+}
+
+#[pyfunction]
+fn appss_blind_evaluate(
+    py: Python<'_>,
+    key: PyRef<'_, AppssServerKey>,
+    context_digest: &[u8],
+    blinded_element: &[u8],
+) -> PyResult<Py<PyBytes>> {
+    let context_digest: [u8; 32] = context_digest
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS context digest"))?;
+    let blinded = CoreAppssBlindedElement::from_bytes(blinded_element).map_err(appss_error)?;
+    let evaluated =
+        appss_core_blind_evaluate(&key.inner, &context_digest, &blinded).map_err(appss_error)?;
+    Ok(py_bytes(py, &evaluated.to_bytes()))
+}
+
+#[pyfunction]
+fn appss_finalize(
+    py: Python<'_>,
+    mut session: PyRefMut<'_, AppssClientBlind>,
+    evaluated_element: &[u8],
+) -> PyResult<Py<PyBytes>> {
+    let evaluated =
+        CoreAppssEvaluatedElement::from_bytes(evaluated_element).map_err(appss_error)?;
+    let session = session
+        .inner
+        .take()
+        .ok_or_else(|| NativeAppssError::new_err("aPPSS blind was already consumed"))?;
+    let output = appss_core_finalize(session, &evaluated).map_err(appss_error)?;
+    Ok(py_bytes(py, &output))
+}
+
+#[pyfunction]
+fn appss_derive_mask(
+    py: Python<'_>,
+    instance_id: &[u8],
+    oprf_output: &[u8],
+) -> PyResult<Py<PyBytes>> {
+    let output: [u8; 64] = oprf_output
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS OPRF output"))?;
+    Ok(py_bytes(py, &appss_core_derive_mask(instance_id, &output)))
+}
+
+#[pyfunction]
+fn appss_initialize_fixture(
+    py: Python<'_>,
+    context_digest: &[u8],
+    password_input: &[u8],
+    threshold: u16,
+    parties: u16,
+    masks: Vec<(u16, Vec<u8>)>,
+) -> PyResult<(AppssPublicState, Py<PyBytes>)> {
+    let context_digest: [u8; 32] = context_digest
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS context digest"))?;
+    let password_input: [u8; 32] = password_input
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS password input"))?;
+    let masks = appss_masks(masks)?;
+    let output = appss_core_initialize(
+        context_digest,
+        password_input,
+        threshold,
+        parties,
+        &masks,
+        &mut OsRng,
+    )
+    .map_err(appss_error)?;
+    let recovery_secret = output.recovery_secret();
+    Ok((
+        AppssPublicState {
+            inner: output.public_state,
+        },
+        py_bytes(py, &recovery_secret),
+    ))
+}
+
+#[pyfunction]
+fn appss_recover_fixture(
+    py: Python<'_>,
+    context_digest: &[u8],
+    password_input: &[u8],
+    public_state: PyRef<'_, AppssPublicState>,
+    masks: Vec<(u16, Vec<u8>)>,
+) -> PyResult<Py<PyBytes>> {
+    let context_digest: [u8; 32] = context_digest
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS context digest"))?;
+    let password_input: [u8; 32] = password_input
+        .try_into()
+        .map_err(|_| NativeAppssError::new_err("invalid aPPSS password input"))?;
+    let masks = appss_masks(masks)?;
+    let secret = appss_core_recover(context_digest, password_input, &public_state.inner, &masks)
+        .map_err(appss_error)?;
+    Ok(py_bytes(py, &secret))
 }
 
 #[pymethods]
@@ -279,15 +536,29 @@ fn _tpass_native(module: &Bound<'_, PyModule>) -> PyResult<()> {
         "NativeTpassError",
         module.py().get_type::<NativeTpassError>(),
     )?;
+    module.add(
+        "NativeAppssError",
+        module.py().get_type::<NativeAppssError>(),
+    )?;
     module.add_class::<PublicParameters>()?;
     module.add_class::<PartyState>()?;
     module.add_class::<ClientSession>()?;
     module.add_class::<PartyEphemeral>()?;
+    module.add_class::<AppssServerKey>()?;
+    module.add_class::<AppssClientBlind>()?;
+    module.add_class::<AppssPublicState>()?;
     module.add_function(wrap_pyfunction!(setup, module)?)?;
     module.add_function(wrap_pyfunction!(begin_recovery, module)?)?;
     module.add_function(wrap_pyfunction!(prepare_commitment, module)?)?;
     module.add_function(wrap_pyfunction!(verify_and_respond, module)?)?;
     module.add_function(wrap_pyfunction!(aggregate_responses, module)?)?;
     module.add_function(wrap_pyfunction!(finish_recovery, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_generate_server_key, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_blind, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_blind_evaluate, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_finalize, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_derive_mask, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_initialize_fixture, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_recover_fixture, module)?)?;
     Ok(())
 }

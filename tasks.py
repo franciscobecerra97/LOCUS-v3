@@ -89,7 +89,11 @@ def python_tests() -> None:
 
 
 def rust_manifests() -> list[str]:
-    return ["tpass-core/Cargo.toml", "tpass-python/Cargo.toml"]
+    return [
+        "appss-core/Cargo.toml",
+        "tpass-core/Cargo.toml",
+        "tpass-python/Cargo.toml",
+    ]
 
 
 def rust_tests() -> None:

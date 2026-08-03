@@ -1,7 +1,8 @@
 # LOCUS Reference Prototype
 
-The reference prototype provides Python orchestration around the native
-Rust/Ristretto255 TPASS implementation, pinned-library HKDF-SHA-256 and
+The reference prototype provides Python orchestration around the frozen native
+Rust/Ristretto255 Yi TPASS implementation and the separate P5A.2 native aPPSS
+core, pinned-library HKDF-SHA-256 and
 AES-256-GCM backup cryptography, immutable object-store adapters, authenticated
 same-host recovery-party services, synthetic fixtures, and regression tests.
 
@@ -23,7 +24,8 @@ Important implementation modules include:
 
 - `core.py`: LOCUS enrollment and recovery flow;
 - `cue_policy.py`: exact reference cue-policy canonicalization;
-- `tpass.py`: native adapter plus explicit simulator and toy backends;
+- `tpass.py`: frozen Yi native adapter plus explicit simulator and toy backends;
+- `appss_formats.py`: exact P5A.1 aPPSS framing and strict public formats;
 - `crypto.py`: backup encryption and wrapping-key derivation;
 - `object_store.py` and `s3_object_store.py`: immutable backup storage;
 - `party_store.py`, `party_service.py`, and `party_http.py`: durable party state

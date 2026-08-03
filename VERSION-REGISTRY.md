@@ -188,8 +188,11 @@ reinterpreted or replaced. `LOCUS-APPSS-format-vectors-v1` is a public-only
 structural conformance corpus with an independent consumer; it is not security
 or performance evidence.
 
-Deployment, trace, result, artifact, 3-of-5 topology, and retained-performance
-identifiers remain unassigned until their later gates.
+P5A.2 implements these assigned native boundaries in the separate
+`locus-appss-core` crate and adds a public-only native vector consumed through
+the narrow Python binding. It assigns no new protocol identifier. Deployment,
+trace, result, artifact, 3-of-5 topology, and retained-performance identifiers
+remain unassigned until their later gates.
 
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
