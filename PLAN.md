@@ -1156,7 +1156,7 @@ Completion record (2026-08-03):
 
 ### P5.2 Design three atomic policies
 
-Status: `Approved`
+Status: `Complete`
 
 Requirements:
 
@@ -1185,6 +1185,20 @@ Acceptance:
 - The public policy identifier's disclosure of the input category is explicit.
 - No policy is interpreted as evidence of cue entropy, memorability, or
   usability.
+
+Completion record (2026-08-03):
+
+- `docs/CUE-POLICY-PROFILES.md` freezes exact accepted shapes, lexical and
+  length bounds, cardinality, canonicalization, ordering, duplicate behavior,
+  top-level encodings, resolver behavior, privacy disclosure, and non-claims.
+- The coordinate policy reuses the frozen decimal/half-even interpretation
+  without changing the composite policy. Phone and email use strict bounded
+  direct-input grammars with no inference or external lookup.
+- Exact policy and member-order names plus `LOCUS-no-resolver-v1` are reserved,
+  not assigned or accepted. P5.3 assigns them only with implementations,
+  canonical vectors, and registry tests.
+- Suite-specific password-input domains remain separate: P5 does not
+  reinterpret the frozen Yi/composite input or assign the future aPPSS domain.
 
 ### P5.3 Build a shared conformance corpus
 

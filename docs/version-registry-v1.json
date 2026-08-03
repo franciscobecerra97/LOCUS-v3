@@ -21,6 +21,8 @@
     "LOCUS-backup-digest-v1",
     "LOCUS-bootstrap-signature-v1",
     "LOCUS-bootstrap-trust-config-v1",
+    "LOCUS-canonical-email-set-v1",
+    "LOCUS-canonical-phone-set-v1",
     "LOCUS-clean-client-isolation-v1",
     "LOCUS-cloud-backup-object-v1",
     "LOCUS-cloud-backup-reference-v1",
@@ -57,6 +59,7 @@
     "LOCUS-local-synthetic-admission-v1",
     "LOCUS-location-person-pair-v1",
     "LOCUS-location-person-set-v1",
+    "LOCUS-no-resolver-v1",
     "LOCUS-party-current-signature-v1",
     "LOCUS-party-current-summary-v1",
     "LOCUS-party-service-config-v1",
@@ -72,6 +75,7 @@
     "LOCUS-prepare-certificate-v1",
     "LOCUS-profile-trace-policy-v1",
     "LOCUS-provision-metric-v1",
+    "LOCUS-quantized-coordinate-set-v1",
     "LOCUS-recovery-bundle-manifest-v1",
     "LOCUS-recovery-bundle-v1",
     "LOCUS-recovery-configuration-v1",
@@ -158,11 +162,11 @@
     },
     {
       "family": "policy-and-resolver",
-      "allocation_phase": "P5.2",
+      "allocation_phase": "P5.3",
       "decisions": [
         "D005"
       ],
-      "required_gate": "Approve each atomic input grammar, cardinality, canonicalization, ambiguity rule, domain, NoResolver profile, and vectors.",
+      "required_gate": "Use the P5.2-approved atomic input grammars, cardinality, canonicalization, ambiguity rules, domains, and reserved names; assign them only with implementations, canonical vectors, registry entries, and cross-policy rejection tests.",
       "compatibility_rule": "Every semantic policy change receives a new policy identifier and epoch; the frozen composite policy remains byte-identical."
     },
     {

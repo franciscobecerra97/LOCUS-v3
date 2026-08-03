@@ -177,7 +177,7 @@ party replacement, or establish rollback-resistant publication.
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
 | Recovery suite | Frozen Yi suite/wire identifiers and D018 one-suite-per-epoch selection rule | P5A.1 assigns aPPSS suite/domain/state/message/wire and selector/profile identifiers only with D017/D018 schemas and fixed vectors |
-| CuePolicy/resolver | Frozen composite, atom, and deterministic-resolver identifiers | P5.2 assigns each atomic policy and `NoResolver` only after its grammar, domain, and vectors are approved |
+| CuePolicy/resolver | Frozen composite, atom, and deterministic-resolver identifiers; P5.2 reserves three exact atomic-policy names and one `NoResolver` name in `docs/CUE-POLICY-PROFILES.md` without accepting them | P5.3 assigns the reserved names only with implementations, canonical vectors, registry entries, and cross-policy rejection tests |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |

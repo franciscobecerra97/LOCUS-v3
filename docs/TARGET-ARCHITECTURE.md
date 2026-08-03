@@ -133,6 +133,8 @@ identifiers:
 
 Direct-input forms of the three atomic policies use `NoResolver`. The frozen
 composite location-person policy remains the resolver-backed reference example.
+P5.2 freezes their exact design in `docs/CUE-POLICY-PROFILES.md`; the reserved
+names are assigned only with the P5.3 implementations and canonical vectors.
 
 ### Resolver adapters
 
