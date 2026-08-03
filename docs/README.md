@@ -43,6 +43,10 @@ new identifiers rather than changing the meaning of existing versions.
 descriptor, bundle, and hashed-handle current-pointer key grammar to the P2.1
 public vectors. It contains no provider credential or secret material.
 
+P6.1 adds `prototype/tests/storage_provider_contract.py`, which runs the same
+provider-level role suite against deterministic filesystem and S3-compatible
+composites without merging their distinct object contracts.
+
 The lower-case baseline documents remain active and must be synchronized with
 approved implementation and manuscript changes. An upper-case target-design
 file may record an owner-approved architecture direction in its status line,

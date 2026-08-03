@@ -25,6 +25,8 @@ and aPPSS work. The implementation lives in:
 - `prototype/locus/suite_backup.py` for the common backup-v5 HKDF/AES path;
 - `prototype/locus/selectable_suite_lifecycle.py` for active explicit
   enrollment selection and P4.3 successor integration;
+- `prototype/locus/storage_provider.py` for the P6.1 provider-level
+  filesystem/S3-compatible composition and common conformance properties;
 - `FrozenLocationPersonCuePolicy` in `prototype/locus/cue_policy.py`; and
 - `DeterministicResolverAdapter` in
   `prototype/locus/resolver_fixture.py`.
@@ -148,6 +150,7 @@ persist a verifier.
 | `AdmissionVerifier` | Validate a capability and client proof against the complete D004 binding, exact request, and verifier time | P3.4 implements the project-controlled local profile with durable replay state |
 | `StorageCapabilityVerifier` | Same validation signature at a distinct storage-gateway trust boundary | P3.4 uses an independent verifier/database rather than accepting an authorizer's decision |
 | `ApplicationStorageGateway` | Validate and execute one exact admitted storage operation | P3.4 checks operation, prefix, request digest, proof, and replay state before invoking the P2.3 storage backend |
+| `StorageProvider` | Keep backup, descriptor, bundle, and current-pointer roles distinct while exposing one provider-conformance boundary | P6.1 filesystem and S3-compatible composites pass the same full role suite; nonlocal profiles require TLS and no profile requires listing |
 | `PartyDirectory` | Resolve authenticated authorizer and suite-holder membership for one epoch | P2.2 supplies an exact bootstrap-bound adapter after installed endpoint/key checks and a matching current-state authorization quorum |
 
 `AdmissionBinding` contains exactly the D004 fields: subject, backup, epoch,

@@ -25,6 +25,11 @@ suite. D018 keeps both independently selectable. D020 permits P6 work after a
 non-independent internal mapping assessment while retaining mandatory
 independent human validation before manuscript reliance or a final reviewed
 release.
+D021 fixes the paired P6 deployment direction: Yi and aPPSS each receive
+matched 2-of-3 and 3-of-5 recovery profiles over five authorizers with a
+separately typed 4-of-5 authorization quorum. Host-separation claims must use
+the exact demonstrated tier; independent administration requires actual
+independent operators.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered

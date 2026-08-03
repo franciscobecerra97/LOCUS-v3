@@ -200,6 +200,9 @@ The local tests cover:
 - separated filesystem create/read/delete and exact-retry behavior;
 - the same enrollment/recovery, exact retry, immutable conflict, deletion, and
   pre-attempt failure contract through fake and live S3-compatible backends;
+- one P6.1 provider-level conformance suite running unchanged against
+  filesystem and S3-compatible composites across backup, descriptor, bundle,
+  and current-pointer roles, including no-list and nonlocal-TLS properties;
 - explicit S3 configuration rejection for unsafe bucket names and accidental
   plaintext endpoints, bounded reads, conditional-conflict retry, transport
   outage mapping, stale-reference substitution, and canonical/digest checks;

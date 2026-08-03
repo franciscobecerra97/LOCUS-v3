@@ -1686,7 +1686,7 @@ or submission.
 
 ### P6.1 Extend storage conformance
 
-Status: `Proposed`
+Status: `Complete`
 
 Every backup/descriptor adapter must cover:
 
@@ -1703,6 +1703,29 @@ Every backup/descriptor adapter must cover:
 Acceptance:
 
 - Deterministic filesystem and S3-compatible adapters pass one common suite.
+
+Completion record (2026-08-03):
+
+- `LOCUS-storage-provider-profile-v1` composes the distinct backup,
+  descriptor, recovery-bundle, and current-pointer roles without merging their
+  formats or mutability rules. Its filesystem and S3-compatible provider IDs
+  remain explicit.
+- One shared provider-level conformance function now runs unchanged against
+  both adapters. It covers immutable backup and descriptor publication, exact
+  retry/read, canonical bundle preservation, current-pointer create/CAS/stale
+  outcomes, bounded/digest-bound decoding inherited from the component
+  contracts, explicit failure classes, and zero required list operations.
+- Nonlocal provider properties fail closed unless the transport is TLS. The
+  S3-compatible provider uses an explicitly constructed client and
+  prefix-scoped credential mode; the filesystem provider is local and
+  credential-free. Plain HTTP remains an explicit local-test-only exception.
+- This phase adds no provider credential, real-provider execution, retained
+  evidence, deployment claim, or manuscript wording. P6.2 places the admitted
+  application gateway above this provider boundary.
+- The complete pinned gate passes with 283 Python tests (one intentional
+  live-provider skip), 8 aPPSS core tests plus its fixed vector, 17 Yi core
+  tests plus its frozen vector, native formatting/Clippy, Python formatting,
+  linting, strict typing, syntax, and repository-boundary validation.
 
 ### P6.2 Add one distinct provider adapter
 

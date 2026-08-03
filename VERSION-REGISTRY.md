@@ -100,6 +100,18 @@ content. Changed key grammar, mutability, retry, or CAS semantics require a new
 profile identifier. The profile has a canonical locator vector and shared
 filesystem/S3 tests; it does not assign the P3 capability or gateway profile.
 
+### P6.1 assigned provider-conformance profiles
+
+`LOCUS-storage-provider-profile-v1` groups the already separate backup,
+descriptor, bundle, and current-pointer contracts behind one conformance
+boundary. `LOCUS-storage-provider-filesystem-v1` identifies the deterministic
+credential-free local adapter and `LOCUS-storage-provider-s3-compatible-v1`
+identifies the explicitly credentialed exact-prefix S3-compatible adapter.
+The latter requires TLS for nonlocal use; an explicitly enabled plaintext
+endpoint is classified only as a local-test transport. All three profiles
+prohibit listing as a required operation and preserve the P2.3 locator,
+immutability, digest-validation, and CAS semantics without reinterpretation.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

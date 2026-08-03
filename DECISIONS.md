@@ -26,6 +26,7 @@ gates before their affected implementation work.
 | D018 | Selectable recovery suites and paired profiles | Keep Yi TPASS and aPPSS as independent first-class suites; select exactly one per enrollment/epoch; evaluate both under paired 2-of-3 and 3-of-5 conditions | Approved |
 | D019 | Recovery-suite review scope | Independent claim-focused mapping review of both Yi TPASS and aPPSS, including their LOCUS composition and documented deviations; not a full production cryptographic audit | Approved |
 | D020 | Provisional internal review and deferred human validation | Permit an explicitly non-independent internal mapping assessment to close P5A implementation chronology and allow P6 work, while retaining human cryptographic validation as a mandatory pre-manuscript/pre-release gate | Approved |
+| D021 | P6 paired topology and honest deployment tier | Use matched Yi/aPPSS 2-of-3 and 3-of-5 recovery profiles with a separately typed 4-of-5 authorization quorum; target local-VM host separation without claiming independent administration | Approved |
 
 ## Approved architecture records
 
@@ -702,6 +703,66 @@ cited as independent review. Any selectable-suite manuscript delta still
 requires P8/P9, independent human validation, and a separate exact owner
 approval before `paper/` changes.
 
+### D021 — P6 paired topology and honest deployment tier
+
+Decision ID: D021
+
+Date: 2026-08-03
+
+Status: Approved
+
+Chosen option: Implement P6 chronologically with matched Yi and aPPSS
+deployment profiles at recovery thresholds 2-of-3 and 3-of-5. Both topologies
+use five authorizers and a separately represented 4-of-5 authorization quorum;
+the quorum is never inferred from or conflated with the recovery threshold.
+Within each topology the two suites use the same CuePolicy, synthetic protected
+key, authorization membership, storage, admission boundary, network schedule,
+and measurement definitions. For P6.4, demonstrate the highest honest tier
+available locally, targeting separate local VMs; do not label same-host,
+separate-process, or one-operator infrastructure as independent administration.
+
+Alternatives considered: Retain only the frozen Yi 2-of-3 deployment; compare
+the suites under unmatched thresholds or authorization conditions; change the
+authorization quorum with the recovery suite; require a live provider or
+independent operators before local work; or simulate independent
+administration.
+
+New trust assumptions: The paired local profiles continue to trust one test
+operator and host/virtualization control plane. A local VM boundary strengthens
+host separation testing but is not administrative independence. Tier 2 and
+Tier 3 claims require actual network hosts and operators respectively.
+
+Privacy implications: Only synthetic protected keys, cues, identities, and
+credentials are permitted. Paired profiles expose the same pseudonymous
+subject/backup/epoch/topology metadata to the same logical roles. No profile
+may add a cue, candidate, verifier, recovery secret, provider credential, or
+other secret-bearing value to ordinary output or shared configuration.
+
+Compatibility/version impact: Frozen `LOCUS-compose-deployment-v2` and its
+retained v2 evidence remain unchanged. P6.3 must assign new exact deployment
+identifiers for the four suite/topology combinations and must not convert,
+reinterpret, or mix suite state. The 3-of-5 suite profiles require new
+configuration identities while preserving each suite's existing cryptographic
+format and password domain.
+
+Required evidence: Common P6.1 storage conformance; locally reproducible P6.2
+gateway/provider tests; end-to-end positive, subset, unavailable, mixed-suite,
+and wrong-profile tests for all four P6.3 profiles; resolved topology and
+output/credential scans; and exact P6.4 tier documentation. A live AWS run is
+optional and separately execution-authorized. Tier 2/3 results remain external
+gates unless actual infrastructure is supplied.
+
+Files or components authorized: Provider-level storage composition and tests;
+the application storage gateway and optional AWS profile; new paired
+deployment configuration, schemas, vectors, tasks, tests, and documentation;
+and local-VM orchestration and validation if the host supports it. No real
+account, personal data, production credential, general replacement, external
+witness, retained P9 corpus, or manuscript edit is authorized.
+
+Manuscript implication: None authorized. Any paired-suite, provider, or host-
+separation wording still requires its exact later evidence and a separate
+owner-approved manuscript delta.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -722,7 +783,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D020 authorizes only the recorded architecture or
+Approval of D001--D021 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:

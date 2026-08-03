@@ -80,11 +80,11 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A are complete for implementation chronology. D020's internal
+P1--P5A and P6.1 are complete for implementation chronology. D020's internal
 recovery-suite mapping assessment is provisional; independent human validation
 remains mandatory before manuscript reliance or final reviewed release. The
-next task is P6.1 storage conformance, followed by the approved supplemental
-AWS S3 adapter and paired deployment/topology profiles.
+next task is P6.2's supplemental AWS-compatible gateway/provider profile,
+followed by the D021-approved paired deployment/topology profiles.
 
 ## Foundation sequence
 

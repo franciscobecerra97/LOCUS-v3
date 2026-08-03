@@ -274,6 +274,13 @@ P3.1 adds a post-baseline suite-neutral enrollment phase coordinator with
 idempotent public-metadata events. It does not alter imported enrollment,
 transport, frozen Yi state, retained evidence, or manuscript behavior.
 
+P6.1 adds a post-baseline provider-level composition and common conformance
+suite over the already separate backup, descriptor, bundle, and current-pointer
+contracts. Deterministic filesystem and S3-compatible composites pass the same
+role suite; nonlocal profiles require TLS and no profile requires listing. This
+does not create a real-provider result, change the frozen Compose deployment,
+or reinterpret retained evidence.
+
 ## Excluded material
 
 The portable copy excludes:
