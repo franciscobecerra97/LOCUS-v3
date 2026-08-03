@@ -5,6 +5,9 @@
 *.toml text eol=lf
 *.lock text eol=lf
 *.yml text eol=lf
+*.json text eol=lf
+*.txt text eol=lf
+.gitattributes text eol=lf
 .python-version text eol=lf
 /experiments/raw/**/*.json text eol=lf
 /experiments/processed/**/*.json text eol=lf
