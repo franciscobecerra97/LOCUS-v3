@@ -130,8 +130,8 @@ adds three owner-approved atomic policy adapters under new identifiers:
 - exactly three distinct canonical E.164 phone numbers; and
 - exactly three distinct canonical constrained email addresses.
 
-Direct-input forms of the three atomic policies will use `NoResolver` after
-P5.4. The frozen composite location-person policy remains the resolver-backed
+Direct-input forms of the three atomic policies use P5.4's exact `NoResolver`
+adapter. The frozen composite location-person policy remains the resolver-backed
 reference example. P5.2 freezes their exact design in
 `docs/CUE-POLICY-PROFILES.md`; P5.3 assigns the policy and conformance-corpus
 identifiers with implementations and canonical vectors.
@@ -141,7 +141,7 @@ identifiers with implementations and canonical vectors.
 Possible profiles:
 
 - deterministic fixture;
-- explicit `NoResolver` for direct coordinate, phone, and email input;
+- implemented `NoResolver` for direct coordinate, phone, and email input;
 - local user-controlled records;
 - separately approved external provider.
 

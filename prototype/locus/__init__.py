@@ -8,6 +8,7 @@ from .contracts import (
 )
 from .core import enroll, recover, recover_from_store
 from .cue_policy_registry import DEFAULT_CUE_POLICY_REGISTRY, CuePolicyRegistry
+from .no_resolver import NoResolverAdapter
 from .object_store import BackupReference, FilesystemBackupObjectStore
 from .s3_object_store import S3BackupObjectStore
 from .yi_compat import YiTpassRecoveryAdapter
@@ -18,6 +19,7 @@ __all__ = [
     "CuePolicyRegistry",
     "DEFAULT_CUE_POLICY_REGISTRY",
     "FilesystemBackupObjectStore",
+    "NoResolverAdapter",
     "PasswordProtectedSecretRecovery",
     "RecoveryContext",
     "S3BackupObjectStore",

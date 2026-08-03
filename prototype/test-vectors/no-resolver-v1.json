@@ -1,0 +1,29 @@
+{
+  "profile_id": "LOCUS-no-resolver-v1",
+  "accepted_policy_ids": [
+    "LOCUS-canonical-email-set-v1",
+    "LOCUS-canonical-phone-set-v1",
+    "LOCUS-quantized-coordinate-set-v1"
+  ],
+  "cases": [
+    {
+      "id": "direct-coordinate",
+      "policy_id": "LOCUS-quantized-coordinate-set-v1",
+      "conformance_vector_id": "synthetic-three-coordinate-set",
+      "canonical_sha256": "d3ff6502bba7e5e7be8abc463b5ae8e0afc59378d7b517f98eb2fdbbe14a20f3"
+    },
+    {
+      "id": "direct-phone",
+      "policy_id": "LOCUS-canonical-phone-set-v1",
+      "conformance_vector_id": "synthetic-three-phone-set",
+      "canonical_sha256": "fbabf3631cc54e53fc045c216c837a75fc77fccaf14ee90bcfd7e34ff7e9ebad"
+    },
+    {
+      "id": "direct-email",
+      "policy_id": "LOCUS-canonical-email-set-v1",
+      "conformance_vector_id": "synthetic-three-email-set",
+      "canonical_sha256": "92340d2d3e5dccacc5f42963df3675f177c43a797a5112b99da5d2301f2303cc"
+    }
+  ],
+  "rejected_policy_ids": ["LOCUS-location-person-set-v1"]
+}

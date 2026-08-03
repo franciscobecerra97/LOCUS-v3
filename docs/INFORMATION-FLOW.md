@@ -124,6 +124,10 @@ For new enrollment or successor creation, the client may explicitly select an
 approved Yi or aPPSS profile before suite setup. Recovery instead uses only the
 suite authenticated in the descriptor; suite choice is public metadata and is
 never derived from cues or used as a fallback.
+For direct coordinate, phone, and email policies, `NoResolver` performs no
+lookup: it invokes the exact selected policy once inside the client. The frozen
+composite policy remains bound to the deterministic resolver fixture. Neither
+adapter enumerates alternatives or retries a recovery suite.
 
 ### Successor publication phase contract
 

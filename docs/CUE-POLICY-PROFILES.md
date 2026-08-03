@@ -1,10 +1,10 @@
 # CuePolicy Profiles
 
-Status: P5.2 design frozen and P5.3 atomic policies implemented on 2026-08-03
-under D005. The three new policy identifiers are assigned with canonical
-vectors and the exact registry. `LOCUS-no-resolver-v1` remains protected but
-unimplemented until P5.4. No new policy is accepted by an enrollment or
-recovery suite until that client flow explicitly selects its exact identifier.
+Status: P5.2 design frozen, P5.3 atomic policies implemented, and P5.4
+`NoResolver` implemented on 2026-08-03 under D005. The three new policy
+identifiers and resolver profile are assigned with canonical vectors and exact
+registry bindings. No new policy is accepted by an enrollment or recovery
+suite until that client flow explicitly selects its exact identifier.
 
 ## Common contract
 
@@ -131,14 +131,14 @@ Addresses equal after lowercasing are duplicates and fail.
 
 ## Direct-input resolver profile
 
-Reserved identifier: `LOCUS-no-resolver-v1`
+Identifier: `LOCUS-no-resolver-v1`
 
-The three atomic policies declare `NoResolver`. P5.4 implements this adapter; it
-performs no lookup and has no external observer. It invokes exactly the selected
-policy once on the supplied structured input and returns that policy's
-identifier and canonical bytes. A policy mismatch, malformed input, or
-ambiguous/multi-candidate value fails; it never retries a recovery suite with
-variants.
+The three atomic policies declare `NoResolver`. The adapter performs no lookup
+and has no external observer. It binds exactly one selected policy at
+construction, invokes it once on the supplied structured input, and returns
+that policy's identifier and canonical bytes. A policy mismatch, malformed
+input, or ambiguous/multi-candidate value fails; it never retries a recovery
+suite with variants. The resolver-backed frozen composite policy is rejected.
 
 The frozen composite policy continues to use
 `LOCUS-deterministic-directory-v1` in the reproducible reference path. A real
@@ -167,3 +167,5 @@ registry in `prototype/locus/cue_policy_registry.py`. The shared corpus is
 `prototype/test-vectors/cue-policy-conformance-v1.json`. It includes one legacy
 vector-source binding and pinned vectors/errors for each new policy. A separate
 consumer checks canonical JSON, hex, and digests without importing LOCUS code.
+The NoResolver implementation is `prototype/locus/no_resolver.py`, with exact
+policy/digest bindings in `prototype/test-vectors/no-resolver-v1.json`.

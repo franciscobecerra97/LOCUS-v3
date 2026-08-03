@@ -198,6 +198,10 @@ an exact registry, and a new conformance corpus. They demonstrate interface
 generality only and are not yet integrated into enrollment or either recovery
 suite. They change no frozen policy, Yi vector, backup, deployment, manuscript,
 or retained evidence.
+P5.4 adds the post-baseline resolver-free adapter used only by those atomic
+policies. It performs no lookup or alternative enumeration and rejects the
+frozen resolver-backed policy. The external-provider profile remains
+unimplemented and separately execution-gated.
 
 ## Post-baseline namespace note
 

@@ -157,10 +157,10 @@ party replacement, or establish rollback-resistant publication.
 | `LOCUS-canonical-phone-set-v1` | Exactly three distinct ASCII strings in the bounded `+[1-9][0-9]{1,14}` lexical form, identity-canonicalized and domain-ordered | No local-format inference, extension, lookup, or normalization may be added under this identifier |
 | `LOCUS-canonical-email-set-v1` | Exactly three distinct addresses under the bounded constrained ASCII grammar, lowercase-canonicalized and domain-ordered | Any grammar, case, IDNA, provider-alias, ordering, duplicate, or encoding change requires a new identifier and epoch |
 | `LOCUS-cue-policy-conformance-v1` | Pinned four-policy source binding plus canonical JSON/hex/SHA-256 and exact-error corpus for the three atomic implementations | It is implementation conformance, not retained security evidence or a usability/entropy result |
+| `LOCUS-no-resolver-v1` | Resolver-free adapter binding one exact direct-input atomic policy and returning that policy's canonical bytes after one invocation | It performs no lookup, inference, alternatives, provider interaction, or suite retry; changed behavior requires a new identifier |
 
-`LOCUS-no-resolver-v1` is protected against reuse but remains unassigned until
-P5.4 introduces its exact adapter and vectors. None of these identifiers changes
-the frozen composite policy or supplies a recovery-suite password-input domain.
+None of these identifiers changes the frozen composite policy or supplies a
+recovery-suite password-input domain.
 
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
@@ -190,7 +190,7 @@ the frozen composite policy or supplies a recovery-suite password-input domain.
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
 | Recovery suite | Frozen Yi suite/wire identifiers and D018 one-suite-per-epoch selection rule | P5A.1 assigns aPPSS suite/domain/state/message/wire and selector/profile identifiers only with D017/D018 schemas and fixed vectors |
-| CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies and conformance corpus; `NoResolver` is protected but unassigned | P5.4 assigns `NoResolver` with its exact adapter/vectors; every later policy or resolver semantic change requires a new identifier, implementation, and corpus |
+| CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |

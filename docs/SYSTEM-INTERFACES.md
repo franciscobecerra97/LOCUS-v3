@@ -107,8 +107,10 @@ domain, protected-key generation, HKDF, AES, backup, or storage behavior.
 `Resolver` maps one bounded provider result to `ResolverResult` or fails.
 `DeterministicResolverAdapter` maps the existing deterministic fixture into
 structured cues and invokes the same frozen policy instance, binding its output
-to the frozen location-person policy. Direct-input `NoResolver` remains P5.4
-work.
+to the frozen location-person policy. P5.4's `NoResolverAdapter` accepts only
+the three direct-input policy identifiers, invokes the exact selected adapter
+once, and exposes no discovery, alternative enumeration, provider metadata, or
+recovery-suite retry path.
 
 The resolver and policy are separate types even though the frozen resolver
 currently produces final canonical policy bytes. Later adapters may return

@@ -1249,7 +1249,7 @@ Completion record (2026-08-03):
 
 ### P5.4 Formalize resolver adapters
 
-Status: `Approved`
+Status: `Complete`
 
 Implement:
 
@@ -1266,6 +1266,22 @@ Acceptance:
 - Policies declare exactly what the resolver learns.
 - No resolver automatically enumerates cue alternatives through a recovery
   suite.
+
+Completion record (2026-08-03):
+
+- The frozen `DeterministicResolverAdapter` and resolver-drift corpus remain
+  unchanged and continue to feed only the frozen composite policy.
+- `NoResolverAdapter` binds one exact direct-input policy at construction,
+  invokes it once, and returns its exact policy identifier/canonical bytes under
+  `LOCUS-no-resolver-v1` without lookup, enumeration, inference, or retry.
+- The adapter accepts only the three P5.3 atomic policies. Unknown policies and
+  the resolver-backed frozen composite policy fail before input processing;
+  malformed or multi-candidate values produce one generic local failure.
+- The pinned NoResolver vector binds all three accepted policy/digest pairs and
+  the rejected resolver-backed policy. Existing resolver-drift and frozen
+  policy vectors remain byte-identical.
+- No external location-provider adapter or execution is authorized, and no
+  resolver result is treated as entropy, usability, or security evidence.
 
 ---
 
