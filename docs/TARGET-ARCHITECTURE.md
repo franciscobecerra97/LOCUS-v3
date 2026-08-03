@@ -123,18 +123,18 @@ Maps an immutable policy identifier to:
 - public version metadata;
 - deterministic vectors.
 
-The registry preserves `LOCUS-location-person-set-v1` byte-for-byte and adds
-three owner-approved atomic policy families after their schemas receive new
-identifiers:
+The registry preserves `LOCUS-location-person-set-v1` byte-for-byte and P5.3
+adds three owner-approved atomic policy adapters under new identifiers:
 
 - exactly three distinct quantized geographic coordinates;
 - exactly three distinct canonical E.164 phone numbers; and
 - exactly three distinct canonical constrained email addresses.
 
-Direct-input forms of the three atomic policies use `NoResolver`. The frozen
-composite location-person policy remains the resolver-backed reference example.
-P5.2 freezes their exact design in `docs/CUE-POLICY-PROFILES.md`; the reserved
-names are assigned only with the P5.3 implementations and canonical vectors.
+Direct-input forms of the three atomic policies will use `NoResolver` after
+P5.4. The frozen composite location-person policy remains the resolver-backed
+reference example. P5.2 freezes their exact design in
+`docs/CUE-POLICY-PROFILES.md`; P5.3 assigns the policy and conformance-corpus
+identifiers with implementations and canonical vectors.
 
 ### Resolver adapters
 

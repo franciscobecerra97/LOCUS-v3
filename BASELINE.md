@@ -193,6 +193,11 @@ P5.1 completes application routing through that frozen CuePolicy adapter for
 deployment, lifecycle, walkthrough, and deterministic-resolver paths without
 changing the compatibility function, identifier, canonical bytes, errors,
 password input, backup, or retained evidence.
+P5.3 adds three post-baseline atomic policy implementations, public metadata,
+an exact registry, and a new conformance corpus. They demonstrate interface
+generality only and are not yet integrated into enrollment or either recovery
+suite. They change no frozen policy, Yi vector, backup, deployment, manuscript,
+or retained evidence.
 
 ## Post-baseline namespace note
 

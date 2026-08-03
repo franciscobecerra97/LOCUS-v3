@@ -1202,7 +1202,7 @@ Completion record (2026-08-03):
 
 ### P5.3 Build a shared conformance corpus
 
-Status: `Approved`
+Status: `Complete`
 
 Cover:
 
@@ -1224,6 +1224,28 @@ Acceptance:
 - Frozen v1 vectors remain byte-identical after extracting shared
   canonicalization helpers.
 - No test is interpreted as memorability, entropy, or usability evidence.
+
+Completion record (2026-08-03):
+
+- Three independent atomic policy adapters and an exact four-policy registry
+  implement the P5.2 contracts through the existing `CuePolicy` interface.
+- `CuePolicyMetadata` publicly declares each policy's exact input category,
+  input shape, cardinality, resolver profile, ordering domain, ambiguity rule,
+  and duplicate rule without containing cue-derived data.
+- `cue-policy-conformance-v1.json` pins canonical JSON, bytes, SHA-256 digests,
+  exact local errors, order invariance, length/Unicode/locale/punctuation/case
+  behavior, post-canonicalization duplicates, and cross-policy rejection.
+- The existing resolver-drift corpus continues through the frozen policy
+  adapter; direct atomic policies have no provider drift because P5.4 binds
+  them to `NoResolver`.
+- A consumer test that imports no LOCUS implementation independently checks
+  the canonical JSON/hex/digest triples. The frozen v1 corpus hash and every
+  frozen policy vector remain unchanged.
+- The three policy identifiers and conformance-corpus identifier are assigned
+  with their implementations and vectors. `LOCUS-no-resolver-v1` remains
+  protected but unimplemented until P5.4.
+- Windows verification is local; the repository's pinned Ubuntu/Windows CI
+  matrix supplies the clean cross-platform gate after publication.
 
 ### P5.4 Formalize resolver adapters
 

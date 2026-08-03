@@ -1,10 +1,11 @@
 # Suite-Neutral System Interfaces
 
 Status: P1.3 typed interface layer implemented and tested on 2026-08-01; P5.1
-completed frozen-policy application routing on 2026-08-03. This document
-freezes interface responsibilities, not external wire schemas or identifiers.
-The frozen Yi implementation remains the only implemented recovery path; aPPSS
-and the D018 selector are not implemented or released.
+completed frozen-policy application routing and P5.3 added the exact four-policy
+registry on 2026-08-03. This document freezes interface responsibilities, not
+external recovery-suite wire schemas. The frozen Yi implementation remains the
+only implemented recovery path; aPPSS and the D018 selector are not implemented
+or released.
 
 ## Purpose
 
@@ -84,7 +85,9 @@ chronological descriptor, enrollment, recovery, and CuePolicy prerequisites.
 ## CuePolicy and Resolver boundaries
 
 `CuePolicy` maps structured input to `CuePolicyResult(policy_id,
-canonical_bytes)` or fails. `FrozenLocationPersonCuePolicy` delegates directly
+canonical_bytes)` or fails. Its public `CuePolicyMetadata` declares input
+category/shape, cardinality, resolver profile, member ordering domain,
+ambiguity, and duplicate behavior. `FrozenLocationPersonCuePolicy` delegates directly
 to the existing `canonical_recovery_input` function. It does not alter any
 validation, ordering, canonical bytes, error, or identifier.
 
@@ -95,11 +98,17 @@ method. The legacy function remains the internal compatibility implementation
 and direct vector-test oracle; no application path outside `cue_policy.py`
 calls it directly.
 
+P5.3 adds independent quantized-coordinate-set, canonical-phone-set, and
+canonical-email-set adapters plus `DEFAULT_CUE_POLICY_REGISTRY`. Exact lookup
+never guesses a policy from input shape, and cross-policy values fail rather
+than being reinterpreted. The registry changes no recovery suite, password
+domain, protected-key generation, HKDF, AES, backup, or storage behavior.
+
 `Resolver` maps one bounded provider result to `ResolverResult` or fails.
 `DeterministicResolverAdapter` maps the existing deterministic fixture into
 structured cues and invokes the same frozen policy instance, binding its output
-to the frozen location-person policy. Direct-input `NoResolver` and additional
-policies remain P5.2--P5.4 work.
+to the frozen location-person policy. Direct-input `NoResolver` remains P5.4
+work.
 
 The resolver and policy are separate types even though the frozen resolver
 currently produces final canonical policy bytes. Later adapters may return

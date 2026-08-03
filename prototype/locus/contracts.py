@@ -233,6 +233,30 @@ class PasswordProtectedSecretRecovery(Protocol):
 
 
 @dataclass(frozen=True)
+class CuePolicyMetadata:
+    """Public, non-secret declaration of one immutable CuePolicy contract."""
+
+    policy_id: str
+    input_category: str
+    input_schema: str
+    cardinality: int
+    resolver_profile_id: str
+    member_order_domain: str
+    ambiguity_rule: str
+    duplicate_rule: str
+
+    def __post_init__(self) -> None:
+        _identifier(self.policy_id, "CuePolicy identifier")
+        _identifier(self.input_category, "CuePolicy input category")
+        _identifier(self.input_schema, "CuePolicy input schema")
+        _positive_int(self.cardinality, "CuePolicy cardinality", maximum=1024)
+        _identifier(self.resolver_profile_id, "CuePolicy resolver profile")
+        _identifier(self.member_order_domain, "CuePolicy member-order domain")
+        _identifier(self.ambiguity_rule, "CuePolicy ambiguity rule")
+        _identifier(self.duplicate_rule, "CuePolicy duplicate rule")
+
+
+@dataclass(frozen=True)
 class CuePolicyResult:
     policy_id: str
     canonical_bytes: bytes = field(repr=False)
@@ -249,6 +273,7 @@ class CuePolicyResult:
 @runtime_checkable
 class CuePolicy(Protocol):
     policy_id: str
+    metadata: CuePolicyMetadata
 
     def process(self, recovery_input: object) -> CuePolicyResult: ...
 
@@ -627,6 +652,7 @@ __all__ = [
     "BackupObjectStore",
     "ContractError",
     "CuePolicy",
+    "CuePolicyMetadata",
     "CuePolicyResult",
     "CurrentDescriptorPointer",
     "DescriptorDocument",

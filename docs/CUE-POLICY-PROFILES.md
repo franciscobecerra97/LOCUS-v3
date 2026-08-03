@@ -1,9 +1,10 @@
 # CuePolicy Profiles
 
-Status: P5.2 design frozen on 2026-08-03 under D005. The three new policy
-identifiers and `NoResolver` profile below are reserved for assignment with the
-P5.3 implementations, canonical vectors, and registry update. They are not
-implemented or accepted by any enrollment or recovery path yet.
+Status: P5.2 design frozen and P5.3 atomic policies implemented on 2026-08-03
+under D005. The three new policy identifiers are assigned with canonical
+vectors and the exact registry. `LOCUS-no-resolver-v1` remains protected but
+unimplemented until P5.4. No new policy is accepted by an enrollment or
+recovery suite until that client flow explicitly selects its exact identifier.
 
 ## Common contract
 
@@ -132,11 +133,12 @@ Addresses equal after lowercasing are duplicates and fail.
 
 Reserved identifier: `LOCUS-no-resolver-v1`
 
-The three atomic policies use `NoResolver`. It performs no lookup and has no
-external observer. It invokes exactly the selected policy once on the supplied
-structured input and returns that policy's identifier and canonical bytes. A
-policy mismatch, malformed input, or ambiguous/multi-candidate value fails; it
-never retries a recovery suite with variants.
+The three atomic policies declare `NoResolver`. P5.4 implements this adapter; it
+performs no lookup and has no external observer. It invokes exactly the selected
+policy once on the supplied structured input and returns that policy's
+identifier and canonical bytes. A policy mismatch, malformed input, or
+ambiguous/multi-candidate value fails; it never retries a recovery suite with
+variants.
 
 The frozen composite policy continues to use
 `LOCUS-deterministic-directory-v1` in the reproducible reference path. A real
@@ -157,3 +159,11 @@ composite location-person representation. They do not establish entropy,
 memorability, usability, ownership, geographic accuracy, address validity, or
 resistance to dictionary guessing. Policy/category disclosure and input
 guessability remain explicit limitations.
+
+## Implementation and vectors
+
+The implementations live in `prototype/locus/cue_policy.py` and the exact
+registry in `prototype/locus/cue_policy_registry.py`. The shared corpus is
+`prototype/test-vectors/cue-policy-conformance-v1.json`. It includes one legacy
+vector-source binding and pinned vectors/errors for each new policy. A separate
+consumer checks canonical JSON, hex, and digests without importing LOCUS code.

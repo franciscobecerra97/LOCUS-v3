@@ -149,6 +149,19 @@ backup, descriptor, and recovered-key digests; it stores no recovered key or
 suite secret. It does not change `LOCUS-epoch-lifecycle-policy-v1`, authorize
 party replacement, or establish rollback-resistant publication.
 
+### P5.3 assigned atomic CuePolicy profiles
+
+| Identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-quantized-coordinate-set-v1` | Exactly three distinct WGS84 decimal coordinate pairs, round-half-even quantized to `10^-4` degrees and canonically ordered under its own domain | Any input, quantization, ordering, duplicate, member, or top-level encoding change requires a new policy identifier and epoch |
+| `LOCUS-canonical-phone-set-v1` | Exactly three distinct ASCII strings in the bounded `+[1-9][0-9]{1,14}` lexical form, identity-canonicalized and domain-ordered | No local-format inference, extension, lookup, or normalization may be added under this identifier |
+| `LOCUS-canonical-email-set-v1` | Exactly three distinct addresses under the bounded constrained ASCII grammar, lowercase-canonicalized and domain-ordered | Any grammar, case, IDNA, provider-alias, ordering, duplicate, or encoding change requires a new identifier and epoch |
+| `LOCUS-cue-policy-conformance-v1` | Pinned four-policy source binding plus canonical JSON/hex/SHA-256 and exact-error corpus for the three atomic implementations | It is implementation conformance, not retained security evidence or a usability/entropy result |
+
+`LOCUS-no-resolver-v1` is protected against reuse but remains unassigned until
+P5.4 introduces its exact adapter and vectors. None of these identifiers changes
+the frozen composite policy or supplies a recovery-suite password-input domain.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a
@@ -177,7 +190,7 @@ party replacement, or establish rollback-resistant publication.
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
 | Recovery suite | Frozen Yi suite/wire identifiers and D018 one-suite-per-epoch selection rule | P5A.1 assigns aPPSS suite/domain/state/message/wire and selector/profile identifiers only with D017/D018 schemas and fixed vectors |
-| CuePolicy/resolver | Frozen composite, atom, and deterministic-resolver identifiers; P5.2 reserves three exact atomic-policy names and one `NoResolver` name in `docs/CUE-POLICY-PROFILES.md` without accepting them | P5.3 assigns the reserved names only with implementations, canonical vectors, registry entries, and cross-policy rejection tests |
+| CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies and conformance corpus; `NoResolver` is protected but unassigned | P5.4 assigns `NoResolver` with its exact adapter/vectors; every later policy or resolver semantic change requires a new identifier, implementation, and corpus |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |

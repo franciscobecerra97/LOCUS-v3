@@ -34,6 +34,7 @@
     "LOCUS-compose-profile-evidence-v1",
     "LOCUS-compose-recovery-v1",
     "LOCUS-compose-recovery-v2",
+    "LOCUS-cue-policy-conformance-v1",
     "LOCUS-cue-policy-corpus-v1",
     "LOCUS-descriptor-bundle-store-v1",
     "LOCUS-descriptor-current-pointer-v1",
@@ -166,7 +167,7 @@
       "decisions": [
         "D005"
       ],
-      "required_gate": "Use the P5.2-approved atomic input grammars, cardinality, canonicalization, ambiguity rules, domains, and reserved names; assign them only with implementations, canonical vectors, registry entries, and cross-policy rejection tests.",
+      "required_gate": "P5.3 assigned the three P5.2-approved atomic policies with implementations, canonical vectors, registry entries, and cross-policy rejection tests; P5.4 assigns NoResolver only with its exact adapter and vectors; later changes repeat the applicable gate.",
       "compatibility_rule": "Every semantic policy change receives a new policy identifier and epoch; the frozen composite policy remains byte-identical."
     },
     {
