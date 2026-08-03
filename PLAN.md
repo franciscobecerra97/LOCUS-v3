@@ -1244,8 +1244,10 @@ Completion record (2026-08-03):
 - The three policy identifiers and conformance-corpus identifier are assigned
   with their implementations and vectors. `LOCUS-no-resolver-v1` remains
   protected but unimplemented until P5.4.
-- Windows verification is local; the repository's pinned Ubuntu/Windows CI
-  matrix supplies the clean cross-platform gate after publication.
+- The complete gate passes on Windows and in a fresh isolated Ubuntu clone of
+  commit `87540e2`: 239 Python tests, 17 Rust tests, the fixed Yi vector,
+  formatting, linting, typing, and repository-boundary checks. The temporary
+  Linux clone and downloaded toolchain shim were removed after verification.
 
 ### P5.4 Formalize resolver adapters
 
