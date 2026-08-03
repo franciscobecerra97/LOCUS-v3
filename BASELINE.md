@@ -302,6 +302,12 @@ synthetic template reserves the five DNS/IP fields needed for later separate
 hosts. This is configurable same-host staging only: it neither distributes
 containers nor establishes host or administrative independence, retained
 evidence, or a manuscript result.
+P7.1 adds a post-baseline local research-client API over the existing policy,
+suite, backup-v6, descriptor/bootstrap, admission, and state-machine
+components. All four Yi/aPPSS topology arms recover the same imported
+synthetic key through API tests. The facade is same-process component
+conformance, not a graphical UI, deployment result, retained evidence,
+usability result, or manuscript change.
 
 ## Excluded material
 

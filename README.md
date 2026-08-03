@@ -80,14 +80,13 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A and P6.1--P6.3 are complete for implementation chronology. D020's internal
+P1--P5A, P6.1--P6.3, and P7.1 are complete for implementation chronology. D020's internal
 recovery-suite mapping assessment is provisional; independent human validation
 remains mandatory before manuscript reliance or final reviewed release. The
-next task is P6.4 host separation. A strict public endpoint file and additive
-Compose overlay now run all five party containers locally and are ready to
-accept five later host addresses. This workstation still demonstrates only
-same-host isolation; actual local VMs or separate hosts are required before
-P6.4 can claim a higher tier. Live AWS validation remains a separately
+next actionable task is P7.2 enrollment UI over the now-frozen client API.
+P6.4 remains open at its infrastructure gate: the strict endpoint file and
+additive Compose overlay run all five parties locally, but actual VMs or hosts
+remain necessary for a higher tier. Live AWS validation remains a separately
 authorized optional gate.
 
 ## Foundation sequence

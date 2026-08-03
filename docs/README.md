@@ -27,6 +27,7 @@ For proposed architecture, start with:
 - `P5A7-RELEASE-READINESS.md` for the candidate build/release gate record
 - `P6.4-HOST-SEPARATION.md` for the exact multi-VM/multi-host readiness gate
   and current configurable same-host limitation
+- `CLIENT-API.md` for the frozen P7.1 UI-facing orchestration boundary
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`

@@ -1912,12 +1912,27 @@ Readiness record (2026-08-03):
 
 ### P7.1 Freeze client APIs before UI implementation
 
-Status: `Proposed`
+Status: `Completed 2026-08-03`
 
 Acceptance:
 
 - Enrollment and recovery complete through CLI/API tests.
 - No UI framework contains a second canonicalizer or protocol implementation.
+
+Completion record:
+
+- `LOCUS-client-api-v1` exposes typed catalog, transient policy preview,
+  enrollment, bootstrap, recovery, successor, and aggregate inspector
+  operations over the existing component boundaries.
+- Tests cover Yi/aPPSS at both 2-of-3 and 3-of-5, exact imported synthetic-key
+  recovery, descriptor-only suite dispatch, local admission, all four policy
+  previews, cross-suite successor creation, wrong-input normalization, and
+  safe inspection.
+- Recovery has no suite-override field. Normal results pass the existing
+  output-safety validator; protected-key bytes remain non-serializing typed
+  return data and are absent from object representations.
+- The facade is same-process component conformance, not P6 deployment or
+  retained evidence. No UI framework was selected until this gate passed.
 
 ### P7.2 Implement enrollment UI
 

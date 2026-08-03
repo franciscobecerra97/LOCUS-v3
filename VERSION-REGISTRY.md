@@ -171,6 +171,17 @@ client endpoints, peer endpoints, and listener ports together. It never
 selects a suite, threshold, authorization quorum, credential, or fallback
 endpoint. Changed fields or interpretation require a new identifier.
 
+### P7.1 assigned stable client API
+
+`LOCUS-client-api-v1` identifies the local research-client orchestration
+surface: catalog, transient policy preview, enrollment, authenticated
+bootstrap, descriptor-selected recovery, explicit successor creation, and
+aggregate inspection. It introduces no protocol encoding and cannot change
+CuePolicy bytes, suite state/messages, backup v6, descriptor/bootstrap,
+admission, or lifecycle semantics. Recovery accepts no suite override. Changed
+operation names, request fields, or public result semantics require a new API
+identifier; implementation-only fixes behind the same exact contract do not.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

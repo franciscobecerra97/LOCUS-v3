@@ -173,7 +173,10 @@ def _validate_backup_reference_shape(backup: object) -> None:
     """Validate identity fields without widening frozen cloud-object v1."""
     if not isinstance(backup, dict):
         raise ObjectCorrupt("invalid backup reference source")
-    if backup.get("version") == "LOCUS-reference-backup-v5":
+    if backup.get("version") in {
+        "LOCUS-reference-backup-v5",
+        "LOCUS-reference-backup-v6",
+    }:
         expected = {
             "version",
             "bid",

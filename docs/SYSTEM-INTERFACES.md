@@ -8,7 +8,8 @@ added explicit selection and four-direction successor preparation on
 2026-08-03. D020 activates this application/component interface after
 provisional internal mapping acceptance. P6.3 adds the matched 2-of-3 and
 3-of-5 same-host process deployment profiles; independent human validation and
-retained evidence remain pending.
+retained evidence remain pending. P7.1 freezes the local UI-facing research
+client API over these existing boundaries.
 
 ## Purpose
 
@@ -16,6 +17,8 @@ P1.3 separates protocol roles before later descriptor, admission, lifecycle,
 and aPPSS work. The implementation lives in:
 
 - `prototype/locus/contracts.py` for typed values and structural protocols;
+- `prototype/locus/client_api.py` for the P7.1 stable orchestration facade and
+  non-serializing recovered-key return type;
 - `prototype/locus/yi_compat.py` for the frozen Yi compatibility adapter;
 - `prototype/locus/appss.py` and `prototype/locus/appss_client.py` for the
   independent aPPSS adapter and transient distributed client;

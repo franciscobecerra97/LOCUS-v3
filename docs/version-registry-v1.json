@@ -52,6 +52,7 @@
     "LOCUS-canonical-email-set-v1",
     "LOCUS-canonical-phone-set-v1",
     "LOCUS-clean-client-isolation-v1",
+    "LOCUS-client-api-v1",
     "LOCUS-cloud-backup-object-v1",
     "LOCUS-cloud-backup-reference-v1",
     "LOCUS-cloud-snapshot-input-v1",
