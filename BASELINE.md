@@ -308,6 +308,14 @@ components. All four Yi/aPPSS topology arms recover the same imported
 synthetic key through API tests. The facade is same-process component
 conformance, not a graphical UI, deployment result, retained evidence,
 usability result, or manuscript change.
+P7.2--P7.4 add `LOCUS-local-research-ui-v1`, a loopback-only thin interface
+over that frozen API. It covers synthetic enrollment, authenticated clean
+bootstrap/recovery, explicit successor selection, and public-metadata
+inspection without a second canonicalizer or protocol path. Source guards,
+strict local HTTP tests, full application-flow tests, and desktop/mobile
+browser checks support component conformance only. The UI adds no retained
+evidence, human/usability result, external admission, real-provider result,
+production-security claim, or manuscript change.
 
 ## Excluded material
 

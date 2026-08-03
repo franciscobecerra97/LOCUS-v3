@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <title>LOCUS Research Recovery</title>
+  <link rel="stylesheet" href="/assets/styles.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <header class="app-header">
+    <div class="brand">
+      <span class="brand-mark" aria-hidden="true">L</span>
+      <div>
+        <p class="eyebrow">Research prototype</p>
+        <h1>LOCUS</h1>
+      </div>
+    </div>
+    <div class="privacy-chip"><span aria-hidden="true"></span> Local session · no telemetry</div>
+  </header>
+
+  <div class="app-shell">
+    <nav class="side-nav" aria-label="LOCUS workflow">
+      <p class="nav-label">Workflow</p>
+      <button class="nav-item active" type="button" data-panel="enrollment-panel">
+        <span class="nav-number">01</span><span>Enrollment</span>
+      </button>
+      <button class="nav-item" type="button" data-panel="recovery-panel">
+        <span class="nav-number">02</span><span>Recovery</span>
+      </button>
+      <button class="nav-item" type="button" data-panel="inspector-panel">
+        <span class="nav-number">03</span><span>Research inspector</span>
+      </button>
+      <div class="boundary-card">
+        <p class="boundary-title">Active-client boundary</p>
+        <p>Inputs remain transient. Receipts contain public recovery metadata and may be exported.</p>
+      </div>
+    </nav>
+
+    <main id="workspace" class="workspace" tabindex="-1">
+      <div id="global-status" class="status-banner" role="status" aria-live="polite" hidden></div>
+
+      <section id="enrollment-panel" class="workflow-panel active" aria-labelledby="enrollment-title">
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">New protected-key epoch</p>
+            <h2 id="enrollment-title">Create a recovery enrollment</h2>
+            <p class="lede">Choose one immutable cue policy and one recovery suite. LOCUS handles canonicalization and cryptography behind the client API.</p>
+          </div>
+          <span class="step-pill">P7 · Enrollment</span>
+        </div>
+
+        <form id="enrollment-form" autocomplete="off" novalidate>
+          <fieldset class="card">
+            <legend><span>1</span> Protected synthetic key</legend>
+            <div class="choice-grid two">
+              <label class="choice-card selected">
+                <input type="radio" name="key-mode" value="generate-synthetic" checked>
+                <span class="choice-title">Generate locally</span>
+                <span class="choice-copy">Create a fresh synthetic Ed25519 seed inside this session.</span>
+              </label>
+              <label class="choice-card">
+                <input type="radio" name="key-mode" value="import-synthetic">
+                <span class="choice-title">Import synthetic seed</span>
+                <span class="choice-copy">Use exactly 64 lowercase hexadecimal characters.</span>
+              </label>
+            </div>
+            <div id="key-import-wrap" class="field-wrap" hidden>
+              <label for="key-import">Synthetic Ed25519 seed</label>
+              <input id="key-import" type="password" inputmode="text" spellcheck="false" autocomplete="new-password" maxlength="64">
+              <p class="field-help">Never use production key material in this research interface.</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend><span>2</span> Recovery configuration</legend>
+            <div class="form-grid three">
+              <div class="field-wrap">
+                <label for="suite-select">Recovery suite</label>
+                <select id="suite-select" required></select>
+              </div>
+              <div class="field-wrap">
+                <label for="profile-select">Preconfigured holder profile</label>
+                <select id="profile-select" required></select>
+              </div>
+              <div class="field-wrap">
+                <label for="policy-select">Cue policy</label>
+                <select id="policy-select" required></select>
+              </div>
+            </div>
+            <div class="binding-note">
+              <span aria-hidden="true">↳</span>
+              <p>The selected suite is bound to this epoch. Recovery cannot switch or fall back to another suite.</p>
+            </div>
+          </fieldset>
+
+          <fieldset class="card">
+            <legend><span>3</span> Structured recovery input</legend>
+            <div id="enrollment-cues" class="cue-grid"></div>
+            <div class="preview-actions">
+              <button id="preview-enrollment" class="button secondary" type="button">Validate and preview</button>
+              <p>Validation runs through the registered CuePolicy; the browser has no canonicalizer.</p>
+            </div>
+            <div id="enrollment-preview" class="preview-box" aria-live="polite" hidden></div>
+          </fieldset>
+
+          <div class="form-actions">
+            <button class="button primary" type="submit">Create enrollment</button>
+            <p class="action-note">Transient key and cue inputs are cleared after completion.</p>
+          </div>
+        </form>
+
+        <section id="enrollment-result" class="result-card" aria-live="polite" hidden>
+          <div class="result-icon" aria-hidden="true">✓</div>
+          <div>
+            <p class="eyebrow">Enrollment complete</p>
+            <h3>Recovery receipt ready</h3>
+            <dl id="enrollment-summary" class="summary-grid"></dl>
+            <h4>Redacted state placement</h4>
+            <div id="enrollment-placement" class="role-list compact-roles"></div>
+            <div class="result-actions">
+              <button id="download-receipt" class="button primary" type="button">Download public receipt</button>
+              <button class="button secondary go-recovery" type="button">Continue to recovery</button>
+            </div>
+          </div>
+        </section>
+      </section>
+
+      <section id="recovery-panel" class="workflow-panel" aria-labelledby="recovery-title" hidden>
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Clean-client flow</p>
+            <h2 id="recovery-title">Authenticate and recover</h2>
+            <p class="lede">Start from the public receipt. LOCUS authenticates current configuration before accepting recovery input.</p>
+          </div>
+          <span class="step-pill">P7 · Recovery</span>
+        </div>
+
+        <form id="bootstrap-form" class="card" autocomplete="off">
+          <div class="legend-like"><span>1</span> Recovery receipt</div>
+          <div class="receipt-row">
+            <div class="field-wrap grow">
+              <label for="recovery-receipt">Paste or load the exported public receipt</label>
+              <textarea id="recovery-receipt" rows="4" spellcheck="false" autocomplete="off" required></textarea>
+            </div>
+            <label class="file-button button secondary">
+              Load file<input id="receipt-file" type="file" accept="application/json,.json,.locus-receipt" hidden>
+            </label>
+          </div>
+          <button class="button primary" type="submit">Authenticate bootstrap</button>
+        </form>
+
+        <section id="bootstrap-result" class="card authenticated" hidden>
+          <div class="auth-heading"><span aria-hidden="true">✓</span><div><p class="eyebrow">Authenticated configuration</p><h3 id="bootstrap-suite">Suite verified</h3></div></div>
+          <dl id="bootstrap-summary" class="summary-grid compact"></dl>
+        </section>
+
+        <form id="recovery-form" autocomplete="off" hidden>
+          <fieldset class="card">
+            <legend><span>2</span> Enrolled structured input</legend>
+            <p class="section-copy">The authenticated descriptor fixed the policy shown below.</p>
+            <div id="recovery-cues" class="cue-grid"></div>
+          </fieldset>
+          <div class="form-actions">
+            <button class="button primary" type="submit">Recover and verify identity</button>
+            <p class="action-note">Errors use one privacy-safe rejection category.</p>
+          </div>
+        </form>
+
+        <section id="recovery-result" class="result-card" aria-live="polite" hidden>
+          <div class="result-icon" aria-hidden="true">✓</div>
+          <div>
+            <p class="eyebrow">Recovery complete</p>
+            <h3>Protected-key identity verified</h3>
+            <dl id="recovery-summary" class="summary-grid"></dl>
+            <button id="show-successor" class="button secondary" type="button">Prepare successor epoch</button>
+          </div>
+        </section>
+
+        <form id="successor-form" class="card successor-card" autocomplete="off" hidden>
+          <div class="legend-like"><span>3</span> Optional successor enrollment</div>
+          <p class="section-copy">Choose the next epoch explicitly. The predecessor is recovered first; native state is never converted.</p>
+          <div class="form-grid two">
+            <div class="field-wrap"><label for="successor-suite">Successor suite</label><select id="successor-suite"></select></div>
+            <div class="field-wrap"><label for="successor-profile">Successor holder profile</label><select id="successor-profile"></select></div>
+          </div>
+          <label class="check-row"><input id="rotate-key" type="checkbox"><span><strong>Rotate the synthetic protected key</strong><small>Off preserves the recovered key identity; on generates a fresh synthetic seed.</small></span></label>
+          <button class="button primary" type="submit">Create successor</button>
+        </form>
+
+        <section id="successor-result" class="result-card" aria-live="polite" hidden>
+          <div class="result-icon" aria-hidden="true">✓</div>
+          <div><p class="eyebrow">Successor active</p><h3>Fresh epoch created</h3><dl id="successor-summary" class="summary-grid"></dl><button id="download-successor-receipt" class="button primary" type="button">Download successor receipt</button></div>
+        </section>
+      </section>
+
+      <section id="inspector-panel" class="workflow-panel" aria-labelledby="inspector-title" hidden>
+        <div class="panel-heading">
+          <div>
+            <p class="eyebrow">Public metadata only</p>
+            <h2 id="inspector-title">Research state inspector</h2>
+            <p class="lede">Review identifiers, safe digests, categories, and storage counts without exposing recovery material.</p>
+          </div>
+          <span class="step-pill">P7 · Inspector</span>
+        </div>
+        <form id="inspector-form" class="card" autocomplete="off">
+          <div class="field-wrap">
+            <label for="inspector-receipt">Public recovery receipt</label>
+            <textarea id="inspector-receipt" rows="4" spellcheck="false" autocomplete="off" required></textarea>
+          </div>
+          <button class="button primary" type="submit">Inspect safe metadata</button>
+        </form>
+        <section id="inspector-result" class="inspector-grid" aria-live="polite" hidden>
+          <article class="metric-card"><p>Cloud backup</p><strong id="metric-backup">—</strong><span>bytes</span></article>
+          <article class="metric-card"><p>Party records</p><strong id="metric-parties">—</strong><span>bytes total</span></article>
+          <article class="metric-card"><p>Recovery bundle</p><strong id="metric-bundle">—</strong><span>bytes</span></article>
+          <article class="card wide"><h3>Role placement</h3><div id="role-placement" class="role-list"></div></article>
+          <article class="card"><h3>Public identifiers</h3><dl id="public-identifiers" class="detail-list"></dl></article>
+          <article class="card"><h3>Safe digests</h3><dl id="safe-digests" class="detail-list"></dl></article>
+          <article class="card wide"><h3>Message categories</h3><div id="message-categories" class="tag-list"></div></article>
+        </section>
+      </section>
+    </main>
+  </div>
+
+  <footer>
+    <p>LOCUS local research UI · Synthetic data only · UI behavior is not usability evidence.</p>
+  </footer>
+  <script src="/assets/app.js" defer></script>
+</body>
+</html>

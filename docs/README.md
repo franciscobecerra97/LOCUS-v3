@@ -28,6 +28,8 @@ For proposed architecture, start with:
 - `P6.4-HOST-SEPARATION.md` for the exact multi-VM/multi-host readiness gate
   and current configurable same-host limitation
 - `CLIENT-API.md` for the frozen P7.1 UI-facing orchestration boundary
+- `RESEARCH-UI.md` for the P7.2--P7.4 local enrollment, recovery, and safe
+  inspector interface and its privacy limitations
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`

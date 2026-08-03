@@ -273,3 +273,27 @@ It must not inherit:
 - protected private key;
 - TPASS group secret or wrapping key;
 - party secret state.
+
+## P7 browser-facing active-client view
+
+`LOCUS-local-research-ui-v1` remains inside the active-client trust boundary.
+Its browser page may transiently receive the synthetic protected-key input,
+raw structured recovery input, normalized policy preview, public receipt, and
+the recovered-key success result needed for the current operation. It must not
+persist or transmit these through telemetry, remote assets, cookies, browser
+storage, service workers, request logs, history parameters, clipboard helpers,
+or application-generated screenshots.
+
+The loopback route adapter exposes only `LOCUS-client-api-v1` operations.
+Enrollment and successor selection are explicit; recovery receives the suite,
+policy, epoch, membership profile, and endpoint trust only from authenticated
+bootstrap state. The inspector receives a public receipt and returns only
+registered public identifiers, safe digests, message categories, role names,
+and aggregate byte/item counts.
+
+The implementation disables caching, framing, referrers, sensitive browser
+permissions, printing, copy/cut, and request logging, and clears transient
+fields on completion or page teardown. These controls do not prevent browser
+extensions, accessibility technology, operating-system screenshots, process
+memory inspection, crash collection, swap, or forensic recovery. P7 therefore
+adds component conformance, not retained information-flow evidence.

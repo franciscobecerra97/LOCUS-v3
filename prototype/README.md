@@ -33,6 +33,8 @@ Important implementation modules include:
 - `deployment.py`: isolated deployment provisioning and boundary checks;
 - `attempt_model.py`: bounded attempt-control counterexample exploration; and
 - `performance_processing.py`: deterministic aggregate-result processing.
+- `client_api.py` and `research_ui.py`: the frozen P7 client boundary and the
+  loopback-only, no-persistence research interface.
 
 ## Verification
 
@@ -58,6 +60,16 @@ protocol state:
 ```console
 uv run --frozen python tasks.py walkthrough
 ```
+
+The P7 research UI exercises enrollment, clean recovery, explicit successor
+creation, and safe state inspection with synthetic data only:
+
+```console
+uv run --frozen python tasks.py ui
+```
+
+Open the printed loopback URL. The UI has no telemetry or browser persistence;
+it is a research interface, not usability or production-security evidence.
 
 The project uses generated credentials, temporary databases, synthetic cue
 records, and disposable same-host containers. Do not supply real private keys,

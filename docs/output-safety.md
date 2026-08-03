@@ -67,6 +67,23 @@ A single environment variable, a generic debug flag, or operator diagnostics
 must never activate this mode. Until its isolation tests exist, the safest
 implementation is its current absence.
 
+## P7 local research UI
+
+The D022 loopback UI has no unsafe inspection mode. Normal API results pass the
+recursive public-output validator, while the transient CuePolicy preview is
+marked as active-client-only and returned under no-store headers. The browser
+source uses no remote URL, telemetry, cookie, service worker, local/session
+storage, IndexedDB, clipboard API, console output, HTML injection helper, or
+dynamic code evaluation. The Python HTTP adapter suppresses request logging
+and exception text.
+
+The researcher inspector is safe aggregation, not secret-state debugging. It
+shows only role placement, versions/public identifiers, safe digests, message
+categories, and byte/item counts already permitted by the client API. Copy/cut
+and printing are disabled, but the application cannot prevent browser/OS
+screenshots, accessibility or extension access, memory inspection, crash
+collection, or forensic recovery. No UI output is retained as P8/P9 evidence.
+
 ## Evidence and remaining limits
 
 Focused tests cover safe metrics/status values, every prohibited category named

@@ -265,6 +265,21 @@ gateway backend. Local fake-S3 conformance is the reproducible result. The
 read-only AWS connectivity test remains separately execution-gated, so this is
 not yet a real-provider result.
 
+### Local research interface
+
+P7 implements `LOCUS-local-research-ui-v1` after freezing the client API. The
+semantic HTML/CSS/JavaScript layer delegates every policy, suite, descriptor,
+admission, storage, recovery, successor, and inspection operation to
+`LOCUS-client-api-v1`. It is served only on loopback by the pinned Python
+runtime, uses no remote assets or browser persistence, and has no recovery
+suite selector after bootstrap. The research inspector renders only the API's
+safe public identifiers, digests, categories, placement, and aggregate counts.
+See `RESEARCH-UI.md`.
+
+This realizes the P7 component boundary only. Browser/OS capture and process
+memory remain outside the UI's control, and no usability, external-service,
+retained-evidence, or manuscript claim follows from it.
+
 ## Architecture boundaries
 
 - Provider choice must not change CuePolicy or recovery-suite semantics.

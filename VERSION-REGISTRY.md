@@ -182,6 +182,16 @@ admission, or lifecycle semantics. Recovery accepts no suite override. Changed
 operation names, request fields, or public result semantics require a new API
 identifier; implementation-only fixes behind the same exact contract do not.
 
+### P7.2 assigned local research UI
+
+`LOCUS-local-research-ui-v1` identifies the D022 semantic HTML/CSS/JavaScript
+document and strict Python loopback server over `LOCUS-client-api-v1`. It uses
+same-origin local assets, no browser persistence, no telemetry, no request
+logging, no third-party runtime, and no protocol or canonicalization logic.
+Only the public receipt has an explicit download path. A hosted origin,
+third-party framework, changed route/request semantics, persistence mechanism,
+or recovered-secret export requires a new profile and privacy review.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

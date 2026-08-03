@@ -80,14 +80,18 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A, P6.1--P6.3, and P7.1 are complete for implementation chronology. D020's internal
+P1--P5A, P6.1--P6.3, and P7 are complete for implementation chronology. D020's internal
 recovery-suite mapping assessment is provisional; independent human validation
 remains mandatory before manuscript reliance or final reviewed release. The
-next actionable task is P7.2 enrollment UI over the now-frozen client API.
+next actionable task is P8.1 decoder and state-machine assurance.
 P6.4 remains open at its infrastructure gate: the strict endpoint file and
 additive Compose overlay run all five parties locally, but actual VMs or hosts
 remain necessary for a higher tier. Live AWS validation remains a separately
 authorized optional gate.
+
+Run the completed synthetic-only local research interface with
+`uv run --frozen python tasks.py ui`. P7 adds no retained evidence, usability
+claim, real-provider result, or manuscript change.
 
 ## Foundation sequence
 

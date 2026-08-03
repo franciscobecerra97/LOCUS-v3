@@ -1936,7 +1936,7 @@ Completion record:
 
 ### P7.2 Implement enrollment UI
 
-Status: `Proposed`
+Status: `Completed 2026-08-03`
 
 Screens:
 
@@ -1957,9 +1957,26 @@ Acceptance:
 - No raw cue or secret reaches logs, browser persistence, analytics, telemetry,
   clipboard, crash output, or retained screenshot.
 
+Completion record:
+
+- D022 selects `LOCUS-local-research-ui-v1`: semantic HTML, local CSS and
+  JavaScript, and the pinned Python loopback server over the frozen client API.
+  There is no third-party runtime, remote asset, browser persistence,
+  telemetry, service worker, request logging, or UI-side canonicalizer.
+- Enrollment requires an explicit Yi/aPPSS suite, preconfigured 2-of-3 or
+  3-of-5 holder profile, and registered policy. It supports synthetic key
+  generation/import, transient API-produced normalized preview, public
+  fingerprint, public receipt export, redacted role placement, and input
+  clearing after success and page teardown.
+- Source guards and strict HTTP tests enforce the no-persistence/no-telemetry
+  boundary. Browser checks confirmed transient cue/key clearing and responsive
+  desktop/mobile presentation. The application produces no retained
+  screenshot; browser/OS capture remains outside its control and is documented
+  as a limitation.
+
 ### P7.3 Implement recovery UI
 
-Status: `Proposed`
+Status: `Completed 2026-08-03`
 
 Screens:
 
@@ -1981,9 +1998,26 @@ Acceptance:
   another suite as a retry or fallback.
 - Errors match the approved information boundary.
 
+Completion record:
+
+- Recovery starts from the public receipt and calls authenticated bootstrap
+  before cue entry. The authenticated suite, policy, epoch, holder threshold,
+  and separate 4-of-5 authorization quorum are displayed; the recovery form
+  contains no suite, policy, membership, or endpoint override.
+- The client API performs local proof-key admission, descriptor/bundle/pointer
+  validation, exact suite dispatch, recovery, decryption, and public-key
+  identity verification. The UI displays generic busy/rejection status and
+  only the verified public fingerprint on success.
+- Successor preparation appears only after recovery and requires an explicit
+  suite, 2-of-3/3-of-5 profile, and independent protected-key rotation choice.
+  It uses the existing lifecycle path and exports a new public receipt.
+- Application and browser checks covered clean bootstrap/recovery and a
+  Yi-to-aPPSS successor. This is local component conformance, not public
+  admission, external provider behavior, retained evidence, or usability.
+
 ### P7.4 Implement researcher state inspector
 
-Status: `Proposed`
+Status: `Completed 2026-08-03`
 
 May display:
 
@@ -2006,6 +2040,21 @@ Must not display:
 Acceptance:
 
 - Displayed state matches recursive persisted-state audits.
+
+Completion record:
+
+- The inspector accepts only a public receipt and calls the frozen client API's
+  recursive safe inspection. It renders role placement, public identifiers,
+  safe digests, fixed message categories, and aggregate byte/item counts.
+- The result omits raw/canonical cues, password input, suite-private state,
+  recovery/wrapping/protected-key bytes, and credentials. Normal results pass
+  the existing recursive public-output validator.
+- Full application tests cross-check the inspector against an enrolled record
+  and scan its JSON for synthetic cue and key markers. Live browser inspection
+  displayed the same safe categories with no warning/error output.
+- P7 changes active implementation documentation and component-conformance
+  records only. It creates no P8/P9 retained corpus and makes no manuscript
+  change.
 
 ---
 

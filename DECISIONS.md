@@ -27,6 +27,7 @@ gates before their affected implementation work.
 | D019 | Recovery-suite review scope | Independent claim-focused mapping review of both Yi TPASS and aPPSS, including their LOCUS composition and documented deviations; not a full production cryptographic audit | Approved |
 | D020 | Provisional internal review and deferred human validation | Permit an explicitly non-independent internal mapping assessment to close P5A implementation chronology and allow P6 work, while retaining human cryptographic validation as a mandatory pre-manuscript/pre-release gate | Approved |
 | D021 | P6 paired topology and honest deployment tier | Use matched Yi/aPPSS 2-of-3 and 3-of-5 recovery profiles with a separately typed 4-of-5 authorization quorum; target local-VM host separation without claiming independent administration | Approved |
+| D022 | P7 local research UI runtime | Standards-based HTML/CSS/JavaScript served only on loopback by the pinned Python runtime over `LOCUS-client-api-v1`; no third-party web framework, telemetry, or browser storage | Approved |
 
 ## Approved architecture records
 
@@ -763,6 +764,61 @@ Manuscript implication: None authorized. Any paired-suite, provider, or host-
 separation wording still requires its exact later evidence and a separate
 owner-approved manuscript delta.
 
+### D022 — P7 local research UI runtime
+
+Decision ID: D022
+
+Date: 2026-08-03
+
+Status: Approved
+
+Chosen option: After the P7.1 API freeze, implement the cross-platform research
+UI as standards-based semantic HTML, CSS, and JavaScript served on loopback by
+Python's pinned standard-library HTTP runtime. The UI calls only
+`LOCUS-client-api-v1`; it contains no CuePolicy canonicalizer, suite adapter,
+descriptor validator, admission implementation, or lifecycle mechanism. No
+third-party web package, remote asset, analytics service, or automatic update
+channel is added.
+
+Alternatives considered: Electron or another bundled browser runtime; a native
+desktop toolkit; a third-party Python or JavaScript web framework; a hosted
+site; or delaying all interface testing until multi-host infrastructure exists.
+
+New trust assumptions: The local browser document and loopback UI server are
+inside the active-client boundary. The operating system, browser process,
+extensions, download manager, screenshot tooling, crash collector, and host
+administrator remain trusted and outside the bounded UI controls.
+
+Privacy implications: Every response is no-store and same-origin; the UI uses
+no cookies, browser storage, telemetry, remote fonts/assets, or console
+logging. Request logging is disabled. Copy/cut and printing are disabled as
+best-effort accidental-disclosure controls, not secure-erasure or screenshot
+prevention. Structured-input preview is transient active-client data and is
+cleared after use. Only the explicitly exported public recovery receipt is
+downloaded.
+
+Compatibility/version impact: `LOCUS-local-research-ui-v1` binds the exact
+route, asset, persistence, and presentation boundary to `LOCUS-client-api-v1`.
+It cannot alter protocol bytes. A hosted origin, third-party runtime, browser
+persistence, changed API contract, or secret-export behavior requires a new UI
+profile and review.
+
+Required evidence: Strict route/body/content-type tests; security-header and
+loopback-only tests; source scans for persistence, telemetry, dynamic HTML,
+remote assets, and console output; exact synthetic enrollment/recovery/
+successor/inspection tests; public-output scans; and browser interaction plus
+desktop/mobile visual inspection. These checks are implementation evidence,
+not human usability evidence.
+
+Files or components authorized: Local UI server, static assets, tests, task
+runner entry point, public UI/API documentation, and version-registry entries.
+No external service, real account, production key, retained P9 result, hosted
+deployment, or manuscript edit is authorized.
+
+Manuscript implication: None authorized. A working UI does not establish
+usability, memorability, accessibility conformance, production security, or
+paper-facing evidence.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -783,7 +839,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D021 authorizes only the recorded architecture or
+Approval of D001--D022 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:

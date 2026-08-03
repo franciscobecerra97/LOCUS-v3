@@ -381,6 +381,23 @@ def walkthrough() -> None:
     run([PYTHON, "-B", "prototype/scripts/run_walkthrough.py"])
 
 
+def research_ui(args: argparse.Namespace) -> None:
+    """Run the no-persistence P7 research UI on an exact loopback endpoint."""
+
+    run(
+        [
+            PYTHON,
+            "-B",
+            "-m",
+            "locus.research_ui",
+            "--host",
+            args.host,
+            "--port",
+            str(args.port),
+        ]
+    )
+
+
 def benchmark(extra: Sequence[str]) -> None:
     run([PYTHON, "-B", "prototype/scripts/run_benchmarks.py", *extra])
 
@@ -2422,6 +2439,16 @@ def _profile_runs(value: str) -> int:
     return runs
 
 
+def _ui_port(value: str) -> int:
+    try:
+        port = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("UI port must be an integer") from exc
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError("UI port must be between 1 and 65535")
+    return port
+
+
 def _performance_block(value: str) -> int:
     try:
         block = int(value)
@@ -2615,6 +2642,14 @@ def build_parser() -> argparse.ArgumentParser:
         "walkthrough",
         help="run the synthetic-only in-process educational walkthrough",
     )
+    ui_parser = subparsers.add_parser(
+        "ui",
+        help="run the local no-persistence research UI",
+    )
+    ui_parser.add_argument(
+        "--host", choices=("127.0.0.1", "::1", "localhost"), default="127.0.0.1"
+    )
+    ui_parser.add_argument("--port", type=_ui_port, default=8765)
 
     demo_parser = subparsers.add_parser("demo", help="run the local Python demo")
     demo_parser.add_argument(
@@ -2692,6 +2727,8 @@ def main() -> int:
             attempt_model()
         elif args.command == "walkthrough":
             walkthrough()
+        elif args.command == "ui":
+            research_ui(args)
         elif args.command in {"demo", "benchmark"}:
             raise AssertionError("forwarded command was not dispatched early")
         else:  # pragma: no cover - argparse enforces the command choices.
