@@ -120,6 +120,10 @@ plaintext protected key. Remote roles receive only their exact admitted and
 suite-bound request. Final AEAD/cue success is not disclosed to the issuer,
 gateway, resolver, cloud, or parties. Coalition views are read-only,
 networkless, synthetic-state experiments; they are not online guessing tools.
+For new enrollment or successor creation, the client may explicitly select an
+approved Yi or aPPSS profile before suite setup. Recovery instead uses only the
+suite authenticated in the descriptor; suite choice is public metadata and is
+never derived from cues or used as a fallback.
 
 ### Successor publication phase contract
 
@@ -134,11 +138,11 @@ share conversion, general replacement, or global rollback-resistance claims.
 
 ### Party replacement phase contract
 
-Party replacement is entirely gated by pending D011 and the P4 predecessor
-gate. A future profile must distinguish old/new authorizers, suite holders,
-threshold, quorum, endpoint identities, recipients, readiness, activation, and
-retirement. Until then, every party-replacement cell is a design/evidence
-requirement rather than implemented behavior.
+D011 defers party replacement until after the selectable-suite and paired-profile
+work. A later owner-approved profile must distinguish old/new authorizers, suite
+holders, threshold, quorum, endpoint identities, recipients, readiness,
+activation, and retirement. Until then, every party-replacement cell is a
+design/evidence requirement rather than implemented behavior.
 
 ## Coalition and combined-view matrix
 
@@ -150,9 +154,11 @@ requirement rather than implemented behavior.
 | First aPPSS above threshold control | `{P1,P2,P3}` | All server states and the same public/matching state | Confirms the at-or-above-threshold behavior only; results remain separate from exact-threshold rows |
 | Matching combined state | One exact cloud/descriptor/gateway snapshot plus one below-threshold coalition from the same suite, backup, epoch, policy, membership, and configuration | Complete union of the declared persistent views, with no client secrets or online honest-server access | C05/C24 only for the exact matching profile; mismatched snapshots are rejection tests, not evidence for the positive claim |
 
-The later aPPSS 3-of-5 profile has no coalition matrix until P6.3 assigns its
-exact configuration and evidence profile. Authorization quorum coalitions are
-not recovery-suite coalitions and must be reported separately.
+The paired Yi/aPPSS 3-of-5 profiles have no coalition matrices until P6.3
+assigns their exact configurations and evidence profiles. Each comparison pair
+binds matching outer conditions, but suite-specific states and results remain
+separate. Authorization quorum coalitions are not recovery-suite coalitions and
+must be reported separately.
 
 ## Claim security-contract matrix
 

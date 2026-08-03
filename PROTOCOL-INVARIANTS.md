@@ -18,11 +18,12 @@ wrapping key, and authenticates/decrypts the exact backup object.
 
 There is no independent symmetric recovery key between TPASS and `K_wrap`.
 
-### Approved aPPSS successor path
+### Approved selectable recovery-suite path
 
-The TPASS path above remains the active implemented invariant until P5A's
-cutover gate passes. D016 authorizes the following separately versioned path
-for new successor epochs:
+The TPASS path above remains the only implemented invariant until P5A's
+selectable-suite release gate passes. D017 authorizes the following separately
+versioned aPPSS path, while D018 keeps both Yi and aPPSS selectable for new
+enrollments and successor epochs:
 
 ```text
 CuePolicy_vM(M) -> Z_M or failure
@@ -37,8 +38,10 @@ The aPPSS output is the recovery secret; there is no additional independently
 sampled or threshold-shared unmasked `S_R` between aPPSS and `K_wrap`. Every
 epoch binds exactly one recovery suite. Existing Yi epochs use only the frozen
 Yi path, and an aPPSS epoch never falls back to or combines shares/messages with
-Yi. Migration is client-side recovery followed by fresh successor enrollment,
-not state conversion.
+Yi. Suite switching is client-side predecessor recovery followed by fresh
+successor enrollment under the selected suite, never state conversion.
+Protected-key generation/import, key identity, HKDF-SHA-256, and AES-256-GCM
+retain the same suite-neutral meaning in both paths.
 
 D017 freezes the exact recovery contract in `docs/APPSS-PROFILE.md`:
 `lambda=128`, first profile `k=2,n=3`, RFC 9497 OPRF-mode
@@ -46,8 +49,10 @@ ristretto255/SHA-512 as the paper's 2HashDH realization, canonical
 polynomial-basis `GF(2^128)` sharing, and domain-separated SHA-256 split into a
 16-byte commitment `C` and 16-byte `S_R`. The public `omega=(e,C)` is
 suite/epoch/configuration bound. The first profile is abort-only and has no
-VOPRF robustness extension. Final wire identifiers and schemas remain a P5A.1
-gate; none may reuse a Yi identifier or domain.
+VOPRF robustness extension. D018 pairs Yi and aPPSS at `k=2,n=3` first and
+`k=3,n=5` after configuration generalization, using the same outer system
+conditions within each comparison. Final wire identifiers and schemas remain a
+P5A.1 gate; none may reuse a Yi identifier or domain.
 
 ## Role-state invariants
 
@@ -58,8 +63,8 @@ May transiently hold:
 - raw structured input;
 - resolver queries and selected records;
 - canonical policy output;
-- TPASS password input;
-- complete TPASS setup output;
+- the selected suite's password input;
+- complete selected-suite setup/initialization output;
 - wrapping key;
 - plaintext protected private key.
 
@@ -71,7 +76,7 @@ and best-effort memory disposal unless stronger evidence exists.
 May hold:
 
 - encrypted private-key backup;
-- public TPASS parameters;
+- public selected-suite parameters/state (`TPASS` parameters or aPPSS `omega`);
 - recovery nonce and AEAD metadata;
 - public policy and security-policy versions;
 - immutable identifier, epoch, and digest.
@@ -80,8 +85,8 @@ Must not hold:
 
 - raw cues or selected resolver identifiers;
 - canonical cue output or candidate hints;
-- TPASS password input or verifier;
-- TPASS party secret state;
+- recovery-suite password input or verifier;
+- recovery-suite party secret state;
 - recovered group secret or wrapping key;
 - plaintext protected private key.
 
@@ -110,8 +115,9 @@ May transiently handle:
 
 May hold only the narrow server-side provider authority required for the
 application-operated namespace. It exposes no bucket listing to the client and
-must not receive or persist raw cues, canonical cue output, TPASS password,
-party state, recovered group secret, wrapping key, or plaintext private key.
+must not receive or persist raw cues, canonical cue output, recovery-suite
+password input, party state, recovered group secret, wrapping key, or plaintext
+private key.
 Gateway or provider compromise is included in the declared cloud-side view and
 does not authenticate LOCUS contents.
 
@@ -134,7 +140,7 @@ Must not hold:
 
 ### Planned aPPSS holder
 
-After P5A cutover, an aPPSS holder may keep only its own independent OPRF secret
+After P5A release, an aPPSS holder may keep only its own independent OPRF secret
 state, its party/index binding, the common public `omega=(e,C)`, and the same
 bounded public identity, epoch, policy, configuration, lifecycle, and audit
 metadata permitted for a recovery party. It must not hold another server's OPRF
@@ -146,7 +152,7 @@ states are explicitly modeled as enabling offline dictionary tests.
 ### Authorizer-only service
 
 May hold identity, configuration, phase, admission, idempotency, and local audit
-state. It holds no TPASS secret state.
+state. It holds no TPASS or aPPSS secret state.
 
 ### Admission issuer and verifier
 
@@ -166,8 +172,8 @@ required by the reference profile.
 ### Resolver
 
 May observe queries and selected candidates when a policy requires resolution.
-It must not receive TPASS state, cloud ciphertext, recovered secrets, or private
-key material.
+It must not receive recovery-suite state, cloud ciphertext, recovered secrets,
+or private-key material.
 
 ### Recovery client
 
@@ -214,8 +220,8 @@ implemented behavior.
 - Descriptor, backup, party membership, policy, recovery identity, and epoch
   must bind to one enrollment.
 - Unsupported versions and cross-policy or cross-epoch mixing fail closed.
-- Error responses do not reveal the client's final TPASS or AEAD outcome to
-  parties.
+- Error responses do not reveal the client's final recovery-suite or AEAD
+  outcome to parties.
 - A predecessor is not retired before the successor is durably recoverable.
 - P4.3 enforces that client-side ordering by verifying the prepared successor
   against the original recovered-key identity before invoking the frozen

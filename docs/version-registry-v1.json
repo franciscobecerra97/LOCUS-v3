@@ -117,7 +117,7 @@
       "family": "artifact",
       "allocation_phase": "P10.3",
       "decisions": [
-        "D016"
+        "D018"
       ],
       "required_gate": "Approve the revised portable-artifact manifest, allowlist, provenance rules, and deterministic package tests.",
       "compatibility_rule": "Frozen anonymous-artifact v1 and v2 packages remain immutable; later evidence is packaged under a new artifact identifier."
@@ -137,10 +137,10 @@
       "family": "deployment",
       "allocation_phase": "P6.3",
       "decisions": [
-        "D007",
         "D008",
         "D015",
-        "D016"
+        "D017",
+        "D018"
       ],
       "required_gate": "Freeze exact suite, topology, authorization quorum, host scope, provider, runtime package, and test matrix.",
       "compatibility_rule": "Same-host, host-separated, independently administered, provider, suite, and threshold profiles are never pooled or relabeled."
@@ -169,9 +169,8 @@
       "family": "recovery-suite",
       "allocation_phase": "P5A.1",
       "decisions": [
-        "D007",
-        "D016",
-        "D017"
+        "D017",
+        "D018"
       ],
       "required_gate": "Approve the complete aPPSS suite, password domain, OPRF, field, state, message, wire, error, and fixed-vector schemas.",
       "compatibility_rule": "A suite is immutable and bound one-to-one with an epoch; Yi and aPPSS state cannot mix, convert in place, or downgrade automatically."
@@ -180,10 +179,9 @@
       "family": "result",
       "allocation_phase": "P9.2",
       "decisions": [
-        "D007",
         "D008",
-        "D016",
-        "D017"
+        "D017",
+        "D018"
       ],
       "required_gate": "Approve exact evidence scenarios, aggregate fields, provenance, metric definitions, positive controls, and result schemas before collection.",
       "compatibility_rule": "New suite and deployment results use separate families; retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."

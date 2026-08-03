@@ -39,20 +39,24 @@ The intended security boundary is that the cloud, fewer than the TPASS
 threshold, or their matching persistent snapshots do not gain an offline test
 for candidate cues.
 
-D016 approves a versioned successor direction without changing that
-below-threshold system thesis. After P5A cutover, aPPSS becomes the active suite
-for new enrollments, its high-entropy output becomes `S_R`, and frozen Yi TPASS
-remains a legacy recovery profile. The augmented result adds a distinct
-threshold-compromise boundary: enough aPPSS server state enables offline
-guessing but does not directly reveal `S_R` before a correct password guess.
-It does not claim that low-entropy cues remain safe, rate-limited, or
-unrecoverable after threshold compromise.
+D018 supersedes D016's sole-aPPSS cutover without changing that below-threshold
+system thesis. After P5A's release gate, frozen Yi TPASS and D017 aPPSS are
+independent first-class suites selected explicitly for each enrollment or fresh
+successor epoch. Both solve the same password-protected recovery-secret problem
+and feed the same HKDF/AES protected-key path, but retain distinct state,
+messages, assumptions, and threshold-compromise behavior. Enough aPPSS server
+state enables offline guessing but does not directly reveal `S_R` before a
+correct password guess; matching Yi threshold state directly exposes its
+high-entropy recovery secret. No low-entropy-cue, rate-limit, or continued
+threshold-security claim follows.
 
 D017 and `docs/APPSS-PROFILE.md` freeze the initial successor recovery contract:
 Figure 4 aPPSS with a concrete ristretto255/SHA-512 2HashDH OPRF,
 `GF(2^128)`, a SHA-256-derived 16-byte commitment and 16-byte `S_R`, first
-2-of-3 evaluation, and abort-only robustness. This is an approved design input
-to later P5A work, not implemented behavior, evidence, or manuscript wording.
+2-of-3 evaluation, and abort-only robustness. D018 additionally requires paired
+Yi/aPPSS 2-of-3 and later 3-of-5 profiles under matching system conditions.
+These are approved design inputs to later P5A/P6 work, not implemented aPPSS
+behavior, evidence, or manuscript wording.
 
 ## What is inherited
 

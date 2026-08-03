@@ -171,7 +171,7 @@ party replacement, or establish rollback-resistant publication.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite and wire identifiers | P5A.1 assigns aPPSS suite/domain/state/message/wire identifiers only with D017 schemas and fixed vectors |
+| Recovery suite | Frozen Yi suite/wire identifiers and D018 one-suite-per-epoch selection rule | P5A.1 assigns aPPSS suite/domain/state/message/wire and selector/profile identifiers only with D017/D018 schemas and fixed vectors |
 | CuePolicy/resolver | Frozen composite, atom, and deterministic-resolver identifiers | P5.2 assigns each atomic policy and `NoResolver` only after its grammar, domain, and vectors are approved |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
@@ -233,17 +233,18 @@ remain unchanged.
 
 ## Approved family gates
 
-D001, D003--D005, D007--D010, and D014--D017 approve the architecture direction
+D001, D003--D005, D008--D010, and D014--D018 approve the architecture direction
 for the following families. P2.1 assignments are listed above; remaining exact
 identifiers stay unassigned until their recorded gate passes. D015 supersedes
-the unassigned personal-cloud-account and Google Drive families from D002/D006:
+the unassigned personal-cloud-account and Google Drive families from D002/D006;
+D018 supersedes D007's asymmetric topology order and D016's sole-aPPSS cutover:
 
 | Family | Approved semantic boundary | Compatibility rule |
 | --- | --- | --- |
-| aPPSS recovery-suite successor | D017 freezes Figure 4 aPPSS with RFC 9497 OPRF-mode ristretto255/SHA-512 as the concrete 2HashDH realization, `lambda=128`, canonical polynomial-basis GF(2^128), SHA-256-derived 16-byte `C` and 16-byte `S_R`, abort-only robustness, and first `k=2,n=3` evaluation | Final identifiers are assigned with schemas/vectors at P5A.1; new epoch only; frozen Yi TPASS remains legacy-recovery compatible and is never reinterpreted |
+| aPPSS recovery suite | D017 freezes Figure 4 aPPSS with RFC 9497 OPRF-mode ristretto255/SHA-512 as the concrete 2HashDH realization, `lambda=128`, canonical polynomial-basis GF(2^128), SHA-256-derived 16-byte `C` and 16-byte `S_R`, abort-only robustness, and first `k=2,n=3` evaluation | Final identifiers are assigned with schemas/vectors at P5A.1; frozen Yi TPASS remains independently selectable and is never reinterpreted |
 | Recovery-suite password derivation | CuePolicy output enters an immutable suite-specific password-input domain | New domain per suite; identical CuePolicy bytes do not authorize cross-suite message or state reuse |
-| Yi-to-aPPSS migration | Recover the old epoch client-side, create and verify a fresh aPPSS successor, activate it, then retire the predecessor | No share conversion, mixed-suite threshold, dual-state fallback, automatic downgrade, or in-place backup migration |
-| aPPSS evidence | Correctness, below-threshold, matching combined, exact-threshold offline-dictionary, migration, and performance results for one exact profile | New schemas and paths; retained v2 Yi evidence remains frozen and cannot be pooled or relabeled |
+| Recovery-suite selection and switching | Select Yi or aPPSS for new enrollment; recover an existing epoch only with its authenticated suite; retain or explicitly switch suites through fresh successor setup | No state conversion, mixed-suite threshold, dual-state fallback, recovery-time suite override, automatic downgrade, or in-place backup migration |
+| Paired Yi/aPPSS evidence | Correctness, below-threshold, matching combined, exact-threshold compromise, switching, and performance results under matched 2-of-3 and later 3-of-5 conditions | New schemas and suite/topology-specific paths; retained v2 Yi evidence remains frozen and cannot be pooled or relabeled; paired processors require exact common-condition manifests |
 | RecoveryDescriptor | Signed public recovery configuration authenticated from an app-pinned root and checked against party current state | New strict format; no change to frozen backup or TPASS formats |
 | Descriptor current pointer | Authenticated mutable binding to one active bundle, descriptor, backup identifier, epoch, and configuration | New strict format with compare-and-swap semantics |
 | Recovery bundle | Immutable bounded ZIP containing exactly canonical backup, signed descriptor, and manifest members | New container profile; descriptor binds the backup member and the external pointer binds the exact bundle |
@@ -255,7 +256,7 @@ the unassigned personal-cloud-account and Google Drive families from D002/D006:
 | Storage capability | Short-lived subject/backup/prefix/operation/client-key/nonce/expiry-bound authority validated by the application storage gateway | New admission/storage profile; no client provider credential or direct pre-signed bearer URL |
 | Local synthetic admission issuer | Project-controlled issuer supplies the D004 pseudonymous, proof-key-bound capability for the default prototype and reviewer path | New provider-neutral capability/local-issuer profiles; no external identity provider, recovery-factor, or CuePolicy semantics |
 | Optional OIDC admission adapter | A later Authorization Code with PKCE/DPoP adapter may produce evidence for the same D004 admission contract | Separate adapter/profile/evidence only; never required by the default artifact and cannot change the core request binding |
-| Evaluated recovery-suite topology | Frozen Yi 2-of-3 baseline; aPPSS 2-of-3 first; aPPSS 3-of-5 only after configuration generalization | Each topology receives distinct deployment/evidence identity; authorization quorum remains a separate typed field |
+| Evaluated recovery-suite topology | Frozen Yi 2-of-3 baseline; paired selectable Yi/aPPSS 2-of-3 first; paired Yi/aPPSS 3-of-5 after configuration generalization | Each suite/topology receives distinct deployment/evidence identity; paired rows bind the same outer conditions and authorization quorum remains a separate typed field |
 | Host/administration scope | Same-host process separation, later host separation, and actual independent administration are distinct meanings | A changed topology or administrative principal set requires a new deployment/evidence profile |
 | Local attempt audit | Signed local records are diagnostic evidence without a global rollback-resistant bound | Existing frozen attempt formats are not reinterpreted; any monotonic authority is a separate D012 profile |
 | Thin cross-platform UI | UI calls stable client APIs and contains no protocol/canonicalization logic | Framework/profile assigned only after API freeze; no change to protocol bytes or usability claim |

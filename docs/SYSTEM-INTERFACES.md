@@ -2,8 +2,8 @@
 
 Status: P1.3 typed interface layer implemented and tested on 2026-08-01. This
 document freezes interface responsibilities, not external wire schemas or
-identifiers. The frozen Yi implementation remains the active recovery path;
-aPPSS is not implemented or activated.
+identifiers. The frozen Yi implementation remains the only implemented recovery
+path; aPPSS and the D018 selector are not implemented or released.
 
 ## Purpose
 
@@ -40,6 +40,15 @@ It returns `RecoverySuiteEnrollment`, containing:
 Recovery consumes the same public context, password input, public state, and
 an explicit holder subset. It returns only the recovered high-entropy secret or
 fails.
+
+D018 requires a registry of independent Yi and aPPSS adapters. Enrollment and
+successor creation take one explicit approved suite/profile selection before
+suite setup. Recovery does not take a free suite choice: it dispatches only to
+the suite authenticated in `RecoveryContext` and the descriptor. Both adapters
+return opaque `S_R` bytes to the unchanged HKDF/AES caller; they do not share
+native state, messages, password domains, or compromise semantics. The common
+conformance harness runs both adapters first at 2-of-3 and later at 3-of-5
+under matched outer conditions.
 
 `RecoveryRequest`, `RecoveryResponse`, and `RecoveryClientSession` are distinct
 opaque typed boundaries for P3/P4 transport integration. Their payloads are

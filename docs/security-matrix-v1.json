@@ -161,11 +161,11 @@
       "views": ["descriptor-store", "below-threshold-party-coalition", "network-role-metadata"],
       "asset": "Membership, suite-state, endpoint, configuration, and lifecycle integrity during an evaluated party-set change.",
       "adversary": "Old/new party mixing, wrong-recipient provisioning, premature activation/retirement, crash, retry, or stale membership substitution.",
-      "assumptions": "D011 is approved and same-membership successor publication is already integrated and crash-safe.",
+      "assumptions": "A later decision supersedes D011's deferral and same-membership successor publication remains integrated and crash-safe.",
       "boundary": "One explicitly versioned replacement topology with exact old/new descriptors, state recipients, readiness, activation, retirement, and crash matrix.",
       "positive_control": "The approved old-to-new transition succeeds; every mixed, missing, stale, or wrong-recipient set fails.",
       "expected_observation": "Only the complete new membership becomes current and the predecessor remains until successor recovery is verified.",
-      "interpretation_limit": "C12 is unsupported until D011 and its implementation/evidence gate pass; one tested transition does not establish general reconfiguration safety."
+      "interpretation_limit": "C12 is unsupported while D011 defers implementation and until a later implementation/evidence gate passes; one tested transition does not establish general reconfiguration safety."
     },
     {
       "claim_id": "C13",
@@ -294,7 +294,7 @@
       "asset": "Exact 16-byte aPPSS-derived high-entropy recovery secret and the protected private key it wraps.",
       "adversary": "Malformed, wrong-password, wrong-subset, cross-suite, cross-epoch, cross-policy, or mixed-state protocol inputs.",
       "assumptions": "D017's Figure 4, RFC 9497 OPRF-mode, GF(2^128), SHA-256 split, threshold mapping, and authenticated initialization are faithfully implemented.",
-      "boundary": "P5A canonical state/message formats, every valid 2-of-3 subset, distributed initialization, suite registry, HKDF/AES integration, and exact-key equality.",
+      "boundary": "P5A canonical state/message formats, every valid paired 2-of-3 subset and later 3-of-5 subset, distributed initialization, explicit suite registry, common HKDF/AES integration, and exact-key equality.",
       "positive_control": "Every valid enrolled subset and password recovers the exact secret/key; each wrong or malformed binding fails with the approved normalized outcome.",
       "expected_observation": "Only the enrolled suite/password and valid reconstruction subset yield the exact 16-byte S_R and original protected key.",
       "interpretation_limit": "Correctness tests do not prove Theorem 2, robustness beyond abort-only behavior, side-channel security, production readiness, or human cue quality."
@@ -306,7 +306,7 @@
       "asset": "Cue-derived password and aPPSS high-entropy recovery secret below reconstruction threshold.",
       "adversary": "A static networkless holder of each evaluated below-k aPPSS server coalition plus matching public cloud, descriptor, omega, and audit state.",
       "assumptions": "Theorem 2 applies to the reviewed exact D017 realization; OPRF keys are independent and no implementation leakage or online honest-server interaction is available.",
-      "boundary": "Every below-k static coalition for the 2-of-3 profile, matching public state, fixed bounded candidate test, state/output scan, and theorem/profile review.",
+      "boundary": "Every below-k static coalition for the paired 2-of-3 and later paired 3-of-5 profiles, matching public state, fixed bounded candidate test, state/output scan, common-condition manifest, and theorem/profile review.",
       "positive_control": "A deliberately verifier-bearing fixture and the separately modeled exact-threshold capability must distinguish the fixed correct candidate.",
       "expected_observation": "No ordinary below-k persistent-state view exposes a local cue-correctness predicate.",
       "interpretation_limit": "This is conditional on the inherited theorem and exact assumptions; experiments do not prove adaptive, proactive, side-channel, malicious-initialization, or online-interaction security."
@@ -318,7 +318,7 @@
       "asset": "Conditional confidentiality of S_R before a correct cue-derived password guess under exact-threshold aPPSS compromise.",
       "adversary": "A static networkless holder of k or more aPPSS server states performing unrate-limited offline dictionary tests.",
       "assumptions": "The D017 profile and k=t_paper+1 mapping are correct and S_R retains high conditional entropy independent of cue guesses.",
-      "boundary": "Fixed aggregate-only exact-threshold and all-server aPPSS scenarios plus a separately labeled frozen-Yi threshold-compromise comparator.",
+      "boundary": "Fixed aggregate-only exact-threshold and all-server aPPSS scenarios plus separately labeled matched Yi threshold-compromise comparators for paired 2-of-3 and later 3-of-5 profiles.",
       "positive_control": "Fixed correct and wrong synthetic candidates distinguish only through the aPPSS password test; the Yi comparator directly reconstructs its shared scalar and secret.",
       "expected_observation": "aPPSS threshold state enables offline candidate testing and yields S_R only on the correct candidate, whereas Yi threshold state directly releases its protected values.",
       "interpretation_limit": "Security degrades to unrate-limited offline guessing; weak cue distributions can still make recovery practical, no candidate data may be retained, and the comparison is not LOCUS cryptographic novelty."
@@ -327,13 +327,13 @@
       "claim_id": "C26",
       "phases": ["recovery", "successor-publication"],
       "views": ["clean-client-after-cue-entry", "descriptor-store", "below-threshold-party-coalition", "network-role-metadata"],
-      "asset": "Suite/epoch integrity, legacy Yi recoverability, aPPSS successor readiness, and absence of downgrade or mixed-suite state.",
-      "adversary": "Crash, retry, stale profile selection, mixed Yi/aPPSS messages or holders, automatic fallback, in-place conversion, or premature predecessor retirement.",
-      "assumptions": "P4 successor publication is crash-safe and P5A schemas bind one suite to one epoch with explicit legacy-recovery policy.",
-      "boundary": "Client-side old-epoch recovery, fresh aPPSS enrollment, authenticated provisioning, backup/descriptor publication, readiness verification, activation, retirement, and recovery regression.",
-      "positive_control": "The approved Yi-to-fresh-aPPSS successor succeeds end to end; every downgrade, cross-suite, mixed-holder, converted-state, and unready-successor variant fails.",
-      "expected_observation": "New enrollments select only the accepted aPPSS profile after cutover, legacy Yi epochs remain explicitly recoverable, and each epoch uses one suite.",
-      "interpretation_limit": "No cutover is active until every P5A gate passes; migration does not convert shares, prove general replacement, or transfer frozen Yi evidence to aPPSS."
+      "asset": "Suite/epoch integrity, explicit Yi/aPPSS selection, successor readiness, protected-key continuity, and absence of fallback or mixed-suite state.",
+      "adversary": "Crash, retry, stale or unauthenticated profile selection, mixed Yi/aPPSS messages or holders, recovery-time suite override, automatic fallback, in-place conversion, or premature predecessor retirement.",
+      "assumptions": "P4 successor publication is crash-safe and P5A schemas bind one explicitly selected suite and topology to each epoch under the D018 common outer contract.",
+      "boundary": "New-enrollment selection, descriptor-bound recovery dispatch, same-suite or cross-suite fresh successor setup, authenticated provisioning, backup/descriptor publication, readiness verification, activation, retirement, and recovery regression.",
+      "positive_control": "New Yi and aPPSS enrollments plus Yi-to-Yi, aPPSS-to-aPPSS, Yi-to-aPPSS, and aPPSS-to-Yi successors preserve the protected-key identity; every fallback, suite override, cross-suite mix, converted-state, and unready-successor variant fails.",
+      "expected_observation": "Both accepted suites are independently selectable for new enrollment, recovery uses exactly the descriptor-bound suite, explicit successor switching creates fresh state, and each epoch uses one suite.",
+      "interpretation_limit": "No selectable-suite release is active until every P5A gate passes; paired conditions do not make suite security properties equivalent, prove general replacement, or transfer frozen Yi evidence to aPPSS."
     }
   ]
 }

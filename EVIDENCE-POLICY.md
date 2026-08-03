@@ -135,7 +135,7 @@ comparison.
 
 ## aPPSS comparative evidence
 
-Any evidence supporting the D016/M-APPPSS-001 comparison must keep three claims
+Any evidence supporting the D017/D018 Yi/aPPSS comparison must keep three claims
 separate:
 
 1. below reconstruction threshold `k`, no local persistent-state cue predicate
@@ -152,7 +152,16 @@ The underlying cryptographic statements come from the cited constructions and
 their reviewed LOCUS mappings; experiments show only the behavior of the exact
 implementation and persistent-state boundary.
 
-The first aPPSS evidence profile is `k=2,n=3` and is limited to static
+D018 requires paired profiles rather than a sole-suite cutover. The first pair
+is Yi/aPPSS `k=2,n=3`; the second pair is Yi/aPPSS `k=3,n=5` after P6.3. Within
+one pair, both suites must bind the same CuePolicy, synthetic protected key,
+holder count and reconstruction threshold, authorization topology/quorum,
+admission, storage, network/failure schedule, host class, and metric
+definitions. A common-condition manifest is required. Native state, messages,
+results, and evidence paths remain suite-specific, and a paired processor must
+reject rows whose common-condition bindings differ.
+
+The first paired evidence profile is `k=2,n=3` and is limited to static
 read-only persistent-state compromise. It must separately record conformance
 to the RFC 9497 OPRF-mode ristretto255/SHA-512 realization, canonical
 `GF(2^128)` operations, 16-byte mask/commitment/secret values, SHA-256 domain

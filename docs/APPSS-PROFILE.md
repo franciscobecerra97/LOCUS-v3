@@ -3,9 +3,9 @@
 Status: P1.2 recovery contract approved by D017 on 2026-08-01. This document
 freezes the cryptographic and security boundary for later implementation. It
 does not assign final protocol identifiers or wire schemas, provide an
-implementation, establish evidence, activate aPPSS, or authorize manuscript
-wording. P5A.1 assigns identifiers only together with reviewed schemas and
-canonical vectors.
+implementation, establish evidence, release the D018 suite selector, or
+authorize manuscript wording. P5A.1 assigns identifiers only together with
+reviewed schemas and canonical vectors.
 
 ## Scope and source mapping
 
@@ -27,6 +27,14 @@ The mapping is:
 The first evaluated profile has `k=2`, `n=3`, and therefore maps to the
 paper's `t=1`, `n=3`. The recovery threshold is independent of the current
 4-of-5 authorization quorum.
+
+D018 keeps Yi and aPPSS independently selectable and requires paired profiles.
+After the first `k=2,n=3` gate, the same aPPSS construction is also evaluated at
+`k=3,n=5` (`t_paper=2,n=5`) alongside Yi 3-of-5. The field, OPRF, hash,
+commitment, recovery-secret size, state split, and one-suite-per-epoch rules do
+not change. Each topology receives exact configuration, deployment, vector, and
+evidence bindings where required; all ten valid 3-of-5 reconstruction subsets
+must pass before that profile is claimed.
 
 ## Fixed primitives
 
@@ -292,11 +300,12 @@ together only after suite-neutral interfaces, descriptor/admission contracts,
 and CuePolicy generalization reach their chronological gates:
 
 - final suite, OPRF, password-domain, state, message, backup, descriptor,
-  deployment, and evidence identifiers;
+  selector/profile, deployment, and evidence identifiers;
 - strict public-parameter, party-state, initialization, request, response, and
   client-session schemas;
 - maximum encoded sizes and typed wire failure codes;
-- canonical vectors and one independent consumer; and
+- canonical vectors and one independent consumer;
+- paired 2-of-3 and 3-of-5 common-condition manifests and topology vectors; and
 - the exact native implementation/library selection.
 
 Those items may refine serialization containers and bounds but may not change

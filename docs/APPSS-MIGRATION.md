@@ -1,8 +1,9 @@
-# aPPSS Successor Analysis and Migration Contract
+# Yi/aPPSS Selection, Comparison, and Successor Contract
 
-Status: Owner-approved migration direction under D016 and exact P1.2 recovery
-contract under D017. No aPPSS implementation, evidence, active-profile cutover,
-or manuscript change is complete.
+Status: Exact P1.2 aPPSS recovery contract approved by D017 and independent
+selectable-suite direction approved by D018. D018 supersedes D016's sole-aPPSS
+cutover. No aPPSS implementation, selector release, paired evidence, or
+manuscript change is complete.
 
 ## Source and scope
 
@@ -85,8 +86,9 @@ The two projects use different meanings for `t`:
 | Party count | `n` | `n` |
 
 Therefore the planned LOCUS 2-of-3 aPPSS profile maps to the paper's
-`t=1,n=3`, not `t=2,n=3`. Specifications, schemas, UI, evidence, and manuscript
-text must use `k` for the LOCUS reconstruction threshold and state the mapping.
+`t=1,n=3`, not `t=2,n=3`; the paired 3-of-5 profile maps to `t=2,n=5`.
+Specifications, schemas, UI, evidence, and any later approved manuscript text
+must use `k` for the LOCUS reconstruction threshold and state the mapping.
 
 ## Security result and validated comparison
 
@@ -141,9 +143,10 @@ This statement requires all of the following qualifications:
   The paper sketches verifiable-OPRF/retry robustness but does not make that
   sketch part of the base aPPSS theorem.
 
-## LOCUS composition
+## Common LOCUS composition and independent suites
 
-The successor preserves the existing outer key-protection design:
+Both selectable suites preserve the existing outer key-protection design. The
+aPPSS branch is:
 
 ```text
 structured input M
@@ -156,15 +159,24 @@ structured input M
 ```
 
 There is no extra independently sampled or threshold-shared unmasked recovery
-secret between aPPSS and HKDF. Keeping the current Yi sharing of `S_R` alongside
-aPPSS would make `k` party states reveal `S_R` directly and would destroy the
-augmented failure mode.
+secret between aPPSS and HKDF. Embedding Yi-style sharing of `S_R` inside an
+aPPSS epoch would make `k` party states reveal `S_R` directly and would destroy
+the augmented failure mode; this does not prevent separate Yi epochs from
+remaining selectable.
+
+Yi remains an independent first-class branch using its frozen password domain,
+setup/recovery algebra, public parameters, party state, messages, and native
+`S_R` encoding. The two branches meet only at the suite-neutral `S_R -> HKDF ->
+AES` boundary. Protected-key generation/import, key-identity verification,
+HKDF-SHA-256, AES-256-GCM, storage, bootstrap, admission, lifecycle, and common
+client APIs keep the same meaning. No aPPSS object is represented as Yi state or
+vice versa.
 
 The aPPSS proof does not prove the entire LOCUS composition. LOCUS must review
 the suite-to-HKDF mapping, authenticated backup metadata, descriptor binding,
 role-state separation, error normalization, and lifecycle composition.
 
-## Compatibility and migration
+## Compatibility, selection, and successor switching
 
 - `LOCUS-TPASS-YI-ZK-RISTRETTO255-v1`, its wire objects, vector, backup-v4,
   Compose-v2, and retained v2 evidence remain immutable.
@@ -173,10 +185,15 @@ role-state separation, error normalization, and lifecycle composition.
   paths.
 - One epoch binds one recovery suite. Mixed Yi/aPPSS threshold sets and
   automatic downgrade are invalid.
-- Existing Yi epochs remain recoverable through the legacy adapter.
-- Migration means: recover through Yi, freshly enroll a new aPPSS epoch, make
-  every party/storage/descriptor binding durably ready, verify successor
-  recovery, activate it, and only then retire the Yi predecessor.
+- New enrollment explicitly selects either the frozen Yi adapter or the new
+  aPPSS adapter before suite setup. Recovery obtains the suite only from the
+  authenticated epoch descriptor and never tries another suite.
+- Successor switching means: recover through the exact predecessor suite,
+  explicitly retain it or choose the other suite, freshly enroll the selected
+  successor, make every party/storage/descriptor binding durably ready, verify
+  the same protected-key identity, activate it, and only then retire the
+  predecessor. Yi-to-Yi, aPPSS-to-aPPSS, Yi-to-aPPSS, and aPPSS-to-Yi are
+  distinct tested transitions.
 - Party state is never translated in place. A client or service never interprets
   a Yi scalar share as an OPRF key or an aPPSS message as a Yi wire object.
 
@@ -209,10 +226,18 @@ Final suite/wire identifiers, schemas, bounds, and canonical vectors remain a
 P5A.1 gate and must be assigned together. They may not change the approved
 primitives, state split, threshold mapping, or claim boundary.
 
+D018 retains that exact first-profile order and adds a matched `k=3,n=5`
+aPPSS profile after configuration generalization. Yi is exercised under both
+the 2-of-3 and 3-of-5 conditions as an independent adapter. Within each pair,
+the suites share the same CuePolicy, synthetic protected key, authorization
+topology/quorum, storage, admission, network/failure schedule, host class, and
+measurement definitions. All three 2-of-3 subsets and all ten 3-of-5 subsets
+must pass for each applicable suite/profile.
+
 ## Implementation impact
 
-P5A must introduce a suite-neutral recovery interface and a separate native
-aPPSS core/binding while preserving the Yi adapter. The affected surfaces
+P5A must introduce an explicit suite registry/selector, keep the Yi adapter
+first-class, and add a separate native aPPSS core/binding. The affected surfaces
 include backup and descriptor schemas, party service messages, durable attempt
 bindings, SQLite state, enrollment and recovery state machines, lifecycle
 packages, deployment constants, snapshot parsers, redaction, build locks,
@@ -229,8 +254,10 @@ bound `omega` to authenticated recipients.
 
 New evidence must separately cover correctness, cloud-only, every evaluated
 below-`k` coalition, matching cloud-plus-below-`k` state, exact-`k` and
-all-server compromise, cross-suite rejection, crash-safe migration, and
-performance. The Yi/aPPSS threshold comparison uses fixed synthetic state and
+all-server compromise, cross-suite rejection, crash-safe same-suite and
+cross-suite successors, and performance. Paired 2-of-3 and 3-of-5 comparisons
+use exact common-condition manifests while retaining separate suite/topology
+result paths. The Yi/aPPSS threshold comparison uses fixed synthetic state and
 fixed candidates and emits aggregate categories only.
 
 Tests and snapshots do not prove the aPPSS theorem, cue entropy, human
@@ -240,7 +267,7 @@ paper and limited to the reviewed concrete profile and LOCUS composition.
 
 ## Manuscript boundary
 
-M-APPPSS-001 in `DECISIONS.md` records the proposed future paper sections and
-claim. It remains pending. No file under `paper/` may change until the owner
-separately approves that exact change set after the implementation, review, and
-evidence gates close.
+M-APPPSS-001 in `DECISIONS.md` reflects the superseded sole-active-aPPSS
+direction and is stale under D018. No file under `paper/` may change until the
+owner receives and separately approves a replacement exact change set after the
+implementation, review, and evidence gates close.

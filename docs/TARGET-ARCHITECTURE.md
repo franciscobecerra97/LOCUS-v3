@@ -1,7 +1,8 @@
 # Target Architecture
 
 Status: owner-approved P1 target-design direction for D001, D003--D005,
-D007--D010, and D014--D017. D015 supersedes D002 and D006. It does not
+D008--D010, and D014--D018. D015 supersedes D002/D006; D018 supersedes
+D007/D016. It does not
 supersede the implemented baseline architecture or current manuscript until the affected
 implementation/evidence gates and a separate exact manuscript delta are
 approved by the owner.
@@ -72,7 +73,10 @@ flowchart LR
     UI["Enrollment / Recovery UI"] --> Client["Client state machines"]
     Client --> Policy["CuePolicy registry"]
     Policy --> Resolver["Resolver adapters"]
-    Client --> Suite["Recovery-suite client"]
+    Client --> Selector["Enrollment / successor suite selector"]
+    Client --> Registry["Descriptor-bound suite registry"]
+    Selector --> Registry
+    Registry --> Suite["Yi or aPPSS recovery-suite client"]
     Client --> Admission["Admission issuer / verifier"]
     Admission --> Gateway["Application storage gateway"]
     Client --> Gateway
@@ -96,6 +100,8 @@ Owns:
 
 - enrollment and recovery state machines;
 - local CuePolicy invocation;
+- explicit suite/profile selection for enrollment and successor creation;
+- descriptor-bound suite dispatch for recovery, without fallback;
 - recovery-suite client phases through a suite-neutral interface;
 - backup encryption/decryption;
 - descriptor validation;
@@ -182,7 +188,8 @@ rooted in trust outside any unauthenticated descriptor.
 Every service is an authorizer. A configured subset additionally stores one
 native recovery-suite state. The frozen Yi holder and planned D017 aPPSS holder
 are disjoint adapters and state types. Authorization quorum and recovery
-threshold remain separate.
+threshold remain separate. D018 permits both suites for new enrollments, but
+one epoch and holder set binds exactly one suite.
 
 ### Admission
 
@@ -211,8 +218,7 @@ activation, predecessor retirement, and eventual membership replacement.
 - S3-compatible local backup store;
 - fictional resolver fixture;
 - same-host containers;
-- 2-of-3 TPASS;
-- first aPPSS evaluation at 2-of-3 after P5A implementation/cutover gates;
+- paired selectable Yi/aPPSS 2-of-3 profiles after P5A release;
 - five authorizers;
 - no external accounts.
 
@@ -225,7 +231,7 @@ credentials.
 - two isolated clients;
 - separate VMs for cloud/descriptor roles and parties;
 - distinct keys and storage;
-- 2-of-3 and 3-of-5 variants;
+- paired Yi/aPPSS 2-of-3 and 3-of-5 variants;
 - explicit network topology;
 - synthetic data.
 

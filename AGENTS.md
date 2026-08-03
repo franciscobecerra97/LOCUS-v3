@@ -20,8 +20,9 @@ converts structured recovery input into deterministic bytes through a versioned
 CuePolicy, derives suite-bound password input locally, stores only an encrypted
 private-key backup in a cloud-object role, and distributes native threshold
 state across separately identified recovery parties. The current implementation
-uses the frozen Yi TPASS suite; D016 authorizes a separately versioned aPPSS
-successor for new enrollments after its gates pass.
+uses the frozen Yi TPASS suite. D017 authorizes a separately versioned aPPSS
+construction, and D018 requires Yi and aPPSS to become independent first-class
+selectable suites after the aPPSS gates pass.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered
@@ -57,21 +58,29 @@ Consequences:
   they add a prohibited verifier or new secret-bearing state.
 - Global rollback-resistant attempt control is not part of the core thesis.
 
-### Owner-approved successor direction
+### Owner-approved selectable-suite direction
 
-D016 approves planning and implementation of a new aPPSS recovery suite. Until
-P5A's cutover acceptance gate passes, the frozen TPASS thesis and protected path
-below remain the active implementation and paper boundary. Successor work must:
+D018 supersedes D016's sole-aPPSS active-profile cutover while preserving its
+suite-separation requirements. Until P5A's selectable-suite acceptance gate
+passes, the frozen TPASS thesis and protected path below remain the implemented
+and paper boundary. Selectable-suite work must:
 
 - use new domains, formats, epochs, profiles, schemas, evidence paths, and
   identifiers;
-- preserve the frozen Yi implementation, vector, legacy recovery behavior, and
+- preserve the frozen Yi implementation, vector, recovery behavior, and
   retained v2 evidence without reinterpretation;
+- keep protected-key generation/import, key identity, HKDF-SHA-256,
+  AES-256-GCM, storage, bootstrap, admission, lifecycle, and common client APIs
+  suite-neutral and unchanged in meaning;
 - use the aPPSS output directly as the high-entropy LOCUS recovery secret that
   feeds HKDF, without retaining an independently threshold-shared unmasked
   recovery secret;
-- bind one and only one recovery suite to each epoch and prohibit downgrade,
-  cross-suite mixing, and in-place share conversion;
+- bind one and only one explicitly selected recovery suite to each epoch and
+  prohibit automatic fallback, cross-suite mixing, and in-place state
+  conversion; an explicit suite change creates a fresh successor epoch;
+- implement and evaluate both suites first at `k=2,n=3` and later at
+  `k=3,n=5` under paired policy, key, authorization, storage, topology,
+  failure-schedule, and measurement conditions;
 - treat fewer-than-reconstruction-threshold no-offline-predicate behavior and
   reconstruction-threshold offline-dictionary behavior as separate claims; and
 - preserve the approved D017/P1.2 OPRF, field, hash, robustness, corruption,
@@ -79,7 +88,7 @@ below remain the active implementation and paper boundary. Successor work must:
   schemas, and vectors together at P5A.1 before cryptographic implementation.
 
 The aPPSS and Yi constructions are inherited cryptographic work, not LOCUS
-novelty. D016 does not authorize M-APPPSS-001 or any other manuscript wording.
+novelty. D018 does not authorize M-APPPSS-001 or any other manuscript wording.
 
 ## Protocol invariants
 
@@ -286,7 +295,7 @@ owner when it affects:
 - the number or semantics of CuePolicies;
 - a real external provider;
 - threshold or party topology;
-- the exact aPPSS cryptographic profile or active-profile cutover;
+- the exact aPPSS cryptographic profile or selectable-suite release gate;
 - the meaning of independent administration;
 - general replacement or a monotonic rollback anchor;
 - attempt control as a contribution;
