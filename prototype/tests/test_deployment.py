@@ -22,6 +22,15 @@ FIXTURE = ROOT / "deploy" / "fixtures" / "cues.json"
 
 
 class DeploymentProvisioningTests(unittest.TestCase):
+    def test_container_image_includes_both_native_suite_crates(self) -> None:
+        dockerfile = (ROOT / "deploy" / "Dockerfile").read_text(encoding="utf-8")
+        self.assertIn("COPY appss-core ./appss-core", dockerfile)
+        self.assertIn("COPY tpass-core ./tpass-core", dockerfile)
+        self.assertLess(
+            dockerfile.index("COPY appss-core ./appss-core"),
+            dockerfile.index("RUN python -m maturin build"),
+        )
+
     def test_lifecycle_restart_checkpoint_requires_host_acknowledgement(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             checkpoint_dir = Path(temporary)

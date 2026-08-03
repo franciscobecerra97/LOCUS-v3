@@ -294,6 +294,14 @@ initialization/recovery and Yi 3-of-5 recovery; backup-v6 tests cover exact-
 threshold success and below-threshold rejection for all four suite/topology
 arms. This is same-host process conformance, not retained P9 evidence,
 multi-host behavior, or independent administration.
+P6.4 now has a separately identified, strict public endpoint-setup boundary
+and an additive Compose overlay. Its checked-in default was exercised with all
+five party containers on one Docker host, including healthy startup, correct
+recovery, restart recovery, and recovery with one party unavailable. A second
+synthetic template reserves the five DNS/IP fields needed for later separate
+hosts. This is configurable same-host staging only: it neither distributes
+containers nor establishes host or administrative independence, retained
+evidence, or a manuscript result.
 
 ## Excluded material
 

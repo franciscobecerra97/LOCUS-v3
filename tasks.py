@@ -464,7 +464,10 @@ def _validate_s3_compose(configured: dict[str, object], *, image: str) -> None:
 
 
 def _validate_deployment_compose(
-    configured: dict[str, object], *, reference_image: str
+    configured: dict[str, object],
+    *,
+    reference_image: str,
+    configurable_endpoints: bool = False,
 ) -> None:
     """Fail closed if the complete local deployment violates its role matrix."""
 
@@ -968,9 +971,7 @@ def _validate_deployment_compose(
     if provisioner.get("network_mode") != "none":
         raise RuntimeError("provisioner must have no network")
     provisioner_mounts = provisioner.get("volumes")
-    if not isinstance(provisioner_mounts, list) or {
-        mount.get("target") for mount in provisioner_mounts
-    } != {
+    expected_provisioner_targets = {
         "/party1",
         "/party2",
         "/party3",
@@ -978,8 +979,27 @@ def _validate_deployment_compose(
         "/party5",
         "/client",
         "/fixtures",
-    }:
+    }
+    if configurable_endpoints:
+        expected_provisioner_targets.add("/setup/party-endpoints.json")
+    if (
+        not isinstance(provisioner_mounts, list)
+        or {mount.get("target") for mount in provisioner_mounts}
+        != expected_provisioner_targets
+    ):
         raise RuntimeError("provisioner volume boundary changed")
+    if configurable_endpoints:
+        setup_mounts = [
+            mount
+            for mount in provisioner_mounts
+            if mount.get("target") == "/setup/party-endpoints.json"
+        ]
+        if (
+            len(setup_mounts) != 1
+            or setup_mounts[0].get("type") != "bind"
+            or setup_mounts[0].get("read_only") is not True
+        ):
+            raise RuntimeError("party endpoint setup mount is not read-only")
     provisioner_capabilities = provisioner.get("cap_add")
     if not isinstance(provisioner_capabilities, list) or set(
         provisioner_capabilities
@@ -2234,11 +2254,13 @@ def _inspect_deployment_runtime(
             raise RuntimeError(f"live service role boundary failed: {service}")
 
 
-def deployment_smoke() -> None:
-    """Build and exercise the complete isolated same-host deployment."""
+def _deployment_smoke(*, configurable_endpoints: bool) -> None:
+    """Build and exercise one exact isolated same-host deployment profile."""
 
     docker = require("docker")
-    compose_file = ROOT / "deploy" / "compose.yaml"
+    compose_files = [ROOT / "deploy" / "compose.yaml"]
+    if configurable_endpoints:
+        compose_files.append(ROOT / "deploy" / "compose.party-endpoints.yaml")
     project = f"locus-deployment-smoke-{os.getpid()}-{secrets.token_hex(4)}"
     reference_image = "locus-reference:artifact-smoke"
     access_key = f"locus{secrets.token_hex(12)}"
@@ -2253,7 +2275,14 @@ def deployment_smoke() -> None:
             "LOCUS_S3_PREFIX": f"deployment/{secrets.token_hex(12)}",
         }
     )
-    compose = [docker, "compose", "-p", project, "-f", str(compose_file)]
+    if configurable_endpoints:
+        environment.setdefault(
+            "LOCUS_PARTY_ENDPOINT_SETUP",
+            str(ROOT / "deploy" / "party-endpoints.json"),
+        )
+    compose = [docker, "compose", "-p", project]
+    for compose_file in compose_files:
+        compose.extend(["-f", str(compose_file)])
     party_roots = [
         item
         for party_id in range(1, 6)
@@ -2267,7 +2296,11 @@ def deployment_smoke() -> None:
         configured = json.loads(raw_config)
         if not isinstance(configured, dict):
             raise RuntimeError("Docker Compose returned an invalid deployment")
-        _validate_deployment_compose(configured, reference_image=reference_image)
+        _validate_deployment_compose(
+            configured,
+            reference_image=reference_image,
+            configurable_endpoints=configurable_endpoints,
+        )
         run([*compose, "build", "--pull", "provisioner"], env=environment)
         run(
             [
@@ -2367,6 +2400,18 @@ def deployment_smoke() -> None:
         run([*compose, "down", "--volumes", "--remove-orphans"], env=environment)
 
 
+def deployment_smoke() -> None:
+    """Build and exercise the frozen isolated same-host deployment."""
+
+    _deployment_smoke(configurable_endpoints=False)
+
+
+def deployment_configurable_smoke() -> None:
+    """Exercise five local containers through the public endpoint setup."""
+
+    _deployment_smoke(configurable_endpoints=True)
+
+
 def _profile_runs(value: str) -> int:
     try:
         runs = int(value)
@@ -2440,6 +2485,10 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "deployment-smoke",
         help="build and exercise the complete isolated local deployment",
+    )
+    subparsers.add_parser(
+        "deployment-configurable-smoke",
+        help="run five local party containers through the configurable endpoint file",
     )
     subparsers.add_parser(
         "deployment-demo",
@@ -2621,6 +2670,8 @@ def main() -> int:
             s3_smoke()
         elif args.command == "deployment-smoke":
             deployment_smoke()
+        elif args.command == "deployment-configurable-smoke":
+            deployment_configurable_smoke()
         elif args.command == "deployment-demo":
             deployment_demo()
         elif args.command == "deployment-benchmark":

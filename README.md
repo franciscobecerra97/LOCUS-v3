@@ -83,10 +83,12 @@ resources.
 P1--P5A and P6.1--P6.3 are complete for implementation chronology. D020's internal
 recovery-suite mapping assessment is provisional; independent human validation
 remains mandatory before manuscript reliance or final reviewed release. The
-next task is P6.4 host separation. This workstation currently demonstrates
-same-host process isolation only; actual local VMs or separate hosts are
-required before P6.4 can claim a higher tier. Live AWS validation remains a
-separately authorized optional gate.
+next task is P6.4 host separation. A strict public endpoint file and additive
+Compose overlay now run all five party containers locally and are ready to
+accept five later host addresses. This workstation still demonstrates only
+same-host isolation; actual local VMs or separate hosts are required before
+P6.4 can claim a higher tier. Live AWS validation remains a separately
+authorized optional gate.
 
 ## Foundation sequence
 

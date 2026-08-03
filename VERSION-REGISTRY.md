@@ -158,6 +158,19 @@ deployment profiles, not independent-administration or retained-evidence
 identifiers. Any provider, admission, policy, quorum, host-tier, schedule, or
 measurement change requires a new deployment profile.
 
+### P6.4 assigned public endpoint setup
+
+`LOCUS-party-endpoint-setup-v1` is a bounded, secret-free operator input that
+maps party IDs 1--5 to exact lowercase DNS names or canonical IP addresses and
+ports. Its `same-host-containers` tier is fixed to Compose service names
+`party1`--`party5` on port 8443. Its
+`separate-network-hosts-single-admin` tier requires five distinct non-loopback,
+non-link-local hosts, but the label is configuration intent rather than proof
+that the hosts exist or are isolated. The setup drives certificate SANs,
+client endpoints, peer endpoints, and listener ports together. It never
+selects a suite, threshold, authorization quorum, credential, or fallback
+endpoint. Changed fields or interpretation require a new identifier.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

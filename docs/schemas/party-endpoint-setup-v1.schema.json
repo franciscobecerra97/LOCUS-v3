@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:party-endpoint-setup:v1",
+  "title": "LOCUS five-party public endpoint setup v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["deployment_tier", "parties", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-party-endpoint-setup-v1"},
+    "deployment_tier": {"enum": ["same-host-containers", "separate-network-hosts-single-admin"]},
+    "parties": {
+      "type": "array",
+      "minItems": 5,
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["host", "party_id", "port"],
+        "properties": {
+          "host": {"type": "string", "minLength": 1, "maxLength": 253, "pattern": "^[a-z0-9:.\\-]+$"},
+          "party_id": {"type": "integer", "minimum": 1, "maximum": 5},
+          "port": {"type": "integer", "minimum": 1, "maximum": 65535}
+        }
+      }
+    }
+  }
+}

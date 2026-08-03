@@ -1,0 +1,11 @@
+{
+  "deployment_tier": "same-host-containers",
+  "parties": [
+    {"host": "party1", "party_id": 1, "port": 8443},
+    {"host": "party2", "party_id": 2, "port": 8443},
+    {"host": "party3", "party_id": 3, "port": 8443},
+    {"host": "party4", "party_id": 4, "port": 8443},
+    {"host": "party5", "party_id": 5, "port": 8443}
+  ],
+  "version": "LOCUS-party-endpoint-setup-v1"
+}

@@ -63,7 +63,9 @@ validation, retained evidence, host independence, or manuscript wording.
 D021 authorizes those paired deployments at 2-of-3 and 3-of-5 over five
 authorizers with a separate 4-of-5 authorization quorum. P6.4 may claim only
 the exact host-separation tier actually demonstrated; administrative
-independence still requires genuine independent operators.
+independence still requires genuine independent operators. Its current
+endpoint-driven Compose staging runs all five parties under one Docker engine
+and is therefore still the same-host tier.
 
 ## What is inherited
 

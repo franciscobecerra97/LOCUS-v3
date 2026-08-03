@@ -10,6 +10,7 @@ WORKDIR /source
 RUN python -m pip install --no-cache-dir maturin==1.14.1 uv==0.11.29
 COPY pyproject.toml uv.lock README.md ./
 COPY prototype/locus ./prototype/locus
+COPY appss-core ./appss-core
 COPY tpass-core ./tpass-core
 COPY tpass-python ./tpass-python
 RUN python -m maturin build --release --locked --out /wheels

@@ -8,10 +8,10 @@ paper
 prototype/.benchmarks
 prototype/scripts
 prototype/tests
+appss-core/target
 tpass-core/target
 tpass-python/target
 **/__pycache__
 *.pyc
 *.pyd
 *.pdb
-

@@ -74,6 +74,20 @@ Run the complete disposable gate from the repository root:
 uv run --frozen python tasks.py deployment-smoke
 ```
 
+To run the same five party containers through the separately versioned public
+endpoint setup, use:
+
+```console
+uv run --frozen python tasks.py deployment-configurable-smoke
+```
+
+The default [party endpoint setup](../deploy/party-endpoints.json) uses the five
+local Compose service names. The
+[five-host example](../deploy/party-endpoints.five-host.example.json) shows the
+five DNS/IP fields that can later be replaced. The overlay only prepares and
+binds endpoint configuration; it does not turn one Docker engine into five
+hosts or deploy containers remotely.
+
 1. The task runner generates a unique Compose project, image tag, S3 credential,
    bucket prefix, and clean named volumes without printing secrets.
    The multi-stage build pins its base images by multi-platform OCI digest and

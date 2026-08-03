@@ -1850,7 +1850,7 @@ Completion record (2026-08-03):
 
 ### P6.4 Move parties to separate hosts
 
-Status: `Blocked on actual multi-VM or multi-host infrastructure`
+Status: `Same-host configurable staging complete; actual host separation blocked on infrastructure`
 
 Tiers:
 
@@ -1885,6 +1885,26 @@ Readiness record (2026-08-03):
   Tier 3 remains separately dependent on genuine independent operators.
 - No P6.4 deployment result, retained evidence, or manuscript change is
   claimed.
+- `LOCUS-party-endpoint-setup-v1` now provides one strict secret-free file for
+  party IDs 1--5, advertised DNS/IP hosts, and ports. The checked-in default
+  runs all five party containers through the existing internal recovery
+  network; a separate synthetic example shows the five fields to replace when
+  hosts become available.
+- The endpoint setup drives the certificate SAN, client directory, native peer
+  directory, and listener port from one validated value. A read-only Compose
+  overlay and `deployment-configurable-smoke` command exercise the complete
+  same-host graph without modifying the frozen Compose file or deployment
+  identifier.
+- The future five-host setup mode rejects repeated, loopback, link-local,
+  unspecified, multicast, noncanonical, uppercase, or structurally invalid
+  addresses. Selecting that mode remains configuration intent only; actual
+  placement and the tier validation above are still required.
+- The configurable same-host smoke completed on 2026-08-03: all five parties
+  became healthy, correct/restart/one-party-unavailable recovery passed, output
+  scanning passed, and all disposable containers, networks, and volumes were
+  removed. The container image now explicitly includes both native suite
+  crates. This closes local staging only and does not advance the demonstrated
+  P6.4 tier.
 
 ---
 

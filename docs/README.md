@@ -26,7 +26,7 @@ For proposed architecture, start with:
   claim-critical mapping register
 - `P5A7-RELEASE-READINESS.md` for the candidate build/release gate record
 - `P6.4-HOST-SEPARATION.md` for the exact multi-VM/multi-host readiness gate
-  and current same-host limitation
+  and current configurable same-host limitation
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`

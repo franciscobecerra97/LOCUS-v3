@@ -1,0 +1,32 @@
+services:
+  provisioner:
+    command:
+      - python
+      - -m
+      - locus.deployment
+      - provision
+      - --party-root
+      - /party1
+      - --party-root
+      - /party2
+      - --party-root
+      - /party3
+      - --party-root
+      - /party4
+      - --party-root
+      - /party5
+      - --client-root
+      - /client
+      - --fixture
+      - /fixtures/cues.json
+      - --endpoint-setup
+      - /setup/party-endpoints.json
+      - --owner-uid
+      - "65532"
+      - --owner-gid
+      - "65532"
+    volumes:
+      - type: bind
+        source: "${LOCUS_PARTY_ENDPOINT_SETUP:-./party-endpoints.json}"
+        target: /setup/party-endpoints.json
+        read_only: true

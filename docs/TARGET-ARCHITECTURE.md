@@ -231,6 +231,12 @@ activation, predecessor retirement, and eventual membership replacement.
 - five authorizers;
 - no external accounts.
 
+The runnable local profile now has a strict endpoint overlay for parties 1--5.
+It is useful for exercising the eventual public host configuration while all
+containers remain under one Docker engine. A separate-host endpoint file is
+only placement input; actual distribution, firewalling, durable disks, and
+tier validation remain external deployment work.
+
 This profile also supplies a deterministic recovery-bundle and current-pointer
 adapter so the complete bootstrap contract can be tested without Google
 credentials.

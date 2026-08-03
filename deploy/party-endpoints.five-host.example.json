@@ -1,0 +1,11 @@
+{
+  "deployment_tier": "separate-network-hosts-single-admin",
+  "parties": [
+    {"host": "10.10.0.11", "party_id": 1, "port": 8443},
+    {"host": "10.10.0.12", "party_id": 2, "port": 8443},
+    {"host": "10.10.0.13", "party_id": 3, "port": 8443},
+    {"host": "10.10.0.14", "party_id": 4, "port": 8443},
+    {"host": "10.10.0.15", "party_id": 5, "port": 8443}
+  ],
+  "version": "LOCUS-party-endpoint-setup-v1"
+}

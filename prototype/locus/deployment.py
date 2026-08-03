@@ -55,6 +55,7 @@ from .object_store import (
     decode_backup_object,
     encode_backup_object,
 )
+from .party_endpoint_setup import PartyEndpointSetup, load_party_endpoint_setup
 from .party_http import PartyProtocolError, RemoteAuthorizerNode, RemotePartyClient
 from .party_store import GENESIS_HEAD, Conflict, PartyStoreError
 from .redaction import validate_public_output
@@ -207,6 +208,7 @@ def _create_leaf(
     ca_key: Ed25519PrivateKey,
     ca_certificate: x509.Certificate,
     server: bool,
+    endpoint_host: str | None = None,
 ) -> tuple[Ed25519PrivateKey, x509.Certificate]:
     key = Ed25519PrivateKey.generate()
     subject = x509.Name([x509.NameAttribute(NameOID.COMMON_NAME, name)])
@@ -232,14 +234,20 @@ def _create_leaf(
         )
     )
     if server:
+        general_names: list[x509.GeneralName] = [
+            x509.DNSName(name),
+            x509.DNSName("localhost"),
+            x509.IPAddress(ipaddress.ip_address("127.0.0.1")),
+        ]
+        if endpoint_host is not None and endpoint_host != name:
+            try:
+                general_names.append(
+                    x509.IPAddress(ipaddress.ip_address(endpoint_host))
+                )
+            except ValueError:
+                general_names.append(x509.DNSName(endpoint_host))
         builder = builder.add_extension(
-            x509.SubjectAlternativeName(
-                [
-                    x509.DNSName(name),
-                    x509.DNSName("localhost"),
-                    x509.IPAddress(ipaddress.ip_address("127.0.0.1")),
-                ]
-            ),
+            x509.SubjectAlternativeName(general_names),
             critical=False,
         )
     return key, builder.sign(ca_key, algorithm=None)
@@ -307,6 +315,7 @@ def provision(
     party_roots: list[Path],
     client_root: Path,
     fixture_path: Path,
+    endpoint_setup_path: Path | None = None,
     owner_uid: int | None = None,
     owner_gid: int | None = None,
 ) -> str:
@@ -314,7 +323,14 @@ def provision(
 
     if len(party_roots) != PARTY_COUNT or len(set(party_roots)) != PARTY_COUNT:
         raise DeploymentError("exactly five distinct party roots are required")
+    endpoint_setup = (
+        None
+        if endpoint_setup_path is None
+        else load_party_endpoint_setup(endpoint_setup_path)
+    )
     if not _claim_empty_layout(party_roots, client_root):
+        if endpoint_setup is not None:
+            _validate_existing_endpoint_setup(client_root, endpoint_setup)
         return "existing"
     cues = _load_fixture(fixture_path)
     recovery_input = FROZEN_LOCATION_PERSON_POLICY.process(cues).canonical_bytes
@@ -378,12 +394,24 @@ def provision(
     )
     server_material: dict[int, tuple[Ed25519PrivateKey, x509.Certificate]] = {}
     peer_material: dict[int, tuple[Ed25519PrivateKey, x509.Certificate]] = {}
+    configured_endpoints = (
+        [(party_id, f"party{party_id}", PARTY_PORT) for party_id in range(1, 6)]
+        if endpoint_setup is None
+        else [
+            (party.party_id, party.host, party.port) for party in endpoint_setup.parties
+        ]
+    )
+    endpoint_by_party = {
+        party_id: (host, port) for party_id, host, port in configured_endpoints
+    }
     for party_id in range(1, PARTY_COUNT + 1):
+        endpoint_host, _endpoint_port = endpoint_by_party[party_id]
         server_material[party_id] = _create_leaf(
             name=f"party{party_id}",
             ca_key=ca_key,
             ca_certificate=ca_certificate,
             server=True,
+            endpoint_host=(endpoint_host if endpoint_setup is not None else None),
         )
         peer_material[party_id] = _create_leaf(
             name=f"party{party_id}-peer",
@@ -408,14 +436,14 @@ def provision(
     ]
     endpoints = [
         {
-            "host": f"party{party_id}",
+            "host": host,
             "party_id": party_id,
-            "port": PARTY_PORT,
+            "port": port,
             "server_certificate_sha256": _certificate_fingerprint(
                 server_material[party_id][1]
             ),
         }
-        for party_id in range(1, PARTY_COUNT + 1)
+        for party_id, host, port in configured_endpoints
     ]
     ca_pem = _certificate_pem(ca_certificate)
     for root, signer in zip(party_roots, signers, strict=True):
@@ -445,7 +473,7 @@ def provision(
             "authorizer_config": authorizer_config.to_dict(),
             "budget": ATTEMPT_BUDGET,
             "listen_host": "0.0.0.0",
-            "listen_port": PARTY_PORT,
+            "listen_port": endpoint_by_party[party_id][1],
             "native_party": native_party,
             "party_id": party_id,
             "signer_private_key": signer.private_key_hex,
@@ -489,6 +517,24 @@ def provision(
     _chown_layout([*party_roots, client_root], owner_uid, owner_gid)
     audit_layout(party_roots, client_root)
     return "created"
+
+
+def _validate_existing_endpoint_setup(
+    client_root: Path, setup: PartyEndpointSetup
+) -> None:
+    deployment = _load_json(client_root / "deployment.json")
+    if not isinstance(deployment, dict) or not isinstance(
+        deployment.get("parties"), list
+    ):
+        raise DeploymentError("invalid existing deployment endpoint setup")
+    observed = [
+        (endpoint.get("party_id"), endpoint.get("host"), endpoint.get("port"))
+        for endpoint in deployment["parties"]
+        if isinstance(endpoint, dict)
+    ]
+    expected = [(party.party_id, party.host, party.port) for party in setup.parties]
+    if observed != expected:
+        raise DeploymentError("existing deployment uses a different endpoint setup")
 
 
 def audit_layout(party_roots: list[Path], client_root: Path) -> dict[str, object]:
@@ -747,13 +793,19 @@ def resolver_health(url: str) -> None:
 
 
 def party_health(root: Path) -> None:
+    service = _load_json(root / "service.json")
+    if not isinstance(service, dict):
+        raise DeploymentError("invalid party health configuration")
+    port = service.get("listen_port")
+    if isinstance(port, bool) or not isinstance(port, int) or not 1 <= port <= 65535:
+        raise DeploymentError("invalid party health port")
     context = ssl.create_default_context(
         ssl.Purpose.SERVER_AUTH, cafile=str(root / "ca.pem")
     )
     context.minimum_version = ssl.TLSVersion.TLSv1_3
     context.load_cert_chain(root / "peer.pem", root / "peer-key.pem")
     connection = http.client.HTTPSConnection(
-        "localhost", PARTY_PORT, context=context, timeout=3.0
+        "localhost", port, context=context, timeout=3.0
     )
     expected = hashlib.sha256(
         ssl.PEM_cert_to_DER_cert((root / "server.pem").read_text(encoding="ascii"))
@@ -1908,6 +1960,7 @@ def build_parser() -> argparse.ArgumentParser:
     provision_parser.add_argument("--party-root", action="append", required=True)
     provision_parser.add_argument("--client-root", required=True)
     provision_parser.add_argument("--fixture", required=True)
+    provision_parser.add_argument("--endpoint-setup")
     provision_parser.add_argument("--owner-uid", type=int)
     provision_parser.add_argument("--owner-gid", type=int)
     provision_parser.add_argument("--measure", action="store_true")
@@ -1953,6 +2006,9 @@ def main() -> int:
                 party_roots=[Path(path) for path in args.party_root],
                 client_root=Path(args.client_root),
                 fixture_path=Path(args.fixture),
+                endpoint_setup_path=(
+                    None if args.endpoint_setup is None else Path(args.endpoint_setup)
+                ),
                 owner_uid=args.owner_uid,
                 owner_gid=args.owner_gid,
             )

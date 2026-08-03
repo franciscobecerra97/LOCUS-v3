@@ -26,6 +26,8 @@ and aPPSS work. The implementation lives in:
 - `prototype/locus/suite_backup.py` for the common backup-v5/v6 HKDF/AES path;
 - `prototype/locus/paired_deployment_profiles.py` for the two matched P6.3
   comparison-control profiles;
+- `prototype/locus/party_endpoint_setup.py` for the strict P6.4 public
+  endpoint-setup boundary used by local staging and later host placement;
 - `prototype/locus/selectable_suite_lifecycle.py` for active explicit
   enrollment selection and P4.3 successor integration;
 - `prototype/locus/storage_provider.py` for the P6.1 provider-level
@@ -178,6 +180,15 @@ authorizers and 4-of-5 authorization, with either three holders/2-of-3 recovery
 or five holders/3-of-5 recovery. The frozen Compose deployment remains Yi-only
 and is not reinterpreted. The paired profiles use distinct selector/backup and
 aPPSS v2 formats for the second topology.
+
+`PartyEndpointSetup` is public, secret-free deployment input rather than
+recovery-suite state. It binds exactly parties 1--5 to canonical advertised
+hosts and ports. The same-host tier is fixed to the five Compose service names;
+the separate-network-host tier requires five distinct nonlocal addresses. The
+provisioner uses the checked endpoints consistently for certificate SANs,
+client and native-peer directories, and listener ports. Loading a five-host
+file configures those identities but does not distribute services or prove
+host or administrative separation.
 
 ## Client state-machine contracts
 
