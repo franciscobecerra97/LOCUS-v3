@@ -77,7 +77,7 @@ View abbreviations:
 | Enrollment | `T/P` encrypted backup | `G` descriptor/bundle | `G` exact writes | `T/M` if policy uses it | `T/P` own state | `G` aPPSS setup | `—` | `—` | `—` | `—` | `G` admission | `M` |
 | Persistent-state disposal | `P` public/encrypted state | `G/P` public state | `—` no request retention | `—` | `P` own state | `G/P` own aPPSS state | `V` exact union | `V` disposed-state surface | `—` | `—` | `G/P` replay metadata only | `M` |
 | Bootstrap | `T/P` exact object read | `G/T/P` pointer/bundle | `G/T` admitted read | `—` | `T/P` current summaries | `—` | `V` pre-cue public union | `—` | `T` approved bootstrap only | `—` | `G/T` admission | `M` |
-| Recovery | `T/P` ciphertext read | `G/T/P` authenticated metadata | `G/T` exact read | `T/M` if policy uses it | `T/P/V` selected coalition | `G/V` compromised threshold view | `V` matching union | `—` | `T` before cue | `T` secret path | `G/T` admission | `M` |
+| Recovery | `T/P` ciphertext read | `G/T/P` authenticated metadata | `G/T` exact read | `T/M` if policy uses it | `T/P/V` selected coalition | `V` fixed compromised-threshold regression view | `V` matching union | `—` | `T` before cue | `T` secret path | `G/T` admission | `M` |
 | Successor publication | `T/P` new immutable object | `G/T/P` new descriptor/pointer | `G/T` exact create/CAS | `—` | `T/P` readiness/current state | `G` aPPSS successor | `V` crash snapshots | `—` | `—` | `T` active client | `G/T` admission | `M` |
 | Party replacement | `G` | `G` | `G` | `—` | `G` old/new sets | `G` if aPPSS profile | `G/V` transition snapshots | `—` | `—` | `G` active client | `G` | `G/M` |
 
@@ -120,6 +120,10 @@ plaintext protected key. Remote roles receive only their exact admitted and
 suite-bound request. Final AEAD/cue success is not disclosed to the issuer,
 gateway, resolver, cloud, or parties. Coalition views are read-only,
 networkless, synthetic-state experiments; they are not online guessing tools.
+P5A.6 implements one fixed in-memory paired 2-of-3 regression for these views.
+It emits only aggregate counts and categories, has no configurable input
+interface, and is not retained evidence or a claim that tests prove either
+suite's cryptographic theorem.
 For new enrollment or successor creation, the client may explicitly select an
 approved Yi or aPPSS profile before suite setup. Recovery instead uses only the
 suite authenticated in the descriptor; suite choice is public metadata and is

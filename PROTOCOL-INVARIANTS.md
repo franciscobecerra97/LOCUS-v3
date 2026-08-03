@@ -157,6 +157,15 @@ verifier. Fewer than reconstruction threshold `k` holder states must not expose
 a local predicate under the approved profile assumptions; `k` or more holder
 states are explicitly modeled as enabling offline dictionary tests.
 
+P5A.6 exercises this boundary only through a fixed aggregate development
+regression. It retains no candidate, OPRF key, share, recovery output, private
+key, or raw state. The absence observation below `k` does not prove the
+construction; it checks only the exact serialized-state and bounded API surface.
+At `k`, aPPSS is classified as unrate-limited offline dictionary testing whose
+correct input yields `S_R`, while Yi is classified separately as direct
+interpolation of its shared input scalar and protected exponent without a
+dictionary search.
+
 ### Authorizer-only service
 
 May hold identity, configuration, phase, admission, idempotency, and local audit

@@ -273,7 +273,12 @@ directions through the P4.3 journal. It recovers the predecessor client-side,
 creates fresh native state, verifies the unchanged protected-key identity, and
 rejects mixed or fallback state before activation. The central native setup
 function remains fixture-only, and the existing application/deployment remains
-Yi-only until P5A.6/P5A.7 close.
+Yi-only until P5A.7 closes. P5A.6 adds the fixed paired 2-of-3 compromise
+regression described in `docs/suite-compromise-regression.md`. It covers every
+below-threshold and exact-threshold subset plus all-server views and returns only
+strict aggregate observations. It confirms the implementation distinction
+between direct Yi interpolation and aPPSS offline dictionary testing, but is not
+retained evidence or proof of either construction.
 
 Tests and snapshots do not prove the aPPSS theorem, cue entropy, human
 memorability, production security, side-channel resistance, proactive security,

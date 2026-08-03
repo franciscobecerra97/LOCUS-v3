@@ -41,7 +41,7 @@ creation, durable holder state, and pinned mutual-TLS recovery. P5A.4 adds
 authenticated distributed initialization and common-public-state installation;
 P5A.5 adds inactive descriptor/bundle preparation and P4.3 successor
 integration in all four suite directions. Comparative validation and release
-remain P5A.6--P5A.7.
+remain gated on P5A.7.
 
 P3.3/P3.4 implement the provider-neutral local admission component boundary:
 an allowlisted synthetic subject receives an Ed25519-signed, proof-key-bound,

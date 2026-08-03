@@ -97,6 +97,7 @@
     "LOCUS-recovery-configuration-v1",
     "LOCUS-recovery-descriptor-v1",
     "LOCUS-recovery-receipt-v1",
+    "LOCUS-recovery-suite-compromise-regression-v1",
     "LOCUS-recovery-suite-selector-v1",
     "LOCUS-reference-backup-v3",
     "LOCUS-reference-backup-v4",

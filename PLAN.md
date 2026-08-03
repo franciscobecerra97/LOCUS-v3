@@ -1558,7 +1558,7 @@ complete P5A release gate passes.
 
 ### P5A.6 Validate the comparative security boundary
 
-Status: `Proposed`
+Status: `Complete`
 
 Add fixed, bounded, synthetic scenarios for:
 
@@ -1590,6 +1590,29 @@ Acceptance:
   continued threshold security or protection for low-entropy cues.
 - Comparison processors may pair matched rows but retained evidence remains
   separately versioned by suite and topology.
+
+Completed 2026-08-03: `LOCUS-recovery-suite-compromise-regression-v1` now
+defines a strict, aggregate-only, non-retained development report for the
+matched 2-of-3 pair. Its zero-argument evaluator generates one fixed synthetic
+CuePolicy/key/topology/authorization/storage profile in memory, uses independent
+suite password domains, and writes no view or result. For each suite it checks
+cloud-only, all four below-threshold coalitions, and every matching
+cloud-plus-coalition view under a socket-forbidden test boundary. A transient
+direct-verifier injection supplies the positive control; ordinary views expose
+no tested predicate through the bounded interface.
+
+All three exact-threshold subsets and the all-server view are evaluated. The Yi
+comparator validates and parses the frozen canonical party wire without changing
+the Yi core, interpolates its shared input scalar, protected exponent, and
+digest, and verifies ordinary recovery without testing a dictionary. The aPPSS
+comparator uses exactly the compromised serialized OPRF keys and public state
+locally against two fixed transient inputs: the incorrect input releases no
+output and the correct input reproduces `S_R`. The report retains only aggregate
+Booleans/counts/categories and its common-condition digest; it rejects altered
+conditions, extra fields, unsafe output, or per-input/raw-state retention. The
+methodology explicitly limits this to implementation regression rather than a
+proof of either inherited construction, retained P9 evidence, or a 3-of-5
+result.
 
 ### P5A.7 Complete selectable-suite documentation and review gates
 

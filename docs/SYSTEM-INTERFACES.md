@@ -283,7 +283,7 @@ that P2, P3, P4, and P5A will add.
 
 These tests establish interface compatibility and bounded implementation
 behavior. They do not prove aPPSS security, release selectable-suite
-enrollment, provide retained deployment evidence, or pass P5A.6/P5A.7 review.
+enrollment, provide retained deployment evidence, or pass the P5A.7 review gate.
 P3.2 separately adds remote initial Yi enrollment without
 changing the frozen P1 interface tests.
 

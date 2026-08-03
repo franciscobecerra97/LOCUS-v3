@@ -168,6 +168,14 @@ to the RFC 9497 OPRF-mode ristretto255/SHA-512 realization, canonical
 framing, and abort-only robustness. Tests are not evidence for Theorem 2 itself
 or for a stronger adaptive, proactive, or side-channel model.
 
+P5A.6 supplies `LOCUS-recovery-suite-compromise-regression-v1` as a strict
+aggregate-only development regression for this first pair. It evaluates every
+2-of-3 below-threshold coalition, every exact-threshold subset, and the
+all-server view under one common-condition manifest. The evaluator accepts no
+arguments and writes no output. Its schema and in-memory report do not allocate
+the P9 result family, authorize collection, or promote either inherited
+cryptographic statement to supported evidence.
+
 ## External services
 
 External provider experiments are benign functional/performance operations

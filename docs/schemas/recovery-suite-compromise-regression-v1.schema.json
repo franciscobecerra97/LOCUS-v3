@@ -1,0 +1,119 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "LOCUS-recovery-suite-compromise-regression-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["common_conditions", "compromise_boundary", "hygiene", "interpretation", "profile", "scenarios", "version", "versions"],
+  "properties": {
+    "version": {"const": "LOCUS-recovery-suite-compromise-regression-v1"},
+    "profile": {"const": "LOCUS-recovery-suite-compromise-regression-v1"},
+    "interpretation": {"const": "implementation-regression-only-not-cryptographic-proof"},
+    "common_conditions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["admission_profile", "authorization_parties", "authorization_quorum", "backup_format", "cue_policy", "fixture_id", "holder_count", "manifest_digest", "reconstruction_threshold", "resolver_profile", "synthetic_key_digest", "topology"],
+      "properties": {
+        "admission_profile": {"const": "LOCUS-local-synthetic-admission-v1"},
+        "authorization_parties": {"const": 5},
+        "authorization_quorum": {"const": 4},
+        "backup_format": {"const": "LOCUS-reference-backup-v5"},
+        "cue_policy": {"const": "LOCUS-location-person-set-v1"},
+        "fixture_id": {"const": "p5a6-fixed-synthetic-pair-v1"},
+        "holder_count": {"const": 3},
+        "manifest_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "reconstruction_threshold": {"const": 2},
+        "resolver_profile": {"const": "LOCUS-no-resolver-v1"},
+        "synthetic_key_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "topology": {"const": "2-of-3"}
+      }
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appss_profile", "appss_suite", "appss_wire", "backup", "report", "selector", "yi_profile", "yi_suite", "yi_wire"],
+      "properties": {
+        "appss_profile": {"const": "LOCUS-APPSS-2of3-v1"},
+        "appss_suite": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "appss_wire": {"const": "LOCUS-APPSS-wire-v1"},
+        "backup": {"const": "LOCUS-reference-backup-v5"},
+        "report": {"const": "LOCUS-recovery-suite-compromise-regression-v1"},
+        "selector": {"const": "LOCUS-recovery-suite-selector-v1"},
+        "yi_profile": {"const": "LOCUS-TPASS-YI-2of3-v1"},
+        "yi_suite": {"const": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1"},
+        "yi_wire": {"const": "LOCUS-TPASS-wire-v1"}
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["coalitions_evaluated", "id", "local_tested_predicate_found", "network_access", "positive_control_detected", "suite", "threshold_relation", "view"],
+        "properties": {
+          "coalitions_evaluated": {"type": "integer", "minimum": 1, "maximum": 4},
+          "id": {"type": "string", "minLength": 1, "maxLength": 80},
+          "local_tested_predicate_found": {"const": false},
+          "network_access": {"const": false},
+          "positive_control_detected": {"const": true},
+          "suite": {"enum": ["LOCUS-TPASS-YI-ZK-RISTRETTO255-v1", "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"]},
+          "threshold_relation": {"const": "below-k"},
+          "view": {"enum": ["cloud-only", "below-threshold-party-only", "cloud-plus-below-threshold"]}
+        }
+      }
+    },
+    "compromise_boundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["appss", "yi"],
+      "properties": {
+        "appss": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["all_server_view_evaluated", "exact_threshold_subsets_evaluated", "fixed_inputs_tested", "offline_dictionary_test_capability", "output_after_correct_input", "output_without_correct_input", "positive_control_detected", "threshold_relation"],
+          "properties": {
+            "all_server_view_evaluated": {"const": true},
+            "exact_threshold_subsets_evaluated": {"const": 3},
+            "fixed_inputs_tested": {"const": 2},
+            "offline_dictionary_test_capability": {"const": true},
+            "output_after_correct_input": {"const": true},
+            "output_without_correct_input": {"const": false},
+            "positive_control_detected": {"const": true},
+            "threshold_relation": {"const": "at-or-above-k"}
+          }
+        },
+        "yi": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["all_server_view_evaluated", "exact_threshold_subsets_evaluated", "fixed_inputs_tested", "low_entropy_input_scalar_reconstructed", "positive_control_detected", "protected_exponent_reconstructed", "recovery_output_directly_derivable", "recovery_output_verified", "threshold_relation"],
+          "properties": {
+            "all_server_view_evaluated": {"const": true},
+            "exact_threshold_subsets_evaluated": {"const": 3},
+            "fixed_inputs_tested": {"const": 0},
+            "low_entropy_input_scalar_reconstructed": {"const": true},
+            "positive_control_detected": {"const": true},
+            "protected_exponent_reconstructed": {"const": true},
+            "recovery_output_directly_derivable": {"const": true},
+            "recovery_output_verified": {"const": true},
+            "threshold_relation": {"const": "at-or-above-k"}
+          }
+        }
+      }
+    },
+    "hygiene": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cleanup_passed", "configurable_guessing_interface", "network_access", "output_scan_passed", "per_input_outcomes_retained", "raw_views_retained", "sensitive_values_retained"],
+      "properties": {
+        "cleanup_passed": {"const": true},
+        "configurable_guessing_interface": {"const": false},
+        "network_access": {"const": false},
+        "output_scan_passed": {"const": true},
+        "per_input_outcomes_retained": {"const": false},
+        "raw_views_retained": {"const": false},
+        "sensitive_values_retained": {"const": false}
+      }
+    }
+  }
+}

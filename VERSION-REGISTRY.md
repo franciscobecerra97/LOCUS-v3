@@ -219,6 +219,16 @@ conversion, dual-suite object, fallback format, deployment profile, or evidence
 identifier is introduced. Release/deployment, trace, result, and artifact
 identifiers remain unassigned.
 
+P5A.6 assigns `LOCUS-recovery-suite-compromise-regression-v1` solely to the
+strict aggregate-only development report in
+`docs/schemas/recovery-suite-compromise-regression-v1.schema.json`. It binds one
+fixed matched Yi/aPPSS 2-of-3 synthetic profile and covers cloud-only, every
+below-threshold coalition, matching combined, every exact-threshold subset, and
+all-server views with positive controls. Its evaluator accepts no inputs and
+writes no results. This is not a P9 result identifier, retained evidence,
+deployment profile, cryptographic proof, or 3-of-5 profile. P9 must allocate
+separate suite/topology evidence paths before collection.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a
@@ -246,7 +256,7 @@ identifiers remain unassigned.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers | P5A.2--P5A.5 implement and release the assigned formats; 3-of-5, deployment, and evidence identities remain at later gates |
+| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers | P5A.2--P5A.7 implement, validate, review, and release the assigned formats; 3-of-5, deployment, and retained-evidence identities remain at later gates |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |

@@ -229,12 +229,12 @@ Each adversary entry gives capabilities, information obtained, claimed property,
 
 ### A14 At-least-threshold party compromise
 
-1. **Capabilities:** obtain `t` or more TPASS states, reconstruct shared values, forge party participation, and bypass honest-party TPASS availability.
-2. **Information obtained:** threshold-reconstructable password/secret/digest material and party operational state; with the cloud object, the private key can be recovered.
+1. **Capabilities:** obtain `k` or more matching holder states, use the selected suite's threshold-compromise path, forge holder participation, and bypass honest-holder availability.
+2. **Information obtained:** Yi threshold state directly reconstructs the shared input scalar, protected exponent, and digest; aPPSS threshold state plus public `omega` enables unrate-limited offline dictionary testing and releases `S_R` for a correct input. With the matching cloud object, either successful path can recover the protected key.
 3. **Claimed property:** no threshold-confidentiality guarantee. Detection, replacement, monitoring, and post-compromise rotation are operational mitigations only.
-4. **Residual risk:** full recovery-secret and possibly private-key compromise, including retrospective compromise of unretired epochs.
-5. **Evidence:** explicit out-of-scope statement; planned lifecycle/rotation tests do not restore past confidentiality.
-6. **Limitations:** LOCUS is not proactive secret sharing until a reviewed refresh/re-sharing mechanism is implemented.
+4. **Residual risk:** Yi exposes its recovery output without guessing; aPPSS security at threshold degrades to offline guessing and is only as strong as the input distribution. Retrospective compromise of unretired epochs remains possible.
+5. **Evidence:** P5A.6 supplies a fixed, aggregate-only, non-retained 2-of-3 implementation regression over every exact-threshold subset and all-server view. The inherited cryptographic results require separate review.
+6. **Limitations:** the regression is not proof, retained evidence, an entropy result, or a proactive/adaptive guarantee. LOCUS is not proactive secret sharing until a reviewed refresh/re-sharing mechanism is implemented.
 
 ### A15 Host, operator, observability, or debug compromise
 
