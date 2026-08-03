@@ -194,7 +194,16 @@ aggregate-only, non-retained paired 2-of-3 compromise regression. It covers all
 below-threshold coalitions and all exact-threshold subsets, confirms the
 suite-specific threshold-compromise behavior, and emits no candidate, holder,
 or recovery value. It is component regression rather than retained evidence or
-cryptographic proof. The locally supplied
+cryptographic proof. P5A.7 is in progress. The candidate passed a disposable
+clean Linux complete gate; a fresh Windows checkout then found that unpinned
+JSON/TXT line endings changed three byte-digest regressions under
+`core.autocrlf=true`. Commit `36ea1fe` pins those text artifacts to LF without
+changing a frozen/public vector or expected digest, and the corrected fresh
+Windows checkout passes the complete gate. The independent-review packet and
+release checklist are prepared, but no review disposition,
+application/deployment activation, retained P9 evidence, or manuscript
+authorization exists. The released application and deployment therefore
+remain Yi-only. The locally supplied
 2024 paper is an ignored research input; it is not tracked or included in an
 artifact, and its redistribution status has not been established. None of these
 planning facts changes the inherited Yi TPASS baseline described above.

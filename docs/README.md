@@ -18,6 +18,8 @@ For proposed architecture, start with:
 - `SYSTEM-INTERFACES.md`
 - `APPSS-MIGRATION.md`
 - `APPSS-PROFILE.md`
+- `APPSS-INDEPENDENT-REVIEW.md` for the P5A.7 external review packet
+- `P5A7-RELEASE-READINESS.md` for the candidate build/release gate record
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`

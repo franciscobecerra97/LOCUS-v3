@@ -660,3 +660,51 @@ Owner status: Superseded by D018 before any manuscript edit
 Implementation/evidence commit: Pending P5A and P8/P9
 Applied commit:
 Rendered PDF SHA-256:
+
+### M-SELECTABLE-SUITES-001 — Selectable Yi/aPPSS construction and comparison
+
+Change-set ID: M-SELECTABLE-SUITES-001
+Date proposed: 2026-08-03
+Exact file and sections: `paper/main.tex` abstract; Introduction; Problem
+Setting and Threat Model; LOCUS Requirements; Protocol Construction, including
+Notation, Cue-Derived Recovery Password, recovery-suite interface, Recovery
+Secret and Key Wrapping, Backup Object and Recovery-Party Records, Backup
+Phase, Recovery Phase, and State Separation; Implementation; Evaluation;
+Security Analysis; Lifecycle and Recovery State Management; Limitations;
+Related Work; Conclusion; Open Science; and the cryptographic appendix. Add the
+aPPSS source record to `paper/references.bib`. No title change is proposed.
+Before/after summary: Replace the stale sole-active-aPPSS proposal with two
+independent, explicitly selectable recovery suites. One enrollment or epoch
+authenticates exactly one suite; recovery dispatches only to that suite and
+never probes or falls back to the other. Frozen Yi and D017 aPPSS both produce
+the high-entropy LOCUS recovery secret consumed by the unchanged
+HKDF-SHA-256/AES-256-GCM path. Describe same-suite and bidirectional
+cross-suite successor creation as fresh setup, not state conversion. Compare
+the suites only under matched 2-of-3 and, after P6.3, 3-of-5 conditions.
+Separate the below-threshold no-local-predicate boundary from the distinct
+threshold-compromise outcomes: matching Yi threshold state reconstructs its
+shared input and protected recovery secret without a dictionary search, while
+matching aPPSS threshold state plus public `omega` enables unrate-limited
+offline dictionary testing and yields `S_R` for a correct candidate.
+Claim and evidence basis: D017/D018; the Section 3/Figure 4 aPPSS construction
+and Theorem 2 from *Password-Protected Threshold Signatures*; the frozen Yi
+construction; the exact reviewed paper-to-code mappings; suite-neutral
+conformance, selection/no-fallback, successor, and common-condition tests; new
+suite-separated P8/P9 retained evidence; and clean Linux/Windows reproduction.
+The underlying cryptographic constructions and results remain inherited. The
+current P5A.6 comparator is development regression only and cannot support a
+paper result by itself.
+Limitations affected: Keep the suites' assumptions separate; record the
+random-oracle, OPRF, authenticated-initialization, threshold-notation, and
+abort-only aPPSS assumptions; retain Yi proof/instantiation limitations; state
+that threshold aPPSS compromise gives an unrate-limited offline dictionary
+attack whose residual protection depends on the conditional cue distribution;
+make no proactive/adaptive, side-channel, production-security, memorability,
+usability, independent-administration, or global attempt-bound claim; and do
+not reuse retained v2 Yi results for aPPSS or selectable-suite claims.
+Owner status: Draft — not offered for approval until the independent review
+and P8/P9 evidence gates complete
+Implementation/evidence commit: P5A implementation through `8795947`; clean
+checkout normalization `36ea1fe`; P8/P9 evidence pending
+Applied commit:
+Rendered PDF SHA-256:

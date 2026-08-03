@@ -1616,7 +1616,7 @@ result.
 
 ### P5A.7 Complete selectable-suite documentation and review gates
 
-Status: `Proposed`
+Status: `In progress — independent review and release activation pending`
 
 Actions:
 
@@ -1640,6 +1640,23 @@ Acceptance:
   fallback for an epoch enrolled under the other.
 - Manuscript wording remains unchanged unless a new D018-aligned exact change
   set is explicitly approved and later applied under P10.6.
+
+Implementation note (2026-08-03): the P5A.1--P5A.6 implementation candidate
+passed a disposable clean Linux complete gate at `8795947`. A fresh Windows
+checkout then exposed line-ending conversion in three frozen/public vector
+digest tests; commit `36ea1fe` fixed checkout policy only, without changing any
+vector or expected digest, and a second fresh empty-cache Windows checkout
+passed all 279 Python tests (one expected live-provider skip), both native
+suite/vector gates, formatting, lint, typing, and repository-boundary checks.
+No retained performance/evidence corpus was collected. The attributable review
+packet is ready in `docs/APPSS-INDEPENDENT-REVIEW.md`, the release checklist is
+in `docs/P5A7-RELEASE-READINESS.md`, and draft
+M-SELECTABLE-SUITES-001 replaces the stale sole-active-aPPSS proposal without
+authorizing or applying any `paper/` change. P5A.7 cannot complete until an
+independent reviewer accepts the mapping, any mandatory findings are resolved,
+explicit application/deployment selection is activated without fallback,
+active release documentation is synchronized, and the final release commit
+passes clean Linux/Windows gates.
 
 ---
 
