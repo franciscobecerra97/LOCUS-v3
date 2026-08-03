@@ -1502,7 +1502,7 @@ remains fixture-only and supplies no distributed-initialization evidence.
 
 ### P5A.5 Implement suite selection and successor switching
 
-Status: `Proposed`
+Status: `Complete`
 
 Selection and switching procedure:
 
@@ -1529,6 +1529,32 @@ Acceptance:
 - Same-suite Yi-to-Yi and aPPSS-to-aPPSS successors and explicit Yi-to-aPPSS
   and aPPSS-to-Yi successors preserve the protected-key identity and create
   fresh independent suite state.
+
+Completed 2026-08-03: the selector registry now drives an inactive
+suite-neutral epoch factory that accepts exactly one Yi or aPPSS choice, creates
+fresh selected-suite state, seals backup v5 through the common HKDF/AES path,
+and emits one signed RecoveryDescriptor v1 and deterministic recovery bundle.
+Recovery authenticates the bundle first, dispatches only from its exact suite
+identifier, and never consults the enrollment selector or another adapter as a
+fallback. Yi retains its frozen context-password derivation including nonce,
+backup identifier, and epoch; aPPSS uses its separate context-bound password
+domain and distributed holder runtime.
+
+Successor preparation first recovers the protected key through the predecessor
+suite client-side, then creates a fresh consecutive epoch under an explicit
+same-suite or cross-suite selection. Yi freshness is checked on its secret
+party states; aPPSS freshness is checked on its context-bound public state and
+new holder keys. The successor descriptor binds the predecessor descriptor
+digest, and prepared recovery must reproduce the original protected-key digest
+before activation. The existing P4.3 durable publication journal binds every
+effect through the successor backup/configuration/descriptor digests. Tests
+exercise Yi-to-Yi, aPPSS-to-aPPSS, Yi-to-aPPSS, and aPPSS-to-Yi, reject mixed
+old/new Yi state, mixed old/new aPPSS endpoints, and all cross-suite state, and
+resume after an injected crash following every selected publication effect
+without double activation or retirement. The journal contains neither the
+canonical recovery input nor protected-key bytes. This is a prepared component
+path; the existing released application/deployment remains Yi-only until the
+complete P5A release gate passes.
 
 ### P5A.6 Validate the comparative security boundary
 

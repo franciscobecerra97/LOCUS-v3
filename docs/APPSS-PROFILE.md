@@ -106,6 +106,15 @@ ASCII label `LOCUS/aPPSS/epoch-context/v1`. The assigned suite identifier is
 `LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1`; no implementation may
 substitute an empty, default, or Yi identifier.
 
+The configuration digest in this tuple is the canonical pre-setup public
+configuration digest. It covers the already fixed backup identifier, epoch,
+CuePolicy, holder membership, reconstruction threshold, and authenticated
+service identities, but excludes `omega`, encrypted-backup bytes, and the
+descriptor that cannot exist until setup finishes. RecoveryDescriptor v1 later
+computes its separate full configuration digest over the resulting aPPSS public
+state and exact backup binding. The two digests have different domains and must
+not be substituted for one another.
+
 Each server's fixed OPRF instance identifier is the canonical tuple of the
 ASCII label `LOCUS/aPPSS/2HashDH/instance/v1`, `context_digest`, party
 identifier, and party index. This is the paper's global OPRF initialization session for

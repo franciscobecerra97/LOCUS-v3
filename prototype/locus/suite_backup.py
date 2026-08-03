@@ -166,9 +166,53 @@ def enroll_backup_v5(
     max_attempts: int = 8,
     cooldown_seconds: int = 30,
 ) -> SuiteBackupEnrollment:
+    if enrollment.public_state.suite_id != adapter.suite_id:
+        raise SuiteBackupError("backup enrollment mixes suites")
+    backup = seal_backup_v5(
+        protected_key=protected_key,
+        context=context,
+        cue_policy_id=cue_policy_id,
+        resolver_profile=resolver_profile,
+        suite_id=adapter.suite_id,
+        public_state_format=enrollment.public_state.format_id,
+        public_state_payload=enrollment.public_state.payload,
+        recovery_secret=enrollment.recovery_secret,
+        profile_id=profile_id,
+        bid=bid,
+        nonce=nonce,
+        max_attempts=max_attempts,
+        cooldown_seconds=cooldown_seconds,
+    )
+    return SuiteBackupEnrollment(backup=backup, party_states=enrollment.party_states)
+
+
+def seal_backup_v5(
+    *,
+    protected_key: bytes,
+    context: RecoveryContext,
+    cue_policy_id: str,
+    resolver_profile: str,
+    suite_id: str,
+    public_state_format: str,
+    public_state_payload: bytes,
+    recovery_secret: bytes,
+    profile_id: str,
+    bid: bytes | None = None,
+    nonce: bytes | None = None,
+    max_attempts: int = 8,
+    cooldown_seconds: int = 30,
+) -> dict[str, Any]:
+    """Seal one suite's native recovery secret through the common outer path."""
+
     if not isinstance(protected_key, bytes) or not protected_key:
         raise SuiteBackupError("invalid protected key")
-    if enrollment.public_state.suite_id != adapter.suite_id:
+    if (
+        context.suite_id != suite_id
+        or not isinstance(public_state_payload, bytes)
+        or not public_state_payload
+        or not isinstance(recovery_secret, bytes)
+        or not recovery_secret
+    ):
         raise SuiteBackupError("backup enrollment mixes suites")
     if context.suite_context_digest is None:
         raise SuiteBackupError("backup suite context is missing")
@@ -187,12 +231,12 @@ def enroll_backup_v5(
         "nonce": nonce_bytes.hex(),
         "recovery_suite": {
             "context_digest": context.suite_context_digest,
-            "id": adapter.suite_id,
+            "id": suite_id,
             "k": 2,
             "n": 3,
             "profile_id": profile_id,
-            "public_state": enrollment.public_state.payload.hex(),
-            "public_state_format": enrollment.public_state.format_id,
+            "public_state": public_state_payload.hex(),
+            "public_state_format": public_state_format,
         },
         "security_policy": {
             "cooldown_seconds": cooldown_seconds,
@@ -203,7 +247,7 @@ def enroll_backup_v5(
     }
     validate_backup_v5(backup, require_digest=False, require_ciphertext=False)
     wrap_key = derive_wrap_key(
-        enrollment.recovery_secret,
+        recovery_secret,
         backup["bid"],
         backup["epoch"],
         backup["nonce"],
@@ -213,7 +257,7 @@ def enroll_backup_v5(
     )
     backup["digest"] = backup_digest(backup)
     validate_backup_v5(backup)
-    return SuiteBackupEnrollment(backup=backup, party_states=enrollment.party_states)
+    return backup
 
 
 def recover_backup_v5(
@@ -248,8 +292,20 @@ def recover_backup_v5(
             public_state=public_state,
             party_states=party_states,
         )
+        return open_backup_v5_with_secret(backup=validated, recovery_secret=secret)
+    except (RecoverySuiteError, CryptoError) as exc:
+        raise SuiteBackupError("recovery rejected") from exc
+
+
+def open_backup_v5_with_secret(
+    *, backup: dict[str, Any], recovery_secret: bytes
+) -> bytes:
+    validated = validate_backup_v5(backup)
+    if not isinstance(recovery_secret, bytes) or not recovery_secret:
+        raise SuiteBackupError("invalid recovery secret")
+    try:
         wrap_key = derive_wrap_key(
-            secret,
+            recovery_secret,
             validated["bid"],
             validated["epoch"],
             validated["nonce"],
@@ -259,7 +315,7 @@ def recover_backup_v5(
             validated["ciphertext"],
             aad=backup_v5_associated_data(validated),
         )
-    except (RecoverySuiteError, CryptoError) as exc:
+    except CryptoError as exc:
         raise SuiteBackupError("recovery rejected") from exc
 
 
@@ -290,6 +346,8 @@ __all__ = [
     "SuiteBackupError",
     "backup_v5_associated_data",
     "enroll_backup_v5",
+    "open_backup_v5_with_secret",
     "recover_backup_v5",
+    "seal_backup_v5",
     "validate_backup_v5",
 ]

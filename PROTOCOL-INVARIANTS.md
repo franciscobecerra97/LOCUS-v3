@@ -43,6 +43,14 @@ successor enrollment under the selected suite, never state conversion.
 Protected-key generation/import, key identity, HKDF-SHA-256, and AES-256-GCM
 retain the same suite-neutral meaning in both paths.
 
+P5A.5 implements that switching invariant in an inactive component path. The
+authenticated predecessor descriptor selects the only recovery adapter; the
+new-epoch selector is consulted only after predecessor recovery. Fresh Yi
+party state or fresh aPPSS holder/public state is created, the common backup
+path preserves the protected-key identity, and the P4.3 journal binds the
+successor backup/configuration/descriptor digests before activation. Old/new
+and cross-suite state cannot be combined.
+
 D017 freezes the exact recovery contract in `docs/APPSS-PROFILE.md`:
 `lambda=128`, first profile `k=2,n=3`, RFC 9497 OPRF-mode
 ristretto255/SHA-512 as the paper's 2HashDH realization, canonical

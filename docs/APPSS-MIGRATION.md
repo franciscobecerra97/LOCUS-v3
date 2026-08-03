@@ -267,9 +267,13 @@ distributed initialization through the authenticated party transport: every
 clean holder derives the exact public epoch context, creates its own OPRF key,
 returns a blinded evaluation only after durable authenticated request binding,
 installs the common public state, and acknowledges the exact installed digest.
-The central native setup function remains fixture-only. P5A.5 must still
-integrate descriptor publication, new enrollment, and successor switching
-before release.
+P5A.5 adds inactive explicit Yi/aPPSS enrollment selection, signed
+descriptor/bundle preparation, and all four same-suite/cross-suite successor
+directions through the P4.3 journal. It recovers the predecessor client-side,
+creates fresh native state, verifies the unchanged protected-key identity, and
+rejects mixed or fallback state before activation. The central native setup
+function remains fixture-only, and the existing application/deployment remains
+Yi-only until P5A.6/P5A.7 close.
 
 Tests and snapshots do not prove the aPPSS theorem, cue entropy, human
 memorability, production security, side-channel resistance, proactive security,

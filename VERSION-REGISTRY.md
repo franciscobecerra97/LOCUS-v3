@@ -210,6 +210,15 @@ context and pins certificate identities; it is not a portable deployment or
 evidence profile. Deployment, trace, result, and artifact identifiers remain
 unassigned.
 
+P5A.5 implements inactive explicit selection and same-suite/cross-suite
+successor preparation using only the assigned selector, backup-v5, descriptor,
+bundle, suite-state, and P4.3 journal boundaries. The existing successor journal
+already commits the exact successor configuration, backup, and descriptor
+digests; the authenticated descriptor commits the one selected suite. No state
+conversion, dual-suite object, fallback format, deployment profile, or evidence
+identifier is introduced. Release/deployment, trace, result, and artifact
+identifiers remain unassigned.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a

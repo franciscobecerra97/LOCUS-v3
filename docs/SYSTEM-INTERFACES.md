@@ -3,7 +3,8 @@
 Status: P1.3 typed interface layer implemented and tested on 2026-08-01; P5.1
 completed frozen-policy application routing, P5.3 added the exact four-policy
 registry, P5A.3 implemented the separate aPPSS adapter and no-fallback suite
-registry, and P5A.4 added authenticated distributed aPPSS initialization on
+registry, P5A.4 added authenticated distributed aPPSS initialization, and P5A.5
+added inactive explicit selection and four-direction successor preparation on
 2026-08-03. P5A is not released until all of its gates pass.
 
 ## Purpose
@@ -20,6 +21,8 @@ and aPPSS work. The implementation lives in:
 - `prototype/locus/appss_party.py` and `prototype/locus/appss_party_http.py`
   for durable per-holder state and pinned mutual-TLS transport;
 - `prototype/locus/suite_backup.py` for the common backup-v5 HKDF/AES path;
+- `prototype/locus/selectable_suite_lifecycle.py` for inactive explicit
+  enrollment selection and P4.3 successor integration;
 - `FrozenLocationPersonCuePolicy` in `prototype/locus/cue_policy.py`; and
 - `DeterministicResolverAdapter` in
   `prototype/locus/resolver_fixture.py`.
@@ -221,6 +224,16 @@ lifecycle's atomic retire/activate operation. No protected-key bytes, recovery
 input, suite secret, wrapping key, party state, or capability is serializable
 through this interface.
 
+P5A.5 supplies a concrete suite-neutral backend for that boundary. One explicit
+selector prepares either suite under a signed descriptor and backup v5.
+Successor preparation recovers the predecessor through its authenticated suite,
+creates fresh state under one explicit successor suite, and verifies the same
+protected-key digest before the P4.3 activation phase. The journal commits the
+successor backup/configuration/descriptor digests; the descriptor commits the
+suite. It serializes no recovery input, protected key, recovery secret, or party
+state. This component is not wired into the released Yi application path until
+the P5A release gate passes.
+
 ## Decoder and compatibility requirements
 
 Every concrete external decoder behind these interfaces must:
@@ -263,11 +276,14 @@ that P2, P3, P4, and P5A will add.
   subprocesses whose boot files contain no OPRF key; and
 - distributed initialization verifies exact public epoch/certificate bindings,
   returns only after all ready acknowledgements, and rejects changed
-  caller/route/body idempotency reuse and partial installation.
+  caller/route/body idempotency reuse and partial installation; and
+- all four same-suite/cross-suite successor directions preserve the
+  protected-key identity, reject mixed old/new or cross-suite state, and resume
+  every selected P4.3 publication effect without double activation.
 
 These tests establish interface compatibility and bounded implementation
 behavior. They do not prove aPPSS security, release selectable-suite
-enrollment, complete P5A.5 switching, or provide retained deployment evidence.
+enrollment, provide retained deployment evidence, or pass P5A.6/P5A.7 review.
 P3.2 separately adds remote initial Yi enrollment without
 changing the frozen P1 interface tests.
 

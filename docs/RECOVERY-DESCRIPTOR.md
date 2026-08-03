@@ -101,6 +101,17 @@ Holder membership is separate from authorizer membership; every holder maps to
 one authorizer, while recovery `k,n` and authorization quorum are validated as
 different values.
 
+For selectable-suite preparation, the suite is explicit before setup and the
+completed descriptor binds exactly one resulting public state. Recovery obtains
+the adapter only from this authenticated `recovery_suite` member; neither the
+new-enrollment selector nor trial execution of another suite participates in
+recovery. The aPPSS epoch-context configuration digest is a pre-setup public
+input covering the already fixed backup identifier, epoch, policy, membership,
+threshold, and authenticated service identities. It deliberately excludes the
+not-yet-created aPPSS public state, encrypted backup, and descriptor bytes. After
+setup, the descriptor configuration digest below commits to that public state
+and the exact encrypted backup. Thus the bindings are acyclic and distinct.
+
 The configuration digest is:
 
 ```text
@@ -410,6 +421,14 @@ Successor:
 
 The final ordering must be validated by crash analysis before implementation is
 called complete.
+
+P5A.5 implements this ordering as an inactive component for all four Yi/aPPSS
+same-suite and cross-suite directions. The prepared successor is recovered
+before cutover and must yield the predecessor's protected-key digest. Its
+descriptor commits to the predecessor descriptor digest; fresh suite state is
+created rather than translated or combined. The existing P4.3 journal supplies
+durable exact retry and crash-prefix tests. The released application and
+deployment remain Yi-only pending the complete P5A gate.
 
 ## Required tests
 

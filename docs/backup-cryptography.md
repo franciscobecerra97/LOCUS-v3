@@ -1,9 +1,11 @@
 # LOCUS Backup Cryptography
 
 Status: implemented local cryptographic format for P2.5 and filesystem plus
-S3-compatible object-storage adapters for P4.5/P4.6. This is research-grade
-composition and local conformance evidence, not an audit, independent cloud
-deployment, real-provider result, or production-readiness claim.
+S3-compatible object-storage adapters for P4.5/P4.6. P5A.3--P5A.5 additionally
+implement an inactive suite-neutral backup-v5 component for Yi and aPPSS. This
+is research-grade composition and local conformance evidence, not an audit,
+released selectable-suite deployment, independent cloud deployment,
+real-provider result, or production-readiness claim.
 
 ## Problem Statement
 
@@ -20,7 +22,10 @@ be able to modify those fields without detection.
 - AES key length: exactly 32 bytes.
 - GCM nonce: 12 fresh random bytes generated for every encryption.
 - GCM tag: the library's full 16-byte tag, appended to the ciphertext.
-- Current paper-facing backup format: `LOCUS-reference-backup-v4`.
+- Current paper-facing and released Yi backup format:
+  `LOCUS-reference-backup-v4`.
+- Inactive selectable-suite component format:
+  `LOCUS-reference-backup-v5`.
 - Archived Cycle 1 format: `LOCUS-reference-backup-v3`; immutable historical
   evidence only.
 
@@ -32,6 +37,15 @@ Encode({"purpose": "LOCUS-wrap", "bid": backup_id, "epoch": positive_epoch})
 ```
 
 The recovery nonce is distinct from the fresh 12-byte AES-GCM nonce.
+
+Backup v5 keeps this same HKDF-SHA-256/AES-256-GCM composition. It replaces the
+TPASS-only public-state member with an exact suite identifier, registered
+suite-state format, canonical public-state bytes, suite context digest, and
+typed holder membership. The client supplies the high-entropy recovery secret
+returned by the exact selected suite to the common sealing/opening path. For Yi
+that value is the frozen encoded group secret; for aPPSS it is the correctly
+unmasked `S_R`. Recovery authenticates these public bindings before dispatch and
+never tries another suite after failure.
 
 ## Sealed-Ciphertext Format
 
@@ -52,7 +66,8 @@ decoded ciphertext must contain at least the 16-byte tag.
 
 ## Associated Data
 
-The AEAD authenticates the deterministic encoding of these fields:
+For backup v4, the AEAD authenticates the deterministic encoding of these
+fields:
 
 - associated-data format version;
 - backup format version;
@@ -63,6 +78,11 @@ The AEAD authenticates the deterministic encoding of these fields:
 - context-policy metadata;
 - security-policy metadata;
 - sealed-ciphertext version and algorithm.
+
+Backup v5 authenticates the corresponding suite-neutral fields: the backup and
+ciphertext format identifiers, backup identifier and epoch, recovery nonce,
+CuePolicy identifier, exact suite identifier/state format/public-state bytes,
+suite context digest, typed holder membership, and security-policy metadata.
 
 The ciphertext and its AES-GCM nonce are not recursively placed in associated
 data; AES-GCM already authenticates both through its ciphertext/tag operation.
