@@ -27,6 +27,8 @@ and aPPSS work. The implementation lives in:
   enrollment selection and P4.3 successor integration;
 - `prototype/locus/storage_provider.py` for the P6.1 provider-level
   filesystem/S3-compatible composition and common conformance properties;
+- `prototype/locus/provider_gateway.py` for the P6.2 exact admitted provider
+  operations and AWS prefix-policy boundary;
 - `FrozenLocationPersonCuePolicy` in `prototype/locus/cue_policy.py`; and
 - `DeterministicResolverAdapter` in
   `prototype/locus/resolver_fixture.py`.
@@ -149,7 +151,7 @@ persist a verifier.
 | `DescriptorStore` | Immutable descriptor publication/read plus authenticated current-pointer read/CAS | P2.3 filesystem and S3-compatible adapters implement exact-byte immutable publication/read and current-pointer CAS; authentication remains the P2.2 client check |
 | `AdmissionVerifier` | Validate a capability and client proof against the complete D004 binding, exact request, and verifier time | P3.4 implements the project-controlled local profile with durable replay state |
 | `StorageCapabilityVerifier` | Same validation signature at a distinct storage-gateway trust boundary | P3.4 uses an independent verifier/database rather than accepting an authorizer's decision |
-| `ApplicationStorageGateway` | Validate and execute one exact admitted storage operation | P3.4 checks operation, prefix, request digest, proof, and replay state before invoking the P2.3 storage backend |
+| `ApplicationStorageGateway` | Validate and execute one exact admitted storage operation | P3.4 checks operation, prefix, request digest, proof, and replay state; P6.2 supplies the concrete provider backend for backup, descriptor, bundle, and pointer roles |
 | `StorageProvider` | Keep backup, descriptor, bundle, and current-pointer roles distinct while exposing one provider-conformance boundary | P6.1 filesystem and S3-compatible composites pass the same full role suite; nonlocal profiles require TLS and no profile requires listing |
 | `PartyDirectory` | Resolve authenticated authorizer and suite-holder membership for one epoch | P2.2 supplies an exact bootstrap-bound adapter after installed endpoint/key checks and a matching current-state authorization quorum |
 

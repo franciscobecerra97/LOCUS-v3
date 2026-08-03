@@ -25,6 +25,7 @@ from .s3_object_store import DEFAULT_PREFIX, S3BackupObjectStore, S3Client
 STORAGE_PROVIDER_PROFILE = "LOCUS-storage-provider-profile-v1"
 FILESYSTEM_PROVIDER_ID = "LOCUS-storage-provider-filesystem-v1"
 S3_COMPATIBLE_PROVIDER_ID = "LOCUS-storage-provider-s3-compatible-v1"
+AWS_S3_PROVIDER_ID = "LOCUS-storage-provider-aws-s3-v1"
 DEFAULT_PROVIDER_PREFIX = "locus/account"
 
 
@@ -46,6 +47,7 @@ class StorageProviderProperties:
         if self.provider_id not in {
             FILESYSTEM_PROVIDER_ID,
             S3_COMPATIBLE_PROVIDER_ID,
+            AWS_S3_PROVIDER_ID,
         }:
             raise ValueError("unsupported storage provider")
         if self.network_scope not in {"local", "nonlocal"}:
@@ -150,6 +152,7 @@ class S3CompatibleStorageProvider:
         bucket: str,
         access_key: str,
         secret_key: str,
+        session_token: str | None = None,
         endpoint_url: str | None = None,
         region: str = "us-east-1",
         provider_prefix: str = DEFAULT_PROVIDER_PREFIX,
@@ -168,6 +171,7 @@ class S3CompatibleStorageProvider:
             bucket=bucket,
             access_key=access_key,
             secret_key=secret_key,
+            session_token=session_token,
             endpoint_url=endpoint_url,
             region=region,
             prefix=f"{provider_prefix.strip('/')}/backups",
@@ -185,10 +189,58 @@ class S3CompatibleStorageProvider:
         )
 
 
+@dataclass
+class AwsS3StorageProvider(S3CompatibleStorageProvider):
+    """AWS S3 profile with no custom endpoint or ambient credential lookup."""
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        self.properties = StorageProviderProperties(
+            provider_id=AWS_S3_PROVIDER_ID,
+            network_scope="nonlocal",
+            transport="tls",
+            credential_mode="explicit-prefix-scoped",
+        )
+
+    @classmethod
+    def from_aws_credentials(
+        cls,
+        *,
+        bucket: str,
+        access_key: str,
+        secret_key: str,
+        session_token: str | None,
+        region: str,
+        provider_prefix: str,
+        timeout_seconds: float = 2.0,
+    ) -> AwsS3StorageProvider:
+        bootstrap = S3BackupObjectStore.from_credentials(
+            bucket=bucket,
+            access_key=access_key,
+            secret_key=secret_key,
+            session_token=session_token,
+            endpoint_url=None,
+            region=region,
+            prefix=f"{provider_prefix.strip('/')}/backups",
+            verify=True,
+            timeout_seconds=timeout_seconds,
+        )
+        return cls(
+            client=bootstrap._client,
+            bucket=bootstrap.bucket,
+            backup_prefix=bootstrap.prefix,
+            descriptor_prefix=f"{provider_prefix.strip('/')}/recovery",
+            network_scope="nonlocal",
+            transport="tls",
+        )
+
+
 __all__ = [
+    "AWS_S3_PROVIDER_ID",
     "FILESYSTEM_PROVIDER_ID",
     "S3_COMPATIBLE_PROVIDER_ID",
     "STORAGE_PROVIDER_PROFILE",
+    "AwsS3StorageProvider",
     "FilesystemStorageProvider",
     "S3CompatibleStorageProvider",
     "StorageProvider",

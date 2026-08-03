@@ -47,6 +47,10 @@ P6.1 adds `prototype/tests/storage_provider_contract.py`, which runs the same
 provider-level role suite against deterministic filesystem and S3-compatible
 composites without merging their distinct object contracts.
 
+`AWS-S3-PROFILE.md` records the P6.2 TLS-only AWS application profile, admitted
+gateway operations, narrow no-list IAM shape, locally reproducible tests, and
+the still-open separately authorized live-provider gate.
+
 The lower-case baseline documents remain active and must be synchronized with
 approved implementation and manuscript changes. An upper-case target-design
 file may record an owner-approved architecture direction in its status line,

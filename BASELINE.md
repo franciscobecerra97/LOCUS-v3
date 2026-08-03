@@ -280,6 +280,11 @@ contracts. Deterministic filesystem and S3-compatible composites pass the same
 role suite; nonlocal profiles require TLS and no profile requires listing. This
 does not create a real-provider result, change the frozen Compose deployment,
 or reinterpret retained evidence.
+P6.2 adds the post-baseline TLS-only AWS specialization and admitted
+application-gateway backend over the same logical roles. Local fake-S3 tests
+exercise exact capability-bound operations and a no-list prefix policy. The
+live AWS connectivity test remains opt-in and unexecuted; there is still no
+real-provider result or changed retained evidence.
 
 ## Excluded material
 

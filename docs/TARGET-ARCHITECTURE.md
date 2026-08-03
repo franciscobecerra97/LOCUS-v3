@@ -253,6 +253,11 @@ credentials.
 - no reviewer credential requirement;
 - no independent-administration or production claim.
 
+P6.2 implements the application-side AWS specialization and the exact admitted
+gateway backend. Local fake-S3 conformance is the reproducible result. The
+read-only AWS connectivity test remains separately execution-gated, so this is
+not yet a real-provider result.
+
 ## Architecture boundaries
 
 - Provider choice must not change CuePolicy or recovery-suite semantics.

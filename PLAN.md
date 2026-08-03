@@ -1729,7 +1729,7 @@ Completion record (2026-08-03):
 
 ### P6.2 Add one distinct provider adapter
 
-Status: `Approved`
+Status: `Complete for reproducible implementation; separately authorized live AWS validation remains open`
 
 Provider: AWS S3. Its role is a supplemental application-operated
 account-scoped compatibility profile, not a mandatory reviewer path or new
@@ -1752,6 +1752,37 @@ Acceptance:
   require the previously authenticated ETag/version binding.
 - Normal recovery requires no bucket listing permission.
 - Local emulation remains sufficient for reproducibility.
+
+Completion record (2026-08-03):
+
+- `LOCUS-storage-provider-aws-s3-v1` is a TLS-only AWS specialization of the
+  P6.1 provider contract. Construction requires explicit application-side
+  access key, secret key, optional session token, region, bucket, and exact
+  prefix; there is no custom endpoint or ambient credential discovery.
+- `LOCUS-application-storage-gateway-v1` executes backup create/read/delete,
+  descriptor create/read, bundle create/read, and current-pointer read/CAS only
+  after the existing P3.4 verifier accepts a short-lived subject/backup/epoch/
+  prefix/operation/proof-key/nonce/expiry-bound capability and client proof.
+  Logical keys redundantly bind every immutable digest and bundle length.
+- `LOCUS-storage-pointer-cas-v1` strictly transports the optional expected and
+  required replacement pointer. The backend verifies the replacement's backup
+  and epoch before delegating to the existing exact-byte/ETag CAS contract.
+- The generated AWS data-plane policy is bucket/prefix-scoped, TLS-conditioned,
+  and contains only exact object Get/Put/Delete permissions; it grants no list
+  operation. Clients receive neither this policy nor any AWS credential.
+- Fake-S3 tests cover all four logical roles through real D004 capability and
+  proof validation, exact retries/reads, stale CAS, cross-account rejection
+  before backend access, zero list calls, TLS/profile properties, explicit
+  session-token forwarding, and credential-safe object representations.
+- A second opt-in test provides a read-only AWS TLS/connectivity gate. It is
+  skipped by default and must not run without separate authorization and a
+  disposable synthetic research account. No live AWS result, provider
+  credential, retained evidence, or manuscript wording is included here.
+- The complete pinned gate passes with 288 Python tests (the local S3 and AWS
+  external-service gates are the two intentional skips), 8 aPPSS core tests
+  plus its fixed vector, 17 Yi core tests plus its frozen vector, native
+  formatting/Clippy, Python formatting, linting, strict typing, syntax, and
+  repository-boundary validation.
 
 ### P6.3 Generalize threshold configuration
 

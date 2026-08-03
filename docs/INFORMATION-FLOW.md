@@ -241,6 +241,14 @@ records. Its compromise does not turn provider bytes into authenticated LOCUS
 configuration and is included in future cloud-plus-descriptor/bundle snapshot
 evidence.
 
+P6.2 implements this boundary locally as
+`LOCUS-application-storage-gateway-v1`. The existing P3.4 verifier runs before
+the provider backend, and the backend rechecks exact logical keys, immutable
+digests, bundle length, backup/epoch binding, and replacement-pointer binding.
+The AWS specialization accepts explicit server credentials only and its policy
+contains no listing action. These are component facts; the opt-in AWS gate has
+not been executed and no real-provider observation is claimed.
+
 ## Clean-client boundary
 
 Client B may receive only the inputs approved in D001--D004 and the implemented

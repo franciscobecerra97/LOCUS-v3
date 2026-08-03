@@ -139,6 +139,7 @@ class S3BackupObjectStore:
         bucket: str,
         access_key: str,
         secret_key: str,
+        session_token: str | None = None,
         endpoint_url: str | None = None,
         region: str = DEFAULT_REGION,
         prefix: str = DEFAULT_PREFIX,
@@ -155,6 +156,12 @@ class S3BackupObjectStore:
             or not isinstance(secret_key, str)
             or len(secret_key) < 8
             or len(secret_key) > 256
+            or session_token is not None
+            and (
+                not isinstance(session_token, str)
+                or not session_token
+                or len(session_token) > 4096
+            )
         ):
             raise ObjectCorrupt("invalid S3 credentials")
         if (
@@ -200,6 +207,7 @@ class S3BackupObjectStore:
                 endpoint_url=endpoint_url,
                 aws_access_key_id=access_key,
                 aws_secret_access_key=secret_key,
+                aws_session_token=session_token,
                 region_name=region,
                 verify=verify,
                 config=config_class(

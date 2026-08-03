@@ -15,6 +15,7 @@ from .admission import AdmissionBinding
 from .object_store import BackupObjectStore, BackupReference
 
 MAX_OPAQUE_PUBLIC_BYTES = 1024 * 1024
+MAX_GATEWAY_PAYLOAD_BYTES = 2 * 1024 * 1024
 MAX_OPAQUE_SECRET_STATE_BYTES = 1024 * 1024
 MAX_OPAQUE_MESSAGE_BYTES = 256 * 1024
 MAX_OPAQUE_CAPABILITY_BYTES = 64 * 1024
@@ -433,7 +434,7 @@ class GatewayRequest:
         self.backup_reference.validate()
         if self.payload is not None and (
             not isinstance(self.payload, bytes)
-            or len(self.payload) > MAX_OPAQUE_PUBLIC_BYTES
+            or len(self.payload) > MAX_GATEWAY_PAYLOAD_BYTES
         ):
             raise ContractError("invalid storage payload")
 
@@ -447,7 +448,7 @@ class GatewayResult:
         self.reference.validate()
         if self.payload is not None and (
             not isinstance(self.payload, bytes)
-            or len(self.payload) > MAX_OPAQUE_PUBLIC_BYTES
+            or len(self.payload) > MAX_GATEWAY_PAYLOAD_BYTES
         ):
             raise ContractError("invalid storage result")
 

@@ -112,6 +112,23 @@ endpoint is classified only as a local-test transport. All three profiles
 prohibit listing as a required operation and preserve the P2.3 locator,
 immutability, digest-validation, and CAS semantics without reinterpretation.
 
+### P6.2 assigned AWS and admitted-gateway profiles
+
+`LOCUS-storage-provider-aws-s3-v1` is the supplemental TLS-only AWS S3
+application profile. It accepts only explicitly supplied application-side
+access key, secret key, optional session token, region, bucket, and exact
+prefix; it has no custom endpoint and does not use ambient credential lookup.
+It reuses the P6.1 S3-compatible logical contracts without claiming that local
+conformance establishes AWS behavior.
+
+`LOCUS-application-storage-gateway-v1` maps one already validated D004
+capability to one exact subject/backup/epoch-scoped backup, descriptor, bundle,
+or current-pointer operation. Its logical keys are redundant bindings and do
+not replace the frozen provider locators. `LOCUS-storage-pointer-cas-v1` is its
+bounded canonical transport object for an optional exact expected pointer and
+one required replacement pointer. Changed roles, key grammar, admission
+binding, or CAS fields require new identifiers.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

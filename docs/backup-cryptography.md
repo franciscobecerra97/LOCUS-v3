@@ -138,6 +138,16 @@ the response body, and apply the same canonical envelope/reference/digest
 validation as the filesystem adapter. ETags, server metadata, and transport
 checksums are not application integrity authorities.
 
+P6.1 composes the backup adapter with the separate descriptor, bundle, and
+current-pointer adapters under one provider-level conformance suite. P6.2 adds
+the TLS-only `LOCUS-storage-provider-aws-s3-v1` specialization and the concrete
+proof-key-bound application gateway. The AWS constructor accepts an optional
+explicit session token but no ambient credential source or custom endpoint;
+the generated exact-prefix policy has Get/Put/Delete object actions and no
+listing action. Default tests use fake S3, and the separately authorized
+read-only AWS connectivity gate remains skipped. These additions do not change
+the backup bytes or make S3 authorization an integrity/freshness authority.
+
 `deploy/compose.s3.yaml` pins SeaweedFS 4.29 by multi-platform OCI digest. The
 `s3-smoke` task generates ephemeral credentials and a unique object prefix,
 validates the resolved single-service Compose boundary, publishes S3 only on a
