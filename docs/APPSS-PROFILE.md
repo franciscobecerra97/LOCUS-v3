@@ -1,11 +1,10 @@
 # Exact aPPSS Recovery Profile
 
-Status: P1.2 recovery contract approved by D017 on 2026-08-01. This document
-freezes the cryptographic and security boundary for later implementation. It
-does not assign final protocol identifiers or wire schemas, provide an
-implementation, establish evidence, release the D018 suite selector, or
-authorize manuscript wording. P5A.1 assigns identifiers only together with
-reviewed schemas and canonical vectors.
+Status: P1.2 recovery contract approved by D017 on 2026-08-01 and exact P5A.1
+identifier/format profile frozen on 2026-08-03. This document does not claim
+that the native implementation, selector release, evidence, independent
+review, or manuscript wording is complete. `docs/APPSS-WIRE-FORMAT.md` owns the
+strict schemas, bounds, canonical public vector, and compatibility rules.
 
 ## Scope and source mapping
 
@@ -72,8 +71,8 @@ with independent uniform 16-byte coefficients and constant term `s`; share
 `s_i` is its value at party coordinate `i`.
 
 This representation is deliberately specified independently of any library's
-bit-reflected GCM multiplication API. An implementation must have fixed
-field-operation vectors before the profile receives a wire identifier.
+bit-reflected GCM multiplication API. The native core must have fixed
+field-operation vectors before P5A.2 completes.
 
 ## Canonical tuple framing and context
 
@@ -103,13 +102,13 @@ The immutable epoch context contains, in this order:
 7. the canonical configuration digest.
 
 `context_digest` is SHA-256 over the canonical tuple whose first field is the
-ASCII label `LOCUS/aPPSS/epoch-context`. The final suite identifier is assigned
-at P5A.1 with the schemas and vectors; no implementation may substitute an
-empty, default, or Yi identifier.
+ASCII label `LOCUS/aPPSS/epoch-context/v1`. The assigned suite identifier is
+`LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1`; no implementation may
+substitute an empty, default, or Yi identifier.
 
 Each server's fixed OPRF instance identifier is the canonical tuple of the
-ASCII label `LOCUS/aPPSS/2HashDH/instance`, `context_digest`, party identifier,
-and party index. This is the paper's global OPRF initialization session for
+ASCII label `LOCUS/aPPSS/2HashDH/instance/v1`, `context_digest`, party
+identifier, and party index. This is the paper's global OPRF initialization session for
 that server and epoch. A fresh online recovery session is not folded into the
 OPRF input because doing so would change the value used to mask the enrolled
 share.
@@ -120,7 +119,7 @@ CuePolicy produces exact bytes `Z_M` or fails locally. The aPPSS password is:
 
 ```text
 p_M = SHA-256(
-  Tuple("LOCUS/aPPSS/password-input", context_digest, Z_M)
+  Tuple("LOCUS/aPPSS/password-input/v1", context_digest, Z_M)
 )
 ```
 
@@ -136,7 +135,7 @@ other server receives it. Key reuse across epochs, memberships, or suite
 profiles is prohibited.
 
 For server `i`, the RFC 9497 OPRF input is the canonical tuple of the ASCII
-label `LOCUS/aPPSS/2HashDH/input`, the server's OPRF instance identifier, and
+label `LOCUS/aPPSS/2HashDH/input/v1`, the server's OPRF instance identifier, and
 `p_M`. RFC 9497 OPRF-mode `Blind`, `BlindEvaluate`, and `Finalize` are used with
 the `ristretto255-SHA512` ciphersuite. The client samples a fresh nonzero blind
 for every server evaluation and every online session. The 64-byte RFC OPRF
@@ -144,7 +143,7 @@ output is reduced to the Figure 4 mask as:
 
 ```text
 rho_i = first_16_bytes(
-  SHA-256(Tuple("LOCUS/aPPSS/2HashDH/mask", instance_id_i,
+  SHA-256(Tuple("LOCUS/aPPSS/2HashDH/mask/v1", instance_id_i,
                    rfc9497_oprf_output))
 )
 ```
@@ -168,14 +167,14 @@ The active enrollment client:
 4. encodes `e` canonically and computes:
 
    ```text
-   h = SHA-256(Tuple("LOCUS/aPPSS/commit-secret", context_digest,
+   h = SHA-256(Tuple("LOCUS/aPPSS/commit-secret/v1", context_digest,
                     p_M, canonical_e, encode_field(s)))
    C = h[0:16]
    S_R = h[16:32]
    ```
 
 5. defines public `omega=(e,C)` and its digest as
-   `SHA-256(Tuple("LOCUS/aPPSS/omega", context_digest, canonical_omega))`;
+   `SHA-256(Tuple("LOCUS/aPPSS/omega/v1", context_digest, canonical_omega))`;
 6. sends the identical canonical `omega` to every authenticated intended
    server under the enrollment-session binding; and
 7. uses `S_R` directly as HKDF input keying material for the existing backup
@@ -293,22 +292,16 @@ claims no new cryptographic construction or proof.
   domain-separated hash-to-ristretto255 operation used by the RFC 9497
   ciphersuite.
 
-## P5A.1 items still intentionally unassigned
+## P5A.1 assignment boundary
 
-The cryptographic choices above are frozen, but the following are assigned
-together only after suite-neutral interfaces, descriptor/admission contracts,
-and CuePolicy generalization reach their chronological gates:
+P5A.1 assigns the complete aPPSS suite, OPRF, password-domain, state, message,
+backup-v5, selector, and 2-of-3 profile identifiers in
+`docs/APPSS-WIRE-FORMAT.md`. It also freezes strict schemas, maximum sizes,
+typed failures, a public structural vector, one independent consumer, and the
+separate native core/library choice. RecoveryDescriptor v1 is reused only
+through its already suite-neutral fields; no descriptor bytes are
+reinterpreted.
 
-- final suite, OPRF, password-domain, state, message, backup, descriptor,
-  selector/profile, deployment, and evidence identifiers;
-- strict public-parameter, party-state, initialization, request, response, and
-  client-session schemas;
-- maximum encoded sizes and typed wire failure codes;
-- canonical vectors and one independent consumer;
-- paired 2-of-3 and 3-of-5 common-condition manifests and topology vectors; and
-- the exact native implementation/library selection.
-
-Those items may refine serialization containers and bounds but may not change
-the primitives, sizes, threshold mapping, public/private state split,
-abort-only robustness decision, or theorem/claim boundary recorded here
-without a new owner decision.
+Deployment, trace, result, artifact, retained performance, and 3-of-5 profile
+identifiers remain unassigned at their later chronological gates. P5A.1 does
+not release the selector or establish implemented cryptographic behavior.

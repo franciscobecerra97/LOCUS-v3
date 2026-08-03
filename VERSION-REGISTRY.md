@@ -162,6 +162,35 @@ party replacement, or establish rollback-resistant publication.
 None of these identifiers changes the frozen composite policy or supplies a
 recovery-suite password-input domain.
 
+### P5A.1 assigned aPPSS and selectable-suite formats
+
+P5A.1 assigns `LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1` with the
+2-of-3 profile `LOCUS-APPSS-2of3-v1`, OPRF profile
+`LOCUS-APPSS-OPRF-RISTRETTO255-SHA512-v1`, and suite password domain
+`LOCUS-APPSS-password-input-v1`. Its external family is
+`LOCUS-APPSS-wire-v1`, with separate public, pending-party, installed-party,
+request, response, state-install, state-ready, and transient-client-session
+identifiers listed in the protected ledger. The strict shapes and cross-field
+rules are frozen by `docs/APPSS-WIRE-FORMAT.md` and
+`docs/schemas/appss-wire-v1.schema.json`.
+
+`LOCUS-recovery-suite-selector-v1` selects exactly one of the frozen Yi suite
+or the new aPPSS suite for a fresh 2-of-3 enrollment/epoch. The paired Yi
+selector label `LOCUS-TPASS-YI-2of3-v1` does not change the frozen Yi suite,
+wire, backup, vector, or evidence. Recovery is descriptor-bound and never
+consults the selector as a fallback.
+
+`LOCUS-reference-backup-v5` is the first suite-neutral encrypted-backup shape;
+`LOCUS-backup-associated-data-v2` authenticates its public metadata. Backup v4
+remains frozen and Yi-specific. RecoveryDescriptor v1 already has exact
+suite-neutral suite/public-state/threshold/membership fields and is not
+reinterpreted or replaced. `LOCUS-APPSS-format-vectors-v1` is a public-only
+structural conformance corpus with an independent consumer; it is not security
+or performance evidence.
+
+Deployment, trace, result, artifact, 3-of-5 topology, and retained-performance
+identifiers remain unassigned until their later gates.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a
@@ -189,7 +218,7 @@ recovery-suite password-input domain.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite/wire identifiers and D018 one-suite-per-epoch selection rule | P5A.1 assigns aPPSS suite/domain/state/message/wire and selector/profile identifiers only with D017/D018 schemas and fixed vectors |
+| Recovery suite | Frozen Yi suite/wire plus P5A.1 aPPSS suite/domain/state/message/wire, backup-v5, and exact 2-of-3 selector/profile identifiers | P5A.2--P5A.5 implement and release the assigned formats; 3-of-5, deployment, and evidence identities remain at later gates |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
 | Backup/bundle | Frozen backup and cloud-object/reference identifiers | P2.1 assigns bundle/manifest boundaries without changing the backup member; any later suite-bound backup change receives a separate identifier |
@@ -222,10 +251,9 @@ recovery-suite password-input domain.
 No final identifiers are assigned until the corresponding design is approved.
 The following families are reserved conceptually:
 
-- recovery-suite registry and suite-neutral client/party interfaces;
-- aPPSS suite, password-input domain, OPRF profile, public parameters, party
-  state, protocol messages, canonical wire format, and fixed vectors;
-- aPPSS-bound backup, descriptor, service/API, runtime-package, deployment,
+- release implementation of the assigned recovery-suite registry and
+  suite-neutral client/party interfaces;
+- aPPSS-bound service/API, runtime-package, deployment,
   migration, performance, and security-evidence profiles;
 - RecoveryDescriptor and descriptor-current-pointer;
 - immutable recovery-bundle ZIP and bundle manifest;
@@ -259,7 +287,7 @@ D018 supersedes D007's asymmetric topology order and D016's sole-aPPSS cutover:
 
 | Family | Approved semantic boundary | Compatibility rule |
 | --- | --- | --- |
-| aPPSS recovery suite | D017 freezes Figure 4 aPPSS with RFC 9497 OPRF-mode ristretto255/SHA-512 as the concrete 2HashDH realization, `lambda=128`, canonical polynomial-basis GF(2^128), SHA-256-derived 16-byte `C` and 16-byte `S_R`, abort-only robustness, and first `k=2,n=3` evaluation | Final identifiers are assigned with schemas/vectors at P5A.1; frozen Yi TPASS remains independently selectable and is never reinterpreted |
+| aPPSS recovery suite | D017 freezes Figure 4 aPPSS with RFC 9497 OPRF-mode ristretto255/SHA-512 as the concrete 2HashDH realization, `lambda=128`, canonical polynomial-basis GF(2^128), SHA-256-derived 16-byte `C` and 16-byte `S_R`, abort-only robustness, and first `k=2,n=3` evaluation | P5A.1 assigns its exact identifiers, schemas, bounds, and public vector; later implementation/release gates must preserve them and frozen Yi remains independently selectable |
 | Recovery-suite password derivation | CuePolicy output enters an immutable suite-specific password-input domain | New domain per suite; identical CuePolicy bytes do not authorize cross-suite message or state reuse |
 | Recovery-suite selection and switching | Select Yi or aPPSS for new enrollment; recover an existing epoch only with its authenticated suite; retain or explicitly switch suites through fresh successor setup | No state conversion, mixed-suite threshold, dual-state fallback, recovery-time suite override, automatic downgrade, or in-place backup migration |
 | Paired Yi/aPPSS evidence | Correctness, below-threshold, matching combined, exact-threshold compromise, switching, and performance results under matched 2-of-3 and later 3-of-5 conditions | New schemas and suite/topology-specific paths; retained v2 Yi evidence remains frozen and cannot be pooled or relabeled; paired processors require exact common-condition manifests |

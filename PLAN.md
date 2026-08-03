@@ -1290,7 +1290,7 @@ Completion record (2026-08-03):
 ## P5A — Independent selectable Yi TPASS and aPPSS suites
 
 Direction: `Approved` by D017 and D018
-Execution status: `Proposed`
+Execution status: `In progress`
 
 This phase begins only after P1 has frozen the suite-neutral contract, P2 binds
 the suite in authenticated recovery metadata, P3 supplies authenticated
@@ -1317,7 +1317,7 @@ security properties remain distinct.
 
 ### P5A.1 Freeze the exact aPPSS profile and formats
 
-Status: `Proposed`
+Status: `Complete`
 
 Specify:
 
@@ -1353,6 +1353,14 @@ Acceptance:
   objects fail closed.
 - The selector offers Yi and aPPSS for new enrollments but is not consulted as
   a fallback during recovery.
+
+Completed 2026-08-03: `docs/APPSS-WIRE-FORMAT.md` assigns the exact suite,
+2-of-3 profile, OPRF, password-domain, state, message, selector, backup-v5, and
+associated-data identifiers with strict schemas, byte limits, typed failures,
+canonical public structural vector, and an independent consumer. The existing
+RecoveryDescriptor v1 remains suite-neutral and binds the exact aPPSS public
+state without a schema change. The selector format permits exactly one suite;
+its implementation/release remains P5A.3--P5A.5.
 
 ### P5A.2 Implement the native aPPSS core
 
