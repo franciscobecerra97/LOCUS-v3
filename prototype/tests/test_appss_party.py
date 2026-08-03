@@ -115,10 +115,17 @@ class AppssPartyTests(unittest.TestCase):
 
     def _initialize(
         self, password: bytes
-    ) -> tuple[native.AppssPublicState, bytes, list[tuple[int, bytes]], list[bytes]]:
+    ) -> tuple[
+        native.AppssPublicState,
+        bytes,
+        list[tuple[int, bytes]],
+        list[bytes],
+        list[bytes],
+    ]:
         operation_id = "a1" * 32
         masks: list[tuple[int, bytes]] = []
         responses: list[bytes] = []
+        requests: list[bytes] = []
         for index, service in enumerate(self.services, start=1):
             instance = instance_id(CONTEXT, holder(index))
             session, blinded = native.appss_blind(oprf_input(instance, password))
@@ -132,6 +139,7 @@ class AppssPartyTests(unittest.TestCase):
                 omega_digest=None,
             )
             response_bytes = service.evaluate(request)
+            requests.append(request)
             response = canonical_decode(
                 response_bytes,
                 maximum=4096,
@@ -171,11 +179,11 @@ class AppssPartyTests(unittest.TestCase):
                     json.dumps(mapping, sort_keys=True, separators=(",", ":")).encode()
                 ).hexdigest(),
             )
-        return public, secret, masks, responses
+        return public, secret, masks, responses, requests
 
     def test_independent_durable_parties_initialize_and_recover(self) -> None:
         password = b"correct".ljust(32, b"\x00")
-        public, expected, _, _ = self._initialize(password)
+        public, expected, _, _, _ = self._initialize(password)
         selected_masks: list[tuple[int, bytes]] = []
         operation_id = "c1" * 32
         for index in (1, 3):
@@ -219,7 +227,7 @@ class AppssPartyTests(unittest.TestCase):
     def test_wrong_recipient_suite_omega_replay_and_idempotency_fail_closed(
         self,
     ) -> None:
-        public, _, _, _ = self._initialize(b"p" * 32)
+        public, _, _, _, _ = self._initialize(b"p" * 32)
         instance = instance_id(CONTEXT, holder(1))
         _, blinded = native.appss_blind(oprf_input(instance, b"p" * 32))
         base = request_bytes(
@@ -314,6 +322,99 @@ class AppssPartyTests(unittest.TestCase):
                     blinded=b"\x00" * 31 + b"\x01",
                     omega_digest="f5" * 32,
                 )
+            )
+
+    def test_installed_party_replays_exact_initialization_and_install_only(
+        self,
+    ) -> None:
+        public, _, _, responses, requests = self._initialize(b"r" * 32)
+        # The original response is durable and remains retryable after install.
+        original_request = requests[0]
+        self.assertEqual(
+            AppssPartyService(self.stores[0]).evaluate(original_request), responses[0]
+        )
+        # A changed request under the original operation cannot replace it.
+        changed_request = json.loads(original_request)
+        changed_request["nonce"] = "ff" * 32
+        with self.assertRaisesRegex(AppssPartyError, "idempotency"):
+            self.services[0].evaluate(
+                json.dumps(
+                    changed_request, sort_keys=True, separators=(",", ":")
+                ).encode()
+            )
+
+        mapping = public_mapping(public)
+        transcript = hashlib.sha256(b"".join(responses)).hexdigest()
+        install = {
+            "context_digest": CONTEXT.hex(),
+            "holder_id": 1,
+            "initialization_transcript_digest": transcript,
+            "operation_id": "a1" * 32,
+            "profile_id": APPSS_PROFILE_2_OF_3,
+            "public_state": mapping,
+            "suite_id": APPSS_SUITE_ID,
+            "version": APPSS_INSTALL_FORMAT,
+        }
+        encoded = encode_checked(
+            install,
+            maximum=MAX_INSTALL_BYTES,
+            validator=validate_install,
+            label="aPPSS state install",
+        )
+        ready = self.services[0].install(encoded)
+        self.assertEqual(AppssPartyService(self.stores[0]).install(encoded), ready)
+        changed = dict(install)
+        changed["initialization_transcript_digest"] = "ff" * 32
+        with self.assertRaisesRegex(AppssPartyError, "install retry"):
+            self.services[0].install(
+                encode_checked(
+                    changed,
+                    maximum=MAX_INSTALL_BYTES,
+                    validator=validate_install,
+                    label="aPPSS state install",
+                )
+            )
+
+    def test_http_claim_recovers_exact_in_progress_request_after_restart(self) -> None:
+        key = "aa" * 32
+        caller = bytes.fromhex("ab" * 32)
+        digest = bytes.fromhex("ac" * 32)
+        self.assertIsNone(
+            self.stores[0].claim_http_request(
+                idempotency_key=key,
+                caller_digest=caller,
+                route="/v1/test",
+                request_digest=digest,
+            )
+        )
+        restarted = AppssPartyStore(self.stores[0].path, self.stores[0].binding)
+        self.assertIsNone(
+            restarted.claim_http_request(
+                idempotency_key=key,
+                caller_digest=caller,
+                route="/v1/test",
+                request_digest=digest,
+            )
+        )
+        response = b'{"ok":true}'
+        restarted.complete_http_request(
+            idempotency_key=key, status=200, response_bytes=response
+        )
+        self.assertEqual(
+            restarted.claim_http_request(
+                idempotency_key=key,
+                caller_digest=caller,
+                route="/v1/test",
+                request_digest=digest,
+            ),
+            (200, response),
+        )
+        with self.assertRaisesRegex(AppssPartyError, "binding changed"):
+            restarted.claim_http_request(
+                idempotency_key=key,
+                caller_digest=caller,
+                route="/v1/changed",
+                request_digest=digest,
             )
 
 

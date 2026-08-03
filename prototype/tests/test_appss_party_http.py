@@ -21,6 +21,7 @@ from locus.appss_formats import (
     MAX_REQUEST_BYTES,
     AppssHolderBinding,
     canonical_decode,
+    context_digest,
     encode_checked,
     instance_id,
     oprf_input,
@@ -35,13 +36,13 @@ from locus.party_http import certificate_sha256
 
 from tests.test_party_http import _create_ca, _create_leaf, _free_port
 
-CONTEXT = bytes.fromhex("31" * 32)
 ADMISSION = "32" * 32
 PROOF_KEY = "33" * 32
 
 
 def _request(
     *,
+    context: bytes,
     holder_id: int,
     blinded: bytes,
     operation_id: str,
@@ -51,7 +52,7 @@ def _request(
             "admission_grant_digest": ADMISSION,
             "blinded_element": blinded.hex(),
             "client_proof_key_digest": PROOF_KEY,
-            "context_digest": CONTEXT.hex(),
+            "context_digest": context.hex(),
             "holder_id": holder_id,
             "nonce": bytes([0x40 + holder_id] * 32).hex(),
             "omega_digest": None,
@@ -89,16 +90,18 @@ def _public_mapping(state: native.AppssPublicState) -> dict[str, object]:
 def _initialize_parties(
     services: list[AppssPartyService],
     holders: tuple[AppssHolderBinding, ...],
+    context: bytes,
     password: bytes,
 ) -> tuple[PublicRecoveryState, bytes]:
     operation_id = "61" * 32
     masks: list[tuple[int, bytes]] = []
     responses: list[bytes] = []
     for holder, service in zip(holders, services, strict=True):
-        instance = instance_id(CONTEXT, holder)
+        instance = instance_id(context, holder)
         session, blinded = native.appss_blind(oprf_input(instance, password))
         response_bytes = service.evaluate(
             _request(
+                context=context,
                 holder_id=holder.index,
                 blinded=blinded,
                 operation_id=operation_id,
@@ -115,14 +118,14 @@ def _initialize_parties(
         )
         masks.append((holder.index, native.appss_derive_mask(instance, output)))
         responses.append(response_bytes)
-    public, secret = native.appss_initialize_fixture(CONTEXT, password, 2, 3, masks)
+    public, secret = native.appss_initialize_fixture(context, password, 2, 3, masks)
     mapping = _public_mapping(public)
     public_bytes = json.dumps(mapping, sort_keys=True, separators=(",", ":")).encode()
     transcript = hashlib.sha256(b"".join(responses)).hexdigest()
     for holder, service in zip(holders, services, strict=True):
         install = encode_checked(
             {
-                "context_digest": CONTEXT.hex(),
+                "context_digest": context.hex(),
                 "holder_id": holder.index,
                 "initialization_transcript_digest": transcript,
                 "operation_id": operation_id,
@@ -167,8 +170,6 @@ class AppssPartyHttpTests(unittest.TestCase):
             )
             server_material: list[tuple[Path, Path, int]] = []
             holders: list[AppssHolderBinding] = []
-            stores: list[AppssPartyStore] = []
-            services: list[AppssPartyService] = []
             for holder_id in range(1, 4):
                 certificate, key = _create_leaf(
                     root,
@@ -183,19 +184,36 @@ class AppssPartyHttpTests(unittest.TestCase):
                         index=holder_id,
                         party_id=f"party-{holder_id}",
                         service_identity=(
-                            "spki-sha256:" + certificate_sha256(certificate)
+                            "certificate-sha256:" + certificate_sha256(certificate)
                         ),
                     )
                 )
-                store = AppssPartyStore(
+
+            backup_id = bytes.fromhex("71" * 16)
+            configuration_digest = bytes.fromhex("72" * 32)
+            holder_tuple = tuple(holders)
+            appss_context = context_digest(
+                backup_id=backup_id,
+                epoch=1,
+                policy_id="LOCUS-canonical-email-set-v1",
+                holders=holder_tuple,
+                k=2,
+                n=3,
+                configuration_digest=configuration_digest,
+            )
+            stores = [
+                AppssPartyStore(
                     root / f"party-{holder_id}.sqlite3",
-                    AppssPartyBinding(holder_id, CONTEXT),
+                    AppssPartyBinding(holder_id, appss_context),
                 )
-                stores.append(store)
-                services.append(AppssPartyService(store))
+                for holder_id in range(1, 4)
+            ]
+            services = [AppssPartyService(store) for store in stores]
 
             password = b"network-correct".ljust(32, b"\x00")
-            public, expected = _initialize_parties(services, tuple(holders), password)
+            public, expected = _initialize_parties(
+                services, holder_tuple, appss_context, password
+            )
             config_paths: list[Path] = []
             remotes: dict[int, AppssRemoteParty] = {}
             processes: list[subprocess.Popen[bytes]] = []
@@ -204,7 +222,25 @@ class AppssPartyHttpTests(unittest.TestCase):
                     server_material, start=1
                 ):
                     config = {
-                        "context_digest": CONTEXT.hex(),
+                        "context_digest": appss_context.hex(),
+                        "epoch_context": {
+                            "backup_id": backup_id.hex(),
+                            "configuration_digest": configuration_digest.hex(),
+                            "epoch": 1,
+                            "holders": [
+                                {
+                                    "index": holder.index,
+                                    "party_id": holder.party_id,
+                                    "service_identity": holder.service_identity,
+                                }
+                                for holder in holder_tuple
+                            ],
+                            "k": 2,
+                            "n": 3,
+                            "policy_id": "LOCUS-canonical-email-set-v1",
+                            "profile_id": APPSS_PROFILE_2_OF_3,
+                            "suite_id": APPSS_SUITE_ID,
+                        },
                         "holder_id": holder_id,
                         "listen_host": "127.0.0.1",
                         "listen_port": port,
@@ -251,13 +287,13 @@ class AppssPartyHttpTests(unittest.TestCase):
 
                 context = RecoveryContext(
                     recovery_id="appss-network-recovery",
-                    backup_id="71" * 16,
+                    backup_id=backup_id.hex(),
                     epoch=1,
                     suite_id=APPSS_SUITE_ID,
                     policy_id="LOCUS-canonical-email-set-v1",
-                    configuration_digest="72" * 32,
+                    configuration_digest=configuration_digest.hex(),
                     digest_context="73" * 32,
-                    suite_context_digest=CONTEXT.hex(),
+                    suite_context_digest=appss_context.hex(),
                 )
                 deadline = time.monotonic() + 10
                 while True:

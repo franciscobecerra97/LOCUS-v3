@@ -2,8 +2,9 @@
 
 Status: P1.3 typed interface layer implemented and tested on 2026-08-01; P5.1
 completed frozen-policy application routing, P5.3 added the exact four-policy
-registry, and P5A.3 implemented the separate aPPSS adapter and no-fallback suite
-registry on 2026-08-03. P5A is not released until all of its gates pass.
+registry, P5A.3 implemented the separate aPPSS adapter and no-fallback suite
+registry, and P5A.4 added authenticated distributed aPPSS initialization on
+2026-08-03. P5A is not released until all of its gates pass.
 
 ## Purpose
 
@@ -85,12 +86,13 @@ as a migration of frozen Yi state.
 
 `AppssRecoveryAdapter` separately consumes only the assigned P5A.1 aPPSS
 formats and native objects. Its central `initialize` method is explicitly a
-unit fixture, not distributed-initialization evidence. The P5A.3 network client
-keeps its OPRF blinder transient, validates every response binding, and recovers
-through exactly two authenticated holder endpoints. Each holder generates and
-persists only its own OPRF key. The registry uses the selector only for new
-epochs; recovery dispatches from one authenticated suite identifier and never
-tries the other adapter.
+unit fixture, not distributed-initialization evidence. The P5A.3/P5A.4 network
+client keeps each OPRF blinder transient, validates every response binding,
+initializes through all three authenticated holders, installs one common public
+state, and recovers through exactly two authenticated holder endpoints. Each
+holder generates and persists only its own OPRF key. The registry uses the
+selector only for new epochs; recovery dispatches from one authenticated suite
+identifier and never tries the other adapter.
 
 Both adapters return their native high-entropy output to `suite_backup.py`,
 which applies the same existing HKDF-SHA-256 and AES-256-GCM functions and
@@ -258,12 +260,15 @@ that P2, P3, P4, and P5A will add.
   no fallback;
 - backup v5 uses one common protected-key/HKDF/AES path for Yi and aPPSS; and
 - correct and wrong aPPSS recovery cross distinct pinned mutual-TLS party
-  subprocesses whose boot files contain no OPRF key.
+  subprocesses whose boot files contain no OPRF key; and
+- distributed initialization verifies exact public epoch/certificate bindings,
+  returns only after all ready acknowledgements, and rejects changed
+  caller/route/body idempotency reuse and partial installation.
 
 These tests establish interface compatibility and bounded implementation
 behavior. They do not prove aPPSS security, release selectable-suite
-enrollment, complete P5A.4 initialization/P5A.5 switching, or provide retained
-deployment evidence. P3.2 separately adds remote initial Yi enrollment without
+enrollment, complete P5A.5 switching, or provide retained deployment evidence.
+P3.2 separately adds remote initial Yi enrollment without
 changing the frozen P1 interface tests.
 
 ## Manuscript and evidence boundary

@@ -202,6 +202,14 @@ new protocol object or deployment profile. Its subprocess test is component
 verification, not retained evidence. Runtime deployment, evidence, trace, and
 artifact identifiers remain unassigned.
 
+P5A.4 adds authenticated `/v1` initialization and state-install routes without
+assigning a new protocol object: request/response and install/ready bodies are
+the exact P5A.1 formats, and pending/installed databases retain the exact P5A.1
+state formats. The public process configuration recomputes the assigned epoch
+context and pins certificate identities; it is not a portable deployment or
+evidence profile. Deployment, trace, result, and artifact identifiers remain
+unassigned.
+
 - Assigned identifiers use printable ASCII and the form
   `LOCUS-<semantic-name>-v<unsigned-integer>`.
 - Matching is exact and case-sensitive, while allocation also rejects a

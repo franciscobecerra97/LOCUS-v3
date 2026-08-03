@@ -92,7 +92,22 @@ class AppssPartyStore:
                     response_bytes BLOB,
                     PRIMARY KEY (operation, operation_id, holder_id)
                 );
+                CREATE TABLE IF NOT EXISTS appss_http_requests (
+                    idempotency_key TEXT PRIMARY KEY,
+                    caller_digest BLOB NOT NULL CHECK (length(caller_digest) = 32),
+                    route TEXT NOT NULL,
+                    request_digest BLOB NOT NULL CHECK (length(request_digest) = 32),
+                    phase TEXT NOT NULL CHECK (
+                        phase IN ('in_progress', 'retryable', 'completed')
+                    ),
+                    status INTEGER,
+                    response_bytes BLOB
+                );
                 """
+            )
+            connection.execute(
+                "UPDATE appss_http_requests SET phase = 'retryable' "
+                "WHERE phase = 'in_progress'"
             )
 
     def load_state(self) -> tuple[str, bytes, bytes | None, str] | None:
@@ -174,7 +189,17 @@ class AppssPartyStore:
             if stored_operation != operation_id:
                 raise AppssPartyError("aPPSS install operation mismatch")
             if phase == "installed":
-                if existing_public != public_state_bytes:
+                with closing(self._connect()) as connection:
+                    row = connection.execute(
+                        "SELECT install_digest FROM appss_epoch_state "
+                        "WHERE singleton = 1"
+                    ).fetchone()
+                if (
+                    existing_public != public_state_bytes
+                    or row is None
+                    or row[0] is None
+                    or bytes(row[0]) != install_digest
+                ):
                     raise AppssPartyError("aPPSS install retry changed public state")
                 return state_bytes
             if phase != "pending":
@@ -300,6 +325,91 @@ class AppssPartyStore:
             connection.commit()
             return response_bytes
 
+    def claim_http_request(
+        self,
+        *,
+        idempotency_key: str,
+        caller_digest: bytes,
+        route: str,
+        request_digest: bytes,
+    ) -> tuple[int, bytes] | None:
+        """Durably bind caller, route, and body before protocol dispatch."""
+
+        _hex(idempotency_key, "HTTP idempotency key", 32)
+        if (
+            len(caller_digest) != 32
+            or len(request_digest) != 32
+            or not route
+            or len(route) > 255
+            or not route.isascii()
+        ):
+            raise AppssPartyError("invalid aPPSS HTTP request binding")
+        with self._lock, closing(self._connect()) as connection:
+            row = connection.execute(
+                "SELECT caller_digest, route, request_digest, phase, status, "
+                "response_bytes FROM appss_http_requests "
+                "WHERE idempotency_key = ?",
+                (idempotency_key,),
+            ).fetchone()
+            if row is not None:
+                caller, stored_route, digest, phase, status, response = row
+                if (
+                    bytes(caller) != caller_digest
+                    or str(stored_route) != route
+                    or bytes(digest) != request_digest
+                ):
+                    raise AppssPartyError("aPPSS HTTP idempotency binding changed")
+                if phase == "completed":
+                    if status is None or response is None:
+                        raise AppssPartyError("invalid completed aPPSS HTTP request")
+                    return int(status), bytes(response)
+                if phase == "in_progress":
+                    raise AppssPartyError("aPPSS HTTP request is in progress")
+                connection.execute("BEGIN IMMEDIATE")
+                updated = connection.execute(
+                    "UPDATE appss_http_requests SET phase = 'in_progress' "
+                    "WHERE idempotency_key = ? AND phase = 'retryable'",
+                    (idempotency_key,),
+                ).rowcount
+                if updated != 1:
+                    connection.rollback()
+                    raise AppssPartyError("aPPSS HTTP request state changed")
+                connection.commit()
+                return None
+            connection.execute("BEGIN IMMEDIATE")
+            connection.execute(
+                "INSERT INTO appss_http_requests "
+                "(idempotency_key, caller_digest, route, request_digest, phase, "
+                "status, response_bytes) VALUES (?, ?, ?, ?, 'in_progress', NULL, NULL)",
+                (idempotency_key, caller_digest, route, request_digest),
+            )
+            connection.commit()
+            return None
+
+    def complete_http_request(
+        self, *, idempotency_key: str, status: int, response_bytes: bytes
+    ) -> None:
+        if (
+            isinstance(status, bool)
+            or not isinstance(status, int)
+            or not 100 <= status <= 599
+            or not isinstance(response_bytes, bytes)
+            or not 0 < len(response_bytes) <= MAX_INSTALL_BYTES
+        ):
+            raise AppssPartyError("invalid aPPSS HTTP response")
+        with self._lock, closing(self._connect()) as connection:
+            connection.execute("BEGIN IMMEDIATE")
+            updated = connection.execute(
+                "UPDATE appss_http_requests SET phase = 'completed', status = ?, "
+                "response_bytes = ? WHERE idempotency_key = ? "
+                "AND phase = 'in_progress'",
+                (status, response_bytes, idempotency_key),
+            ).rowcount
+            if updated != 1:
+                connection.rollback()
+                raise AppssPartyError("aPPSS HTTP request is not completable")
+            connection.commit()
+
 
 class AppssPartyService:
     """Bounded service logic with durable pre-evaluation authorization."""
@@ -324,16 +434,6 @@ class AppssPartyService:
         ):
             raise AppssPartyError("aPPSS request recipient binding mismatch")
         operation = request["operation"]
-        if operation == "initialize":
-            key = self.store.create_pending(operation_id=request["operation_id"])
-        else:
-            current = self.store.load_state()
-            if current is None or current[0] != "installed" or current[2] is None:
-                raise AppssPartyError("aPPSS party is not ready")
-            state = _decode_party_state(current[1], pending=False)
-            if request["omega_digest"] != state["omega_digest"]:
-                raise AppssPartyError("aPPSS request omega mismatch")
-            key = _native_key(state)
         request_digest = hashlib.sha256(request_bytes).digest()
         authorization_digest = bytes.fromhex(request["admission_grant_digest"])
         prior = self.store.authorize_request(
@@ -345,6 +445,16 @@ class AppssPartyService:
         )
         if prior is not None:
             return prior
+        if operation == "initialize":
+            key = self.store.create_pending(operation_id=request["operation_id"])
+        else:
+            current = self.store.load_state()
+            if current is None or current[0] != "installed" or current[2] is None:
+                raise AppssPartyError("aPPSS party is not ready")
+            state = _decode_party_state(current[1], pending=False)
+            if request["omega_digest"] != state["omega_digest"]:
+                raise AppssPartyError("aPPSS request omega mismatch")
+            key = _native_key(state)
         try:
             evaluated = native.appss_blind_evaluate(
                 key,

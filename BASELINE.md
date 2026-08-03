@@ -181,9 +181,12 @@ vector, and separate native-core boundary. P5A.2 implements that core and its
 narrow binding with public fixed vectors and regression tests. P5A.3 adds the
 independent aPPSS adapter, exact no-fallback suite registry, suite-neutral
 backup-v5 composition, durable per-holder state, transient distributed client,
-and a pinned mutual-TLS subprocess recovery path. It has not yet completed
-P5A.4 authenticated distributed initialization, P5A.5 lifecycle switching, the
-P5A release gate, or retained evidence. The locally supplied
+and a pinned mutual-TLS subprocess recovery path. P5A.4 adds authenticated
+distributed aPPSS initialization: each clean process creates only its own key,
+the client installs one common public state after exact context-bound OPRF
+evaluation, and durable caller/route/body idempotency protects the new `/v1`
+component routes. It has not yet completed P5A.5 lifecycle switching, the P5A
+release gate, or retained evidence. The locally supplied
 2024 paper is an ignored research input; it is not tracked or included in an
 artifact, and its redistribution status has not been established. None of these
 planning facts changes the inherited Yi TPASS baseline described above.

@@ -37,8 +37,9 @@ public retry-state coordinator. P3.2 implements its authenticated provisioning
 boundary: clean party processes accept only recipient-bound initial packages
 over pinned mutual TLS 1.3 with durable exact-request idempotency. The frozen Yi
 codec is active. P5A.3 separately implements aPPSS server-local OPRF-key
-creation, durable holder state, and pinned mutual-TLS recovery; authenticated
-distributed initialization and release remain P5A.4--P5A.7.
+creation, durable holder state, and pinned mutual-TLS recovery. P5A.4 adds
+authenticated distributed initialization and common-public-state installation;
+descriptor/lifecycle integration and release remain P5A.5--P5A.7.
 
 P3.3/P3.4 implement the provider-neutral local admission component boundary:
 an allowlisted synthetic subject receives an Ed25519-signed, proof-key-bound,

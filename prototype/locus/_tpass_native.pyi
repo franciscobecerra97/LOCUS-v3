@@ -108,6 +108,13 @@ def appss_blind_evaluate(
 ) -> bytes: ...
 def appss_finalize(session: AppssClientBlind, evaluated_element: bytes) -> bytes: ...
 def appss_derive_mask(instance_id: bytes, oprf_output: bytes) -> bytes: ...
+def appss_initialize(
+    context_digest: bytes,
+    password_input: bytes,
+    threshold: int,
+    parties: int,
+    masks: list[tuple[int, bytes]],
+) -> tuple[AppssPublicState, bytes]: ...
 def appss_initialize_fixture(
     context_digest: bytes,
     password_input: bytes,
@@ -115,6 +122,12 @@ def appss_initialize_fixture(
     parties: int,
     masks: list[tuple[int, bytes]],
 ) -> tuple[AppssPublicState, bytes]: ...
+def appss_recover(
+    context_digest: bytes,
+    password_input: bytes,
+    public_state: AppssPublicState,
+    masks: list[tuple[int, bytes]],
+) -> bytes: ...
 def appss_recover_fixture(
     context_digest: bytes,
     password_input: bytes,

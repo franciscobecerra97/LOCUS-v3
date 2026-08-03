@@ -326,7 +326,7 @@ fn appss_derive_mask(
 }
 
 #[pyfunction]
-fn appss_initialize_fixture(
+fn appss_initialize(
     py: Python<'_>,
     context_digest: &[u8],
     password_input: &[u8],
@@ -360,7 +360,26 @@ fn appss_initialize_fixture(
 }
 
 #[pyfunction]
-fn appss_recover_fixture(
+fn appss_initialize_fixture(
+    py: Python<'_>,
+    context_digest: &[u8],
+    password_input: &[u8],
+    threshold: u16,
+    parties: u16,
+    masks: Vec<(u16, Vec<u8>)>,
+) -> PyResult<(AppssPublicState, Py<PyBytes>)> {
+    appss_initialize(
+        py,
+        context_digest,
+        password_input,
+        threshold,
+        parties,
+        masks,
+    )
+}
+
+#[pyfunction]
+fn appss_recover(
     py: Python<'_>,
     context_digest: &[u8],
     password_input: &[u8],
@@ -377,6 +396,17 @@ fn appss_recover_fixture(
     let secret = appss_core_recover(context_digest, password_input, &public_state.inner, &masks)
         .map_err(appss_error)?;
     Ok(py_bytes(py, &secret))
+}
+
+#[pyfunction]
+fn appss_recover_fixture(
+    py: Python<'_>,
+    context_digest: &[u8],
+    password_input: &[u8],
+    public_state: PyRef<'_, AppssPublicState>,
+    masks: Vec<(u16, Vec<u8>)>,
+) -> PyResult<Py<PyBytes>> {
+    appss_recover(py, context_digest, password_input, public_state, masks)
 }
 
 #[pymethods]
@@ -558,7 +588,9 @@ fn _tpass_native(module: &Bound<'_, PyModule>) -> PyResult<()> {
     module.add_function(wrap_pyfunction!(appss_blind_evaluate, module)?)?;
     module.add_function(wrap_pyfunction!(appss_finalize, module)?)?;
     module.add_function(wrap_pyfunction!(appss_derive_mask, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_initialize, module)?)?;
     module.add_function(wrap_pyfunction!(appss_initialize_fixture, module)?)?;
+    module.add_function(wrap_pyfunction!(appss_recover, module)?)?;
     module.add_function(wrap_pyfunction!(appss_recover_fixture, module)?)?;
     Ok(())
 }

@@ -1460,7 +1460,7 @@ deployment, and retained v2 evidence remain unchanged.
 
 ### P5A.4 Integrate authenticated initialization
 
-Status: `Proposed`
+Status: `Complete`
 
 Use P3's enrollment transport so the client performs the approved OPRF
 initialization with each authenticated server and distributes the common
@@ -1477,6 +1477,28 @@ Acceptance:
 - Each ready party proves possession of the exact bound state without exposing
   its OPRF key or a cue verifier.
 - Initialization interruption cannot activate a partially provisioned epoch.
+
+Completed 2026-08-03: the transient aPPSS client now performs the production
+initialization algorithm through three certificate-pinned mutual-TLS party
+processes. Each clean process receives only public epoch configuration, derives
+and verifies the exact suite context over backup, epoch, CuePolicy, membership,
+threshold, configuration, and certificate identity, and creates its own OPRF
+key only after an authenticated initialization request arrives. The client
+collects the three blinded OPRF results, creates `omega=(e,C)` with production
+CSPRNG use, distributes the exact common public state, verifies every bound
+ready acknowledgement, and returns the high-entropy recovery secret only after
+all holders are ready. No server key crosses the process boundary.
+
+The `/v1` initialization and state-install routes reuse the already assigned
+P5A.1 request, response, install, and ready objects. Their HTTP idempotency
+records durably bind the authenticated caller certificate, exact route, and
+body digest before protocol dispatch; exact completion survives restart,
+whereas changed caller/route/body reuse conflicts. Tests reject wrong server,
+recipient, suite, context/epoch, route, body, replay, and install transcript.
+An injected third-holder install interruption returns no initialization result
+and leaves only non-activated holder-local pending/installed state; descriptor
+and lifecycle activation remain P5A.5. The networkless central initializer
+remains fixture-only and supplies no distributed-initialization evidence.
 
 ### P5A.5 Implement suite selection and successor switching
 

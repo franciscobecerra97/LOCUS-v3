@@ -109,7 +109,7 @@ are, an enrolled caller can grow a party database with unique failed requests.
 Compaction must never delete the underlying counted ledger/phase binding or make
 a completed key executable again.
 
-### P5A.3 aPPSS component route
+### P5A.3/P5A.4 aPPSS component routes
 
 P5A.3 adds the separate component route
 `POST /v1/recovery-suites/appss/evaluations`. It accepts exactly one bounded
@@ -118,6 +118,15 @@ authentication and returns exactly one `LOCUS-APPSS-response-v1` body. Both
 client and server certificates are pinned by SHA-256 fingerprint. The route
 does not accept Yi objects, a suite preference list, client-session state, raw
 cues, or an exported OPRF key.
+
+P5A.4 adds `POST /v1/recovery-suites/appss/initializations` for the exact
+`operation=initialize` request and
+`POST /v1/recovery-suites/appss/state-installs` for the exact P5A.1 install
+object. A clean service boot file contains the public backup, epoch, CuePolicy,
+membership, threshold, configuration, suite/profile, and certificate identity
+bindings. The service recomputes their context digest and rejects any mismatch
+before accepting traffic. Each holder creates its own OPRF key after its first
+authenticated initialization request; the client never receives that key.
 
 Each process opens one holder-bound SQLite database. The database contains only
 that holder's pending or installed P5A.1 state, public `omega`, exact request
@@ -129,12 +138,18 @@ state installation fail closed. The transient client validates the complete
 response binding before finalization and normalizes wrong input and remote
 protocol errors.
 
-This route is a P5A.3 component boundary, not the released party API or a new
-deployment/evidence profile. P5A.4 must reuse the P3 authenticated enrollment
-transport for distributed initialization and exact state installation. P5A.5
-must integrate descriptor-bound new enrollment and successor switching. The
-existing Yi ledger/commitment/response API and retained deployment are
-unchanged.
+Every mutating aPPSS component call first commits a transport record binding the
+authenticated client-certificate digest, exact `/v1` route, idempotency key,
+and body digest. An exact completed response survives restart; changed caller,
+route, or body reuse conflicts. The client creates the common public state only
+after all three OPRF responses and returns an initialization result only after
+all three exact ready acknowledgements. Partial installation does not publish
+or activate a descriptor-bound epoch.
+
+These are component boundaries, not the released party API or a new
+deployment/evidence profile. P5A.5 must integrate descriptor-bound new
+enrollment and successor switching. The existing Yi
+ledger/commitment/response API and retained deployment are unchanged.
 
 ## Common error contract
 
