@@ -1,6 +1,8 @@
 # Integrated Reference System
 
-Status: D023 owner-approved target; P7.5 implementation not started.
+Status: D023 owner-approved target; P7.5 implementation in progress. The
+normal four-arm/all-policy clean-client workflow passes, but the complete
+fault/lifecycle/clean-checkout gate remains open.
 
 ## Purpose
 
@@ -84,10 +86,11 @@ fallback. Same-suite and bidirectional cross-suite successors create fresh
 state and a consecutive epoch. Every evidence row remains suite/topology
 specific even when a comparative processor checks matched common conditions.
 
-The exact integrated deployment/configuration identifiers are deliberately
-unassigned until P7.5 work package 1 introduces the strict manifest/schema,
-compatibility rules, validators, and first canonical synthetic configuration
-together.
+The exact family is `LOCUS-integrated-reference-deployment-v1` with canonical
+manifest `LOCUS-integrated-reference-config-v1`. The admitted storage path uses
+the separately versioned `LOCUS-cloud-backup-object-v2` and
+`LOCUS-application-storage-gateway-v2` for registered backup v5/v6 objects;
+frozen cloud-object/gateway v1 behavior remains unchanged.
 
 ## Provider boundary
 
@@ -135,9 +138,9 @@ The clean recovery path then:
 No active path may rely on direct party-volume state injection, a surviving
 Client A credential, hidden developer state, or the P7 in-memory record store.
 
-## Operator workflow target
+## Operator workflow
 
-P7.5 must provide:
+P7.5 provides:
 
 - one cross-platform task that validates configuration, creates the disposable
   deployment, starts every required service, waits for health, and exposes the
@@ -147,8 +150,20 @@ P7.5 must provide:
   containers, networks, volumes and generated credentials; and
 - explicit exact-target cleanup and status operations for an interactive run.
 
-Final command names are assigned with the implementation. The browser does not
+Use `uv run --frozen python tasks.py integrated-config` to validate both
+resolved graphs, `integrated-start --mode enrollment` for Client A,
+`integrated-start --mode recovery` to replace it with Client B while keeping
+the service plane, and `integrated-stop` to stop client containers. Add
+`--destroy` only for exact-project container/volume/image destruction. The
+disposable normal/fault workflow is `integrated-smoke`. The browser does not
 control Docker and receives no Docker socket or operator credential.
+
+The confirmed development run covers all four suite/topology arms, all four
+policy paths, clean-client isolation, wrong input, suite-bound dispatch, four
+normal successor directions and cleanup. Full exact-subset enumeration,
+crash-safe lifecycle retirement, the remaining fault matrix, output/canary
+scan and a second clean checkout are still acceptance gates, not completed
+results.
 
 ## P7.5 acceptance boundary
 

@@ -21,6 +21,7 @@ from .codec import encode
 from .crypto import hash_bytes
 
 CLOUD_OBJECT_VERSION = "LOCUS-cloud-backup-object-v1"
+CLOUD_OBJECT_VERSION_V2 = "LOCUS-cloud-backup-object-v2"
 CLOUD_REFERENCE_VERSION = "LOCUS-cloud-backup-reference-v1"
 MAX_BACKUP_OBJECT_BYTES = 1024 * 1024
 MAX_EPOCH = 2**63 - 1
@@ -252,6 +253,37 @@ def encode_backup_object(backup: dict[str, Any]) -> tuple[BackupReference, bytes
     return reference, encoded
 
 
+def encode_versioned_backup_object(
+    backup: dict[str, Any],
+) -> tuple[BackupReference, bytes]:
+    """Encode the additive v5/v6 backup envelope used by the integrated profile.
+
+    The frozen v1 encoder above deliberately remains byte-for-byte narrow.  This
+    separately identified envelope accepts only the already registered v5/v6
+    backup shapes and keeps the same exact-reference and size guarantees.
+    """
+
+    _validate_backup_reference_shape(backup)
+    if backup["version"] not in {
+        "LOCUS-reference-backup-v5",
+        "LOCUS-reference-backup-v6",
+    }:
+        raise ObjectCorrupt("unsupported versioned cloud backup")
+    reference = BackupReference.from_backup(backup)
+    encoded = encode(
+        {
+            "version": CLOUD_OBJECT_VERSION_V2,
+            "bid": reference.bid,
+            "epoch": reference.epoch,
+            "backup_digest": reference.backup_digest,
+            "backup": backup,
+        }
+    )
+    if len(encoded) > MAX_BACKUP_OBJECT_BYTES:
+        raise ObjectTooLarge("cloud backup object exceeds size limit")
+    return reference, encoded
+
+
 def decode_backup_object(
     encoded: bytes, *, expected: BackupReference | None = None
 ) -> tuple[BackupReference, dict[str, Any]]:
@@ -274,6 +306,40 @@ def decode_backup_object(
     backup = envelope["backup"]
     _validate_backup_shape(backup)
     assert isinstance(backup, dict)
+    if BackupReference.from_backup(backup) != reference:
+        raise ObjectCorrupt("cloud envelope binding mismatch")
+    if expected is not None and reference != expected:
+        raise ObjectCorrupt("cloud object does not match expected reference")
+    return reference, backup
+
+
+def decode_versioned_backup_object(
+    encoded: bytes, *, expected: BackupReference | None = None
+) -> tuple[BackupReference, dict[str, Any]]:
+    """Decode the separately versioned v5/v6 cloud-backup envelope."""
+
+    if not encoded or len(encoded) > MAX_BACKUP_OBJECT_BYTES:
+        if len(encoded) > MAX_BACKUP_OBJECT_BYTES:
+            raise ObjectTooLarge("cloud backup object exceeds size limit")
+        raise ObjectCorrupt("empty cloud backup object")
+    envelope = _decode_canonical_json(encoded)
+    keys = {"version", "bid", "epoch", "backup_digest", "backup"}
+    if set(envelope) != keys or envelope["version"] != CLOUD_OBJECT_VERSION_V2:
+        raise ObjectCorrupt("unsupported versioned cloud backup object")
+    reference = BackupReference(
+        bid=envelope["bid"],
+        epoch=envelope["epoch"],
+        backup_digest=envelope["backup_digest"],
+    )
+    reference.validate()
+    backup = envelope["backup"]
+    _validate_backup_reference_shape(backup)
+    assert isinstance(backup, dict)
+    if backup["version"] not in {
+        "LOCUS-reference-backup-v5",
+        "LOCUS-reference-backup-v6",
+    }:
+        raise ObjectCorrupt("unsupported versioned cloud backup")
     if BackupReference.from_backup(backup) != reference:
         raise ObjectCorrupt("cloud envelope binding mismatch")
     if expected is not None and reference != expected:

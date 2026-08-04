@@ -2066,7 +2066,8 @@ Completion record:
 
 Direction: `Approved` by D023
 
-Execution status: `Not started`
+Execution status: `In progress — work packages 1--3 and the normal-path
+portion of work package 4 are implemented; work package 5 is not yet closed`
 
 P7.5 is the next chronological phase. It composes the already implemented UI,
 client API, admission, descriptor/bootstrap, provider gateway, resolver,
@@ -2098,7 +2099,7 @@ and sessions.
 
 #### Work package 1 — Freeze the integrated deployment contract
 
-Status: `Approved — next chronological task`
+Status: `Done`
 
 Define and validate:
 
@@ -2132,7 +2133,7 @@ Acceptance:
 
 #### Work package 2 — Implement the container service plane
 
-Status: `Approved — depends on P7.5 work package 1`
+Status: `Done`
 
 Implement container/service entry points for admission, operator/discovery,
 storage gateway, resolver, and the five parties using their already assigned
@@ -2155,7 +2156,7 @@ Acceptance:
 
 #### Work package 3 — Connect the frozen UI/API to the deployed services
 
-Status: `Approved — depends on P7.5 work package 2`
+Status: `Done`
 
 Retain the P7 semantic HTML/CSS/JavaScript and exact public API operations.
 Introduce a deployment-backed implementation of those operations that uses
@@ -2177,7 +2178,9 @@ Acceptance:
 
 #### Work package 4 — Implement the complete enrollment/recovery/lifecycle workflow
 
-Status: `Approved — depends on P7.5 work package 3`
+Status: `In progress — all arms, all policies, clean recovery and normal
+same-/cross-suite successor paths pass; crash-safe predecessor retirement is
+not yet connected to the deployed lifecycle protocol`
 
 For every selected arm, drive synthetic key generation/import, policy
 processing, authenticated suite initialization, encryption, provider
@@ -2200,7 +2203,8 @@ Acceptance:
 
 #### Work package 5 — Close the pre-evidence full-system gate
 
-Status: `Approved — depends on P7.5 work package 4`
+Status: `In progress — the four-arm clean-client smoke passes; the expanded
+fault matrix and second-clean-checkout reproduction remain open`
 
 Provide one cross-platform interactive start path and one disposable full-
 system smoke path. The smoke matrix covers correct and wrong input,
@@ -2219,6 +2223,31 @@ Acceptance:
 - Results remain ordinary test output. No P8/P9 retained corpus, real-provider
   claim, host-independence claim, usability claim, or manuscript change is
   created by P7.5.
+
+Implementation snapshot (2026-08-04):
+
+- `LOCUS-integrated-reference-config-v1` and
+  `LOCUS-integrated-reference-deployment-v1` now bind the strict canonical
+  manifest, Compose graph, all four arms, all four policies, exact identities,
+  networks, role volumes and local provider.
+- `LOCUS-cloud-backup-object-v2` and
+  `LOCUS-application-storage-gateway-v2` add the v5/v6 backup envelope behind
+  the admitted integrated gateway without widening frozen v1 operations.
+- The networkless bootstrap, mutual-TLS JSON service plane, remote client API,
+  loopback UI, role-state audit, configuration validator, interactive launcher
+  and disposable smoke are implemented. Windows raw-key creation is explicitly
+  binary-safe.
+- One live same-host run passed all four suite/topology arms, all four policy
+  enrollment/recovery paths, Client A destruction/audit, Client B recovery,
+  wrong-input rejection, four normal successor/recovery paths and exact
+  cleanup. This is ordinary development output, not retained evidence.
+- The later expanded fault run reached the one-party-unavailability check; its
+  first aPPSS subset selection failed and was changed to the Yi 3-of-5 subset
+  control, but the corrected run could not be executed after the local Docker
+  execution allowance was exhausted. Exact-subset enumeration, below-threshold
+  isolation from authorization loss, stale CAS/replay, crash-boundary successor
+  retirement, output/canary scanning and clean-checkout reproduction therefore
+  remain required before work package 5 can be marked done.
 
 ---
 
@@ -2554,24 +2583,21 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended next execution slice
 
-Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.4 are
-complete for implementation chronology. P6.4's actual host-separation tiers
-remain blocked on infrastructure and do not block D023's honest same-host
-integrated profile.
+Execution remains chronological. P0--P5A, P6.1--P6.3, P7.1--P7.4, and P7.5
+work packages 1--3 are complete for implementation chronology. P6.4's actual
+host-separation tiers remain blocked on infrastructure and do not block D023's
+honest same-host integrated profile.
 
 The next sequence is:
 
-1. P7.5 work package 1 — freeze the integrated manifest, service graph, role
-   state, and new deployment/configuration allocation gate;
-2. P7.5 work package 2 — implement the container service plane;
-3. P7.5 work package 3 — connect the frozen UI/API to deployed services;
-4. P7.5 work package 4 — complete enrollment, clean recovery and successor
-   lifecycle;
-5. P7.5 work package 5 — pass the same-host full-system and clean-checkout
+1. P7.5 work package 4 — connect crash-safe successor activation and
+   predecessor retirement to the deployed lifecycle protocol;
+2. P7.5 work package 5 — finish and pass the exact subset, fault,
+   state/output-scan, cleanup, and second-clean-checkout
    gate;
-6. P8 — assure that exact integrated system and define privacy-safe traces;
-7. P9 — collect new suite/topology-specific results from that system; and
-8. P10 — complete independent review, integrated artifact reproduction, claim
+3. P8 — assure that exact integrated system and define privacy-safe traces;
+4. P9 — collect new suite/topology-specific results from that system; and
+5. P10 — complete independent review, integrated artifact reproduction, claim
    closure, and separately owner-approved manuscript changes.
 
 Do not collect retained P8/P9 evidence, promote a system result, or propose a

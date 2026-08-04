@@ -12,7 +12,13 @@ from locus.appss_formats import (
     YI_SUITE_ID,
 )
 from locus.contracts import RecoveryContext, ThresholdParameters
-from locus.object_store import BackupReference, ObjectCorrupt, encode_backup_object
+from locus.object_store import (
+    BackupReference,
+    ObjectCorrupt,
+    decode_versioned_backup_object,
+    encode_backup_object,
+    encode_versioned_backup_object,
+)
 from locus.recovery_suite_registry import RecoverySuiteRegistry
 from locus.suite_backup import (
     SuiteBackupError,
@@ -148,6 +154,12 @@ class SuiteBackupTests(unittest.TestCase):
             self.assertEqual((reference.bid, reference.epoch), (context.backup_id, 1))
             with self.assertRaises(ObjectCorrupt):
                 encode_backup_object(backup)
+            v2_reference, encoded = encode_versioned_backup_object(backup)
+            decoded_reference, decoded = decode_versioned_backup_object(
+                encoded, expected=v2_reference
+            )
+            self.assertEqual(decoded_reference, reference)
+            self.assertEqual(decoded, backup)
 
     def test_wrong_input_cross_suite_and_tampering_are_generic_rejection(self) -> None:
         registry = RecoverySuiteRegistry()

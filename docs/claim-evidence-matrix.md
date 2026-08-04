@@ -15,8 +15,12 @@ D023 makes the future P7.5 integrated deployment manifest and its complete
 UI-to-service graph the mandatory system under test for new central security,
 information-flow, performance, resilience, and artifact results. Existing
 component tests, frozen deployments, and retained corpora keep their exact
-scopes as supporting controls. The D023 decision and P7.5 plan are not evidence,
-do not change any state below, and do not authorize a manuscript delta.
+scopes as supporting controls. P7.5 now has a strict implemented manifest,
+authenticated service plane, deployed UI bridge and a passing ordinary
+development smoke for all four suite/topology arms, all four policy paths,
+clean Client B recovery and normal successors. That run is not retained
+evidence: the complete lifecycle/fault/output/clean-checkout gate remains open,
+so it does not change any state below or authorize a manuscript delta.
 
 ## Claim Matrix
 

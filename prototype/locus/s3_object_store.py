@@ -20,7 +20,9 @@ from .object_store import (
     ObjectStoreUnavailable,
     ObjectTooLarge,
     decode_backup_object,
+    decode_versioned_backup_object,
     encode_backup_object,
+    encode_versioned_backup_object,
 )
 
 DEFAULT_REGION = "us-east-1"
@@ -328,10 +330,62 @@ class S3BackupObjectStore:
                 raise ObjectStoreUnavailable("S3 object store is unavailable") from exc
         raise ObjectStoreUnavailable("S3 conditional write did not converge")
 
+    def create_versioned(self, backup: dict[str, Any]) -> BackupReference:
+        """Publish a v5/v6 object without widening the frozen v1 operation."""
+
+        reference, encoded = encode_versioned_backup_object(backup)
+        key = self.object_key(reference)
+        checksum = base64.b64encode(hashlib.sha256(encoded).digest()).decode("ascii")
+        for attempt in range(MAX_CONDITIONAL_WRITE_ATTEMPTS):
+            try:
+                self._client.put_object(
+                    Bucket=self.bucket,
+                    Key=key,
+                    Body=encoded,
+                    ContentLength=len(encoded),
+                    ContentType="application/json",
+                    ChecksumSHA256=checksum,
+                    IfNoneMatch="*",
+                    Metadata={
+                        "locus-backup-digest": reference.backup_digest,
+                        "locus-object-version": "v2",
+                    },
+                )
+                return reference
+            except Exception as exc:
+                if _is_precondition_failed(exc):
+                    try:
+                        existing = self._read_encoded(reference)
+                    except ObjectNotFound:
+                        if attempt + 1 < MAX_CONDITIONAL_WRITE_ATTEMPTS:
+                            continue
+                        raise ObjectStoreUnavailable(
+                            "S3 conditional write raced with deletion"
+                        ) from exc
+                    if existing == encoded:
+                        return reference
+                    raise ObjectConflict(
+                        "immutable cloud backup object already exists"
+                    ) from None
+                if _is_conditional_conflict(exc) and (
+                    attempt + 1 < MAX_CONDITIONAL_WRITE_ATTEMPTS
+                ):
+                    continue
+                raise ObjectStoreUnavailable("S3 object store is unavailable") from exc
+        raise ObjectStoreUnavailable("S3 conditional write did not converge")
+
     def read(self, reference: BackupReference) -> dict[str, Any]:
         reference.validate()
         encoded = self._read_encoded(reference)
         _, backup = decode_backup_object(encoded, expected=reference)
+        return backup
+
+    def read_versioned(self, reference: BackupReference) -> dict[str, Any]:
+        """Read and validate the exact v5/v6 envelope."""
+
+        reference.validate()
+        encoded = self._read_encoded(reference)
+        _, backup = decode_versioned_backup_object(encoded, expected=reference)
         return backup
 
     def delete(self, reference: BackupReference) -> None:

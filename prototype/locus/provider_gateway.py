@@ -28,7 +28,9 @@ from .object_store import (
     BackupReference,
     ObjectCorrupt,
     decode_backup_object,
+    decode_versioned_backup_object,
     encode_backup_object,
+    encode_versioned_backup_object,
 )
 from .recovery_descriptor import (
     CURRENT_POINTER_VERSION,
@@ -38,6 +40,7 @@ from .recovery_descriptor import (
 from .storage_provider import StorageProvider
 
 PROVIDER_GATEWAY_PROFILE = "LOCUS-application-storage-gateway-v1"
+PROVIDER_GATEWAY_PROFILE_V2 = "LOCUS-application-storage-gateway-v2"
 POINTER_CAS_FORMAT = "LOCUS-storage-pointer-cas-v1"
 MAX_CAS_PAYLOAD_BYTES = 4 * MAX_POINTER_BYTES + 1024
 
@@ -368,6 +371,43 @@ class ProviderStorageGatewayBackend:
         if relative.startswith("current/"):
             return self._current(request)
         raise ObjectCorrupt("unsupported gateway object role")
+
+
+@dataclass
+class VersionedProviderStorageGatewayBackend(ProviderStorageGatewayBackend):
+    """Additive gateway for registered v5/v6 backup objects.
+
+    All descriptor, bundle, pointer, admission, and object-key behavior is
+    inherited unchanged.  Only the backup-envelope codec is replaced, leaving
+    the frozen v1 gateway semantics intact for its retained evidence.
+    """
+
+    profile_id: str = PROVIDER_GATEWAY_PROFILE_V2
+
+    def _backup(self, request: GatewayRequest) -> GatewayResult:
+        if request.object_key != backup_object_key(
+            self.subject_id, request.backup_reference
+        ):
+            raise ObjectCorrupt("backup gateway key mismatch")
+        backups = cast(Any, self.provider.backups)
+        if request.operation is StorageOperation.CREATE_IMMUTABLE:
+            _reference, backup = decode_versioned_backup_object(
+                self._require_payload(request), expected=request.backup_reference
+            )
+            stored = backups.create_versioned(backup)
+            if stored != request.backup_reference:
+                raise ObjectCorrupt("stored backup reference mismatch")
+            return GatewayResult(reference=stored)
+        if request.operation is StorageOperation.READ_EXACT:
+            backup = backups.read_versioned(request.backup_reference)
+            reference, encoded = encode_versioned_backup_object(backup)
+            if reference != request.backup_reference:
+                raise ObjectCorrupt("stored backup reference mismatch")
+            return GatewayResult(reference=reference, payload=encoded)
+        if request.operation is StorageOperation.DELETE_EXACT:
+            backups.delete(request.backup_reference)
+            return GatewayResult(reference=request.backup_reference)
+        raise ObjectCorrupt("unsupported backup gateway operation")
 
 
 def aws_prefix_policy(*, bucket: str, prefix: str) -> dict[str, Any]:

@@ -192,6 +192,27 @@ Only the public receipt has an explicit download path. A hosted origin,
 third-party framework, changed route/request semantics, persistence mechanism,
 or recovered-secret export requires a new profile and privacy review.
 
+### P7.5 assigned integrated reference family
+
+`LOCUS-integrated-reference-deployment-v1` identifies the D023 same-host
+UI-to-services Compose graph. `LOCUS-integrated-reference-config-v1` is its
+strict canonical public manifest: both approved suites at 2-of-3 and 3-of-5,
+five authorizers with a distinct 4-of-5 authorization quorum, all four frozen
+CuePolicies, the local S3-compatible provider role, exact service identities,
+and exact network membership. The manifest contains no generated credential or
+secret-bearing value. A changed provider, topology, admission adapter, public
+API/UI meaning, role placement, or evaluation boundary requires a new profile;
+the identifiers do not reinterpret Compose v2 or any retained result.
+
+The manifest binds `LOCUS-cloud-backup-object-v2`, the additive canonical
+envelope for registered backup v5/v6 objects, and
+`LOCUS-application-storage-gateway-v2`, which changes only the backup-envelope
+codec behind the admitted gateway. Frozen cloud-object/gateway v1 operations
+remain narrow and unchanged. The v2 envelope retains exact `(bid, epoch,
+digest)`, size, immutable-create, exact-retry, and exact-read validation; a new
+accepted backup family or changed gateway role/key/admission meaning requires a
+new identifier.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

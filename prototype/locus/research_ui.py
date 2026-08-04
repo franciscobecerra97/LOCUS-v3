@@ -86,7 +86,7 @@ def _asset(name: str, content_type: str) -> UiResponse:
 class ResearchUiApplication:
     """Strict route adapter; request bodies and exception text are never logged."""
 
-    def __init__(self, client: LocalResearchClientApi | None = None) -> None:
+    def __init__(self, client: Any | None = None) -> None:
         self.client = LocalResearchClientApi() if client is None else client
 
     def dispatch(
