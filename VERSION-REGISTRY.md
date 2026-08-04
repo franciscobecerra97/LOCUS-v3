@@ -356,6 +356,7 @@ separate suite/topology evidence paths before collection.
 | Backup/bundle | Frozen backup-v4, suite-neutral backup-v5, paired-topology backup-v6, and P2 bundle/manifest identifiers | Any later suite/topology or bundle semantic change receives a separate identifier |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
 | Deployment | Frozen same-host Yi profile plus P6.3 matched same-host process profiles for Yi/aPPSS 2-of-3 and 3-of-5 | P6.4 host separation is a distinct profile; independent administration requires actual operators and separate approval |
+| Integrated reference deployment | D023-approved semantic family; exact identifier remains unassigned | P7.5 work package 1 assigns the strict manifest/configuration schema, canonical synthetic manifest, resolved-graph vector, validators, compatibility rules, and first implementation together |
 | Trace | Frozen retained trace-policy identifier | P8.3 assigns a new trace profile only after the collection and retained-output schema is approved |
 | Result | Frozen retained attack/performance/evidence families | P9.2 assigns new schemas before collection and keeps Yi/aPPSS and topology results disjoint |
 | Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | P10.3 assigns a later portable-artifact identifier with a new manifest and allowlist |
@@ -393,6 +394,7 @@ The following families are reserved conceptually:
   canonical-email-set policies;
 - explicit `NoResolver` profile;
 - clean-client deployment;
+- complete UI-to-container integrated reference deployment;
 - public admission;
 - multi-host deployment;
 - additional provider adapters;
@@ -411,7 +413,7 @@ remain unchanged.
 
 ## Approved family gates
 
-D001, D003--D005, D008--D010, and D014--D018 approve the architecture direction
+D001, D003--D005, D008--D010, D014--D018, and D023 approve the architecture direction
 for the following families. P2.1 assignments are listed above; remaining exact
 identifiers stay unassigned until their recorded gate passes. D015 supersedes
 the unassigned personal-cloud-account and Google Drive families from D002/D006;
@@ -438,6 +440,7 @@ D018 supersedes D007's asymmetric topology order and D016's sole-aPPSS cutover:
 | Host/administration scope | Same-host process separation, later host separation, and actual independent administration are distinct meanings | A changed topology or administrative principal set requires a new deployment/evidence profile |
 | Local attempt audit | Signed local records are diagnostic evidence without a global rollback-resistant bound | Existing frozen attempt formats are not reinterpreted; any monotonic authority is a separate D012 profile |
 | Thin cross-platform UI | UI calls stable client APIs and contains no protocol/canonicalization logic | Framework/profile assigned only after API freeze; no change to protocol bytes or usability claim |
+| Primary integrated reference system | One new same-host deployment family connects the frozen UI/API semantics to authenticated admission, discovery, storage-gateway/local-S3, resolver, and five-party services for Yi/aPPSS at 2-of-3 and 3-of-5 | Allocate only with the P7.5 manifest/schema/vector/validator gate; preserve Compose v2, P6 process profiles, UI v1, client API v1, and retained evidence; changed provider, topology, admission adapter, UI/API semantics, or role placement requires a distinct profile |
 | AWS S3 provider | Supplemental application-operated implementation of the logical backup, descriptor, current-pointer, and bundle contracts | New provider profile; local/S3-compatible identifiers unchanged |
 
 ## Assigned artifact package profiles

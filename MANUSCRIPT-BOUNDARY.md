@@ -49,3 +49,14 @@ Every manuscript update must:
 
 An owner decision about implementation scope does not implicitly authorize a
 narrative change.
+
+D023 therefore authorizes only planning and implementation of the new
+integrated reference system and its chronological P8/P9/P10 gates. It does not
+authorize a paper statement that the system exists, was evaluated, improves
+security or performance, or supports any deployment claim. After the
+integrated implementation, mapping review, retained evidence, clean-host
+artifact reproduction, and claim-matrix closure are complete, each proposed
+system description, result, table, figure, claim, and limitation must still be
+presented as an exact manuscript delta for separate owner approval. Any
+approved result must identify the evaluated integrated profile; component or
+historical evidence may not be relabeled as full-system evidence.

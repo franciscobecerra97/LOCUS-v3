@@ -317,6 +317,30 @@ browser checks support component conformance only. The UI adds no retained
 evidence, human/usability result, external admission, real-provider result,
 production-security claim, or manuscript change.
 
+## Post-baseline integrated-system planning note
+
+At the D023 decision point, the implemented P7 UI/client API is still a
+same-process component profile and the frozen Compose deployment remains a
+separate Yi-only historical profile. They are not two alternative final
+systems, and neither currently demonstrates the complete browser-to-container
+path.
+
+D023 approves P7.5 to create a new, separately versioned same-host reference
+system. Its loopback UI/client gateway will use authenticated remote adapters
+to the local synthetic admission service, operator/discovery service,
+application storage gateway and local S3-compatible provider, resolver when
+required, and five authorizer/recovery-party containers. The target covers Yi
+and aPPSS at 2-of-3 and 3-of-5 and becomes the required system boundary for new
+P8/P9 system evidence and the later artifact.
+
+This section records approved planning only. P7.5 has not yet implemented,
+tested, or collected evidence for that composition. It creates no current
+capability, host-separation or independent-administration result, real-provider
+result, usability result, production-security claim, or manuscript
+authorization. The inherited baseline, frozen identifiers, P6/P7 component
+profiles, and retained v1/v2 evidence above remain unchanged and
+non-transferable.
+
 ## Excluded material
 
 The portable copy excludes:

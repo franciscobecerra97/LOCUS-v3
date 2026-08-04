@@ -32,6 +32,7 @@ REQUIRED_RESERVATIONS = {
     "backup-and-bundle",
     "deployment",
     "descriptor",
+    "integrated-reference-deployment",
     "policy-and-resolver",
     "recovery-suite",
     "result",

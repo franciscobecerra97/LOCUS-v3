@@ -15,6 +15,12 @@ blocks against clean cutover commit `12ca815` and pseudonymous host
 `cycle1-v2-host-a`. All 33 v2 records passed output scanning and cleanup; no
 LOCUS container, volume, or network remained after the collection audit.
 
+D023 does not reinterpret this deployment or its retained results. It approves
+a separately versioned P7.5 successor that connects the loopback UI/client
+gateway to every required runtime service and becomes the primary P8/P9
+system-under-test. P7.5 is not yet implemented; none of the commands in this
+document starts that integrated system.
+
 The performance runner builds its reference image under the fixed
 `locus-performance-image-v1` Compose identity before a block and reuses the
 inspected image ID in all three disposable scenario records. This avoids
@@ -31,6 +37,39 @@ This deployment is a same-host research artifact. Containers, networks, and
 volumes demonstrate explicit software boundaries; they do not establish
 independent administration, resistance to a malicious Docker host, or Internet
 deployment security.
+
+## Frozen deployment and D023 successor
+
+The implemented graph in this document preserves the exact
+`LOCUS-compose-deployment-v2` meaning and its frozen Yi profile. Its smoke,
+attack, benchmark, configurable-endpoint, and retained-evidence workflows
+remain valid only for their recorded manifests and provenance.
+
+P7.5 will create a new deployment family with these runtime roles:
+
+- an ephemeral UI/client gateway exposed only on host loopback;
+- a local synthetic admission/capability service;
+- an operator/discovery/signing service;
+- an application storage gateway;
+- a local S3-compatible object store;
+- a resolver service; and
+- five authenticated authorizer/holder parties.
+
+The browser will reach only the UI/client gateway. The gateway will call the
+other services through authenticated adapters, and the storage gateway alone
+will hold provider credentials. A networkless bootstrap may create synthetic
+credentials, public configuration, empty role roots, and fixtures, but it may
+not inject Yi/aPPSS state, protected-key state, or surviving enrollment-client
+state. Client A enrollment and Client B recovery will use separate ephemeral
+roots and identities.
+
+That system must exercise Yi and aPPSS at both 2-of-3 and 3-of-5 over five
+authorizers with 4-of-5 authorization, all registered CuePolicies, and
+same-suite and cross-suite successor flows. It remains a same-host research
+profile. Multi-host placement and live AWS S3 are optional and require distinct
+versioned profiles and, where applicable, execution authorization. P7.5 work
+package 1 will assign the exact manifest, identifiers, validators, and operator
+commands together; this frozen deployment document does not preassign them.
 
 ## Threat assumptions
 
@@ -272,3 +311,10 @@ emit versioned redacted results. The two-sample benchmark and
 resolver-unavailable bootstrap remain development evidence only. P6.2-P6.4 and
 the frozen P7 corpus now have clean, labeled, immutable aggregate-only records;
 independent clean-host reproduction remains required.
+
+These historical/component results do not support a claim about the D023
+full-system path. After P7.5 closes, central P8 assurance and P9
+performance/resilience results must bind the exact integrated manifest and
+traverse its UI/client gateway and authenticated services. Unit, native,
+same-process UI, P6, and this frozen Compose profile remain supporting controls,
+not substitutes. No manuscript wording is authorized by D023 alone.

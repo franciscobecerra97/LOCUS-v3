@@ -1,8 +1,10 @@
 # Target Architecture
 
-Status: owner-approved P1 target-design direction for D001, D003--D005,
-D008--D010, and D014--D018. D015 supersedes D002/D006; D018 supersedes
-D007/D016. It does not
+Status: owner-approved target-design direction for D001, D003--D005,
+D008--D010, D014--D018, and D023. D015 supersedes D002/D006; D018
+supersedes D007/D016. D023 makes a new fully connected same-host reference
+system the future P8/P9 system under test without changing any completed
+component or frozen deployment profile. This document does not
 supersede the implemented baseline architecture or current manuscript until the affected
 implementation/evidence gates and a separate exact manuscript delta are
 approved by the owner.
@@ -69,6 +71,16 @@ deterministically idempotent effect at a time, verifies the prepared successor
 recovers the original key before cutover, and defaults to no key rotation. The
 frozen party lifecycle then performs its existing atomic retire/activate
 transaction; the following logical retirement phase confirms that result.
+
+D023 inserts P7.5 before P8. P7.5 must connect the existing loopback research
+UI and stable client API to authenticated admission, operator/discovery,
+storage-gateway, local S3-compatible, resolver, and five-party services in one
+separately versioned Compose family. The current same-process UI remains a
+component conformance control, and frozen `LOCUS-compose-deployment-v2`
+remains historical evidence for its exact Yi-only meaning. The integrated
+profile, its identifiers, and its operator commands do not exist until the
+P7.5 allocation and implementation gates assign them together. See
+`INTEGRATED-REFERENCE-SYSTEM.md`.
 
 ## Design principle
 
@@ -220,26 +232,37 @@ activation, predecessor retirement, and eventual membership replacement.
 
 ## Recommended reference profiles
 
-### Reproducible local profile
+### Reproducible local integrated profile
 
-- deterministic local issuer;
-- filesystem descriptor store;
-- S3-compatible local backup store;
-- fictional resolver fixture;
-- same-host containers;
-- paired selectable Yi/aPPSS 2-of-3 profiles after P5A release;
-- five authorizers;
+- host browser connected only to a loopback UI/client-gateway container;
+- deterministic local admission/capability service;
+- authenticated operator/discovery/signing service;
+- application storage gateway with narrow server-side credentials;
+- local S3-compatible backup/descriptor/bundle/current-pointer store;
+- fictional resolver fixture, contacted only by the resolver-backed policy;
+- five authenticated authorizer/holder containers;
+- paired selectable Yi/aPPSS 2-of-3 and 3-of-5 profiles;
+- separately typed 4-of-5 authorization quorum;
+- isolated Client A enrollment and clean Client B recovery roots; and
 - no external accounts.
 
-The runnable local profile now has a strict endpoint overlay for parties 1--5.
-It is useful for exercising the eventual public host configuration while all
-containers remain under one Docker engine. A separate-host endpoint file is
-only placement input; actual distribution, firewalling, durable disks, and
-tier validation remain external deployment work.
+P7.5 constructs this target on one Docker engine and makes it the mandatory
+full-system boundary for later central P8/P9 evidence. The browser neither
+controls Docker nor contacts parties or object storage directly. A networkless
+bootstrap step may create synthetic credentials, public configuration, empty
+role roots, and fixtures, but it may not inject recovery-suite state or
+secret-bearing client state.
 
-This profile also supplies a deterministic recovery-bundle and current-pointer
-adapter so the complete bootstrap contract can be tested without Google
-credentials.
+The existing runnable local profiles remain narrower controls. The P6 endpoint
+overlay is useful for exercising the eventual public host configuration while
+all containers remain under one Docker engine. A separate-host endpoint file
+is only placement input; actual distribution, firewalling, durable disks, and
+tier validation remain external deployment work. Neither the frozen Compose
+smoke command nor the current same-process UI command runs the D023 system.
+
+The current component adapters supply deterministic recovery-bundle and
+current-pointer behavior so the bootstrap contract can be tested without an
+external provider account.
 
 ### Clean-client multi-VM profile
 
@@ -280,6 +303,13 @@ This realizes the P7 component boundary only. Browser/OS capture and process
 memory remain outside the UI's control, and no usability, external-service,
 retained-evidence, or manuscript claim follows from it.
 
+P7.5 reuses this frozen UI/API meaning in an ephemeral container and replaces
+its same-process record-store bindings with authenticated remote-service
+adapters. Enrollment, clean-client recovery, inspection, and same- or
+cross-suite successor workflows must traverse the deployed service graph.
+That realization receives a new deployment/configuration identity in P7.5
+work package 1; it does not rename either P7 identifier.
+
 ## Architecture boundaries
 
 - Provider choice must not change CuePolicy or recovery-suite semantics.
@@ -288,6 +318,10 @@ retained-evidence, or manuscript claim follows from it.
 - Physical bundle colocation must not collapse the immutable-backup,
   immutable-descriptor, and mutable-current-pointer contracts.
 - UI choice must not change canonical bytes.
+- The browser may reach only the loopback UI/client gateway; it receives no
+  provider credential, party credential, Docker socket, or operator secret.
+- Central P8/P9 system results must bind the exact D023 integrated manifest;
+  component tests and frozen deployments remain supporting controls.
 - Admission failure must not become a recovery-suite correctness result.
 - A descriptor cannot introduce a local cue test.
 - The selected admission issuer is an explicit availability prerequisite. The

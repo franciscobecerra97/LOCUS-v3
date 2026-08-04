@@ -210,10 +210,10 @@
       "asset": "Cue, credential, recovery-secret, wrapping-key, and plaintext-key confidentiality across UI and operating-system persistence channels.",
       "adversary": "A later local reader of logs, telemetry, preferences, history, clipboard, screenshots, crash output, swap-visible artifacts, or UI state.",
       "assumptions": "The UI is a thin caller of frozen client APIs with telemetry disabled and runs inside the active-client trust boundary.",
-      "boundary": "Exact packaged UI profile, its data directories, logs, clipboard/history behavior, screenshots, crash handling, and post-operation state.",
+      "boundary": "P7 component UI checks plus the future exact D023/P7.5 packaged integrated UI/client profile, its data directories, service-facing output, logs, clipboard/history behavior, screenshots, crash handling, and post-operation state.",
       "positive_control": "A fictional marker deliberately written to each inspected channel must be detected before the ordinary run is shown marker-free.",
       "expected_observation": "Ordinary UI runs retain no prohibited marker or secret-bearing value in inspected channels.",
-      "interpretation_limit": "No UI exists yet; future negative scans are not forensic secure erasure, compromised-endpoint resistance, or a usability result."
+      "interpretation_limit": "The P7 component UI exists and has component-level no-persistence and no-telemetry checks, but it is not yet connected to or evidenced on the D023/P7.5 deployed service graph; future integrated negative scans are not forensic secure erasure, compromised-endpoint resistance, or a usability result."
     },
     {
       "claim_id": "C17",

@@ -10,6 +10,12 @@ interface after provisional internal mapping acceptance. This does not promote
 any gated paired-deployment or retained-evidence cell, and independent human
 validation remains pending.
 
+D023 fixes the future deployment instantiation of these contracts. P7.5 must
+compose the browser/UI-client boundary and all authenticated service roles in
+one same-host system before central P8/P9 evidence is collected. D023 does not
+promote any cell by itself, change a persistent-state permission, or
+reinterpret frozen Compose/UI evidence.
+
 This table is the starting contract. Update it before implementing new roles or
 retained observations.
 
@@ -225,6 +231,42 @@ any separately approved manuscript delta.
   fictional forbidden material.
 - Network-flow evidence records categories and byte counts, not payloads.
 
+## D023 integrated deployment instantiation
+
+The host browser may connect only to the loopback UI/client-gateway container.
+That container remains inside the active-client trust boundary for the current
+operation and may contact only the authenticated service required by the
+applicable phase:
+
+- local synthetic admission/capability issuance;
+- operator-signed discovery, descriptors, current pointers, and receipts;
+- exact application-storage-gateway operations;
+- the resolver service only for the frozen resolver-backed policy; and
+- authorization, suite initialization/recovery, and lifecycle routes on the
+  five parties.
+
+The storage gateway alone may hold the narrow provider credential and contact
+the local S3-compatible store. The browser and active client receive no
+provider credential, party credential, operator signing key, Docker socket, or
+direct volume access. Direct coordinate, phone, and email policies must have no
+resolver-network contact.
+
+Client A enrollment and Client B recovery must use separate ephemeral roots,
+transport identities, and proof keys. Client B may receive only installed
+trust, a public receipt or handle, and transient fictional recovery input. A
+networkless bootstrap process may create synthetic credentials, public
+configuration, empty role roots, and fixtures; it must not generate or install
+recovery-suite state or secret-bearing client state. Each Yi or aPPSS holder
+must acquire only its own state through the authenticated enrollment path.
+
+P7.5 role-state, mount, environment, credential, network, retry, restart, and
+output audits must cover this exact graph before P8. P8/P9 observations must
+bind the eventual integrated manifest, suite, topology, policy, provider,
+client boundary, and host tier. Same-process tests, native microbenchmarks, P6
+process controls, and frozen Compose evidence remain supporting views only.
+The first profile is one host and one operator; it supplies no multi-host,
+independent-administration, live-provider, or production-security result.
+
 ## Application storage gateway view
 
 The D015 application storage gateway is a stateless protocol adapter within the
@@ -297,3 +339,8 @@ fields on completion or page teardown. These controls do not prevent browser
 extensions, accessibility technology, operating-system screenshots, process
 memory inspection, crash collection, swap, or forensic recovery. P7 therefore
 adds component conformance, not retained information-flow evidence.
+
+P7.5 preserves this browser-facing meaning but serves it from the ephemeral
+UI/client-gateway container and replaces the current same-process record-store
+binding with the authenticated service contacts above. This does not widen the
+browser's permitted material or create a persistent UI channel.

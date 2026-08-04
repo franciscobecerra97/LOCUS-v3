@@ -80,23 +80,32 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A, P6.1--P6.3, and P7 are complete for implementation chronology. D020's internal
-recovery-suite mapping assessment is provisional; independent human validation
-remains mandatory before manuscript reliance or final reviewed release. The
-next actionable task is P8.1 decoder and state-machine assurance.
+P1--P5A, P6.1--P6.3, and P7 are complete for implementation chronology. D020's
+internal recovery-suite mapping assessment is provisional; independent human
+validation remains mandatory before manuscript reliance or final reviewed
+release. D023 inserts P7.5 before P8: the next actionable task is P7.5 work
+package 1, which freezes the separately versioned integrated reference-system
+contract and its acceptance matrix before implementation.
+
+The P7.5 target is one reproducible same-host system in which the loopback UI
+and client gateway call the authenticated admission, discovery, storage,
+resolver, and five-party container services. The existing P7 in-memory UI and
+the frozen `LOCUS-compose-deployment-v2` deployment remain regression controls;
+neither is silently reinterpreted as the integrated system. No integrated run
+command exists until P7.5 implements and validates it.
+
 P6.4 remains open at its infrastructure gate: the strict endpoint file and
 additive Compose overlay run all five parties locally, but actual VMs or hosts
-remain necessary for a higher tier. Live AWS validation remains a separately
-authorized optional gate.
+remain necessary for a higher tier. A same-host P7.5 system does not close that
+gate. Live AWS validation remains a separately authorized optional gate.
 
 Run the completed synthetic-only local research interface with
 `uv run --frozen python tasks.py ui`. P7 adds no retained evidence, usability
 claim, real-provider result, or manuscript change.
 
-## Foundation sequence
+## Foundation and integrated-system sequence
 
-The first implementation milestone is not the graphical interface or a real
-cloud provider. It is:
+The completed foundation established:
 
 1. a semantics-preserving `CuePolicy` interface;
 2. an authenticated, versioned `RecoveryDescriptor`;
@@ -110,10 +119,18 @@ cloud provider. It is:
 9. exact verification of the original private-key identity; and
 10. new descriptor, bundle, gateway, and clean-client security evidence.
 
-The frozen composite CuePolicy will then be joined by separate
+The frozen composite CuePolicy was then joined by separate
 quantized-coordinate, canonical-phone, and canonical-email set policies. The
-UI, supplemental AWS S3 profile, multi-host deployment, and broader
-lifecycle work follow the local, evidence-backed foundation.
+local UI, provider contracts, paired suite/topology deployment controls, and
+lifecycle work now exist as separately scoped components.
+
+P7.5 connects those components without changing their protocol meanings. It
+first freezes the deployment contract, then implements the container service
+plane, connects the frozen client API and UI through authenticated remote
+adapters, completes enrollment/clean-client recovery/successor workflows, and
+passes one pre-evidence system gate. P8 security and reliability work and P9
+performance and resilience measurements then use that complete system as their
+primary system under test; component-only runs remain supporting controls.
 
 ## Paper and evidence workflow
 

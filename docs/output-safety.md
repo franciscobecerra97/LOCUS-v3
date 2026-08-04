@@ -1,6 +1,8 @@
 # LOCUS Output-Safety Contract
 
-Status: P1.11 enforced output and retained-profile contract, 2026-07-23.
+Status: P1.11 enforced output and retained-profile contract, 2026-07-23;
+D023 integrated-system obligations added 2026-08-04. P7.5 implementation and
+evidence remain pending.
 
 ## Problem statement
 
@@ -84,13 +86,45 @@ and printing are disabled, but the application cannot prevent browser/OS
 screenshots, accessibility or extension access, memory inspection, crash
 collection, or forensic recovery. No UI output is retained as P8/P9 evidence.
 
+## D023 integrated-system output boundary
+
+P7.5 must apply this contract to the complete browser-to-service path, not only
+to the current same-process UI and frozen Compose runner. The host browser may
+reach only the loopback UI/client gateway, and the browser receives no Docker,
+provider, operator, or party credential. Every admission, discovery, storage,
+resolver, and party adapter must normalize failures before they reach public
+API output; provider and service exception text must never cross the boundary.
+
+The integrated validation gate must:
+
+- disable core dumps and unreviewed observability for every runtime container;
+- suppress request bodies, credentials, cues, candidate values, and
+  secret-dependent outcomes in service and proxy logs;
+- scan public API output and all collected service output with generated
+  per-run cue, key, credential, and secret canaries;
+- audit role environments, mounts, persistent state, networks, and resolved and
+  live container graphs without retaining secret-bearing bytes;
+- keep browser preview data transient, no-store, non-logged, and excluded from
+  evidence;
+- retain only schema-validated aggregate observations after discarding raw
+  logs and exact-project cleanup; and
+- use positive controls that prove the scans and state audits detect planted
+  fictional prohibited material.
+
+The current UI command and frozen deployment commands remain component
+controls and do not satisfy this gate. Exact P7.5 command names, manifest
+identity, trace schema, and retained paths are assigned with their applicable
+implementation/evidence phases. Optional multi-host or live AWS profiles need
+separate output-safety validation and cannot silently reuse the local result.
+
 ## Evidence and remaining limits
 
 Focused tests cover safe metrics/status values, every prohibited category named
 by P1.11.1, nested fields, private-key markers, dynamic secret/cue canaries,
 fixed trace-policy enforcement, metadata/result cross-binding, canonical
-serialization, exclusive publication, and reread validation. The complete
-deployment smoke test covers the integrated output path and live container
-core-file limit. Privileged-host memory, host crash collectors, container-engine
-internals, deleted blocks, and future external observability remain explicitly
-outside this evidence boundary and require separate review if later introduced.
+serialization, exclusive publication, and reread validation. The frozen
+Compose deployment smoke test covers that profile's composed output path and
+live container core-file limit; it is not the D023 full-system result.
+Privileged-host memory, host crash collectors, container-engine internals,
+deleted blocks, and future external observability remain explicitly outside
+this evidence boundary and require separate review if later introduced.

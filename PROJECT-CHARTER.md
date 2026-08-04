@@ -4,7 +4,11 @@
 
 Develop LOCUS from a compact same-host research prototype into a complete,
 realistically deployable reference recovery system while preserving the
-existing storage-separation and no-offline-oracle thesis.
+existing storage-separation and no-offline-oracle thesis. D023 defines that
+reference as one fully connected system: its loopback browser workflow must
+traverse the deployed client, admission, discovery, storage, resolver when
+required, and recovery-party boundaries rather than stop at an in-memory UI
+facade or a separate component harness.
 
 This repository jointly advances the reference system, its evidence, and the
 owner-approved manuscript. The imported manuscript remains the authoritative
@@ -22,6 +26,8 @@ The target system should eventually provide:
 - provider-neutral backup and descriptor storage;
 - multi-host recovery parties with distinct identities and suite-bound state;
 - a safe, instrumented enrollment and recovery UI;
+- one reproducible integrated local deployment connecting that UI to all
+  authenticated services and the cloud-storage role;
 - reproducible security, failure, information-flow, and performance evidence;
 - independent clean-host reproduction and external technical review.
 
@@ -67,6 +73,15 @@ independence still requires genuine independent operators. Its current
 endpoint-driven Compose staging runs all five parties under one Docker engine
 and is therefore still the same-host tier.
 
+D023 makes a new same-host integrated deployment the principal implementation,
+assurance, evaluation, and artifact target. It must exercise Yi and aPPSS at
+2-of-3 and 3-of-5 through the same UI-to-service graph, with the separate
+4-of-5 authorization quorum and the registered CuePolicies. The local
+S3-compatible provider is the reproducible cloud-storage role; AWS and actual
+multi-host operation remain supplemental, separately versioned profiles. This
+direction does not reinterpret the frozen Compose deployment or establish
+independent administration merely through containers on one host.
+
 ## What is inherited
 
 - TPASS construction and security assumptions.
@@ -105,10 +120,13 @@ baseline facts and must receive new identifiers and provenance.
 ## Success condition
 
 The project succeeds when an unfamiliar reviewer can take an isolated clean
-client, use only the declared bootstrap inputs and fictional recovery cues,
-authenticate the current configuration, contact the required online parties,
-recover the exact original synthetic private key, verify its public identity,
-and reproduce the bounded security and performance evidence without hidden
-developer state. The manuscript, claim/evidence matrix, technical
-documentation, generated inputs, artifact, and rendered PDF must describe that
-exact evaluated system consistently.
+client through the loopback UI, use only the declared bootstrap inputs and
+fictional recovery cues, authenticate the current configuration, and traverse
+the deployed admission, discovery, storage-gateway/provider, applicable
+resolver, and recovery-party boundaries to recover the exact original
+synthetic private key and verify its public identity. The reviewer must also
+reproduce the bounded security and performance evidence from that same
+integrated system without external credentials or hidden developer state. The
+manuscript, claim/evidence matrix, technical documentation, generated inputs,
+artifact, and rendered PDF must eventually describe that exact evaluated
+system consistently, after each manuscript delta receives separate approval.

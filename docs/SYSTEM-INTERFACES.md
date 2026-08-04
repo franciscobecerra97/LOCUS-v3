@@ -11,7 +11,9 @@ provisional internal mapping acceptance. P6.3 adds the matched 2-of-3 and
 retained evidence remain pending. P7.1 freezes the local UI-facing research
 client API over these existing boundaries. P7.2--P7.4 add a thin loopback UI
 that calls only this API and keeps protocol and canonicalization logic below
-the boundary.
+the boundary. D023 approves P7.5 as a separately versioned deployment
+realization of the same API over authenticated remote services. That
+realization is not yet implemented and assigns no identifier or command here.
 
 ## Purpose
 
@@ -45,9 +47,40 @@ and aPPSS work. The implementation lives in:
 - `DeterministicResolverAdapter` in
   `prototype/locus/resolver_fixture.py`.
 
-These are in-memory contracts. They do not assign a new suite, state, message,
-descriptor, admission, lifecycle, or deployment identifier. P1.4 and the later
-schema phases remain responsible for those assignments.
+The original P1.3 layer and the current P7 client facade are same-process
+contracts, although later phases already supply concrete remote party and
+provider components. They do not by themselves assign a new suite, state,
+message, descriptor, admission, lifecycle, or deployment identifier. P1.4 and
+the applicable chronological schema phase remain responsible for those
+assignments.
+
+## D023 integrated deployment realization
+
+P7.5 keeps `LOCUS-client-api-v1` as the only browser-facing semantic boundary
+but implements it through authenticated deployment adapters. The host browser
+reaches only the loopback UI/client-gateway container. That gateway coordinates
+the local synthetic admission service, operator/discovery/signing service,
+application storage gateway, resolver when required, and five authorizer/holder
+parties. The storage gateway alone reaches the local S3-compatible provider
+with a narrow server-side credential.
+
+The deployment realization must preserve the existing operation meanings and
+failure categories. It may not:
+
+- add protocol or canonicalization logic to the browser;
+- give the browser a provider, party, operator, or Docker credential;
+- replace authenticated service calls with direct volume access;
+- let a networkless bootstrap process inject Yi/aPPSS state or secret-bearing
+  client state;
+- retain Client A state for Client B recovery; or
+- introduce recovery-time suite selection or fallback.
+
+The current same-process facade remains a fast component conformance control.
+The frozen Yi Compose profile and its identifier remain unchanged. The P7.5
+work package 1 manifest/schema gate must assign the new integrated
+deployment/configuration identity together with its first validator and
+canonical synthetic configuration; this document deliberately does not
+preassign it.
 
 ## Recovery-suite boundary
 
@@ -320,6 +353,9 @@ changing the frozen P1 interface tests.
 
 P1.3 changes no manuscript source or retained evidence. It creates no new
 paper claim. Frozen v2 results remain evidence only for the exact inherited Yi
-profile, not for the new interface architecture. Later implementation and
-evidence profiles require their own identifiers, schemas, provenance, and
-owner-gated manuscript deltas.
+profile, not for the new interface architecture. D023 likewise authorizes
+planning and implementation only. After P7.5 closes, central P8/P9 system
+results must traverse and bind the exact integrated manifest; same-process,
+unit, native, P6, and frozen Compose checks remain supporting controls. Later
+implementation and evidence profiles require their own identifiers, schemas,
+provenance, and owner-gated manuscript deltas.

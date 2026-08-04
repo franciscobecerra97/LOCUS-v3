@@ -13,8 +13,10 @@ complete reference recovery system while preserving the storage-separation and
 below-threshold no-offline-oracle thesis. D017 approves a versioned aPPSS
 construction, and D018 keeps frozen Yi TPASS and aPPSS as independent
 first-class suites selected explicitly per enrollment or successor epoch. Yi
-remains the only implemented suite until the aPPSS/selectable-suite gates pass.
-Architecture decisions listed in `DECISIONS.md` remain owner gates.
+and aPPSS are now implemented at the application/component boundary. D023
+requires their complete UI-to-container composition in one new integrated
+reference system before P8/P9. Architecture decisions listed in
+`DECISIONS.md` remain owner gates.
 
 ## Status model
 
@@ -45,6 +47,10 @@ documentation, and evidence gate must pass.
 7. Use synthetic data and project-controlled disposable services.
 8. Before every manuscript edit, present the exact proposed delta and obtain
    explicit owner approval. The owner may approve or skip each change.
+9. Treat the D023 integrated reference deployment as the primary system under
+   test for new system-security, information-flow, performance, resilience,
+   artifact, and later manuscript results; smaller profiles remain supporting
+   controls and frozen evidence remains non-transferable.
 
 ---
 
@@ -2056,9 +2062,173 @@ Completion record:
   records only. It creates no P8/P9 retained corpus and makes no manuscript
   change.
 
+### P7.5 Construct the primary integrated reference system
+
+Direction: `Approved` by D023
+
+Execution status: `Not started`
+
+P7.5 is the next chronological phase. It composes the already implemented UI,
+client API, admission, descriptor/bootstrap, provider gateway, resolver,
+recovery-suite, party, and lifecycle components into one new system. It does
+not modify the frozen Yi-only Compose profile or reinterpret any retained v2
+result. See `docs/INTEGRATED-REFERENCE-SYSTEM.md`.
+
+The reproducible target is one same-host Docker Compose graph. The browser
+remains outside Docker and reaches only a host-loopback endpoint served by an
+ephemeral UI/client-gateway container. The gateway preserves
+`LOCUS-client-api-v1` but replaces the current in-memory record backend with
+authenticated remote-service adapters. The graph contains:
+
+- UI/client API gateway;
+- project-controlled local synthetic admission/capability service;
+- operator/discovery and descriptor/pointer/receipt signing service;
+- application storage gateway;
+- local S3-compatible backup/descriptor/bundle/current-pointer store;
+- resolver service for the frozen resolver-backed policy;
+- five authenticated authorizer/recovery-party services; and
+- a networkless bootstrap role limited to generated service credentials,
+  public configuration, empty role roots, and synthetic fixtures.
+
+The active enrollment path may not inject native suite state or client secrets
+through direct volume writes. Each aPPSS holder generates and retains only its
+own key; all Yi state is delivered only to its authenticated recipient. Client
+A and Client B use distinct ephemeral roots, proof keys, transport identities,
+and sessions.
+
+#### Work package 1 — Freeze the integrated deployment contract
+
+Status: `Approved — next chronological task`
+
+Define and validate:
+
+- the exact service inventory, role ownership, image/runtime provenance,
+  startup/readiness dependencies, health checks, and shutdown behavior;
+- strict public deployment/configuration manifest and maximum size;
+- exact suite/topology/policy/provider arm bindings;
+- certificate identities, installed trust, audiences, endpoint directory, and
+  credential ownership;
+- exact internal networks and permitted sender/receiver/message categories;
+- per-role volumes, filesystem mode, allowed persistent objects, tmpfs, core-
+  dump policy, and resource bounds;
+- fresh Client A/Client B construction and destruction boundary;
+- resolved/live graph validation and exact-project cleanup rules; and
+- new integrated deployment/configuration identifiers assigned only with the
+  schema, canonical synthetic manifest, compatibility rules, validator, and
+  tests.
+
+Acceptance:
+
+- D023 and the version registry agree on one primary integrated family and
+  preserve every frozen/component profile without reinterpretation.
+- The manifest cannot carry cues, protected-key material, suite secrets,
+  provider credentials, or generated private keys.
+- Unknown, duplicate, missing, reordered, cross-suite, cross-topology,
+  cross-policy, cross-provider, unsafe endpoint, and unsupported-version
+  configurations fail before container startup.
+- One validated graph supports the four separately bound Yi/aPPSS ×
+  2-of-3/3-of-5 arms with five authorizers and a distinct 4-of-5 authorization
+  quorum.
+
+#### Work package 2 — Implement the container service plane
+
+Status: `Approved — depends on P7.5 work package 1`
+
+Implement container/service entry points for admission, operator/discovery,
+storage gateway, resolver, and the five parties using their already assigned
+protocol objects. Reuse one pinned image where appropriate while retaining
+distinct processes, identities, networks, volumes, commands, and least-
+authority credentials.
+
+Acceptance:
+
+- Every runtime container is non-root with a read-only root filesystem where
+  practical, no Docker socket, no unnecessary host port, disabled core dumps,
+  bounded health checks, and exact network/volume membership.
+- The object store is reachable only through the storage gateway from the
+  client plane; the browser and client receive no provider credential or list
+  operation.
+- Parties start without recovery-suite state. Authenticated enrollment creates
+  or delivers only recipient-local state and survives exact retry/restart.
+- The networkless bootstrap role has no runtime network and cannot persist or
+  distribute cue-derived, protected-key, or recovery-suite secret state.
+
+#### Work package 3 — Connect the frozen UI/API to the deployed services
+
+Status: `Approved — depends on P7.5 work package 2`
+
+Retain the P7 semantic HTML/CSS/JavaScript and exact public API operations.
+Introduce a deployment-backed implementation of those operations that uses
+the admitted discovery/storage routes and authenticated party protocols. The
+same-process facade remains a fast component profile and is never selected by
+the integrated evidence path.
+
+Acceptance:
+
+- The UI has no Docker control, provider credential, second canonicalizer,
+  suite implementation, descriptor validator, or direct party/S3 connection.
+- Enrollment, bootstrap, recovery, successor, and inspection cross the exact
+  container boundaries declared by the manifest.
+- Recovery dispatches only from the authenticated descriptor and offers no
+  suite/topology/policy/endpoint fallback or override.
+- Browser and server persistence, cache, telemetry, log, clipboard, history,
+  crash-output, and prohibited-output controls remain at least as strict as
+  `LOCUS-local-research-ui-v1`.
+
+#### Work package 4 — Implement the complete enrollment/recovery/lifecycle workflow
+
+Status: `Approved — depends on P7.5 work package 3`
+
+For every selected arm, drive synthetic key generation/import, policy
+processing, authenticated suite initialization, encryption, provider
+publication, descriptor/current publication, receipt export, Client A
+termination/inaccessibility, fresh Client B bootstrap, exact threshold
+recovery, public-key identity verification, and optional successor creation.
+
+Acceptance:
+
+- All four registered CuePolicies work through the system; the three direct
+  policies make no resolver contact.
+- Yi and aPPSS at 2-of-3 and 3-of-5 recover the exact original synthetic key
+  through real party APIs under matching outer conditions.
+- Same-suite and bidirectional cross-suite successors create fresh native
+  state, verify the protected-key identity before cutover, and preserve one
+  recoverable authorized epoch across every injected crash boundary.
+- Client B receives only installed trust, a public receipt/handle, fresh
+  identities/capabilities, and transient fictional recovery input; a deliberate
+  inherited Client A marker fails the isolation audit.
+
+#### Work package 5 — Close the pre-evidence full-system gate
+
+Status: `Approved — depends on P7.5 work package 4`
+
+Provide one cross-platform interactive start path and one disposable full-
+system smoke path. The smoke matrix covers correct and wrong input,
+below-threshold failure, every required exact-threshold subset, one-party
+unavailability where satisfiable, authorization-quorum loss, process restart,
+provider outage, stale CAS, replay/exact retry, cross-suite/downgrade attempts,
+successor crashes, role-state audits, output scans, and cleanup.
+
+Acceptance:
+
+- Resolved and live graph validation, health, complete UI-to-service workflow,
+  role-state/network/output controls, positive controls, and exact cleanup pass
+  on the primary development host.
+- A second clean checkout reproduces the complete same-host smoke without
+  external credentials or hidden developer state.
+- Results remain ordinary test output. No P8/P9 retained corpus, real-provider
+  claim, host-independence claim, usability claim, or manuscript change is
+  created by P7.5.
+
 ---
 
 ## P8 — Security, reliability, and information-flow assurance
+
+Entry gate: P7.5 work package 5 must pass. P8 applies the existing C01--C26
+contracts to the exact integrated deployment manifest. Unit, property, and
+component assurance remains necessary, but every system-facing conclusion must
+also exercise the container-backed UI/client path and actual role state or
+traffic boundary.
 
 ### P8.1 Add decoder and state-machine assurance
 
@@ -2074,11 +2244,17 @@ Add:
 - crash/restart at every durable transition;
 - idempotency and replay;
 - path and symlink containment;
-- prohibited-output scans.
+- prohibited-output scans;
+- integrated service decoder coverage for admission, discovery, storage,
+  resolver, party, UI/API, health, and operator endpoints;
+- resolved/live Compose graph mutation tests; and
+- full-system concurrency and restart schedules through the public client API.
 
 Acceptance:
 
-- Every external decoder and mutating state transition has negative coverage.
+- Every external decoder and mutating state transition has negative coverage,
+  and the integrated system reaches each externally reachable transition
+  through its authenticated transport rather than a test-only direct call.
 
 ### P8.2 Add state-boundary evidence
 
@@ -2098,11 +2274,17 @@ Required surfaces:
 - pre-cue Client B;
 - resolver-visible categories;
 - identity/admission provider metadata;
-- lifecycle predecessor/successor states.
+- lifecycle predecessor/successor states;
+- UI/client-gateway container after enrollment and after recovery;
+- admission, operator/discovery, storage-gateway, resolver, object-store, and
+  every party container/volume in the integrated graph; and
+- exact matching unions of those views for each suite/topology arm.
 
 Acceptance:
 
-- Each scenario has a positive control and aggregate-only report.
+- Each scenario has a positive control and aggregate-only report bound to the
+  integrated deployment/configuration manifest, suite, topology, policy,
+  provider, source commit, and exact role snapshot set.
 
 ### P8.3 Add privacy-safe network-flow evidence
 
@@ -2116,13 +2298,19 @@ Prefer structured instrumentation that records:
 - whether a prohibited category was detected;
 - whether an unexpected role/contact occurred.
 
+Instrumentation is attached to the integrated service adapters and fixed role
+directory. Component-only traffic cannot support a system information-flow
+claim. Browser-observed requests, client-to-service contacts, and every
+inter-service contact are included by category without retaining payloads.
+
 Packet captures are not retained. Any temporary inspection requires a new
 approved trace policy and synthetic local traffic.
 
 Acceptance:
 
 - Reproducible aggregate evidence supports role-visibility statements without
-  retaining payloads.
+  retaining payloads, and the expected graph is checked against both resolved
+  configuration and observed integrated-system contacts.
 
 ### P8.4 Preserve attempt control as a boundary
 
@@ -2136,10 +2324,17 @@ Acceptance:
 
 - Documentation and UI never describe the quorum-only ledger as globally
   rollback-resistant.
+- The integrated deployment reproduces the rollback counterexample or its
+  exact boundary without presenting container durability as a global bound.
 
 ---
 
 ## P9 — Performance and resilience evaluation
+
+Entry gate: P7.5 work package 5 and the applicable P8 trace, state, and
+output-safety gates must pass. The integrated deployment is the primary
+measurement system. Native and component microbenchmarks may explain costs but
+cannot substitute for or be pooled with end-to-end results.
 
 ### P9.1 Define revised methodology before collection
 
@@ -2161,13 +2356,23 @@ Measure:
 - role bytes and storage;
 - concurrency/throughput;
 - restart effects;
-- cross-host/WAN latency where authorized.
+- cross-host/WAN latency where authorized;
+- loopback browser-to-client request latency as a separately labeled UI
+  observation; and
+- end-to-end client-API latency across every required integrated service,
+  excluding browser rendering from protocol timings.
 
 Acceptance:
 
 - Frozen scenarios, sample sizes, randomization, warm-up, exclusion rules,
   topology, statistics, provenance, and no-outlier policy are documented before
   retained collection.
+- Every central scenario binds the exact integrated deployment manifest,
+  suite/topology arm, policy, provider, active-client boundary, host tier, and
+  instrumentation version.
+- Yi/aPPSS comparisons within one topology use the same integrated graph,
+  synthetic protected key/input class, policy, admission, storage, failure
+  schedule, warm-up, sample count, and metric definitions.
 
 ### P9.2 Implement new evidence schemas
 
@@ -2181,18 +2386,26 @@ Candidate result families:
 - descriptor security;
 - information flow;
 - distributed performance;
-- multi-role state audit.
+- multi-role state audit; and
+- integrated full-system correctness, resilience, and performance.
 
 Acceptance:
 
 - Schemas bind exact recovery suite, policy, descriptor, backup, profile,
   threshold, party identities, topology, backend, scenario, positive control,
   output scan, and limitations.
+- Integrated schemas additionally bind the UI/client API and backend versions,
+  deployment/configuration identity, canonical manifest digest, resolved/live
+  graph digests, immutable image identities, service identities and roles,
+  network topology, provider mode, suite/topology arm, policy, active-client
+  boundary, and failure schedule.
 - aPPSS and frozen Yi results use separate result families. A comparative
   processor may consume both only under a new schema that preserves both
   provenance records and never relabels or pools retained v2 measurements.
+- No result schema accepts the P7 in-memory profile, P6 component controls, or
+  frozen Compose v2 identifier where an integrated-system result is required.
 
-### P9.3 Collect same-host revised baseline
+### P9.3 Collect the same-host integrated baseline
 
 Status: `Proposed`
 
@@ -2201,8 +2414,11 @@ Acceptance:
 - New versioned result paths.
 - No v2 overwrite or mixed-profile processing.
 - Complete raw-to-processed-to-derived hash closure.
+- Successful, wrong-input, below-threshold, unavailable-party, restart,
+  successor, concurrency, storage/role-byte, and clean-client rows all execute
+  through the container-backed client API under the same validated graph.
 
-### P9.4 Collect multi-host and provider profiles
+### P9.4 Collect supplemental integrated multi-host and provider profiles
 
 Status: `Proposed`
 
@@ -2211,6 +2427,9 @@ Acceptance:
 - Exact topology and administration scope disclosed.
 - All credentials disposable and excluded.
 - Claims limited to exact hosts, thresholds, providers, and workloads.
+- Supplemental rows retain the same logical full-system path and receive new
+  deployment/result identities; they are never silently pooled with the local
+  S3-compatible same-host baseline.
 
 ---
 
@@ -2259,7 +2478,11 @@ Review:
 - party topology;
 - privacy and logging;
 - UI persistence;
-- evidence methodology.
+- evidence methodology;
+- the resolved and live D023 service graph, role identities, credentials,
+  networks, mounts, provider boundary, and active-client isolation; and
+- one complete enrollment, clean recovery, and successor workflow through the
+  container-backed client API, without direct state injection.
 
 ### P10.3 Build the new portable artifact
 
@@ -2274,7 +2497,10 @@ The artifact should reproduce:
 - required state-boundary scenarios;
 - same-host reference deployment;
 - feasible multi-host workflow;
-- deterministic processing and derived outputs.
+- deterministic processing and derived outputs;
+- the D023 UI-to-container integrated deployment and all required services;
+- enrollment and clean-client recovery for all four suite/topology arms; and
+- at least one same-suite and one cross-suite successor flow.
 
 Acceptance:
 
@@ -2282,6 +2508,8 @@ Acceptance:
 - Extracted archive passes without `.git` or developer-local state.
 - Clean Linux and Windows reproduction passes.
 - One unfamiliar reviewer completes the workflow.
+- The reviewer uses no external credential and does not need the P7 in-memory
+  profile to reproduce a central system result.
 
 ### P10.4 Close the active claim/evidence matrix
 
@@ -2291,6 +2519,9 @@ Acceptance:
 
 - Every promoted claim identifies exact profile, assumptions, adversary,
   evidence, and limitation.
+- Every new promoted system/performance result identifies the D023 integrated
+  deployment family and exact suite/topology/policy/provider scenario; legacy
+  and component evidence remains explicitly scoped.
 - Global rate limiting, memorability, entropy, production readiness, independent
   administration, and audit remain non-claims unless separately established.
 
@@ -2298,8 +2529,10 @@ Acceptance:
 
 Status: `Deferred`
 
-After the relevant evidence closes, present each proposed title, abstract,
-section, claim, limitation, table, figure, and reference delta to the owner.
+After the integrated P8/P9 evidence, clean-host artifact reproduction, and
+independent recovery-suite mapping review close, present each proposed title,
+abstract, section, claim, limitation, table, figure, and reference delta to the
+owner.
 Record its exact evidence basis and whether the owner approved or skipped it.
 Do not edit `paper/` during this task.
 
@@ -2319,26 +2552,29 @@ Skipped or unapproved deltas remain unchanged.
 
 ---
 
-## Recommended first execution slice
+## Recommended next execution slice
 
-Execution is chronological. P0, P1.1--P1.5, and P2.1--P2.4 are complete; begin
-with P3.1 and do not begin a later phase while an applicable predecessor gate is incomplete,
-except for a task explicitly marked deferred and not named as a dependency.
+Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.4 are
+complete for implementation chronology. P6.4's actual host-separation tiers
+remain blocked on infrastructure and do not block D023's honest same-host
+integrated profile.
 
 The next sequence is:
 
-1. P3.1--P3.4 — generic enrollment and authenticated admission/transport;
-2. P4.1--P4.3 — generic recovery, clean-client isolation, and crash-safe
-   successor publication; D011 defers P4.4 until after the selectable-suite and
-   paired-profile work;
-3. P5.1--P5.4 — CuePolicy and resolver generality without changing either
-   recovery suite;
-4. P5A.1--P5A.7 — independent aPPSS implementation, explicit Yi/aPPSS
-   selection, authenticated integration, suite switching, and paired
-   comparative validation; and
-5. P6 onward — storage/deployment expansion, UI, assurance, performance,
-   external review, artifact, and separately approved manuscript changes.
+1. P7.5 work package 1 — freeze the integrated manifest, service graph, role
+   state, and new deployment/configuration allocation gate;
+2. P7.5 work package 2 — implement the container service plane;
+3. P7.5 work package 3 — connect the frozen UI/API to deployed services;
+4. P7.5 work package 4 — complete enrollment, clean recovery and successor
+   lifecycle;
+5. P7.5 work package 5 — pass the same-host full-system and clean-checkout
+   gate;
+6. P8 — assure that exact integrated system and define privacy-safe traces;
+7. P9 — collect new suite/topology-specific results from that system; and
+8. P10 — complete independent review, integrated artifact reproduction, claim
+   closure, and separately owner-approved manuscript changes.
 
-Do not begin the graphical UI, external provider run, expanded deployment
-profiles, or general party replacement before the applicable preceding gates
-are complete.
+Do not collect retained P8/P9 evidence, promote a system result, or propose a
+manuscript delta from the new direction before its applicable predecessor
+gate. The optional AWS run, actual multi-host work, general party replacement,
+and monotonic witness remain separate owner/infrastructure gates.

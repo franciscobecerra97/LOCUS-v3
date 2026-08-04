@@ -207,6 +207,23 @@
       "compatibility_rule": "A descriptor version binds one suite and epoch and never changes frozen backup, CuePolicy, or Yi formats."
     },
     {
+      "family": "integrated-reference-deployment",
+      "allocation_phase": "P7.5",
+      "decisions": [
+        "D004",
+        "D008",
+        "D009",
+        "D015",
+        "D017",
+        "D018",
+        "D021",
+        "D022",
+        "D023"
+      ],
+      "required_gate": "Freeze the strict service and topology manifest, role-state and credential boundaries, canonical synthetic manifest, resolved-graph vector, compatibility rules, validators, and first implementation together.",
+      "compatibility_rule": "The integrated family cannot reinterpret Compose v2, P6 process profiles, client API v1, UI v1, or retained evidence; changed provider, topology, admission adapter, UI/API semantics, role placement, or measurement boundary requires a distinct profile."
+    },
+    {
       "family": "policy-and-resolver",
       "allocation_phase": "P5.3",
       "decisions": [
@@ -231,7 +248,8 @@
       "decisions": [
         "D008",
         "D017",
-        "D018"
+        "D018",
+        "D023"
       ],
       "required_gate": "Approve exact evidence scenarios, aggregate fields, provenance, metric definitions, positive controls, and result schemas before collection.",
       "compatibility_rule": "New suite and deployment results use separate families; retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
@@ -242,7 +260,8 @@
       "decisions": [
         "D004",
         "D008",
-        "D009"
+        "D009",
+        "D023"
       ],
       "required_gate": "Approve the privacy-safe collection boundary, synthetic topology, retained aggregate fields, exclusions, and trace schema.",
       "compatibility_rule": "A changed collection boundary, topology, role view, or retained field set requires a new trace and evidence profile."

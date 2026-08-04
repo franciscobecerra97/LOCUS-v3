@@ -1,6 +1,8 @@
 # Local Research UI
 
 Status: P7.2--P7.4 implemented and locally verified on 2026-08-03 under D022.
+D023 preserves this UI and requires P7.5 to connect it to the deployed service
+plane; that integrated realization is not yet implemented.
 
 ## Purpose and boundary
 
@@ -28,6 +30,12 @@ uv run --frozen python tasks.py ui
 The command prints the loopback URL, which is normally
 `http://127.0.0.1:8765/`. A different loopback port may be selected with
 `--port`. Do not enter real cues, private keys, account data, or credentials.
+
+This command starts the completed same-process component interface only. It
+does not start the D023 admission, operator/discovery, storage gateway,
+S3-compatible store, resolver, or five-party deployment. P7.5 will define a
+separate integrated operator workflow after its manifest and service graph are
+implemented; no runnable integrated command is claimed here.
 
 ## Implemented workflows
 
@@ -71,6 +79,28 @@ sniffing protection. HTML additionally requests clearing of browser cache,
 cookies, and storage. Copy/cut and printing are disabled in the interface, and
 page teardown clears in-memory form values.
 
+## P7.5 integrated target
+
+P7.5 packages the same semantic UI and `LOCUS-client-api-v1` route meanings in
+an ephemeral UI/client-gateway container exposed only on host loopback. The
+browser must not contact recovery parties, the provider, or Docker directly.
+The gateway replaces the current same-process record-store bindings with
+authenticated adapters to:
+
+- the local synthetic admission/capability service;
+- operator-signed discovery and public recovery metadata;
+- the application storage gateway and, behind it, the local S3-compatible
+  store;
+- the resolver service only when the selected policy requires it; and
+- five authorizer/holder party processes.
+
+The UI itself gains no CuePolicy, suite, descriptor, storage, admission, or
+lifecycle logic. It must cover Yi and aPPSS at 2-of-3 and 3-of-5, all four
+CuePolicies, isolated enrollment and clean-client recovery, and explicit
+same- or cross-suite successor creation through those deployed services. The
+reproducible profile remains local and synthetic; optional multi-host or AWS
+profiles require separate identities and execution approval.
+
 ## Verification and limits
 
 Automated tests cover local assets, forbidden browser APIs and remote URLs,
@@ -80,10 +110,11 @@ cross-suite successor creation, inspection, transient field clearing,
 desktop layout, and a 390-by-844 responsive layout with no browser warning or
 error output.
 
-This is same-process research-client conformance. It is not retained P8/P9
-evidence, public admission, real-provider operation, deployment separation,
-production hardening, accessibility certification, a human study, or usability
-evidence. Browser and operating-system screenshots, process memory, crash
-collectors, accessibility technologies, browser extensions, and forensic
-erasure remain outside the application's control. No manuscript claim is
-changed by P7.
+The completed P7 checks are same-process research-client conformance. They are
+not retained P8/P9 evidence and cannot substitute for the P7.5 full-system
+gate. Even after integration, public admission, real-provider operation,
+independent administration, production hardening, accessibility certification,
+a human study, and usability remain outside this profile. Browser and
+operating-system screenshots, process memory, crash collectors, accessibility
+technologies, browser extensions, and forensic erasure remain outside the
+application's control. No manuscript claim is changed by P7 or D023.

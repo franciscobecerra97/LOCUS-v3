@@ -203,6 +203,23 @@ or private-key material.
 Begins with only the explicitly approved bootstrap inputs. It may transiently
 reconstruct the secret path and return the recovered protected key.
 
+### D023 deployed active-client boundary
+
+For the integrated reference system, the host browser and the ephemeral
+UI/client-gateway container together form the active-client boundary. The
+browser may reach only the gateway's host-loopback endpoint and the gateway
+alone coordinates the protected path. Browser code must not receive provider
+credentials or connect directly to admission, discovery, storage, resolver, or
+party services.
+
+The gateway may transiently handle the same values already permitted to the
+enrollment or recovery client, but containerization and transport do not add a
+second secret path. The remote-service backend must preserve the exact
+CuePolicy-to-suite-to-HKDF-to-AEAD composition and the normalized public error
+boundary. Its durable state and logs may contain only explicitly permitted
+public, bounded operation metadata; Client A state and credentials must not be
+available to clean Client B.
+
 ## Cross-role invariants
 
 P1.3 represents these boundaries as typed, in-memory contracts. The generic
@@ -271,3 +288,16 @@ implemented behavior.
 - A client receives no storage-provider credential. The application gateway
   accepts only an unexpired D004/D015 capability bound to subject, backup,
   prefix, operation, client proof key, nonce, and audience.
+- D023's integrated active path reaches admission, discovery, storage,
+  resolution when required, enrollment, recovery, and lifecycle only through
+  authenticated service routes. Direct party-volume suite-state injection and
+  direct in-memory record injection are prohibited on that path.
+- The application storage gateway remains outside the active-client secret
+  path. It never receives cues, canonical policy output, suite password input,
+  suite-holder state, `S_R`, `K_wrap`, or plaintext protected-key material,
+  regardless of whether its provider is local S3-compatible storage or an
+  approved external adapter.
+- The integrated networkless bootstrap role may create synthetic service
+  credentials, public configuration, empty role roots, and fixtures only. It
+  must have no runtime network and cannot generate, deliver, or persist
+  recovery-suite state or any client secret-path value.

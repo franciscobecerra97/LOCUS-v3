@@ -1,6 +1,9 @@
 # LOCUS Reference Architecture
 
-Status: living architecture boundary, synchronized 2026-07-21.
+Status: living architecture boundary, synchronized 2026-08-04. The frozen
+same-host Yi deployment below remains historical/component scope. D023 approves
+a new P7.5 integrated reference system as the future P8/P9 system under test;
+it is not yet implemented.
 
 The cue-specific boundary and role-visible data are diagrammed in
 `docs/cue-data-flow.md`.
@@ -73,7 +76,33 @@ the current same-host deployment runs successfully.
 7. Normal output is machine-readable and privacy-minimized; known prohibited
    values or fields fail artifact checks.
 
-## Implemented reference boundary
+## D023 primary integrated target
+
+P7.5 composes the already implemented component contracts into one disposable
+same-host system. The host browser reaches only a loopback UI/client-gateway
+container. That gateway coordinates authenticated local admission,
+operator/discovery/signing, application storage gateway, resolver, and five
+authorizer/holder services. The storage gateway alone reaches the local
+S3-compatible cloud-object role with a narrow server-side credential.
+
+The system has four explicitly bound arms: Yi and aPPSS at 2-of-3 and 3-of-5,
+each over five authorizers with a separately typed 4-of-5 authorization quorum.
+One epoch binds one suite and topology, with no recovery override or fallback.
+Same-suite and cross-suite successors create fresh consecutive epochs.
+
+Enrollment and clean recovery use separate ephemeral Client A and Client B
+roots, transport identities, and proof keys. A networkless bootstrap may create
+synthetic credentials, public configuration, empty role roots, and resolver
+fixtures, but it may not inject suite state or secret-bearing client state.
+The full-system path may not read party or provider volumes directly.
+
+This first integrated profile remains one-host, one-Docker-engine, and
+one-operator research infrastructure. Multi-host placement and AWS S3 are
+optional, separately versioned profiles; neither is implied by the same-host
+result. Exact P7.5 deployment/configuration identifiers and commands are
+assigned only with their schemas, validators, and implementation.
+
+## Implemented frozen reference boundary
 
 `deploy/compose.yaml` currently instantiates the provisioner, deterministic
 resolver, SeaweedFS, five recovery parties, and an ephemeral client with pinned
@@ -85,4 +114,9 @@ output, and removes all resources.
 This is one-host synthetic artifact evidence. The authoritative detailed
 contracts are `docs/threat-model.md`, `docs/cue-policy.md`,
 `docs/recovery-party-api.md`, `docs/attempt-control-state-machine.md`, and
-`docs/deployment.md`.
+`docs/deployment.md`. It retains the exact
+`LOCUS-compose-deployment-v2` meaning and is not the D023 integrated system.
+The P7 same-process UI/API remains a component conformance control for the same
+reason. After P7.5, central P8/P9 system evidence must bind and traverse the
+new integrated manifest rather than infer full-system behavior from either
+narrower profile.

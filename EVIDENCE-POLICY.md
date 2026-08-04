@@ -42,6 +42,44 @@ development regression contract with positive controls and a bounded
 networkless direct-digest candidate check. It does not allocate the P9 result
 family or promote C03/C06/C07/C21 to supported evidence.
 
+## Primary integrated-system evidence boundary
+
+D023 makes the P7.5 same-host integrated reference deployment the required
+system under test for new paper-facing P8/P9 security, reliability,
+information-flow, performance, resilience, and later artifact results. A
+central system scenario must begin at the stable UI/client API boundary and
+traverse the exact deployed admission, operator/discovery, storage gateway,
+local S3-compatible provider, applicable resolver, and authenticated party
+services declared by the validated configuration.
+
+Primitive vectors, native tests, unit/property/fuzz tests, the P7 in-memory
+backend, P6 process profiles, the frozen Compose deployment, and
+microbenchmarks remain necessary supporting controls. They cannot substitute
+for, be pooled with, or be relabeled as integrated-system evidence. P7.5 smoke
+and acceptance output is still ordinary implementation verification; retained
+evidence begins only after P8/P9 assign the applicable trace, result,
+methodology, and collection profiles.
+
+Every integrated result additionally binds:
+
+- stable UI and client-API versions and the container-backed adapter version;
+- integrated deployment/configuration identity and canonical manifest digest;
+- resolved and live service-graph digests;
+- immutable container image identities and runtime locks;
+- service identities, certificate/trust profile, role placement, networks,
+  mounts, and published loopback endpoint;
+- provider mode, recovery suite, holder threshold/topology, authorization
+  quorum, CuePolicy, admission profile, and failure schedule; and
+- active-client A/B isolation boundary, host tier, source commit, cleanup, and
+  output-scan status.
+
+Stable client-API latency is the primary full-system protocol measure. Any
+browser-observed latency is a separately labeled UI observation and must not be
+silently combined with protocol timing. Same-host local S3-compatible results
+are the reproducible baseline. AWS and multi-host runs remain optional,
+separately authorized profiles with separate results and cannot be required of
+normal reviewers.
+
 ## Required scenario contract
 
 Every security-sensitive experiment records:
@@ -51,6 +89,9 @@ Every security-sensitive experiment records:
 - protocol phase;
 - exact recovery-suite, policy, descriptor, backup, deployment, and schema
   versions;
+- for an integrated-system scenario, the exact UI/API/backend,
+  configuration/manifest, resolved/live graph, image, service-identity,
+  network, provider, and active-client-boundary bindings required above;
 - reconstruction threshold `k`, holder identities, and any source-paper
   threshold-notation mapping;
 - for aPPSS, the D017/P1.2 profile from `docs/APPSS-PROFILE.md`, including

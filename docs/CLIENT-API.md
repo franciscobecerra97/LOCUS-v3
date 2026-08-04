@@ -1,6 +1,8 @@
 # P7 Stable Research-Client API
 
-Status: P7.1 implemented and tested on 2026-08-03.
+Status: P7.1 implemented and tested on 2026-08-03. D023 preserves this API and
+requires a deployment-backed realization in P7.5; that realization is not yet
+implemented.
 
 ## Boundary
 
@@ -69,11 +71,42 @@ P7.1 also closes an integration gap by permitting the already assigned
 reference-backup v6 shape at the generic immutable backup-reference boundary.
 The v4 and v5 meanings remain unchanged.
 
+## P7.5 deployment-backed realization
+
+The integrated reference system keeps the operations, request meanings,
+response categories, and non-serializing recovered-key boundary above. The
+host browser still calls only the loopback route adapter, but the
+UI/client-gateway container must satisfy each operation through authenticated
+remote-service adapters:
+
+- admission and proof-key-bound capability issuance;
+- operator-signed discovery, receipt, descriptor, and current-state handling;
+- exact admitted storage-gateway operations against the local S3-compatible
+  provider;
+- resolver service access only for the resolver-backed policy; and
+- authenticated initialization, recovery, authorization, and lifecycle calls
+  to the five parties.
+
+Enrollment and recovery run under separate ephemeral Client A and Client B
+roots, identities, and proof keys. Client B receives only installed trust, the
+public receipt or handle, and transient fictional recovery input. No operation
+may use direct party/provider volume access or the current in-memory record
+store in the full-system path.
+
+P7.5 will add deployment-specific adapters and validation without changing
+this API identifier. Its new deployment/configuration identity and runnable
+operator commands are allocated with the P7.5 implementation, not in this
+document. Multi-host placement and live AWS remain optional, separately
+versioned profiles and are not prerequisites for the reproducible same-host
+system.
+
 ## Limitations
 
-The implementation is a same-process research component facade. Its internal
-record store logically separates encrypted backup and holder records, but it is
-not deployment or role-separation evidence and does not replace the P6 process
-or future multi-host profiles. The local issuer, `.invalid` endpoints, and
-synthetic keys are deliberate. No external provider, production admission,
-human usability, secure-erasure, or manuscript claim follows.
+The current implementation is a same-process research component facade. Its
+internal record store logically separates encrypted backup and holder records,
+but it is not deployment or role-separation evidence and will remain a
+component control after P7.5. The local issuer, `.invalid` endpoints, and
+synthetic keys are deliberate. Until P7.5 is implemented and accepted, this
+API does not demonstrate the fully connected system. No external provider,
+production admission, human usability, secure-erasure, or manuscript claim
+follows.

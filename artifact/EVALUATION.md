@@ -23,6 +23,10 @@ Optional same-host deployment:
 uv run --frozen python tasks.py deployment-smoke
 ```
 
+This optional command exercises the frozen deployment profile; the current
+local UI is a separate in-memory component control. Neither command is the
+D023 integrated reference system.
+
 The v2 package boundary and audit are frozen for the current Yi baseline. Later
 expanded-system packaging must add newly evidenced profiles through another
 reviewed version change, including:
@@ -34,6 +38,16 @@ reviewed version change, including:
 - state and information-flow scenarios;
 - same-host and feasible multi-host deployment;
 - deterministic evidence processing.
+
+Under D023, the future expanded-system evaluation must add one reviewed
+end-to-end workflow that begins at the loopback UI/client gateway and traverses
+the authenticated admission, discovery, application-storage, resolver, and
+five-party container roles. It must cover the declared Yi/aPPSS and 2-of-3/
+3-of-5 arms, clean-client recovery, and supported lifecycle transitions before
+P8/P9 security, reliability, performance, or resilience results are promoted
+as system results. Component tests and the commands above remain supporting
+controls. No integrated command is available yet; P7.5 must define and validate
+it before this guide can prescribe it.
 
 Audit the active v2 source allowlist without creating an archive:
 

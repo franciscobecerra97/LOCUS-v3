@@ -28,6 +28,7 @@ gates before their affected implementation work.
 | D020 | Provisional internal review and deferred human validation | Permit an explicitly non-independent internal mapping assessment to close P5A implementation chronology and allow P6 work, while retaining human cryptographic validation as a mandatory pre-manuscript/pre-release gate | Approved |
 | D021 | P6 paired topology and honest deployment tier | Use matched Yi/aPPSS 2-of-3 and 3-of-5 recovery profiles with a separately typed 4-of-5 authorization quorum; target local-VM host separation without claiming independent administration | Approved |
 | D022 | P7 local research UI runtime | Standards-based HTML/CSS/JavaScript served only on loopback by the pinned Python runtime over `LOCUS-client-api-v1`; no third-party web framework, telemetry, or browser storage | Approved |
+| D023 | Primary integrated reference system and evidence target | One separately versioned, same-host Docker reference system connects the loopback UI/client gateway to every authenticated LOCUS service and becomes the mandatory P8/P9 system-under-test; component and historical profiles remain supporting controls only | Approved |
 
 ## Approved architecture records
 
@@ -819,6 +820,112 @@ Manuscript implication: None authorized. A working UI does not establish
 usability, memorability, accessibility conformance, production security, or
 paper-facing evidence.
 
+### D023 — Primary integrated reference system and evidence target
+
+Decision ID: D023
+
+Date: 2026-08-04
+
+Status: Approved
+
+Chosen option: Before P8, construct one new, separately versioned primary
+reference system in which the unchanged thin P7 UI and `LOCUS-client-api-v1`
+are served from an ephemeral active-client container and the API is backed by
+authenticated remote-service adapters rather than the current same-process
+record model. One reproducible same-host Docker Compose graph contains the
+local synthetic admission/capability service, operator/discovery and signing
+service, application storage gateway, local S3-compatible object store,
+resolver service, and five authenticated authorizer/recovery-party services.
+The browser remains outside Docker and reaches only a host-loopback UI
+endpoint. An operator command, never browser code, creates and validates the
+disposable deployment.
+
+The active path must use authenticated enrollment transport and service APIs;
+no networkless provisioner may inject recovery-suite state or secret-bearing
+client state into runtime volumes. A bounded networkless bootstrap role may
+create service credentials, public configuration, empty role volumes, and
+synthetic fixtures only. Clean-client evaluation destroys or makes Client A's
+container/root/identity inaccessible and starts Client B from the same
+immutable client image with fresh client proof and transport identities,
+installed trust, the public receipt, and fictional recovery input only.
+
+The integrated family exposes the four matched suite/topology arms—Yi and
+aPPSS at 2-of-3 and 3-of-5—with five authorizers and a separate 4-of-5
+authorization quorum. It supports the four registered CuePolicies, exact
+descriptor/bundle/current-pointer bootstrap, same-suite and cross-suite
+successors, and explicit optional protected-key rotation. The reproducible
+cloud-storage role is the local S3-compatible provider under D015; optional
+AWS S3 and actual multi-host executions remain separately authorized,
+separately identified supplemental profiles. “Cloud services” does not mean
+Apple iCloud or a personal provider account.
+
+The new integrated deployment is the mandatory system-under-test for central
+P8 security/reliability/information-flow assurance, P9 performance/resilience
+evaluation, P10 artifact reproduction, and any later proposed system result in
+the manuscript. Native vectors, unit tests, component tests, the P7 same-process
+UI, P6 process controls, and frozen v2 results remain necessary supporting or
+historical controls, but none substitutes for integrated-system evidence.
+
+Alternatives considered: Perform P8/P9 over the disconnected UI and component
+profiles and integrate afterward; modify or reinterpret frozen
+`LOCUS-compose-deployment-v2`; let the browser contact parties or S3 directly;
+make a personal cloud account or AWS credentials mandatory; or treat several
+component harnesses as equivalent to one end-to-end system.
+
+New trust assumptions: The reproducible profile trusts one operator, host,
+Docker engine, build/provisioning boundary, application installation trust
+root, and local synthetic admission issuer. The browser, operating system, and
+ephemeral client container are inside the active-client boundary. Container
+separation does not establish host separation, independent administration,
+production PKI, or resistance to a malicious Docker administrator.
+
+Privacy implications: Only the active client may transiently receive the
+complete cue-to-protected-key path. Each service receives only its approved
+role view. The UI and every service must disable secret-bearing logs, telemetry,
+browser persistence, crash output, and retained payload traces. The operator,
+admission service, parties, resolver, storage gateway, and provider still
+observe their documented pseudonymous identifiers, message categories,
+timing, sizes, endpoints, and access metadata. P8 must measure these views
+through privacy-safe structured instrumentation and aggregate state audits.
+
+Compatibility/version impact: Frozen `LOCUS-compose-deployment-v2`, its
+retained v2 evidence, the P6.3 comparison-control profiles, P6.4 endpoint
+setup, `LOCUS-client-api-v1`, and `LOCUS-local-research-ui-v1` retain their
+exact meanings. P7.5 work package 1 assigns a new integrated
+deployment/configuration profile only together with a strict
+service/topology/role-state manifest, validation rules, compatibility
+statement, and tests. Changed topology, provider, admission adapter, UI/API
+semantics, role placement, or measurement boundary requires a distinct profile
+and evidence path.
+
+Required evidence: Exact resolved/live Compose-graph validation; role-specific
+identity, certificate, network, mount, environment, and persistent-state
+audits; complete UI-to-service enrollment, clean bootstrap/recovery, and
+successor flows for all four suite/topology arms; registered-policy coverage;
+correct, wrong-input, below-threshold, unavailable-party, restart, crash,
+replay, cross-suite, downgrade, stale-pointer, and storage-failure scenarios;
+Client A/Client B isolation with a positive control; prohibited-output scans;
+privacy-safe network-role observations; deterministic cleanup; clean-host
+reproduction; and P9 methodology/results bound to the exact integrated
+manifest. Tests remain implementation behavior, not cryptographic proof,
+human usability, host independence, production readiness, or audit.
+
+Files or components authorized: P7.5 planning and architecture records; a new
+Compose graph and strict deployment manifest/schema; container-backed client,
+admission, discovery/operator, storage-gateway, resolver, party, and provider
+service adapters; task-runner start/smoke/cleanup commands; generated synthetic
+credentials and fixtures; system tests; and later new P8/P9/P10 profiles after
+their chronological gates. No real account, personal data, production key,
+general party replacement, external monotonic witness, retained result
+collection before P9.2, or manuscript edit is authorized.
+
+Manuscript implication: None authorized now. After the integrated system,
+suite mapping review, P8/P9 evidence, clean-host artifact reproduction, and
+claim matrix close, P10.5 must present exact proposed manuscript deltas. Any
+approved result must identify this integrated deployment and its exact
+suite/topology/policy/provider scenario; historical v2 or component results
+remain explicitly scoped and cannot be relabeled.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -839,7 +946,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D022 authorizes only the recorded architecture or
+Approval of D001--D023 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:

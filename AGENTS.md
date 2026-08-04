@@ -30,6 +30,12 @@ matched 2-of-3 and 3-of-5 recovery profiles over five authorizers with a
 separately typed 4-of-5 authorization quorum. Host-separation claims must use
 the exact demonstrated tier; independent administration requires actual
 independent operators.
+D023 makes a new same-host integrated reference system the primary target for
+P8/P9 and the later artifact: the loopback UI/client gateway must traverse the
+authenticated admission, discovery, storage-gateway/provider, resolver, and
+five-party service boundaries. The frozen Compose deployment, P6 process
+profiles, and P7 same-process UI/API remain historical or component controls
+and cannot substitute for integrated-system evidence.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered
@@ -289,6 +295,28 @@ data. Normal reviewer workflows must not require external credentials.
 - "Clean client" means isolated from the enrollment client state. It does not
   mean forensic secure erasure.
 
+### Integrated reference deployment
+
+- Implement D023 as a new deployment/configuration family; never repurpose
+  `LOCUS-compose-deployment-v2`, a P6 process profile,
+  `LOCUS-client-api-v1`, or `LOCUS-local-research-ui-v1`.
+- Keep the browser outside Docker and publish only the UI/client-gateway
+  endpoint on host loopback. The browser must not contact the provider,
+  resolver, admission service, operator service, or parties directly.
+- The integrated client backend must use authenticated remote-service adapters
+  for admission, discovery, storage, resolution, enrollment, recovery, and
+  lifecycle operations. Deployment mode is operator configuration, never an
+  API request or recovery-time override.
+- A networkless bootstrap role may create synthetic service credentials,
+  public configuration, empty role roots, and fixtures only. It must not inject
+  recovery-suite state, cues, protected-key material, or secret-bearing client
+  state into runtime volumes.
+- The default reproducible provider is local S3-compatible storage behind the
+  application gateway. AWS and actual multi-host profiles are optional,
+  separately authorized, separately versioned variants.
+- Same-host container/process separation does not establish host separation or
+  independent administration.
+
 ### Lifecycle
 
 - Never retire a predecessor until successor parties, backup, and authenticated
@@ -341,6 +369,14 @@ Every security-sensitive scenario must document:
 
 Raw retained output is append-only, aggregate-only, and provenance-bound.
 Never overwrite v2 or mix old and new profiles in one processed corpus.
+
+After D023, the principal P8/P9 system-facing evidence and later artifact
+results must exercise the exact integrated UI-to-service graph and bind its
+validated manifest, resolved graph, images, service identities, network
+topology, provider, suite, threshold, policy, failure schedule, and source
+state. Primitive vectors, unit/property tests, component harnesses,
+microbenchmarks, P6 profiles, and frozen deployments remain supporting controls
+only; do not pool or relabel them as integrated-system results.
 
 New implementation claims require new evidence. Tests show implementation
 behavior, not cryptographic proof, human usability, or production readiness.
