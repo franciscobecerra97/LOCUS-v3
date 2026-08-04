@@ -80,20 +80,18 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A, P6.1--P6.3, and P7 are complete for implementation chronology. D020's
+P1--P5A, P6.1--P6.3, and P7.1--P7.5 are complete for implementation chronology. D020's
 internal recovery-suite mapping assessment is provisional; independent human
 validation remains mandatory before manuscript reliance or final reviewed
-release. D023 inserts P7.5 before P8. Work packages 1--3 and the normal-path
-portion of work package 4 are implemented; the next actionable work is the
-remaining deployed lifecycle and work-package-5 fault/clean-checkout gate.
+release. D023 inserts the now-complete P7.5 system gate before P8. The next
+chronological work is P8 assurance of that exact integrated graph.
 
 The P7.5 target is one reproducible same-host system in which the loopback UI
 and client gateway call the authenticated admission, discovery, storage,
 resolver, and five-party container services. The existing P7 in-memory UI and
 the frozen `LOCUS-compose-deployment-v2` deployment remain regression controls;
-neither is silently reinterpreted as the integrated system. Integrated run
-commands now exist, but P7.5 is not complete until its remaining lifecycle and
-fault gates pass.
+neither is silently reinterpreted as the integrated system. The integrated run
+commands and their lifecycle/fault/reproducibility gates now pass.
 
 P6.4 remains open at its infrastructure gate: the strict endpoint file and
 additive Compose overlay run all five parties locally, but actual VMs or hosts

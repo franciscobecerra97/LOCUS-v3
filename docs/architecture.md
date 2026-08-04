@@ -3,8 +3,8 @@
 Status: living architecture boundary, synchronized 2026-08-04. The frozen
 same-host Yi deployment below remains historical/component scope. D023 approves
 a new P7.5 integrated reference system as the future P8/P9 system under test.
-Its manifest, service plane, deployed UI bridge and normal workflows are
-implemented; the full fault/lifecycle/clean-checkout gate remains open.
+Its manifest, service plane, deployed UI bridge, lifecycle workflow, expanded
+fault matrix, and clean-checkout gate are implemented and pass.
 
 The cue-specific boundary and role-visible data are diagrammed in
 `docs/cue-data-flow.md`.
@@ -121,7 +121,5 @@ contracts are `docs/threat-model.md`, `docs/cue-policy.md`,
 `docs/deployment.md`. It retains the exact
 `LOCUS-compose-deployment-v2` meaning and is not the D023 integrated system.
 The P7 same-process UI/API remains a component conformance control for the same
-reason. After the remaining P7.5 gate closes, central P8/P9 system evidence
-must bind and traverse the
-new integrated manifest rather than infer full-system behavior from either
-narrower profile.
+reason. Central P8/P9 system evidence must bind and traverse the new integrated
+manifest rather than infer full-system behavior from either narrower profile.

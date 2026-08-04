@@ -332,15 +332,18 @@ required, and five authorizer/recovery-party containers. The target covers Yi
 and aPPSS at 2-of-3 and 3-of-5 and becomes the required system boundary for new
 P8/P9 system evidence and the later artifact.
 
-Work packages 1--3 and the normal workflow portion of work package 4 are
-implemented. A disposable live run passed four suite/topology arms, all policy
-paths, isolated Client B recovery, normal successor creation/recovery and exact
-cleanup. The complete P7.5 fault/lifecycle/clean-checkout gate is still open,
-so this creates no retained evidence, host-separation or independent-
-administration result, real-provider result, usability result,
-production-security claim, P8 entry, or manuscript authorization. Frozen
-identifiers, component profiles and retained v1/v2 evidence remain unchanged
-and non-transferable.
+P7.5 is complete for implementation chronology. The disposable gate passes
+the four suite/topology arms, all policy paths, isolated Client B recovery, 26
+exact-threshold suite/subset paths, separated below-threshold and authorization-
+quorum failures, crash-resumed same-/cross-suite successors, replay/stale-CAS,
+party/provider faults, live-network and stopped-role state audits, dynamic
+output canaries, and exact cleanup. Commit `d4a8da5` reproduced the complete
+gate from a fresh checkout and empty checkout-local dependency cache without a
+host native-extension installation. This is an ordinary development gate, not
+retained evidence, a host-separation or independent-administration result, a
+real-provider result, a usability or production-security claim, or manuscript
+authorization. Frozen identifiers, component profiles, and retained v1/v2
+evidence remain unchanged and non-transferable.
 
 ## Excluded material
 

@@ -2066,10 +2066,9 @@ Completion record:
 
 Direction: `Approved` by D023
 
-Execution status: `In progress — work packages 1--3 and the normal-path
-portion of work package 4 are implemented; work package 5 is not yet closed`
+Execution status: `Complete`
 
-P7.5 is the next chronological phase. It composes the already implemented UI,
+P7.5 composes the already implemented UI,
 client API, admission, descriptor/bootstrap, provider gateway, resolver,
 recovery-suite, party, and lifecycle components into one new system. It does
 not modify the frozen Yi-only Compose profile or reinterpret any retained v2
@@ -2178,9 +2177,7 @@ Acceptance:
 
 #### Work package 4 — Implement the complete enrollment/recovery/lifecycle workflow
 
-Status: `In progress — all arms, all policies, clean recovery and normal
-same-/cross-suite successor paths pass; crash-safe predecessor retirement is
-not yet connected to the deployed lifecycle protocol`
+Status: `Done`
 
 For every selected arm, drive synthetic key generation/import, policy
 processing, authenticated suite initialization, encryption, provider
@@ -2203,8 +2200,7 @@ Acceptance:
 
 #### Work package 5 — Close the pre-evidence full-system gate
 
-Status: `In progress — the four-arm clean-client smoke passes; the expanded
-fault matrix and second-clean-checkout reproduction remain open`
+Status: `Done`
 
 Provide one cross-platform interactive start path and one disposable full-
 system smoke path. The smoke matrix covers correct and wrong input,
@@ -2241,13 +2237,30 @@ Implementation snapshot (2026-08-04):
   enrollment/recovery paths, Client A destruction/audit, Client B recovery,
   wrong-input rejection, four normal successor/recovery paths and exact
   cleanup. This is ordinary development output, not retained evidence.
-- The later expanded fault run reached the one-party-unavailability check; its
-  first aPPSS subset selection failed and was changed to the Yi 3-of-5 subset
-  control, but the corrected run could not be executed after the local Docker
-  execution allowance was exhausted. Exact-subset enumeration, below-threshold
-  isolation from authorization loss, stale CAS/replay, crash-boundary successor
-  retirement, output/canary scanning and clean-checkout reproduction therefore
-  remain required before work package 5 can be marked done.
+- The deployed successor path now uses the existing
+  `LOCUS-successor-publication-journal-v1` phase coordinator. It verifies
+  recovery through freshly prepared remote party state before pointer cutover,
+  explicitly retires the predecessor at every party, rejects retired-current
+  authorization, and resumes after injected failures following each of the
+  eight selected publication effects without duplicating effects.
+- The disposable full-system gate passes 26 exact-threshold recoveries: all
+  three 2-of-3 subsets and all ten 3-of-5 subsets for both Yi and aPPSS. It
+  separately demonstrates below-threshold suite failure after successful
+  4-of-5 authorization, one-party availability, authorization-quorum loss,
+  replay rejection, stale CAS rejection, party restart, provider outage and
+  restoration, suite-override rejection, and wrong-input normalization.
+- The same gate validates eleven live service-network memberships, audits
+  Client A plus thirteen stopped role/provider volumes, scans all container
+  output against dynamic cue/key/provider-credential canaries, and verifies
+  exact labeled container/network/volume cleanup. These are ordinary test
+  observations, not retained evidence.
+- Commit `d4a8da5` reproduced `uv sync --frozen`, `integrated-config`, and the
+  complete `integrated-smoke` from a fresh checkout with an empty checkout-local
+  uv cache and no host native-extension installation. The primary workspace
+  also passed the complete gate with 322 Python tests (two intentional skips),
+  all native tests/vectors, formatting, linting, typing, and boundary checks.
+- P7.5 creates no P8/P9 retained corpus, real-provider or host-independence
+  result, usability claim, production-security claim, or manuscript change.
 
 ---
 
@@ -2583,21 +2596,16 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended next execution slice
 
-Execution remains chronological. P0--P5A, P6.1--P6.3, P7.1--P7.4, and P7.5
-work packages 1--3 are complete for implementation chronology. P6.4's actual
-host-separation tiers remain blocked on infrastructure and do not block D023's
-honest same-host integrated profile.
+Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.5 are
+complete for implementation chronology. P6.4's actual host-separation tiers
+remain blocked on infrastructure and do not block D023's honest same-host
+integrated profile.
 
 The next sequence is:
 
-1. P7.5 work package 4 — connect crash-safe successor activation and
-   predecessor retirement to the deployed lifecycle protocol;
-2. P7.5 work package 5 — finish and pass the exact subset, fault,
-   state/output-scan, cleanup, and second-clean-checkout
-   gate;
-3. P8 — assure that exact integrated system and define privacy-safe traces;
-4. P9 — collect new suite/topology-specific results from that system; and
-5. P10 — complete independent review, integrated artifact reproduction, claim
+1. P8 — assure the exact integrated system and define privacy-safe traces;
+2. P9 — collect new suite/topology-specific results from that system; and
+3. P10 — complete independent review, integrated artifact reproduction, claim
    closure, and separately owner-approved manuscript changes.
 
 Do not collect retained P8/P9 evidence, promote a system result, or propose a

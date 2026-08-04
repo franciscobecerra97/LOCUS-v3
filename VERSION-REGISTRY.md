@@ -204,6 +204,10 @@ secret-bearing value. A changed provider, topology, admission adapter, public
 API/UI meaning, role placement, or evaluation boundary requires a new profile;
 the identifiers do not reinterpret Compose v2 or any retained result.
 
+P7.5 completed its implementation and fresh-checkout gates at commit
+`d4a8da5`. This records conformance of the assigned family only; it does not
+allocate a P8/P9 evidence result, a real-provider variant, or a multi-host tier.
+
 The manifest binds `LOCUS-cloud-backup-object-v2`, the additive canonical
 envelope for registered backup v5/v6 objects, and
 `LOCUS-application-storage-gateway-v2`, which changes only the backup-envelope

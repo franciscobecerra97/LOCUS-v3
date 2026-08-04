@@ -1,8 +1,7 @@
 # Integrated Reference System
 
-Status: D023 owner-approved target; P7.5 implementation in progress. The
-normal four-arm/all-policy clean-client workflow passes, but the complete
-fault/lifecycle/clean-checkout gate remains open.
+Status: D023 owner-approved target; P7.5 implementation and pre-evidence gate
+complete. P8 is the next chronological phase.
 
 ## Purpose
 
@@ -158,17 +157,21 @@ the service plane, and `integrated-stop` to stop client containers. Add
 disposable normal/fault workflow is `integrated-smoke`. The browser does not
 control Docker and receives no Docker socket or operator credential.
 
-The confirmed development run covers all four suite/topology arms, all four
-policy paths, clean-client isolation, wrong input, suite-bound dispatch, four
-normal successor directions and cleanup. Full exact-subset enumeration,
-crash-safe lifecycle retirement, the remaining fault matrix, output/canary
-scan and a second clean checkout are still acceptance gates, not completed
-results.
+The confirmed development gate covers all four suite/topology arms, all four
+policy paths, clean-client isolation, wrong input, suite-bound dispatch, and
+same-/cross-suite successors through the P4.3 crash-resumable publication
+phases and explicit predecessor retirement. It runs all 26 suite-specific
+exact-threshold subset recoveries, separates suite-threshold loss from 4-of-5
+authorization loss, and checks replay, stale CAS, party/provider failure and
+restart, live network membership, stopped role/provider state, dynamic output
+canaries, and exact cleanup. Commit `d4a8da5` reproduced the same smoke from a
+fresh checkout with an empty checkout-local uv cache and no host native
+extension. These are completed implementation gates, not retained P8/P9
+evidence or paper results.
 
 ## P7.5 acceptance boundary
 
-Before P8 begins, the same-host integrated system must demonstrate with
-synthetic data:
+The completed pre-P8 gate demonstrates with synthetic data:
 
 - all four suite/topology arms through the UI/client API and real party APIs;
 - all registered CuePolicies, including proof that direct policies never
