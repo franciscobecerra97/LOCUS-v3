@@ -553,6 +553,9 @@ def _validate_integrated_compose(value: dict[str, object], *, client: str) -> No
 
 
 def integrated_config() -> None:
+    prototype_path = str(ROOT / "prototype")
+    if prototype_path not in sys.path:
+        sys.path.insert(0, prototype_path)
     from locus.integrated_manifest import load_integrated_manifest
 
     manifest = load_integrated_manifest(INTEGRATED_MANIFEST)
