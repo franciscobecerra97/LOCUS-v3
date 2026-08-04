@@ -10,7 +10,6 @@ from urllib.parse import urlsplit
 from .appss_formats import APPSS_SUITE_ID, YI_SUITE_ID
 from .codec import encode
 from .cue_policy_registry import DEFAULT_CUE_POLICY_REGISTRY
-from .paired_deployment_profiles import PAIRED_PROFILES
 
 INTEGRATED_DEPLOYMENT_ID = "LOCUS-integrated-reference-deployment-v1"
 INTEGRATED_CONFIG_VERSION = "LOCUS-integrated-reference-config-v1"
@@ -41,7 +40,10 @@ EXPECTED_NETWORKS = (
     "storage",
 )
 EXPECTED_POLICIES = DEFAULT_CUE_POLICY_REGISTRY.policy_ids
-EXPECTED_PROFILES = tuple(sorted(PAIRED_PROFILES))
+EXPECTED_PROFILES = (
+    "LOCUS-paired-suite-deployment-2of3-v1",
+    "LOCUS-paired-suite-deployment-3of5-v1",
+)
 
 
 class IntegratedManifestError(ValueError):
