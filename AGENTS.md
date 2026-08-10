@@ -36,6 +36,12 @@ authenticated admission, discovery, storage-gateway/provider, resolver, and
 five-party service boundaries. The frozen Compose deployment, P6 process
 profiles, and P7 same-process UI/API remain historical or component controls
 and cannot substitute for integrated-system evidence.
+D024 isolates that system under `prototype_final/`. All P8 and later
+implementation, tests, evidence collection, and artifact work must execute from
+that self-contained workspace through its `integrated-*` command surface.
+Existing root `prototype/`, `deploy/`, native crates, and `tasks.py` remain
+historical/component controls and migration provenance; do not extend them for
+new P8+ behavior or use them as the primary system under test.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered
@@ -316,6 +322,16 @@ data. Normal reviewer workflows must not require external credentials.
   separately authorized, separately versioned variants.
 - Same-host container/process separation does not establish host separation or
   independent administration.
+- `prototype_final/` is the D024 active source boundary. It must remain
+  dependency-complete and must not import source, scripts, tests, deployment
+  assets, or generated state from outside that directory at runtime.
+- Expose only `integrated-check`, `integrated-config`, `integrated-start`,
+  `integrated-stop`, and `integrated-smoke` from its executor. Add a new command
+  only when a later approved PLAN gate requires it and keep the
+  `integrated-*` namespace.
+- P8+ tests belong under `prototype_final/tests/`; do not add new behavior tests
+  to the legacy root `prototype/tests/` unless they specifically preserve a
+  frozen compatibility boundary.
 
 ### Lifecycle
 
@@ -416,32 +432,31 @@ approval of corresponding paper language.
   documentation, and the claim/evidence matrix when their facts change.
 - Maintain current baseline documents at their normal `docs/*.md` paths.
   `docs/upstream-baseline/` is a read-only provenance snapshot only.
+- For P8 and later implementation work, make changes in `prototype_final/`
+  first. Update a legacy copy only when a frozen compatibility test or explicit
+  migration task requires it; never make the legacy tree the hidden source of
+  truth.
 
 ## Build and verification
 
-Install the pinned environment:
+Install and validate the active D024 prototype from its own directory:
 
 ```console
+cd prototype_final
 uv sync --frozen
+uv run --frozen python tasks.py integrated-check
 ```
 
-Run the complete default gate:
+Validate the integrated graph and run its complete disposable gate:
 
 ```console
-uv run --frozen python tasks.py check
+uv run --frozen python tasks.py integrated-config
+uv run --frozen python tasks.py integrated-smoke
 ```
 
-Optional synthetic walkthrough:
-
-```console
-uv run --frozen python tasks.py walkthrough
-```
-
-Optional disposable same-host deployment:
-
-```console
-uv run --frozen python tasks.py deployment-smoke
-```
+The root `tasks.py check`, walkthrough, P7 UI, S3, frozen deployment, and
+artifact commands remain historical/component controls. They are not the P8+
+default gate and must not collect new integrated evidence.
 
 Do not run real-provider or external-service profiles without the corresponding
 owner decision and execution authorization.

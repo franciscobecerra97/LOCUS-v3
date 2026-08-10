@@ -13,7 +13,9 @@ client API over these existing boundaries. P7.2--P7.4 add a thin loopback UI
 that calls only this API and keeps protocol and canonicalization logic below
 the boundary. D023 approves P7.5 as a separately versioned deployment
 realization of the same API over authenticated remote services. That
-realization is not yet implemented and assigns no identifier or command here.
+realization is implemented as `LOCUS-integrated-reference-deployment-v1` with
+configuration `LOCUS-integrated-reference-config-v1` and the registered
+integrated operator commands.
 
 ## Purpose
 
@@ -77,10 +79,9 @@ failure categories. It may not:
 
 The current same-process facade remains a fast component conformance control.
 The frozen Yi Compose profile and its identifier remain unchanged. The P7.5
-work package 1 manifest/schema gate must assign the new integrated
-deployment/configuration identity together with its first validator and
-canonical synthetic configuration; this document deliberately does not
-preassign it.
+work package 1 manifest/schema gate assigned the integrated deployment and
+configuration identifiers together with their validator and canonical
+synthetic configuration.
 
 ## Recovery-suite boundary
 
@@ -354,7 +355,7 @@ changing the frozen P1 interface tests.
 P1.3 changes no manuscript source or retained evidence. It creates no new
 paper claim. Frozen v2 results remain evidence only for the exact inherited Yi
 profile, not for the new interface architecture. D023 likewise authorizes
-planning and implementation only. After P7.5 closes, central P8/P9 system
+planning and implementation only. P7.5 is closed; central P8/P9 system
 results must traverse and bind the exact integrated manifest; same-process,
 unit, native, P6, and frozen Compose checks remain supporting controls. Later
 implementation and evidence profiles require their own identifiers, schemas,

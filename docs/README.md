@@ -71,12 +71,14 @@ but it does not supersede implemented baseline behavior or the manuscript until
 the matching implementation/evidence gates and a separate manuscript delta are
 approved.
 
-D023 makes P7.5 the next implementation phase. The current P7 in-memory UI and
-the frozen same-host Compose deployment remain separately identified controls;
-the planned integrated profile must connect the UI/client gateway to all
-authenticated service roles before P8/P9 system evidence is collected. P7.5
-does not yet have a run command, and its same-host construction will not satisfy
-the still-open P6.4 VM/host-separation gate.
+D023's P7.5 integrated reference system and pre-evidence gate are complete. The
+current P7 in-memory UI and frozen same-host Compose deployment remain
+separately identified controls; central P8/P9 system evidence must use the
+implemented integrated profile and its authenticated UI-to-service graph. Use
+the executor inside `prototype_final/`: `tasks.py integrated-config`,
+`integrated-start`, `integrated-stop`, and `integrated-smoke`. D024 makes that
+directory the sole P8+ active implementation. Its same-host construction does not
+satisfy the still-open P6.4 VM/host-separation gate.
 
 `upstream-baseline/` is a byte-for-byte provenance snapshot. Do not edit it;
 maintain current facts at the normal active paths.

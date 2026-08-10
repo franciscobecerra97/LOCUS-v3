@@ -1,7 +1,7 @@
 # Integrated Reference System
 
-Status: D023 owner-approved target; P7.5 implementation and pre-evidence gate
-complete. P8 is the next chronological phase.
+Status: D023 implementation and pre-evidence gate complete; D024 isolated it
+under `prototype_final/`. P8 is the next chronological phase.
 
 ## Purpose
 
@@ -149,13 +149,18 @@ P7.5 provides:
   containers, networks, volumes and generated credentials; and
 - explicit exact-target cleanup and status operations for an interactive run.
 
-Use `uv run --frozen python tasks.py integrated-config` to validate both
+Run from `prototype_final/`. Use `uv run --frozen python tasks.py
+integrated-config` to validate both
 resolved graphs, `integrated-start --mode enrollment` for Client A,
 `integrated-start --mode recovery` to replace it with Client B while keeping
 the service plane, and `integrated-stop` to stop client containers. Add
 `--destroy` only for exact-project container/volume/image destruction. The
 disposable normal/fault workflow is `integrated-smoke`. The browser does not
 control Docker and receives no Docker socket or operator credential.
+
+The root executor and source tree are retained historical/component controls.
+They are not active P8+ implementation or evidence paths and cannot replace a
+run built wholly from `prototype_final/`.
 
 The confirmed development gate covers all four suite/topology arms, all four
 policy paths, clean-client isolation, wrong input, suite-bound dispatch, and

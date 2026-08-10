@@ -67,11 +67,8 @@ resources.
 
 | Path | Purpose |
 | --- | --- |
-| `prototype/` | Python orchestration, storage, services, tests, and evidence tooling |
-| `appss-core/` | Separate Rust aPPSS/OPRF/GF(2¹²⁸) core and public fixed vector |
-| `tpass-core/` | Rust/Ristretto255 TPASS implementation and fixed vectors |
-| `tpass-python/` | Narrow PyO3 binding for the independent Rust suites |
-| `deploy/` | Existing isolated same-host deployment and synthetic fixtures |
+| `prototype_final/` | Sole active P8+ integrated implementation, focused tests, native dependencies, deployment, and five-command executor |
+| `prototype/`, root native crates, `deploy/`, and root `tasks.py` | Preserved historical/component implementations and controls |
 | `docs/` | Active baseline documentation, target-design drafts, schemas, and provenance snapshots |
 | `experiments/` | Frozen v1/v2 records plus separately versioned future evidence |
 | `paper/` | Authoritative manuscript, bibliography, build inputs, generated rows, and review PDF |
@@ -80,7 +77,7 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A, P6.1--P6.3, and P7.1--P7.5 are complete for implementation chronology. D020's
+P1--P5A, P6.1--P6.3, and P7.1--P7.6 are complete for implementation chronology. D020's
 internal recovery-suite mapping assessment is provisional; independent human
 validation remains mandatory before manuscript reliance or final reviewed
 release. D023 inserts the now-complete P7.5 system gate before P8. The next
@@ -98,11 +95,12 @@ additive Compose overlay run all five parties locally, but actual VMs or hosts
 remain necessary for a higher tier. A same-host P7.5 system does not close that
 gate. Live AWS validation remains a separately authorized optional gate.
 
-Run the fast component interface with `uv run --frozen python tasks.py ui`.
-Validate the integrated graph with `uv run --frozen python tasks.py
-integrated-config`; use `integrated-start --mode enrollment` followed by
+For active work, enter `prototype_final/`, install its pinned environment, and
+run `uv run --frozen python tasks.py integrated-check`. Validate its graph with
+`integrated-config`; use `integrated-start --mode enrollment` followed by
 `integrated-start --mode recovery` for the interactive Client A/Client B path,
-or `integrated-smoke` for the disposable gate. These commands create no
+or `integrated-smoke` for the disposable gate. The root executor remains only
+for historical/component reproduction. These commands create no
 retained evidence, usability claim, real-provider result, or manuscript
 change.
 

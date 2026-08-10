@@ -15,7 +15,9 @@ construction, and D018 keeps frozen Yi TPASS and aPPSS as independent
 first-class suites selected explicitly per enrollment or successor epoch. Yi
 and aPPSS are now implemented at the application/component boundary. D023
 requires their complete UI-to-container composition in one new integrated
-reference system before P8/P9. Architecture decisions listed in
+reference system before P8/P9. D024 isolates that implementation under
+`prototype_final/` and makes its reduced `integrated-*` command surface the
+only active P8+ implementation path. Architecture decisions listed in
 `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -51,6 +53,10 @@ documentation, and evidence gate must pass.
    test for new system-security, information-flow, performance, resilience,
    artifact, and later manuscript results; smaller profiles remain supporting
    controls and frozen evidence remains non-transferable.
+10. Implement and run P8+ work only from the self-contained
+    `prototype_final/` D024 boundary. Root implementations, commands, and tests
+    remain frozen historical/component controls and are not a second active
+    development path.
 
 ---
 
@@ -1298,7 +1304,10 @@ Completion record (2026-08-03):
 ## P5A — Independent selectable Yi TPASS and aPPSS suites
 
 Direction: `Approved` by D017 and D018
-Execution status: `In progress`
+Execution status: `Complete`
+
+Independent human confirmation under D019 remains a mandatory
+pre-manuscript/pre-release gate; it does not change the implementation status.
 
 This phase begins only after P1 has frozen the suite-neutral contract, P2 binds
 the suite in authenticated recovery metadata, P3 supplies authenticated
@@ -1624,7 +1633,10 @@ result.
 
 ### P5A.7 Complete selectable-suite documentation and review gates
 
-Status: `Complete for implementation chronology under D020; independent human validation remains a mandatory pre-manuscript/pre-release gate`
+Status: `Complete`
+
+Independent human validation remains a mandatory pre-manuscript/pre-release
+gate under D019/D020.
 
 Actions:
 
@@ -1736,7 +1748,10 @@ Completion record (2026-08-03):
 
 ### P6.2 Add one distinct provider adapter
 
-Status: `Complete for reproducible implementation; separately authorized live AWS validation remains open`
+Status: `Complete`
+
+The reproducible implementation is complete. Separately authorized live AWS
+validation remains an optional open supplemental gate.
 
 Provider: AWS S3. Its role is a supplemental application-operated
 account-scoped compatibility profile, not a mandatory reviewer path or new
@@ -1856,7 +1871,11 @@ Completion record (2026-08-03):
 
 ### P6.4 Move parties to separate hosts
 
-Status: `Same-host configurable staging complete; actual host separation blocked on infrastructure`
+Status: `Blocked`
+
+Same-host configurable staging is complete. The actual host-separation
+objective is blocked until suitable multi-VM or multi-host infrastructure is
+available.
 
 Tiers:
 
@@ -1918,7 +1937,7 @@ Readiness record (2026-08-03):
 
 ### P7.1 Freeze client APIs before UI implementation
 
-Status: `Completed 2026-08-03`
+Status: `Complete`
 
 Acceptance:
 
@@ -1942,7 +1961,7 @@ Completion record:
 
 ### P7.2 Implement enrollment UI
 
-Status: `Completed 2026-08-03`
+Status: `Complete`
 
 Screens:
 
@@ -1982,7 +2001,7 @@ Completion record:
 
 ### P7.3 Implement recovery UI
 
-Status: `Completed 2026-08-03`
+Status: `Complete`
 
 Screens:
 
@@ -2023,7 +2042,7 @@ Completion record:
 
 ### P7.4 Implement researcher state inspector
 
-Status: `Completed 2026-08-03`
+Status: `Complete`
 
 May display:
 
@@ -2098,7 +2117,7 @@ and sessions.
 
 #### Work package 1 — Freeze the integrated deployment contract
 
-Status: `Done`
+Status: `Complete`
 
 Define and validate:
 
@@ -2132,7 +2151,7 @@ Acceptance:
 
 #### Work package 2 — Implement the container service plane
 
-Status: `Done`
+Status: `Complete`
 
 Implement container/service entry points for admission, operator/discovery,
 storage gateway, resolver, and the five parties using their already assigned
@@ -2155,7 +2174,7 @@ Acceptance:
 
 #### Work package 3 — Connect the frozen UI/API to the deployed services
 
-Status: `Done`
+Status: `Complete`
 
 Retain the P7 semantic HTML/CSS/JavaScript and exact public API operations.
 Introduce a deployment-backed implementation of those operations that uses
@@ -2177,7 +2196,7 @@ Acceptance:
 
 #### Work package 4 — Implement the complete enrollment/recovery/lifecycle workflow
 
-Status: `Done`
+Status: `Complete`
 
 For every selected arm, drive synthetic key generation/import, policy
 processing, authenticated suite initialization, encryption, provider
@@ -2200,7 +2219,7 @@ Acceptance:
 
 #### Work package 5 — Close the pre-evidence full-system gate
 
-Status: `Done`
+Status: `Complete`
 
 Provide one cross-platform interactive start path and one disposable full-
 system smoke path. The smoke matrix covers correct and wrong input,
@@ -2262,21 +2281,127 @@ Implementation snapshot (2026-08-04):
 - P7.5 creates no P8/P9 retained corpus, real-provider or host-independence
   result, usability claim, production-security claim, or manuscript change.
 
+### P7.6 Isolate the final integrated prototype
+
+Status: `Complete`
+
+D024 requires one self-contained `prototype_final/` workspace containing the
+dependency-complete D023 system without moving or deleting historical source.
+Its executor exposes only:
+
+- `integrated-check`;
+- `integrated-config`;
+- `integrated-start`;
+- `integrated-stop`; and
+- `integrated-smoke`.
+
+Required contents:
+
+- pinned Python environment and lockfile;
+- dependency-complete integrated Python package and thin UI assets;
+- frozen Yi core, aPPSS core, and narrow native binding;
+- integrated Dockerfile, Compose graph, canonical manifest, and schema;
+- focused integrated manifest/bootstrap/isolation/service tests;
+- licenses and one operator README; and
+- no retained evidence, manuscript, credentials, generated state, caches,
+  logs, databases, or legacy demo/deployment/artifact command surface.
+
+Acceptance:
+
+- The workspace does not import source or deployment assets from outside
+  `prototype_final/` at runtime.
+- `integrated-check` passes the reduced Python/native gate.
+- `integrated-config` validates both resolved graphs.
+- `integrated-smoke` reproduces the complete P7.5 matrix and exact cleanup from
+  the isolated build context.
+- Executor help lists only the five approved `integrated-*` commands.
+- P8+, artifact, contributor, and operator documentation identifies
+  `prototype_final/` as the sole active implementation path.
+
+This isolation preserves all D023 and protocol identifiers because it changes
+only source organization and the operator command surface. Any semantic system
+change still follows the existing version-allocation gates.
+
+Completion record (2026-08-10):
+
+- `prototype_final/` contains the dependency-complete integrated Python
+  package, both native suite cores and binding, pinned environment, deployment
+  graph, manifest/schema, focused tests, licenses, executor, and one operator
+  README. No legacy source path is imported at runtime.
+- Executor help exposes exactly the five approved `integrated-*` commands.
+  The active Python surface is 46 checked files (including the executor and
+  focused tests), with two test modules and 10 Python tests instead of the
+  root control suite's 72 test modules and 322 tests.
+- `integrated-check` passed formatting, linting, typing, native builds, 10
+  focused Python tests, and all Rust tests/vectors. `integrated-config`
+  validated both graphs.
+- `integrated-smoke` passed all four suite/topology arms, 26 subset
+  recoveries, five fault classes, eight lifecycle crash phases, state/network/
+  output audits, and exact cleanup from a bounded 12.6 MB Docker context.
+- Contributor, CI, artifact, evidence, and roadmap guidance now treats this
+  workspace as the sole active P8+ implementation boundary. Existing root
+  commands, sources, and tests remain unchanged historical/component controls.
+
 ---
 
 ## P8 — Security, reliability, and information-flow assurance
 
-Entry gate: P7.5 work package 5 must pass. P8 applies the existing C01--C26
-contracts to the exact integrated deployment manifest. Unit, property, and
-component assurance remains necessary, but every system-facing conclusion must
-also exercise the container-backed UI/client path and actual role state or
-traffic boundary.
+Entry gate: P7.5 work package 5 and P7.6 must pass. P8 applies the existing
+C01--C26 contracts to the exact integrated deployment manifest from the
+self-contained `prototype_final/` workspace. Unit, property, and component
+assurance remains necessary, but every system-facing conclusion must also
+exercise that workspace's container-backed UI/client path and actual role
+state or traffic boundary.
+
+### P8.0 Reconcile the implemented baseline and freeze the assurance sequence
+
+Status: `Complete`
+
+Before P8 implementation or retained collection:
+
+- reconcile every active technical, artifact, registry, and claim-status
+  document with the completed P7.5 implementation while preserving the
+  distinction between implementation verification and retained evidence;
+- normalize roadmap statuses to the status model in this plan;
+- make P8.1 responsible for a checked inventory of every externally reachable
+  decoder and durable mutating transition and its existing/required coverage;
+- make P8.2 responsible for assigning the state-boundary/security result
+  schemas and paths before any retained state-boundary collection;
+- make P8.3 responsible for assigning the privacy-safe network-flow trace
+  profile and schema before any retained flow collection; and
+- limit P9.2 to performance and resilience result schemas so that P9 does not
+  retroactively define P8 evidence.
+
+Acceptance:
+
+- No active document describes P7.5 or its operator commands as unimplemented.
+- The version registry consistently records every assigned P2/P7.5 identifier.
+- Claim matrices distinguish completed implementation gates from still-pending
+  P8 retained evidence and do not promote a paper claim.
+- P8/P9 chronology prohibits collection before the applicable schema,
+  identifier, positive-control contract, and retained-output policy exist.
+
+Completion record (2026-08-10):
+
+- The completed P7.5 status and commands were synchronized across the active
+  planning, architecture, API/UI, deployment, artifact, registry,
+  information-flow, output-safety, and claim-status documents.
+- Roadmap status values were normalized without changing the qualified open
+  gates for independent human review, optional live AWS, or P6.4 host
+  separation.
+- State/security schemas now belong chronologically to P8.2, flow trace schemas
+  to P8.3, and performance/resilience schemas to P9.2. No retained P8/P9 result
+  was collected or identifier assigned by this reconciliation.
 
 ### P8.1 Add decoder and state-machine assurance
 
 Status: `Proposed`
 
 Add:
+
+- a checked coverage inventory mapping every external decoder and durable
+  transition in `prototype_final/` to its existing and required
+  negative/integrated tests;
 
 - bounded property testing;
 - malformed-input fuzzing;
@@ -2301,6 +2426,11 @@ Acceptance:
 ### P8.2 Add state-boundary evidence
 
 Status: `Proposed`
+
+Before collection, freeze and register the exact aggregate-only security/state
+result families, schemas, versioned paths, positive controls, scenario
+manifests, provenance fields, and exclusive-publication rules. Exploratory
+development reports remain outside retained paths until that gate passes.
 
 Required surfaces:
 
@@ -2327,10 +2457,16 @@ Acceptance:
 - Each scenario has a positive control and aggregate-only report bound to the
   integrated deployment/configuration manifest, suite, topology, policy,
   provider, source commit, and exact role snapshot set.
+- Every retained report validates against a P8.2-assigned schema and identifier;
+  no P9.2 performance schema is used to authorize security/state collection.
 
 ### P8.3 Add privacy-safe network-flow evidence
 
 Status: `Proposed`
+
+Before collection, assign the exact trace-policy identifier, aggregate trace
+schema, permitted categories, positive controls, unexpected-contact rule,
+versioned path, and provenance binding required by `EVIDENCE-POLICY.md`.
 
 Prefer structured instrumentation that records:
 
@@ -2353,6 +2489,8 @@ Acceptance:
 - Reproducible aggregate evidence supports role-visibility statements without
   retaining payloads, and the expected graph is checked against both resolved
   configuration and observed integrated-system contacts.
+- Collection cannot begin until the P8.3 trace profile/schema and prohibited-
+  output checks are registered and tested.
 
 ### P8.4 Preserve attempt control as a boundary
 
@@ -2420,16 +2558,11 @@ Acceptance:
 
 Status: `Proposed`
 
-Candidate result families:
-
-- CuePolicy conformance;
-- clean-client recovery;
-- client-state disposal audit;
-- descriptor security;
-- information flow;
-- distributed performance;
-- multi-role state audit; and
-- integrated full-system correctness, resilience, and performance.
+Implement only the performance and resilience result families needed by the
+P9.1 methodology, including end-to-end integrated performance, failure and
+restart schedules, concurrency/throughput, role/storage bytes, and any
+separately labeled browser-observed latency. P8.2 owns security/state result
+schemas and P8.3 owns network-flow trace schemas.
 
 Acceptance:
 
@@ -2446,6 +2579,8 @@ Acceptance:
   provenance records and never relabels or pools retained v2 measurements.
 - No result schema accepts the P7 in-memory profile, P6 component controls, or
   frozen Compose v2 identifier where an integrated-system result is required.
+- P9.2 cannot redefine, broaden, or retroactively authorize a P8.2 security/
+  state result or P8.3 flow trace.
 
 ### P9.3 Collect the same-host integrated baseline
 
@@ -2596,16 +2731,19 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended next execution slice
 
-Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.5 are
-complete for implementation chronology. P6.4's actual host-separation tiers
-remain blocked on infrastructure and do not block D023's honest same-host
-integrated profile.
+Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.6 are
+complete for implementation chronology. P6.4's actual host-separation tiers remain blocked
+on infrastructure and do not block D023's honest same-host integrated profile.
 
 The next sequence is:
 
-1. P8 — assure the exact integrated system and define privacy-safe traces;
-2. P9 — collect new suite/topology-specific results from that system; and
-3. P10 — complete independent review, integrated artifact reproduction, claim
+1. P8.1 — create the checked decoder/state-machine inventory and close its
+   assurance gaps in `prototype_final/`;
+2. P8.2--P8.4 — assign the required security/trace schemas, assure the exact
+   integrated system, and preserve the attempt-control boundary;
+3. P9 — collect new suite/topology-specific performance/resilience results
+   from that system; and
+4. P10 — complete independent review, integrated artifact reproduction, claim
    closure, and separately owner-approved manuscript changes.
 
 Do not collect retained P8/P9 evidence, promote a system result, or propose a

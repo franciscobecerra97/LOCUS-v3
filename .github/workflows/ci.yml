@@ -13,7 +13,7 @@ concurrency:
 
 jobs:
   checks:
-    name: Checks (${{ matrix.os }})
+    name: Final prototype checks (${{ matrix.os }})
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -35,13 +35,15 @@ jobs:
         run: rustup show active-toolchain
 
       - name: Synchronize frozen environment
+        working-directory: prototype_final
         run: uv sync --frozen
 
-      - name: Run complete checks
-        run: uv run --frozen python tasks.py check
+      - name: Run focused integrated checks
+        working-directory: prototype_final
+        run: uv run --frozen python tasks.py integrated-check
 
-  artifact-smoke:
-    name: Artifact smoke
+  integrated-smoke:
+    name: Final integrated smoke
     needs: checks
     runs-on: ubuntu-latest
 
@@ -60,7 +62,9 @@ jobs:
         run: rustup show active-toolchain
 
       - name: Synchronize frozen environment
+        working-directory: prototype_final
         run: uv sync --frozen
 
-      - name: Run artifact smoke workflow
-        run: uv run --frozen python tasks.py artifact-smoke
+      - name: Run disposable integrated workflow
+        working-directory: prototype_final
+        run: uv run --frozen python tasks.py integrated-smoke

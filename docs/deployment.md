@@ -18,8 +18,14 @@ LOCUS container, volume, or network remained after the collection audit.
 D023 does not reinterpret this deployment or its retained results. It approves
 a separately versioned P7.5 successor that connects the loopback UI/client
 gateway to every required runtime service and becomes the primary P8/P9
-system-under-test. P7.5 is not yet implemented; none of the commands in this
-document starts that integrated system.
+system-under-test. P7.5 is implemented under
+`LOCUS-integrated-reference-deployment-v1`; its distinct operator commands are
+documented in `INTEGRATED-REFERENCE-SYSTEM.md`. The frozen commands in this
+document retain only their original profile meanings.
+
+D024 isolates the active integrated source, deployment assets, executor, and
+focused tests under `prototype_final/`. P8+ work uses that directory; this
+historical deployment document and the root executor remain controls only.
 
 The performance runner builds its reference image under the fixed
 `locus-performance-image-v1` Compose identity before a block and reuses the
@@ -45,7 +51,7 @@ The implemented graph in this document preserves the exact
 attack, benchmark, configurable-endpoint, and retained-evidence workflows
 remain valid only for their recorded manifests and provenance.
 
-P7.5 will create a new deployment family with these runtime roles:
+P7.5 creates a new deployment family with these runtime roles:
 
 - an ephemeral UI/client gateway exposed only on host loopback;
 - a local synthetic admission/capability service;
@@ -68,8 +74,8 @@ authorizers with 4-of-5 authorization, all registered CuePolicies, and
 same-suite and cross-suite successor flows. It remains a same-host research
 profile. Multi-host placement and live AWS S3 are optional and require distinct
 versioned profiles and, where applicable, execution authorization. P7.5 work
-package 1 will assign the exact manifest, identifiers, validators, and operator
-commands together; this frozen deployment document does not preassign them.
+package 1 assigned the exact manifest, identifiers, validators, and operator
+commands together; this frozen deployment document does not reinterpret them.
 
 ## Threat assumptions
 
@@ -313,7 +319,7 @@ the frozen P7 corpus now have clean, labeled, immutable aggregate-only records;
 independent clean-host reproduction remains required.
 
 These historical/component results do not support a claim about the D023
-full-system path. After P7.5 closes, central P8 assurance and P9
+full-system path. P7.5 is closed; central P8 assurance and P9
 performance/resilience results must bind the exact integrated manifest and
 traverse its UI/client gateway and authenticated services. Unit, native,
 same-process UI, P6, and this frozen Compose profile remain supporting controls,

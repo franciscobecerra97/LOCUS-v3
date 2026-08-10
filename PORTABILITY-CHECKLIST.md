@@ -25,6 +25,7 @@ Use this after copying the seed to its independent directory.
 
 ## Required source directories
 
+- [x] `prototype_final/` (sole active P8+ integrated workspace)
 - [x] `prototype/locus/`
 - [x] `prototype/tests/`
 - [x] `prototype/test-vectors/`
@@ -83,6 +84,11 @@ Use this after copying the seed to its independent directory.
 
 ## Build validation
 
+- [x] `cd prototype_final`
+- [x] `uv sync --frozen`
+- [x] `uv run --frozen python tasks.py integrated-check`
+- [x] `uv run --frozen python tasks.py integrated-config`
+- [x] `uv run --frozen python tasks.py integrated-smoke`
 - [x] `uv sync --frozen`
 - [x] `uv run --frozen python tasks.py check`
 - [x] Native extension built from source

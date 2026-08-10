@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://locus.invalid/schemas/integrated-reference-config-v1.schema.json",
+  "title": "LOCUS integrated reference configuration v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["arms", "authorization", "clients", "deployment_id", "networks", "policies", "provider", "services", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-integrated-reference-config-v1"},
+    "deployment_id": {"const": "LOCUS-integrated-reference-deployment-v1"},
+    "arms": {"type": "array", "minItems": 4, "maxItems": 4, "items": {"$ref": "#/$defs/arm"}},
+    "authorization": {
+      "type": "object", "additionalProperties": false,
+      "required": ["authorizers", "quorum"],
+      "properties": {
+        "authorizers": {"const": [1, 2, 3, 4, 5]},
+        "quorum": {"const": 4}
+      }
+    },
+    "clients": {
+      "type": "object", "additionalProperties": false,
+      "required": ["enrollment", "recovery"],
+      "properties": {
+        "enrollment": {"const": "ui-client-a"},
+        "recovery": {"const": "ui-client-b"}
+      }
+    },
+    "networks": {"const": ["admission", "browser-edge", "cloud", "control", "recovery", "resolver", "storage"]},
+    "policies": {"const": ["LOCUS-canonical-email-set-v1", "LOCUS-canonical-phone-set-v1", "LOCUS-location-person-set-v1", "LOCUS-quantized-coordinate-set-v1"]},
+    "provider": {
+      "type": "object", "additionalProperties": false,
+      "required": ["adapter", "backup_object_format", "endpoint", "gateway_profile", "list_allowed", "tls_mode"],
+      "properties": {
+        "adapter": {"const": "s3-compatible-local"},
+        "backup_object_format": {"const": "LOCUS-cloud-backup-object-v2"},
+        "endpoint": {"const": "http://s3:8333"},
+        "gateway_profile": {"const": "LOCUS-application-storage-gateway-v2"},
+        "list_allowed": {"const": false},
+        "tls_mode": {"const": "internal-emulation-only"}
+      }
+    },
+    "services": {"type": "array", "minItems": 13, "maxItems": 13, "items": {"$ref": "#/$defs/service"}}
+  },
+  "$defs": {
+    "identifier": {"type": "string", "minLength": 1, "maxLength": 255, "pattern": "^[!-~]+$"},
+    "arm": {
+      "type": "object", "additionalProperties": false,
+      "required": ["holders", "profile_id", "suite_id"],
+      "properties": {
+        "holders": {"type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": {"type": "integer", "minimum": 1, "maximum": 5}},
+        "profile_id": {"$ref": "#/$defs/identifier"},
+        "suite_id": {"$ref": "#/$defs/identifier"}
+      }
+    },
+    "service": {
+      "type": "object", "additionalProperties": false,
+      "required": ["endpoint", "identity", "name", "networks", "persistent_role"],
+      "properties": {
+        "endpoint": {"type": ["string", "null"], "maxLength": 255},
+        "identity": {"type": "string", "pattern": "^spiffe://locus\\.invalid/integrated/[a-z0-9-]+$"},
+        "name": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+        "networks": {"type": "array", "uniqueItems": true, "items": {"enum": ["admission", "browser-edge", "cloud", "control", "recovery", "resolver", "storage"]}},
+        "persistent_role": {"type": "boolean"}
+      }
+    }
+  }
+}

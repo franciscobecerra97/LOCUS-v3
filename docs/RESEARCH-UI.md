@@ -1,8 +1,8 @@
 # Local Research UI
 
 Status: P7.2--P7.4 implemented and locally verified on 2026-08-03 under D022.
-D023 preserves this UI and requires P7.5 to connect it to the deployed service
-plane; that integrated realization is not yet implemented.
+D023 preserves this UI, and P7.5 now connects it to the deployed service plane
+under a separate integrated deployment/configuration identity.
 
 ## Purpose and boundary
 
@@ -33,9 +33,10 @@ The command prints the loopback URL, which is normally
 
 This command starts the completed same-process component interface only. It
 does not start the D023 admission, operator/discovery, storage gateway,
-S3-compatible store, resolver, or five-party deployment. P7.5 will define a
-separate integrated operator workflow after its manifest and service graph are
-implemented; no runnable integrated command is claimed here.
+S3-compatible store, resolver, or five-party deployment. The separate
+integrated workflow uses `integrated-config`, `integrated-start`,
+`integrated-stop`, and `integrated-smoke` after validating the P7.5 manifest and
+service graph.
 
 ## Implemented workflows
 
@@ -79,7 +80,7 @@ sniffing protection. HTML additionally requests clearing of browser cache,
 cookies, and storage. Copy/cut and printing are disabled in the interface, and
 page teardown clears in-memory form values.
 
-## P7.5 integrated target
+## P7.5 integrated realization
 
 P7.5 packages the same semantic UI and `LOCUS-client-api-v1` route meanings in
 an ephemeral UI/client-gateway container exposed only on host loopback. The
@@ -111,8 +112,9 @@ desktop layout, and a 390-by-844 responsive layout with no browser warning or
 error output.
 
 The completed P7 checks are same-process research-client conformance. They are
-not retained P8/P9 evidence and cannot substitute for the P7.5 full-system
-gate. Even after integration, public admission, real-provider operation,
+not retained P8/P9 evidence and cannot substitute for the completed P7.5
+full-system gate. The P7.5 gate is also ordinary implementation verification,
+not retained evidence. Public admission, real-provider operation,
 independent administration, production hardening, accessibility certification,
 a human study, and usability remain outside this profile. Browser and
 operating-system screenshots, process memory, crash collectors, accessibility

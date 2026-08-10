@@ -1,9 +1,9 @@
 # Target Architecture
 
-Status: owner-approved target-design direction for D001, D003--D005,
+Status: owner-approved target design for D001, D003--D005,
 D008--D010, D014--D018, and D023. D015 supersedes D002/D006; D018
-supersedes D007/D016. D023 makes a new fully connected same-host reference
-system the future P8/P9 system under test without changing any completed
+supersedes D007/D016. D023's fully connected same-host reference system is
+implemented and is the required P8/P9 system under test without changing any completed
 component or frozen deployment profile. This document does not
 supersede the implemented baseline architecture or current manuscript until the affected
 implementation/evidence gates and a separate exact manuscript delta are
@@ -72,15 +72,19 @@ recovers the original key before cutover, and defaults to no key rotation. The
 frozen party lifecycle then performs its existing atomic retire/activate
 transaction; the following logical retirement phase confirms that result.
 
-D023 inserts P7.5 before P8. P7.5 must connect the existing loopback research
-UI and stable client API to authenticated admission, operator/discovery,
+D023 inserted P7.5 before P8. P7.5 connects the existing loopback research UI
+and stable client API to authenticated admission, operator/discovery,
 storage-gateway, local S3-compatible, resolver, and five-party services in one
 separately versioned Compose family. The current same-process UI remains a
 component conformance control, and frozen `LOCUS-compose-deployment-v2`
 remains historical evidence for its exact Yi-only meaning. The integrated
-profile, its identifiers, and its operator commands do not exist until the
-P7.5 allocation and implementation gates assign them together. See
+profile, identifiers, and operator commands were assigned together by the
+P7.5 allocation and implementation gates. See
 `INTEGRATED-REFERENCE-SYSTEM.md`.
+
+D024 makes the self-contained `prototype_final/` copy of that implementation
+the sole active P8+ source and later artifact boundary. Root implementations
+remain historical/component controls and are not alternative final systems.
 
 ## Design principle
 
@@ -246,7 +250,7 @@ activation, predecessor retirement, and eventual membership replacement.
 - isolated Client A enrollment and clean Client B recovery roots; and
 - no external accounts.
 
-P7.5 constructs this target on one Docker engine and makes it the mandatory
+P7.5 implements this target on one Docker engine and makes it the mandatory
 full-system boundary for later central P8/P9 evidence. The browser neither
 controls Docker nor contacts parties or object storage directly. A networkless
 bootstrap step may create synthetic credentials, public configuration, empty
@@ -258,7 +262,8 @@ overlay is useful for exercising the eventual public host configuration while
 all containers remain under one Docker engine. A separate-host endpoint file
 is only placement input; actual distribution, firewalling, durable disks, and
 tier validation remain external deployment work. Neither the frozen Compose
-smoke command nor the current same-process UI command runs the D023 system.
+smoke command nor the current same-process UI command runs the D023 system;
+the `integrated-*` commands do.
 
 The current component adapters supply deterministic recovery-bundle and
 current-pointer behavior so the bootstrap contract can be tested without an
@@ -306,9 +311,9 @@ retained-evidence, or manuscript claim follows from it.
 P7.5 reuses this frozen UI/API meaning in an ephemeral container and replaces
 its same-process record-store bindings with authenticated remote-service
 adapters. Enrollment, clean-client recovery, inspection, and same- or
-cross-suite successor workflows must traverse the deployed service graph.
-That realization receives a new deployment/configuration identity in P7.5
-work package 1; it does not rename either P7 identifier.
+cross-suite successor workflows traverse the deployed service graph. That
+realization received a new deployment/configuration identity in P7.5 work
+package 1; it does not rename either P7 identifier.
 
 ## Architecture boundaries
 

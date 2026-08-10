@@ -248,15 +248,15 @@
     },
     {
       "family": "result",
-      "allocation_phase": "P9.2",
+      "allocation_phase": "P8.2",
       "decisions": [
         "D008",
         "D017",
         "D018",
         "D023"
       ],
-      "required_gate": "Approve exact evidence scenarios, aggregate fields, provenance, metric definitions, positive controls, and result schemas before collection.",
-      "compatibility_rule": "New suite and deployment results use separate families; retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
+      "required_gate": "P8.2 first approves security and state scenarios, aggregate fields, provenance, positive controls, and result schemas before collection; P9.2 later repeats the gate for performance and resilience results.",
+      "compatibility_rule": "Security/state and performance/resilience results remain distinct; new suite and deployment results use separate families, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
     },
     {
       "family": "trace",

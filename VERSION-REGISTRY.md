@@ -25,6 +25,11 @@ adapter. It assigns no identifier and does not reinterpret
 `LOCUS-location-person-set-v1`, `LOCUS-location-person-pair-v1`, the resolver
 profile, Yi password input, backup formats, deployment profiles, or evidence.
 
+D024 assigns no identifier. It copies the already identified D023 integrated
+system into the self-contained `prototype_final/` source boundary and narrows
+only the supported operator command surface. Any future semantic change still
+requires the applicable new identifier, schema, vector, and evidence path.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
@@ -375,15 +380,15 @@ separate suite/topology evidence paths before collection.
 
 | Family | Current protected boundary | Future allocation gate |
 | --- | --- | --- |
-| Recovery suite | Frozen Yi suite/wire; exact aPPSS v1 2-of-3 and v2 3-of-5 formats; selector v1/v2; backup v5/v6; D020 internal mapping assessment provisionally accepted with human validation pending | D019 independent human confirmation remains mandatory before manuscript/final reviewed release; retained-evidence identities remain at P9 |
+| Recovery suite | Frozen Yi suite/wire; exact aPPSS v1 2-of-3 and v2 3-of-5 formats; selector v1/v2; backup v5/v6; D020 internal mapping assessment provisionally accepted with human validation pending | D019 independent human confirmation remains mandatory before manuscript/final reviewed release; retained-evidence identities remain at P8/P9 |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
-| Descriptor | No implemented descriptor identifier | P2.1 assigns descriptor and current-pointer identifiers with strict schemas, signatures, bounds, and vectors |
+| Descriptor | P2.1 signed descriptor, current-pointer, configuration-digest, bootstrap-signature, installed-trust, receipt, and party-current identifiers with strict schemas and vectors | Any later descriptor/trust semantic change requires a new identifier, schema, vector, and compatibility rule |
 | Backup/bundle | Frozen backup-v4, suite-neutral backup-v5, paired-topology backup-v6, and P2 bundle/manifest identifiers | Any later suite/topology or bundle semantic change receives a separate identifier |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
 | Deployment | Frozen same-host Yi profile plus P6.3 matched same-host process profiles for Yi/aPPSS 2-of-3 and 3-of-5 | P6.4 host separation is a distinct profile; independent administration requires actual operators and separate approval |
-| Integrated reference deployment | D023-approved semantic family; exact identifier remains unassigned | P7.5 work package 1 assigns the strict manifest/configuration schema, canonical synthetic manifest, resolved-graph vector, validators, compatibility rules, and first implementation together |
+| Integrated reference deployment | `LOCUS-integrated-reference-deployment-v1` and `LOCUS-integrated-reference-config-v1`, with strict manifest/schema, validators, canonical configuration, and completed pre-evidence gate | Changed topology, provider, admission adapter, UI/API semantics, role placement, or measurement boundary requires a distinct profile |
 | Trace | Frozen retained trace-policy identifier | P8.3 assigns a new trace profile only after the collection and retained-output schema is approved |
-| Result | Frozen retained attack/performance/evidence families | P9.2 assigns new schemas before collection and keeps Yi/aPPSS and topology results disjoint |
+| Result | Frozen retained attack/performance/evidence families | P8.2 first assigns new security/state schemas before collection; P9.2 later assigns performance/resilience schemas; both keep Yi/aPPSS and topology results disjoint |
 | Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | P10.3 assigns a later portable-artifact identifier with a new manifest and allowlist |
 
 ### Upgrade and compatibility rules

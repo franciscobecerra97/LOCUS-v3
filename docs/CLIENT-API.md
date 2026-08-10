@@ -1,8 +1,7 @@
 # P7 Stable Research-Client API
 
-Status: P7.1 implemented and tested on 2026-08-03. D023 preserves this API and
-requires a deployment-backed realization in P7.5; that realization is not yet
-implemented.
+Status: P7.1 implemented and tested on 2026-08-03. D023 preserves this API, and
+the P7.5 deployment-backed realization and pre-evidence gate are complete.
 
 ## Boundary
 
@@ -75,8 +74,8 @@ The v4 and v5 meanings remain unchanged.
 
 The integrated reference system keeps the operations, request meanings,
 response categories, and non-serializing recovered-key boundary above. The
-host browser still calls only the loopback route adapter, but the
-UI/client-gateway container must satisfy each operation through authenticated
+host browser still calls only the loopback route adapter, and the
+UI/client-gateway container satisfies each operation through authenticated
 remote-service adapters:
 
 - admission and proof-key-bound capability issuance;
@@ -93,20 +92,21 @@ public receipt or handle, and transient fictional recovery input. No operation
 may use direct party/provider volume access or the current in-memory record
 store in the full-system path.
 
-P7.5 will add deployment-specific adapters and validation without changing
-this API identifier. Its new deployment/configuration identity and runnable
-operator commands are allocated with the P7.5 implementation, not in this
-document. Multi-host placement and live AWS remain optional, separately
-versioned profiles and are not prerequisites for the reproducible same-host
-system.
+P7.5 adds deployment-specific adapters and validation without changing this
+API identifier. `LOCUS-integrated-reference-deployment-v1` and
+`LOCUS-integrated-reference-config-v1` bind that realization. Its operator
+commands are `integrated-config`, `integrated-start`, `integrated-stop`, and
+`integrated-smoke`. Multi-host placement and live AWS remain optional,
+separately versioned profiles and are not prerequisites for the reproducible
+same-host system.
 
 ## Limitations
 
-The current implementation is a same-process research component facade. Its
+The P7 implementation is a same-process research component facade. Its
 internal record store logically separates encrypted backup and holder records,
-but it is not deployment or role-separation evidence and will remain a
-component control after P7.5. The local issuer, `.invalid` endpoints, and
-synthetic keys are deliberate. Until P7.5 is implemented and accepted, this
-API does not demonstrate the fully connected system. No external provider,
-production admission, human usability, secure-erasure, or manuscript claim
-follows.
+but it is not deployment or role-separation evidence and remains a component
+control. P7.5 separately realizes the same API across the integrated graph;
+its completed smoke is implementation verification, not retained P8/P9
+evidence. The local issuer, `.invalid` endpoints, and synthetic keys are
+deliberate. No external provider, production admission, human usability,
+secure-erasure, or manuscript claim follows.

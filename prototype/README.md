@@ -71,13 +71,23 @@ uv run --frozen python tasks.py ui
 Open the printed loopback URL. The UI has no telemetry or browser persistence;
 it is a research interface, not usability or production-security evidence.
 
-This command runs the current P7 same-process research interface. It does not
-start or communicate with the separate party containers. Under D023, P7.5 will
-preserve the frozen client API and thin UI while replacing the in-memory service
-adapters with authenticated remote adapters to the complete same-host service
-plane. The existing UI command and frozen Compose smoke deployment remain
-component controls. No integrated-system command is documented until that
-profile is implemented and its pre-evidence gate passes.
+This command runs the P7 same-process research interface. It does not start or
+communicate with the separate party containers. The completed P7.5 profile
+preserves the frozen client API and thin UI while using authenticated remote
+adapters to the complete same-host service plane. Validate or run that profile
+with:
+
+```console
+uv run --frozen python tasks.py integrated-config
+uv run --frozen python tasks.py integrated-start --mode enrollment
+uv run --frozen python tasks.py integrated-start --mode recovery
+uv run --frozen python tasks.py integrated-stop
+uv run --frozen python tasks.py integrated-smoke
+```
+
+The existing `ui` command and frozen Compose smoke deployment remain component
+controls. The P7.5 commands are implementation gates, not retained P8/P9
+evidence or multi-host results.
 
 The project uses generated credentials, temporary databases, synthetic cue
 records, and disposable same-host containers. Do not supply real private keys,

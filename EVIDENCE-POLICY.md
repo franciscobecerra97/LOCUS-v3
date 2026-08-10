@@ -52,6 +52,12 @@ traverse the exact deployed admission, operator/discovery, storage gateway,
 local S3-compatible provider, applicable resolver, and authenticated party
 services declared by the validated configuration.
 
+D024 makes `prototype_final/` the sole source boundary for that system. Every
+new P8/P9 collection must bind and execute the implementation, manifest,
+deployment assets, lockfile, and executor from that directory. A root command,
+root test suite, copied component harness, or separately assembled graph may
+support regression analysis but cannot substitute for the D024 system result.
+
 Primitive vectors, native tests, unit/property/fuzz tests, the P7 in-memory
 backend, P6 process profiles, the frozen Compose deployment, and
 microbenchmarks remain necessary supporting controls. They cannot substitute

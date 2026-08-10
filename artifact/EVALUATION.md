@@ -39,15 +39,18 @@ reviewed version change, including:
 - same-host and feasible multi-host deployment;
 - deterministic evidence processing.
 
-Under D023, the future expanded-system evaluation must add one reviewed
-end-to-end workflow that begins at the loopback UI/client gateway and traverses
-the authenticated admission, discovery, application-storage, resolver, and
-five-party container roles. It must cover the declared Yi/aPPSS and 2-of-3/
-3-of-5 arms, clean-client recovery, and supported lifecycle transitions before
-P8/P9 security, reliability, performance, or resilience results are promoted
-as system results. Component tests and the commands above remain supporting
-controls. No integrated command is available yet; P7.5 must define and validate
-it before this guide can prescribe it.
+P7.5 now provides the expanded-system implementation workflow, isolated by
+D024 under `prototype_final/`, beginning at the loopback UI/client gateway and
+traversing the authenticated admission, discovery, application-storage,
+resolver, and five-party container roles. From that directory, use `tasks.py
+integrated-config` for graph validation and `tasks.py
+integrated-smoke` for the disposable pre-evidence matrix; the interactive path
+uses `integrated-start --mode enrollment`, `integrated-start --mode recovery`,
+and `integrated-stop`. The gate covers the declared Yi/aPPSS and 2-of-3/3-of-5
+arms, clean-client recovery, and supported lifecycle transitions. Its output is
+ordinary implementation verification: P8/P9 must assign schemas and collect
+new retained results before any security, reliability, performance, or
+resilience result is promoted. Component commands remain supporting controls.
 
 Audit the active v2 source allowlist without creating an archive:
 

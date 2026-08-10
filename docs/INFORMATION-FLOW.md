@@ -10,11 +10,11 @@ interface after provisional internal mapping acceptance. This does not promote
 any gated paired-deployment or retained-evidence cell, and independent human
 validation remains pending.
 
-D023 fixes the future deployment instantiation of these contracts. P7.5 must
-compose the browser/UI-client boundary and all authenticated service roles in
-one same-host system before central P8/P9 evidence is collected. D023 does not
-promote any cell by itself, change a persistent-state permission, or
-reinterpret frozen Compose/UI evidence.
+D023 fixes the deployment instantiation of these contracts. P7.5 composes the
+browser/UI-client boundary and all authenticated service roles in one same-host
+system. Central P8/P9 evidence must use that exact graph. D023 and the completed
+implementation gate do not promote any cell by themselves, change a
+persistent-state permission, or reinterpret frozen Compose/UI evidence.
 
 This table is the starting contract. Update it before implementing new roles or
 retained observations.
@@ -260,8 +260,8 @@ recovery-suite state or secret-bearing client state. Each Yi or aPPSS holder
 must acquire only its own state through the authenticated enrollment path.
 
 P7.5 role-state, mount, environment, credential, network, retry, restart, and
-output audits must cover this exact graph before P8. P8/P9 observations must
-bind the eventual integrated manifest, suite, topology, policy, provider,
+output audits cover this exact graph as implementation verification. P8/P9
+observations must bind the assigned integrated manifest, suite, topology, policy, provider,
 client boundary, and host tier. Same-process tests, native microbenchmarks, P6
 process controls, and frozen Compose evidence remain supporting views only.
 The first profile is one host and one operator; it supplies no multi-host,
@@ -340,7 +340,7 @@ extensions, accessibility technology, operating-system screenshots, process
 memory inspection, crash collection, swap, or forensic recovery. P7 therefore
 adds component conformance, not retained information-flow evidence.
 
-P7.5 preserves this browser-facing meaning but serves it from the ephemeral
+P7.5 preserves this browser-facing meaning and serves it from the ephemeral
 UI/client-gateway container and replaces the current same-process record-store
 binding with the authenticated service contacts above. This does not widen the
 browser's permitted material or create a persistent UI channel.

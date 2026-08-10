@@ -29,6 +29,7 @@ gates before their affected implementation work.
 | D021 | P6 paired topology and honest deployment tier | Use matched Yi/aPPSS 2-of-3 and 3-of-5 recovery profiles with a separately typed 4-of-5 authorization quorum; target local-VM host separation without claiming independent administration | Approved |
 | D022 | P7 local research UI runtime | Standards-based HTML/CSS/JavaScript served only on loopback by the pinned Python runtime over `LOCUS-client-api-v1`; no third-party web framework, telemetry, or browser storage | Approved |
 | D023 | Primary integrated reference system and evidence target | One separately versioned, same-host Docker reference system connects the loopback UI/client gateway to every authenticated LOCUS service and becomes the mandatory P8/P9 system-under-test; component and historical profiles remain supporting controls only | Approved |
+| D024 | Final prototype source and command boundary | Create a self-contained `prototype_final/` workspace containing only the D023 integrated implementation, focused tests, native dependencies, deployment assets, documentation, and `integrated-*` executor commands; direct all P8+ implementation and evidence work to it while preserving existing paths as historical/component controls | Approved |
 
 ## Approved architecture records
 
@@ -926,6 +927,67 @@ approved result must identify this integrated deployment and its exact
 suite/topology/policy/provider scenario; historical v2 or component results
 remain explicitly scoped and cannot be relabeled.
 
+### D024 — Final prototype source and command boundary
+
+Decision ID: D024
+
+Date: 2026-08-10
+
+Status: Approved
+
+Chosen option: Create `prototype_final/` as a self-contained copy of the exact
+D023 integrated implementation and make it the only active implementation
+workspace for P8 and later implementation, assurance, evidence, and artifact
+work. It contains the dependency-complete Python package, both native recovery
+cores and their narrow binding, pinned environment, integrated Compose graph
+and manifest, thin UI assets, focused integrated tests, licenses, README, and a
+small executor exposing only `integrated-check`, `integrated-config`,
+`integrated-start`, `integrated-stop`, and `integrated-smoke`. Existing root
+source, commands, tests, deployments, and evidence remain in place as frozen,
+historical, or component controls; they are not moved, deleted, or silently
+used as the P8+ system under test.
+
+Alternatives considered: Continue using the root multi-profile task runner;
+delete historical/component implementations; make the P7 in-memory UI or
+frozen Yi Compose profile the active artifact; or let the new executor call
+back into root source and tooling.
+
+New trust assumptions: None. The isolated workspace preserves the D023
+same-host, one-operator, synthetic-service trust model and does not add host
+separation, independent administration, production PKI, real-provider trust,
+or a new cryptographic assumption.
+
+Privacy implications: The copied implementation retains the existing
+active-client, role-state, output-safety, no-real-data, and exact-cleanup
+boundaries. The reduced workspace must not copy retained raw evidence,
+credentials, generated role state, logs, databases, caches, build products, or
+manuscript material.
+
+Compatibility/version impact: A byte- and semantics-preserving source-layout
+isolation does not rename `LOCUS-integrated-reference-deployment-v1`,
+`LOCUS-integrated-reference-config-v1`, `LOCUS-client-api-v1`, or any protocol
+format. The new workspace and executor are implementation/artifact-source
+boundaries, not a protocol migration. Any later change to the manifest,
+topology, provider, admission adapter, UI/API meaning, role placement, or
+measurement boundary still requires the new profile/version mandated by D023.
+
+Required evidence: The new workspace must pass its focused unit/native quality
+gate, validate both resolved Compose profiles, reproduce the complete
+integrated smoke independently of root Python source, scan output/state, and
+remove its exact Docker resources. P8/P9 retained evidence must bind the
+`prototype_final/` source state and may not execute through the legacy root
+task runner.
+
+Files or components authorized: New `prototype_final/` source, native crates,
+tests, deployment assets, environment/lock files, executor, README, licenses,
+and necessary project governance/documentation updates. Existing source and
+evidence may be copied but not moved, deleted, overwritten, or reinterpreted.
+
+Manuscript implication: None authorized. The current manuscript remains bound
+to the frozen evaluated profile. A future approved manuscript delta may
+describe `prototype_final/` only after P8/P9, independent human validation,
+artifact reproduction, claim closure, and the separate P10 owner gate.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -946,7 +1008,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D023 authorizes only the recorded architecture or
+Approval of D001--D024 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:

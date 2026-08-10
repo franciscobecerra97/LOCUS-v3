@@ -12,7 +12,10 @@ Before doing any work:
 4. Read the technical contract relevant to the task.
 5. Preserve the original paper thesis and all frozen protocol identifiers.
 6. Use only synthetic data and project-controlled disposable services.
-7. Do not modify the external upstream checkout. Treat `paper/` here as the
+7. For P8 or later implementation, testing, evidence, or artifact work, read
+   `prototype_final/README.md` and work from `prototype_final/`; treat the root
+   implementations and commands as historical/component controls.
+8. Do not modify the external upstream checkout. Treat `paper/` here as the
    authoritative continuation manuscript, but edit it only after presenting
    the exact delta and receiving explicit owner approval.
 

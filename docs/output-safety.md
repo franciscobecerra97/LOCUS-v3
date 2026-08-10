@@ -2,7 +2,7 @@
 
 Status: P1.11 enforced output and retained-profile contract, 2026-07-23;
 D023 integrated-system obligations added 2026-08-04. P7.5 implementation and
-evidence remain pending.
+pre-evidence output gate are complete; retained P8/P9 evidence remains pending.
 
 ## Problem statement
 
@@ -88,14 +88,14 @@ collection, or forensic recovery. No UI output is retained as P8/P9 evidence.
 
 ## D023 integrated-system output boundary
 
-P7.5 must apply this contract to the complete browser-to-service path, not only
+P7.5 applies this contract to the complete browser-to-service path, not only
 to the current same-process UI and frozen Compose runner. The host browser may
 reach only the loopback UI/client gateway, and the browser receives no Docker,
 provider, operator, or party credential. Every admission, discovery, storage,
 resolver, and party adapter must normalize failures before they reach public
 API output; provider and service exception text must never cross the boundary.
 
-The integrated validation gate must:
+The completed integrated validation gate:
 
 - disable core dumps and unreviewed observability for every runtime container;
 - suppress request bodies, credentials, cues, candidate values, and
@@ -112,9 +112,9 @@ The integrated validation gate must:
   fictional prohibited material.
 
 The current UI command and frozen deployment commands remain component
-controls and do not satisfy this gate. Exact P7.5 command names, manifest
-identity, trace schema, and retained paths are assigned with their applicable
-implementation/evidence phases. Optional multi-host or live AWS profiles need
+controls and do not satisfy this gate. P7.5 command names and manifest identity
+are assigned; P8.3 must assign the privacy-safe trace schema and retained paths
+before collection. Optional multi-host or live AWS profiles need
 separate output-safety validation and cannot silently reuse the local result.
 
 ## Evidence and remaining limits

@@ -82,6 +82,13 @@ multi-host operation remain supplemental, separately versioned profiles. This
 direction does not reinterpret the frozen Compose deployment or establish
 independent administration merely through containers on one host.
 
+D024 fixes the source boundary for that system: `prototype_final/` is the sole
+active implementation, assurance, evidence, and later artifact workspace for
+P8 and beyond. Root implementations remain preserved historical/component
+controls and cannot substitute for a result from the D024 workspace. This
+organizational isolation changes no protocol, deployment, or evidence
+identifier.
+
 ## What is inherited
 
 - TPASS construction and security assumptions.
@@ -126,7 +133,8 @@ the deployed admission, discovery, storage-gateway/provider, applicable
 resolver, and recovery-party boundaries to recover the exact original
 synthetic private key and verify its public identity. The reviewer must also
 reproduce the bounded security and performance evidence from that same
-integrated system without external credentials or hidden developer state. The
+integrated system, built only from `prototype_final/`, without external
+credentials or hidden developer state. The
 manuscript, claim/evidence matrix, technical documentation, generated inputs,
 artifact, and rendered PDF must eventually describe that exact evaluated
 system consistently, after each manuscript delta receives separate approval.

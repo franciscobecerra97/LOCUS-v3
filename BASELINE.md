@@ -345,6 +345,13 @@ real-provider result, a usability or production-security claim, or manuscript
 authorization. Frozen identifiers, component profiles, and retained v1/v2
 evidence remain unchanged and non-transferable.
 
+D024 subsequently copied the dependency-complete D023 implementation into the
+self-contained `prototype_final/` workspace and reduced its supported executor
+to five `integrated-*` commands. P8+ changes and system-facing results use that
+workspace. Existing root implementations and their broad test/command surface
+remain preserved controls; D024 does not reinterpret the upstream baseline or
+assign a protocol/evidence identifier.
+
 ## Excluded material
 
 The portable copy excludes:
