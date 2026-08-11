@@ -60,7 +60,7 @@ from .integrated_services import (
 )
 from .local_admission import create_client_proof, gateway_request_bytes
 from .object_store import BackupReference
-from .paired_deployment_profiles import paired_profile
+from .paired_deployment_profiles import paired_profile, paired_profile_for_selection
 from .provider_gateway import (
     backup_object_key,
     bundle_object_key,
@@ -82,6 +82,10 @@ from .recovery_descriptor import (
     create_bundle,
     decode_bundle,
 )
+from .recovery_package import (
+    create_recovery_package,
+    decode_recovery_package,
+)
 from .recovery_suite_registry import RecoverySuiteRegistry, RecoverySuiteSelection
 from .redaction import validate_public_output
 from .successor_publication import (
@@ -94,6 +98,12 @@ from .suite_backup import open_backup_v6_with_secret, seal_backup_v6
 from .yi_compat import YiTpassRecoveryAdapter
 
 DISCOVERY_ENDPOINT = "https://operator:8443"
+_DEPLOYMENT_IDS = frozenset(
+    {
+        "LOCUS-integrated-manager-deployment-v1",
+        "LOCUS-integrated-reference-deployment-v1",
+    }
+)
 RECOVERY_AUDIENCE = "locus-integrated-recovery"
 SUBJECT_ID = "11" * 32
 
@@ -124,6 +134,10 @@ def _decode_receipt(value: object) -> bytes:
         raise ClientApiError("bootstrap_rejected") from exc
 
 
+def _encode_receipt(value: bytes) -> str:
+    return base64.urlsafe_b64encode(value).rstrip(b"=").decode("ascii")
+
+
 def _context_dict(context: RecoveryContext) -> dict[str, object]:
     return {
         "backup_id": context.backup_id,
@@ -137,6 +151,34 @@ def _context_dict(context: RecoveryContext) -> dict[str, object]:
     }
 
 
+def _validate_authenticated_epoch_metadata(
+    descriptor: dict[str, Any],
+    backup: dict[str, Any],
+    selection: RecoverySuiteSelection,
+) -> None:
+    """Cross-bind authenticated descriptor metadata to the encrypted backup."""
+
+    descriptor_policy = descriptor["cue_policy"]
+    descriptor_suite = descriptor["recovery_suite"]
+    backup_policy = backup["cue_policy"]
+    backup_suite = backup["recovery_suite"]
+    if (
+        backup_policy["id"] != descriptor_policy["id"]
+        or backup_policy["resolver_profile"] != descriptor_policy["resolver_profile"]
+        or backup_suite["id"] != selection.suite_id
+        or descriptor_suite["id"] != selection.suite_id
+        or backup_suite["profile_id"] != selection.profile_id
+        or backup_suite["k"] != selection.threshold.k
+        or backup_suite["n"] != selection.threshold.n
+        or descriptor_suite["threshold"]
+        != {"k": selection.threshold.k, "n": selection.threshold.n}
+        or backup_suite["public_state_format"]
+        != descriptor_suite["public_state_format"]
+        or backup_suite["public_state"] != descriptor_suite["public_state_hex"]
+    ):
+        raise ClientApiError("bootstrap_rejected")
+
+
 @dataclass(frozen=True)
 class _RemoteEpoch:
     receipt_bytes: bytes
@@ -148,6 +190,17 @@ class _RemoteEpoch:
     selection: RecoverySuiteSelection
     context: RecoveryContext
     public_fingerprint: str
+
+
+@dataclass(frozen=True)
+class AuthenticatedRecoveryPackage:
+    """Public import result after remote current-state authentication."""
+
+    bootstrap: BootstrapResult
+    deployment_profile_id: str
+    receipt: str
+    holder_ids: tuple[int, ...]
+    package_sha256: str
 
 
 @dataclass(frozen=True)
@@ -380,16 +433,32 @@ class _RemoteAppssEndpoint(AppssPartyEndpoint):
 class IntegratedResearchClientApi:
     """Ephemeral client coordinator whose durable state lives only in remote roles."""
 
-    def __init__(self, *, role_root: str | Path, clock: Any | None = None) -> None:
+    def __init__(
+        self,
+        *,
+        role_root: str | Path,
+        clock: Any | None = None,
+        proof_key: Ed25519PrivateKey | None = None,
+        deployment_id: str = "LOCUS-integrated-reference-deployment-v1",
+    ) -> None:
+        if deployment_id not in _DEPLOYMENT_IDS or (
+            proof_key is not None and not isinstance(proof_key, Ed25519PrivateKey)
+        ):
+            raise ValueError("invalid integrated client configuration")
         self.root = Path(role_root)
         self.clock = (lambda: int(time.time())) if clock is None else clock
-        self.proof_key = Ed25519PrivateKey.from_private_bytes(
-            (self.root / "proof-key.bin").read_bytes()
+        self.proof_key = (
+            Ed25519PrivateKey.from_private_bytes(
+                (self.root / "proof-key.bin").read_bytes()
+            )
+            if proof_key is None
+            else proof_key
         )
         self.trust = json.loads((self.root / "trust.json").read_bytes())
         self.operator_public = Ed25519PublicKey.from_public_bytes(
             bytes.fromhex(self.trust["operator_public_key"])
         )
+        self.deployment_id = deployment_id
         self.suites = RecoverySuiteRegistry()
         self.operations: set[str] = set()
         self.holder_schedule_index = 0
@@ -699,7 +768,7 @@ class IntegratedResearchClientApi:
                 {
                     "authorization_quorum": selection.authorization_quorum,
                     "backup_id": backup_id.hex(),
-                    "deployment_id": "LOCUS-integrated-reference-deployment-v1",
+                    "deployment_id": self.deployment_id,
                     "epoch": epoch,
                     "holder_ids": list(selection.holder_ids),
                     "policy_id": policy_id,
@@ -1171,6 +1240,7 @@ class IntegratedResearchClientApi:
         )
         selection, _adapter = self.suites.select_new_epoch(selector)
         backup = authenticated.bundle.backup
+        _validate_authenticated_epoch_metadata(descriptor, backup, selection)
         context = RecoveryContext(
             suite["id"],
             descriptor["recovery_id"],
@@ -1216,26 +1286,65 @@ class IntegratedResearchClientApi:
             )
         return observations
 
+    @staticmethod
+    def _bootstrap_result(epoch: _RemoteEpoch) -> BootstrapResult:
+        return BootstrapResult(
+            epoch.context.recovery_id,
+            epoch.reference.bid,
+            epoch.reference.epoch,
+            epoch.context.policy_id,
+            epoch.descriptor["cue_policy"]["resolver_profile"],
+            epoch.selection.suite_id,
+            epoch.selection.profile_id,
+            epoch.selection.threshold.k,
+            epoch.selection.threshold.n,
+            epoch.selection.authorization_quorum,
+            epoch.public_fingerprint,
+            True,
+        )
+
     def bootstrap(self, receipt: object) -> BootstrapResult:
         try:
-            epoch = self._load(receipt)
-            fingerprint = epoch.public_fingerprint
-            return BootstrapResult(
-                epoch.context.recovery_id,
-                epoch.reference.bid,
-                epoch.reference.epoch,
-                epoch.context.policy_id,
-                epoch.descriptor["cue_policy"]["resolver_profile"],
-                epoch.selection.suite_id,
-                epoch.selection.profile_id,
-                epoch.selection.threshold.k,
-                epoch.selection.threshold.n,
-                epoch.selection.authorization_quorum,
-                fingerprint,
-                True,
-            )
+            return self._bootstrap_result(self._load(receipt))
         except Exception:
             raise ClientApiError("bootstrap_rejected") from None
+
+    def export_recovery_package(self, receipt: object) -> bytes:
+        """Export the authenticated current encrypted bundle and public receipt."""
+
+        try:
+            epoch = self._load(receipt)
+            return create_recovery_package(
+                receipt_bytes=epoch.receipt_bytes,
+                bundle_bytes=epoch.bundle.bundle_bytes,
+            )
+        except Exception:
+            raise ClientApiError("package_export_rejected") from None
+
+    def authenticate_recovery_package(
+        self, encoded: bytes
+    ) -> AuthenticatedRecoveryPackage:
+        """Authenticate an imported package against the live remote epoch."""
+
+        try:
+            package = decode_recovery_package(encoded)
+            receipt = _encode_receipt(package.receipt_bytes)
+            epoch = self._load(receipt)
+            if not secrets.compare_digest(
+                package.bundle_bytes, epoch.bundle.bundle_bytes
+            ):
+                raise ClientApiError("package_import_rejected")
+            return AuthenticatedRecoveryPackage(
+                bootstrap=self._bootstrap_result(epoch),
+                deployment_profile_id=paired_profile_for_selection(
+                    epoch.selection
+                ).profile_id,
+                receipt=receipt,
+                holder_ids=epoch.selection.holder_ids,
+                package_sha256=hashlib.sha256(encoded).hexdigest(),
+            )
+        except Exception:
+            raise ClientApiError("package_import_rejected") from None
 
     def _authorize(self, epoch: _RemoteEpoch, operation_id: str) -> str:
         now = self.clock()
@@ -1282,8 +1391,31 @@ class IntegratedResearchClientApi:
             raise ClientApiError("recovery_rejected")
         return grants[0]
 
+    @staticmethod
+    def _exact_recovery_subset(
+        selection: RecoverySuiteSelection,
+        selected_holder_ids: tuple[int, ...],
+    ) -> list[int]:
+        selected = list(selected_holder_ids)
+        if (
+            any(
+                isinstance(item, bool) or not isinstance(item, int) for item in selected
+            )
+            or selected != sorted(set(selected))
+            or len(selected) != selection.threshold.k
+            or not set(selected) <= set(selection.holder_ids)
+        ):
+            raise ClientApiError("recovery_rejected")
+        return selected
+
     def _recover_secret(
-        self, epoch: _RemoteEpoch, password: bytes, grant: str, operation_id: str
+        self,
+        epoch: _RemoteEpoch,
+        password: bytes,
+        grant: str,
+        operation_id: str,
+        *,
+        selected_holder_ids: tuple[int, ...] | None = None,
     ) -> bytes:
         suite = epoch.descriptor["recovery_suite"]
         public = PublicRecoveryState(
@@ -1291,27 +1423,34 @@ class IntegratedResearchClientApi:
             suite["public_state_format"],
             bytes.fromhex(suite["public_state_hex"]),
         )
-        holder_order = list(epoch.selection.holder_ids)
-        configured_order = os.environ.get("LOCUS_INTEGRATED_HOLDER_ORDER", "")
-        schedule = os.environ.get("LOCUS_INTEGRATED_HOLDER_SCHEDULE", "")
-        if schedule:
-            entries = schedule.split(";")
-            if self.holder_schedule_index >= len(entries):
-                raise ClientApiError("recovery_rejected")
-            configured_order = entries[self.holder_schedule_index]
-            self.holder_schedule_index += 1
-        if configured_order:
-            try:
-                requested_order = [int(value) for value in configured_order.split(",")]
-            except ValueError as exc:
-                raise ClientApiError("recovery_rejected") from exc
-            if (
-                len(requested_order) != len(holder_order)
-                or len(set(requested_order)) != len(requested_order)
-                or set(requested_order) != set(holder_order)
-            ):
-                raise ClientApiError("recovery_rejected")
-            holder_order = requested_order
+        if selected_holder_ids is None:
+            holder_order = list(epoch.selection.holder_ids)
+            configured_order = os.environ.get("LOCUS_INTEGRATED_HOLDER_ORDER", "")
+            schedule = os.environ.get("LOCUS_INTEGRATED_HOLDER_SCHEDULE", "")
+            if schedule:
+                entries = schedule.split(";")
+                if self.holder_schedule_index >= len(entries):
+                    raise ClientApiError("recovery_rejected")
+                configured_order = entries[self.holder_schedule_index]
+                self.holder_schedule_index += 1
+            if configured_order:
+                try:
+                    requested_order = [
+                        int(value) for value in configured_order.split(",")
+                    ]
+                except ValueError as exc:
+                    raise ClientApiError("recovery_rejected") from exc
+                if (
+                    len(requested_order) != len(holder_order)
+                    or len(set(requested_order)) != len(requested_order)
+                    or set(requested_order) != set(holder_order)
+                ):
+                    raise ClientApiError("recovery_rejected")
+                holder_order = requested_order
+        else:
+            holder_order = self._exact_recovery_subset(
+                epoch.selection, selected_holder_ids
+            )
         available: list[int] = []
         disabled_raw = os.environ.get("LOCUS_INTEGRATED_DISABLED_HOLDERS", "")
         try:
@@ -1398,7 +1537,12 @@ class IntegratedResearchClientApi:
         )
         return bytes(native.finish_recovery(params, session, gateway))
 
-    def recover(self, request: object) -> RecoveryResult:
+    def recover(
+        self,
+        request: object,
+        *,
+        selected_holder_ids: tuple[int, ...] | None = None,
+    ) -> RecoveryResult:
         if (
             not isinstance(request, dict)
             or set(request)
@@ -1423,7 +1567,13 @@ class IntegratedResearchClientApi:
             self._mark("authorization")
             grant = self._authorize(epoch, operation_id)
             self._mark("suite-recovery")
-            secret = self._recover_secret(epoch, password, grant, operation_id)
+            secret = self._recover_secret(
+                epoch,
+                password,
+                grant,
+                operation_id,
+                selected_holder_ids=selected_holder_ids,
+            )
             protected = open_backup_v6_with_secret(
                 backup=epoch.backup, recovery_secret=secret
             )
@@ -1630,7 +1780,7 @@ class IntegratedResearchClientApi:
                 "versions": {
                     "api": CLIENT_API_VERSION,
                     "backup": "LOCUS-reference-backup-v6",
-                    "deployment": "LOCUS-integrated-reference-deployment-v1",
+                    "deployment": self.deployment_id,
                 },
             }
             validate_public_output(value)
@@ -1639,4 +1789,4 @@ class IntegratedResearchClientApi:
             raise ClientApiError("inspection_rejected") from None
 
 
-__all__ = ["IntegratedResearchClientApi"]
+__all__ = ["AuthenticatedRecoveryPackage", "IntegratedResearchClientApi"]

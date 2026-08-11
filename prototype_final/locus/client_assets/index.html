@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="referrer" content="no-referrer">
+  <title>LOCUS Client</title>
+  <link rel="stylesheet" href="/assets/client.css">
+</head>
+<body>
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark" aria-hidden="true">L</span><div><p class="eyebrow">Transient research client</p><h1>LOCUS Client</h1></div></div>
+    <div class="client-proof"><span>Client instance</span><strong id="client-id">Loading…</strong><small id="client-identity"></small><small id="proof-thumbprint"></small></div>
+  </header>
+
+  <main id="workspace" class="workspace" tabindex="-1">
+    <div id="status" class="status" role="status" aria-live="polite" hidden></div>
+
+    <section class="hero">
+      <div><p class="eyebrow">One device · one volatile key slot</p><h2>Back up or recover a synthetic private key</h2><p>All protocol operations run behind this interface. The browser contains no recovery-suite or CuePolicy implementation.</p></div>
+      <button id="destroy-client" class="button danger" type="button">Destroy this client</button>
+    </section>
+
+    <section class="card key-card" aria-labelledby="key-heading">
+      <div class="section-heading"><div><p class="step">01</p><h2 id="key-heading">Private key on this client</h2></div><span id="key-state" class="pill">No key</span></div>
+      <p>Generate a synthetic Ed25519 seed. It lives only in this client process and can be revealed transiently for this manual demonstration.</p>
+      <div class="actions"><button id="generate-key" class="button primary" type="button">Generate private key</button><button id="reveal-key" class="button secondary" type="button" disabled>Reveal current key</button><button id="hide-key" class="button ghost" type="button" disabled>Hide</button></div>
+      <div id="private-key-panel" class="secret-panel" hidden>
+        <p class="warning">Synthetic test material only. Screenshots and the local browser are inside the trusted active-client boundary.</p>
+        <code id="private-key-value" aria-label="Synthetic private key"></code>
+      </div>
+      <dl class="summary"><div><dt>Public fingerprint</dt><dd id="key-fingerprint">—</dd></div></dl>
+    </section>
+
+    <div class="workflow-grid">
+      <section class="card" aria-labelledby="backup-heading">
+        <div class="section-heading"><div><p class="step">02A</p><h2 id="backup-heading">Backup / enrollment</h2></div><span class="pill">New epoch</span></div>
+        <form id="enrollment-form" autocomplete="off" novalidate>
+          <div class="form-grid">
+            <label>Recovery suite<select id="suite" required></select></label>
+            <label>Approved threshold profile<select id="profile" required></select></label>
+            <label>Cue policy<select id="policy" required></select></label>
+          </div>
+          <div class="binding" id="enrollment-parties"></div>
+          <fieldset><legend>Structured recovery input</legend><div id="enrollment-cues" class="cue-list"></div></fieldset>
+          <div class="actions"><button id="preview" class="button secondary" type="button">Validate input</button><button class="button primary" type="submit">Run setup and encrypt</button></div>
+          <div id="preview-result" class="preview" hidden></div>
+        </form>
+        <section id="enrollment-result" class="result" hidden>
+          <h3>Encrypted recovery package ready</h3>
+          <dl id="enrollment-summary" class="summary"></dl>
+          <ol id="enrollment-phases" class="phases"></ol>
+          <button id="download-package" class="button primary" type="button">Download encrypted package</button>
+        </section>
+      </section>
+
+      <section class="card" aria-labelledby="recovery-heading">
+        <div class="section-heading"><div><p class="step">02B</p><h2 id="recovery-heading">Recovery</h2></div><span class="pill">Authenticated import</span></div>
+        <label class="file-button button secondary">Import encrypted package<input id="package-file" type="file" accept=".locus,application/vnd.locus.recovery-package+json" hidden></label>
+        <section id="package-result" class="authenticated" hidden>
+          <h3>Package and current epoch authenticated</h3>
+          <dl id="package-summary" class="summary"></dl>
+        </section>
+        <form id="recovery-form" autocomplete="off" hidden>
+          <fieldset><legend>Choose exactly the enrolled threshold</legend><div id="recovery-parties" class="party-grid"></div><p id="party-guidance" class="help"></p></fieldset>
+          <fieldset><legend>Enrolled structured recovery input</legend><div id="recovery-cues" class="cue-list"></div></fieldset>
+          <button class="button primary" type="submit">Recover and replace current key</button>
+        </form>
+        <section id="recovery-result" class="result" hidden>
+          <h3>Private key restored</h3>
+          <dl id="recovery-summary" class="summary"></dl>
+          <ol id="recovery-phases" class="phases"></ol>
+          <button id="reveal-recovered" class="button secondary" type="button">Reveal restored key</button>
+        </section>
+      </section>
+    </div>
+  </main>
+
+  <footer>Synthetic data only · local same-host research prototype · no usability or secure-erasure claim</footer>
+  <script src="/assets/client.js" defer></script>
+</body>
+</html>

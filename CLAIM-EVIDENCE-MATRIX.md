@@ -25,6 +25,15 @@ D024 makes `prototype_final/` the sole active source for that graph. Root
 commands and component suites remain supporting controls and cannot satisfy a
 new integrated-system evidence requirement.
 
+D025/P7.7 changes the future system boundary to the now-assigned managed
+deployment, including Manager/controller, dynamic Client, client recovery-
+package, and clean-client-v2 surfaces. P7.7 is complete, but no retained P8/P9
+evidence was collected. No row below changes status: the D023 development gate
+remains a supporting predecessor, and only later evidence bound to the assigned
+D025 profile may support a new central system claim. The assigned security-
+matrix-v2 artifact pins v1/C01--C26 and adds managed contracts M01--M05; it is a
+governance profile, not an evidence result.
+
 Status values include `Supported for exact baseline`, `Partial for exact
 baseline`, `Unsupported in improvement profile`, `In progress`, `Disproved`,
 and `Explicit non-claim`.

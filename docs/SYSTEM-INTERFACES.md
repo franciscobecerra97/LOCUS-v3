@@ -17,6 +17,54 @@ realization is implemented as `LOCUS-integrated-reference-deployment-v1` with
 configuration `LOCUS-integrated-reference-config-v1` and the registered
 integrated operator commands.
 
+D025/P7.7 assigns the implemented managed deployment interface family in
+`prototype_final/`: Manager API/UI, separate controller API/profile, Client API
+v2 and managed Client UI, managed-client instances, client recovery package,
+and clean-client isolation v2. All twelve managed identifiers are Assigned,
+not Frozen. The thin Manager and Client UIs must not absorb Docker,
+CuePolicy, recovery-suite, descriptor, admission, or storage logic.
+`management` connects only Manager to controller; `client-lifecycle` connects
+only managed Clients to controller. `manager-edge` publishes only the Manager
+loopback path and `browser-edge` only dynamic Client loopback paths. A Client
+cannot join `manager-edge` or reach the Manager UI/API.
+
+Manager Client-process actions expose explicit volatile-reset semantics:
+stop/start, restart, and kill/start keep the public client ID but create a new
+proof identity and empty server-side key slot, export/import cache, and
+operation/session set. Destroy removes the Client and ID. An already loaded
+browser document is outside that server-process reset. Normal system stop
+preserves role/provider volumes; only the
+emergency `integrated-stop --reset-state` operation removes them all. The
+managed 366-day CA and 365-day leaf certificates are reused while valid and
+manifest-compatible and are never silently renewed in place.
+
+The one-shot bootstrap is not part of either UI/API. It runs as root with all
+capabilities dropped except exactly `CHOWN` and `DAC_READ_SEARCH`, has
+`network_mode: none`, receives no Docker socket, and exits before unprivileged
+runtime services. Its data scope is limited to approved synthetic credentials,
+public configuration, empty role roots, fixtures, and owner-only role files.
+
+The assigned Manager and controller surfaces are deliberately smaller than
+the Client API:
+
+| Caller and route | Exact mutable request | Authority |
+| --- | --- | --- |
+| Browser `POST /api/manager/v1/clients` | `operation_id` | Create or reconcile the one fixed Client template |
+| Browser `POST /api/manager/v1/container-action` | `action`, full `container_id`, `operation_id` | Start, stop, restart, or kill one exact allowed project container in a valid transition |
+| Browser `POST /api/manager/v1/client-destroy` | Full `container_id`, `operation_id` | Remove only an exact managed Client |
+| Browser `POST /api/manager/v1/system-stop` | `operation_id` | Schedule verified project shutdown without deleting role volumes |
+| Managed Client `POST /v1/client/self-destroy` | `client_id`, one-instance capability, `operation_id` | Remove only the authenticated caller's exact Client |
+
+Manager `GET /api/manager/v1/session` and `GET /api/manager/v1/status` expose
+only the CSRF/session profile and sanitized
+inventory/lifecycle status. The Manager forwards mutations over mutual TLS to
+the controller. Operation identifiers are bounded: an exact replay returns the
+stored result without a second Docker effect, while reuse by another peer,
+route, or body fails closed. No request can provide a Docker image, command,
+mount, host path, network, environment, label, Compose project, or arbitrary
+container name. The canonical managed manifest binds every D025 deployment,
+API, UI, controller, instance, package, isolation, and security-matrix profile.
+
 ## Purpose
 
 P1.3 separates protocol roles before later descriptor, admission, lifecycle,
@@ -355,8 +403,10 @@ changing the frozen P1 interface tests.
 P1.3 changes no manuscript source or retained evidence. It creates no new
 paper claim. Frozen v2 results remain evidence only for the exact inherited Yi
 profile, not for the new interface architecture. D023 likewise authorizes
-planning and implementation only. P7.5 is closed; central P8/P9 system
-results must traverse and bind the exact integrated manifest; same-process,
+planning and implementation only. P7.5 and D025/P7.7 are closed implementation
+gates, but no retained D025 P8/P9 result exists. Future results must traverse
+and bind the exact managed manifest, Manager/controller,
+client-recovery-package, and dynamic-client boundaries; D023, same-process,
 unit, native, P6, and frozen Compose checks remain supporting controls. Later
 implementation and evidence profiles require their own identifiers, schemas,
 provenance, and owner-gated manuscript deltas.

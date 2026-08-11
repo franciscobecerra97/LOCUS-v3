@@ -329,8 +329,8 @@ loopback UI/client gateway now uses authenticated remote adapters
 to the local synthetic admission service, operator/discovery service,
 application storage gateway and local S3-compatible provider, resolver when
 required, and five authorizer/recovery-party containers. The target covers Yi
-and aPPSS at 2-of-3 and 3-of-5 and becomes the required system boundary for new
-P8/P9 system evidence and the later artifact.
+and aPPSS at 2-of-3 and 3-of-5 and was selected as the required system boundary
+before the later D025/P7.7 managed-system transition.
 
 P7.5 is complete for implementation chronology. The disposable gate passes
 the four suite/topology arms, all policy paths, isolated Client B recovery, 26
@@ -351,6 +351,28 @@ to five `integrated-*` commands. P8+ changes and system-facing results use that
 workspace. Existing root implementations and their broad test/command surface
 remain preserved controls; D024 does not reinterpret the upstream baseline or
 assign a protocol/evidence identifier.
+
+D025 is a post-baseline, owner-approved architecture transition implemented by
+the now-complete P7.7 gate. Its separately versioned Manager/controller
+deployment, dynamic Client API/UI and isolation profiles, client recovery-
+package transport, managed-instance profile, and additive security matrix are
+Assigned, not Frozen. They preserve the implemented suite, CuePolicy,
+admission, descriptor, party, storage-gateway, and local-provider paths. The
+completed D023 deployment remains an immutable supporting predecessor; neither
+its evidence nor retained v2 evidence transfers to D025.
+
+The implemented managed profile separates `manager-edge` from `browser-edge`,
+defines Client stop/start/restart/kill as volatile proof/key/session resets
+under a retained public ID, and exposes an emergency full-state
+`integrated-stop --reset-state` path for non-renewing 366/365-day managed CA/
+leaf credentials. Its one-shot networkless bootstrap runs as root with all
+capabilities dropped except exactly `CHOWN` and `DAC_READ_SEARCH`, has no Docker
+socket, and exits before unprivileged runtime services start. The enhanced
+smoke passed all four suite/topology arms, 26 subsets, four clean Clients,
+control/lifecycle isolation, role/output audits, state-preserving restart,
+fresh-CA destructive reset with old-package rejection, and exact cleanup.
+These are P7.7 implementation facts, not baseline or retained evidence claims;
+P8.1 is the next ready assurance step.
 
 ## Excluded material
 

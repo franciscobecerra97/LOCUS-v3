@@ -75,7 +75,7 @@ def _hex(value: object, label: str, maximum: int) -> bytes:
 
 
 def _clients_only(peer: str) -> None:
-    if peer not in {"ui-client-a", "ui-client-b"}:
+    if peer not in {"managed-client", "ui-client-a", "ui-client-b"}:
         raise IntegratedServiceError("caller is not a client gateway")
 
 

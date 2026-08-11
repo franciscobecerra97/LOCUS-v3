@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://locus.invalid/schemas/client-recovery-package-v1.schema.json",
+  "title": "LOCUS client recovery package v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["bundle", "receipt", "version"],
+  "properties": {
+    "bundle": {
+      "$ref": "#/$defs/bundle"
+    },
+    "receipt": {
+      "$ref": "#/$defs/receipt"
+    },
+    "version": {
+      "const": "LOCUS-client-recovery-package-v1"
+    }
+  },
+  "$defs": {
+    "base64url": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[A-Za-z0-9_-]+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "length", "sha256", "value"],
+      "properties": {
+        "format": {"const": "LOCUS-recovery-bundle-v1"},
+        "length": {"type": "integer", "minimum": 1, "maximum": 2097152},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "value": {"allOf": [{"$ref": "#/$defs/base64url"}], "maxLength": 2796204}
+      }
+    },
+    "receipt": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format", "length", "sha256", "value"],
+      "properties": {
+        "format": {"const": "LOCUS-recovery-receipt-v1"},
+        "length": {"type": "integer", "minimum": 1, "maximum": 16384},
+        "sha256": {"$ref": "#/$defs/sha256"},
+        "value": {"allOf": [{"$ref": "#/$defs/base64url"}], "maxLength": 21848}
+      }
+    }
+  }
+}

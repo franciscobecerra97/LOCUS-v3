@@ -15,6 +15,8 @@ ALLOWED_CLIENT_FILES = {
     "trust.json",
 }
 
+ALLOWED_MANAGED_CLIENT_TEMPLATE_FILES = ALLOWED_CLIENT_FILES - {"proof-key.bin"}
+
 COMMON_SERVICE_FILES = {
     "ca.pem",
     "manifest.json",
@@ -45,10 +47,25 @@ def audit_client_root(root: Path) -> None:
         raise ValueError("client root contains prohibited state")
 
 
+def audit_managed_client_template_root(root: Path) -> None:
+    """Verify that dynamic clients receive transport/trust material only."""
+
+    observed = {
+        path.relative_to(root).as_posix() for path in root.rglob("*") if path.is_file()
+    }
+    if observed != ALLOWED_MANAGED_CLIENT_TEMPLATE_FILES:
+        raise ValueError("managed-client template contains dynamic or missing state")
+    if any(path.is_symlink() for path in root.rglob("*")):
+        raise ValueError("managed-client template contains a symbolic link")
+
+
 def audit_role_root(root: Path, role: str) -> int:
     if role == "client":
         audit_client_root(root)
         return len(ALLOWED_CLIENT_FILES)
+    if role == "managed-client-template":
+        audit_managed_client_template_root(root)
+        return len(ALLOWED_MANAGED_CLIENT_TEMPLATE_FILES)
     paths = [path for path in root.rglob("*") if path.is_file()]
     if any(path.is_symlink() for path in root.rglob("*")):
         raise ValueError("role root contains a symbolic link")
@@ -65,6 +82,8 @@ def audit_role_root(root: Path, role: str) -> int:
             required.add("signing-key.bin")
         if role in TRUST_ROLES:
             required.add("trust.json")
+        if role == "manager-controller":
+            required.add("lifecycle-secret.bin")
     if not required <= observed:
         raise ValueError("role root is missing bootstrap-owned state")
     dynamic = observed - required
@@ -102,6 +121,11 @@ def audit_role_root(root: Path, role: str) -> int:
         )
     if dynamic - allowed_dynamic:
         raise ValueError("role root contains an unexpected persistent object")
+    if (
+        role == "manager-controller"
+        and (root / "lifecycle-secret.bin").stat().st_size != 32
+    ):
+        raise ValueError("controller root contains an invalid lifecycle secret")
     prohibited = ("cue", "password", "protected", "recovery-secret")
     if any(any(token in name.lower() for token in prohibited) for name in observed):
         raise ValueError("role root exposes a prohibited filename")
@@ -117,6 +141,9 @@ def main() -> None:
             "admission",
             "bootstrap",
             "client",
+            "managed-client-template",
+            "manager-controller",
+            "manager-ui",
             "operator",
             "party",
             "provider",

@@ -30,6 +30,12 @@ system into the self-contained `prototype_final/` source boundary and narrows
 only the supported operator command surface. Any future semantic change still
 requires the applicable new identifier, schema, vector, and evidence path.
 
+D025 approved exact names for a Manager-controlled deployment family. P7.7
+reviewed each strict manifest or schema, bounds, compatibility rule, canonical
+vector, negative tests, and first implementation together and assigned all
+twelve managed identifiers. They are `Assigned`, not `Frozen`. Assignment does
+not allocate a P8/P9 trace or result identifier and is not retained evidence.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
@@ -53,8 +59,10 @@ The machine-readable registry is `docs/version-registry-v1.json`, validated by
 `docs/schemas/version-registry-v1.schema.json`. Its own identifier,
 `LOCUS-version-registry-v1`, is the only new identifier assigned by P1.4; its
 schema and tests are introduced in the same change. Later protocol and evidence
-families remain reservations without candidate identifiers until their named
-schema/vector gate passes.
+families normally remain reservations without candidate identifiers until
+their named schema/vector gate passes. D025 was an explicit owner-approved
+exception that protected its exact names from collision until P7.7 assigned
+them after the complete managed acceptance gate.
 
 P1.5 subsequently assigns `LOCUS-security-matrix-v1` to the governance-only
 claim and information-flow contract in `docs/security-matrix-v1.json`, with its
@@ -222,6 +230,44 @@ digest)`, size, immutable-create, exact-retry, and exact-read validation; a new
 accepted backup family or changed gateway role/key/admission meaning requires a
 new identifier.
 
+### D025/P7.7 assigned managed integrated family
+
+The following owner-approved identifiers were assigned at P7.7 after each exact
+semantic boundary, schema/profile, compatibility rule, vector, negative test,
+and first implementation passed the complete managed gate. They remain active
+`Assigned` profiles and are not `Frozen`:
+
+| Assigned identifier | Exact semantic boundary | P7.7 assignment evidence |
+| --- | --- | --- |
+| `LOCUS-integrated-manager-deployment-v1` | Same-host Manager/controller, dynamically created Client, unchanged LOCUS service/provider role placement, and a one-shot root bootstrap with only `CHOWN`/`DAC_READ_SEARCH`, no network, and no Docker socket | Strict resolved/live graph, role/network/mount/capability/state rules, compatibility statement, canonical configuration, and passing managed implementation |
+| `LOCUS-integrated-manager-config-v1` | Canonical public manifest for the managed deployment, fixed client template, allowed lifecycle actions, registered suite/topology arms, policies, roles, internal `management`/`client-lifecycle`, and distinct `manager-edge`/`browser-edge` publication networks | Strict schema, canonical vector, unknown/duplicate/mutation rejection, exact network-membership checks, and graph validator |
+| `LOCUS-manager-api-v1` | Thin host-loopback browser-to-Manager status and lifecycle-request surface published through `manager-edge` | Exact routes, bounded bodies/results, origin/request-integrity rules, redaction, idempotency, and negative tests |
+| `LOCUS-local-manager-ui-v1` | Same-origin, no-telemetry Manager document over the Manager API | Fixed routes/assets, no protocol logic, no secret rendering, browser-persistence scan, and visual/interaction checks |
+| `LOCUS-container-controller-api-v1` | Authenticated Manager-to-controller operations on `management` plus separately scoped Client self-lifecycle operations on `client-lifecycle` | Exact action/state machine, caller/network identity, replay/idempotency, self-instance binding, stale/cross-project rejection, and canonical vectors |
+| `LOCUS-local-container-controller-v1` | Dedicated internal role that alone holds the root-equivalent local Docker socket and bridges the otherwise disjoint lifecycle networks | Fixed image/command/mount/network/label templates, no Client-to-Manager reachability, no arbitrary Docker input, and positive containment controls |
+| `LOCUS-client-api-v2` | Managed Client key generation/reveal, enrollment, package export/import, authenticated recovery/key replacement, and self-destruction surface | Exact request/result semantics, v1 compatibility statement, bounded secret handling, and route/decoder tests; successor remains an unchanged core compatibility control outside this API |
+| `LOCUS-managed-client-ui-v1` | One dynamic Client UI over client API v2 for both enrollment and recovery, published through `browser-edge` without Manager reachability | Thin-client source scan, transient synthetic-key presentation, package upload/download, no persistence/telemetry/logging, and browser checks |
+| `LOCUS-client-recovery-package-v1` | Bounded export envelope containing the existing encrypted backup and authenticated public recovery metadata, but no cue, plaintext key, suite secret, credential, or party state | Strict schema/limits, canonical vector, digest/signature/current-state binding, malformed/tampered-package tests, and no-offline-verifier analysis |
+| `LOCUS-clean-client-isolation-v2` | Dynamic original-client destruction and fresh managed-client recovery using an authenticated package plus installed trust and fresh client state | Exact allowed-state/input surface, inherited-state positive control, client-volume/container audit, and explicit non-erasure limitation |
+| `LOCUS-managed-client-instance-v1` | Public instance identifier, process proof-key binding, fixed container template, loopback port/volume scope, destructive volatile process-reset transitions, and destruction semantics for one transient Client | Collision bounds, state-machine/idempotency rules, proof rotation and empty-state checks after stop/start, restart, and kill/start, stale-ID rejection, and sanitized Manager visibility |
+| `LOCUS-security-matrix-v2` | Governance-only revision retaining C01--C26 meanings and adding Manager/controller, recovery-package, dynamic-client/key-display, edge-network, volatile-reset, and credential-lifetime boundaries | Strict matrix schema, exact v1 digest/ID preservation, new positive controls and interpretation limits, and checked claim/information-flow mappings |
+
+The managed family is additive. It does not reinterpret
+`LOCUS-integrated-reference-deployment-v1`,
+`LOCUS-integrated-reference-config-v1`, `LOCUS-client-api-v1`,
+`LOCUS-local-research-ui-v1`, `LOCUS-clean-client-isolation-v1`, any suite,
+CuePolicy, backup, descriptor, admission, provider, lifecycle, or retained-
+evidence identifier. The client recovery package wraps existing authenticated
+bytes; changing backup or associated-data bytes would require their own
+separately approved versions rather than an implicit package-side migration.
+
+The assigned `prototype_final/docs/security-matrix-v2.json` and
+`prototype_final/docs/schemas/security-matrix-v2.schema.json` implement the
+final row's strict additive shape and pin the immutable v1 digest plus C01--C26
+IDs. Managed contracts M01--M05 are governance contracts, not retained evidence
+or claim promotion. Their focused checks support assignment only together with
+the complete P7.7 smoke/browser and documentation gate.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only
@@ -383,13 +429,16 @@ separate suite/topology evidence paths before collection.
 | Recovery suite | Frozen Yi suite/wire; exact aPPSS v1 2-of-3 and v2 3-of-5 formats; selector v1/v2; backup v5/v6; D020 internal mapping assessment provisionally accepted with human validation pending | D019 independent human confirmation remains mandatory before manuscript/final reviewed release; retained-evidence identities remain at P8/P9 |
 | CuePolicy/resolver | Frozen composite identifiers plus the three P5.3 atomic policies/conformance corpus and P5.4 `NoResolver` adapter | Every later policy or resolver semantic change requires a new identifier, implementation, vector/corpus, and exact registry rule |
 | Descriptor | P2.1 signed descriptor, current-pointer, configuration-digest, bootstrap-signature, installed-trust, receipt, and party-current identifiers with strict schemas and vectors | Any later descriptor/trust semantic change requires a new identifier, schema, vector, and compatibility rule |
-| Backup/bundle | Frozen backup-v4, suite-neutral backup-v5, paired-topology backup-v6, and P2 bundle/manifest identifiers | Any later suite/topology or bundle semantic change receives a separate identifier |
+| Backup/bundle | Frozen backup-v4, suite-neutral backup-v5, paired-topology backup-v6, and P2 bundle/manifest identifiers; D025 client-recovery-package v1 Assigned as an additive transport only | Any later suite/topology, package, or bundle semantic change receives a separate identifier; the assigned package does not reinterpret enclosed bytes |
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
 | Deployment | Frozen same-host Yi profile plus P6.3 matched same-host process profiles for Yi/aPPSS 2-of-3 and 3-of-5 | P6.4 host separation is a distinct profile; independent administration requires actual operators and separate approval |
-| Integrated reference deployment | `LOCUS-integrated-reference-deployment-v1` and `LOCUS-integrated-reference-config-v1`, with strict manifest/schema, validators, canonical configuration, and completed pre-evidence gate | Changed topology, provider, admission adapter, UI/API semantics, role placement, or measurement boundary requires a distinct profile |
-| Trace | Frozen retained trace-policy identifier | P8.3 assigns a new trace profile only after the collection and retained-output schema is approved |
-| Result | Frozen retained attack/performance/evidence families | P8.2 first assigns new security/state schemas before collection; P9.2 later assigns performance/resilience schemas; both keep Yi/aPPSS and topology results disjoint |
-| Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | P10.3 assigns a later portable-artifact identifier with a new manifest and allowlist |
+| Integrated reference deployment | Assigned D023 reference deployment/config v1 predecessor; Assigned D025 Manager deployment/config/API/UI, controller API/profile, Client API/UI, managed-instance, package, clean-client-v2, and security-matrix-v2 profiles | P7.7 passed strict schemas/profiles, vectors, compatibility rules, negative tests, complete managed smoke, and documentation; D023 v1 remains immutable |
+| Client and UI | Assigned client API v1/local research UI v1 and D025 client API v2, managed Client UI v1, Manager API/UI, controller API/profile, and managed-instance profiles | P7.7 preserved thin-UI separation, exact route semantics, output safety, and old-profile immutability; further semantic changes require distinct versions |
+| Clean-client isolation | Assigned process/persistent-surface isolation v1 and D025 dynamic managed-client isolation v2 | V2 binds exact allowed inputs/state, fresh-instance proof, inherited-state positive control, and explicit non-erasure limitation; later changes require a new version |
+| Security contract | Assigned governance-only security matrix v1 over C01--C26 and additive D025 matrix v2 with M01--M05 | Matrix v2 preserves all v1 row meanings and adds Manager/controller, package, dynamic-client/key-display, network/reset, and credential contracts; it is not evidence |
+| Trace | Frozen retained trace-policy identifier | P8.3 must assign a new trace profile including Manager/controller, both lifecycle networks, dynamic Clients, package transport, and service contacts before collection |
+| Result | Frozen retained attack/performance/evidence families | P8.2 must first assign new managed security/state schemas before collection; P9.2 later assigns performance/resilience schemas; all keep D023/D025, Yi/aPPSS, and topology results disjoint |
+| Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | After P7.7/P8/P9, P10.3 assigns a later portable-artifact identifier with a managed-system manifest and allowlist |
 
 ### Upgrade and compatibility rules
 
@@ -425,6 +474,9 @@ The following families are reserved conceptually:
 - explicit `NoResolver` profile;
 - clean-client deployment;
 - complete UI-to-container integrated reference deployment;
+- Manager-controlled integrated deployment, constrained container-controller,
+  dynamic Client instances, client recovery-package transport, and expanded
+  security contract;
 - public admission;
 - multi-host deployment;
 - additional provider adapters;
@@ -443,7 +495,7 @@ remain unchanged.
 
 ## Approved family gates
 
-D001, D003--D005, D008--D010, D014--D018, and D023 approve the architecture direction
+D001, D003--D005, D008--D010, D014--D018, D023, and D025 approve the architecture direction
 for the following families. P2.1 assignments are listed above; remaining exact
 identifiers stay unassigned until their recorded gate passes. D015 supersedes
 the unassigned personal-cloud-account and Google Drive families from D002/D006;
@@ -471,6 +523,7 @@ D018 supersedes D007's asymmetric topology order and D016's sole-aPPSS cutover:
 | Local attempt audit | Signed local records are diagnostic evidence without a global rollback-resistant bound | Existing frozen attempt formats are not reinterpreted; any monotonic authority is a separate D012 profile |
 | Thin cross-platform UI | UI calls stable client APIs and contains no protocol/canonicalization logic | Framework/profile assigned only after API freeze; no change to protocol bytes or usability claim |
 | Primary integrated reference system | One new same-host deployment family connects the frozen UI/API semantics to authenticated admission, discovery, storage-gateway/local-S3, resolver, and five-party services for Yi/aPPSS at 2-of-3 and 3-of-5 | Allocate only with the P7.5 manifest/schema/vector/validator gate; preserve Compose v2, P6 process profiles, UI v1, client API v1, and retained evidence; changed provider, topology, admission adapter, UI/API semantics, or role placement requires a distinct profile |
+| Manager-controlled integrated deployment | One same-host family adds a thin loopback Manager, isolated root-equivalent controller, fixed dynamic Client template, Client API v2/managed UI v1, authenticated client recovery-package transport, and clean-client isolation v2 while preserving the D023 protocol/service path | The exact D025 names were Assigned at P7.7 after strict schemas/vectors/tests and the full managed smoke; D023 v1 and every protocol/evidence identifier retain their meanings |
 | AWS S3 provider | Supplemental application-operated implementation of the logical backup, descriptor, current-pointer, and bundle contracts | New provider profile; local/S3-compatible identifiers unchanged |
 
 ## Assigned artifact package profiles

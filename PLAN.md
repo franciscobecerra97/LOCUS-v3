@@ -17,7 +17,12 @@ and aPPSS are now implemented at the application/component boundary. D023
 requires their complete UI-to-container composition in one new integrated
 reference system before P8/P9. D024 isolates that implementation under
 `prototype_final/` and makes its reduced `integrated-*` command surface the
-only active P8+ implementation path. Architecture decisions listed in
+only active P8+ implementation path. D025 approves a newly versioned Manager-
+controlled deployment and dynamic Client UI workflow inside that same source
+boundary. P7.7 completed that migration and its new security/version gates
+before P8. The twelve D025 managed identifiers
+are Assigned; the completed D023 deployment remains an immutable supporting
+predecessor. P8.1 is the next ready step. Architecture decisions listed in
 `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -49,10 +54,14 @@ documentation, and evidence gate must pass.
 7. Use synthetic data and project-controlled disposable services.
 8. Before every manuscript edit, present the exact proposed delta and obtain
    explicit owner approval. The owner may approve or skip each change.
-9. Treat the D023 integrated reference deployment as the primary system under
-   test for new system-security, information-flow, performance, resilience,
-   artifact, and later manuscript results; smaller profiles remain supporting
-   controls and frozen evidence remains non-transferable.
+9. P7.7 assigned and verified the D025 managed implementation without collecting
+   retained P8/P9 evidence. Treat that Manager-controlled integrated deployment
+   as the primary
+   system under test for new system-security, information-flow, performance,
+   resilience, artifact, and later proposed manuscript results. The completed
+   D023 deployment then remains a supporting predecessor, and frozen evidence
+   remains non-transferable. Begin collection only after the applicable P8/P9
+   schema, identifier, positive-control, provenance, path, and output gate.
 10. Implement and run P8+ work only from the self-contained
     `prototype_final/` D024 boundary. Root implementations, commands, and tests
     remain frozen historical/component controls and are not a second active
@@ -2342,16 +2351,251 @@ Completion record (2026-08-10):
   workspace as the sole active P8+ implementation boundary. Existing root
   commands, sources, and tests remain unchanged historical/component controls.
 
+### P7.7 Replace CLI-selected clients with a Manager-controlled workflow
+
+Direction: `Approved` by D025
+
+Status: `Complete`
+
+D025 changes the active deployment, UI/API, clean-client, operator-control,
+and evaluation boundaries without changing the Yi or aPPSS constructions,
+CuePolicy semantics, protected-key encryption, descriptor/current-state,
+admission, authorization, recovery-party, or local-provider protocols. Work
+remains entirely inside `prototype_final/`. The completed D023/P7.5 system is
+the verified predecessor and cannot be relabeled as the managed system.
+
+#### Work package 1 — Assign the managed-system contracts
+
+P7.7 reviewed each exact D025 identifier together with its strict manifest or
+schema, bounds, compatibility rule, canonical vector, negative tests, and first
+implementation, and assigns all twelve identifiers as follows:
+
+- `LOCUS-integrated-manager-deployment-v1` and
+  `LOCUS-integrated-manager-config-v1`;
+- `LOCUS-manager-api-v1` and `LOCUS-local-manager-ui-v1`;
+- `LOCUS-container-controller-api-v1` and
+  `LOCUS-local-container-controller-v1`;
+- `LOCUS-client-api-v2` and `LOCUS-managed-client-ui-v1`;
+- `LOCUS-managed-client-instance-v1`;
+- `LOCUS-client-recovery-package-v1`;
+- `LOCUS-clean-client-isolation-v2`; and
+- `LOCUS-security-matrix-v2`, preserving every C01--C26 meaning while adding
+  explicit Manager/controller, package-decoder, dynamic-client, and private-
+  key-display contracts.
+
+The assigned matrix artifact and strict schema are
+`prototype_final/docs/security-matrix-v2.json` and
+`prototype_final/docs/schemas/security-matrix-v2.schema.json`. They pin the
+immutable v1 bytes and C01--C26 IDs and add managed contracts M01--M05. Their
+focused validation and the complete managed acceptance gate assign
+`LOCUS-security-matrix-v2`; assignment is not retained evidence or claim
+promotion. No P8/P9 trace or result identifier is allocated by this work
+package.
+
+#### Work package 2 — Implement the Manager and constrained controller
+
+`integrated-start` accepts no enrollment/recovery mode. It validates and starts
+the common service plane, loopback Manager UI/API, and internal lifecycle
+controller, waits for health, and creates no Client UI container. The Manager
+may request status, start, stop, restart, kill, create/destroy client, and stop-
+system transitions only through typed, bounded operations.
+
+Only the dedicated controller may receive the local Docker socket. It is a
+root-equivalent trusted same-host role with no host-published endpoint. It
+receives Manager and Client self-lifecycle requests only on the exact internal
+networks described below. It must enforce the exact project, service allowlist,
+labels, fixed image and client template, bounded instance count, port
+allocation, volume policy, and transition state machine. No browser request may
+supply an image, command, mount, host path, network, environment, label,
+Compose project, or arbitrary Docker identifier. The Manager and Client
+containers never receive the socket.
+
+The one-shot bootstrap is separately constrained. It runs as root with all
+Linux capabilities dropped except exactly `CHOWN` and `DAC_READ_SEARCH`, uses
+`network_mode: none`, receives no Docker socket, and exits before unprivileged
+runtime services start. Those capabilities are used only to create and
+revalidate owner-only per-role files; bootstrap remains limited to synthetic
+credentials, public configuration, empty role roots, and fixtures.
+
+The controller alone joins both lifecycle networks. `management` permits only
+Manager-to-controller requests. `client-lifecycle` permits only a Client-to-
+controller request scoped to that Client's exact instance. Managed Clients are
+not attached to `management`, cannot reach the Manager UI/API, and do not use
+the lifecycle networks for admission, discovery, storage, resolver, or party
+protocol traffic.
+
+The two browser publication networks are also distinct. `manager-edge` joins
+only the Manager and carries its host-loopback-published UI path.
+`browser-edge` joins only dynamic Clients and carries their separately
+published loopback UI paths. Neither edge network is a Manager-to-Client
+channel, and Clients cannot join or reach `manager-edge`.
+
+Stopping the complete system through the Manager is the normal manual
+workflow. A CLI stop/cleanup path may remain only as exact-project emergency
+recovery and automated-smoke cleanup; it is not the documented enrollment or
+recovery workflow. Emergency `integrated-stop` preserves role/provider volumes
+by default. `integrated-stop --reset-state` is an explicit irreversible local
+reset that deletes every exact-project role/provider volume, credential, and
+enrolled epoch; it is never a normal stop or recovery action.
+
+A fresh managed bootstrap creates a 366-day synthetic CA and 365-day role TLS
+certificates. Default stop/start reuses those credentials and protocol volumes
+only when the exact manifest and role-root inventory still validate. There is
+no in-place credential renewal: expiry or an incompatible manifest fails
+closed and requires the explicit full-state reset above. This bounded research
+lifetime and destructive recovery path are not production PKI rotation.
+
+#### Work package 3 — Implement dynamic Client instances and one Client UI
+
+Each created Client container receives fresh bounded client state and a public
+instance identifier under the managed-client-instance profile. The UI displays
+that identifier so a reviewer can distinguish the enrollment and recovery
+clients. Stop/start/restart behavior and destruction of the exact client-
+scoped container and state are explicit. Destruction is not forensic erasure.
+
+Client `stop` and `kill` make its UI unavailable while retaining the container
+and public client-instance identifier. A later `start`, and every `restart`,
+rotates the process proof identity and clears the volatile server-side key slot,
+export/import cache, and operation/session set under that same identifier.
+`destroy` removes the
+container and identifier; a later `create` receives a distinct identifier.
+Manager controls and confirmations must call stop/start, restart, and kill
+destructive volatile resets rather than session-preserving operations.
+
+The same thin Client UI supports:
+
+- generation and optional transient reveal of a synthetic private key;
+- enrollment under one explicitly selected registered suite, paired holder
+  profile, and CuePolicy;
+- authenticated threshold setup, common HKDF/AES protection, provider
+  publication, and client recovery-package download;
+- bounded package import, authenticated configuration restoration, exact
+  threshold recovery, decryption, replacement of the transient current key,
+  and public identity verification;
+- an authenticated request to destroy its own exact client instance.
+
+P7.7 does not add a successor route to Client API v2 or the managed Client UI.
+The existing same-suite and cross-suite successor core remains unchanged and
+must stay green as a compatibility control outside this UX.
+
+The browser remains a thin caller. It contains no CuePolicy canonicalizer,
+suite implementation, descriptor verifier, admission logic, storage adapter,
+or Docker control logic. A revealed key is synthetic active-client data only:
+it is never logged, cached, persisted, placed in browser storage, sent to the
+Manager/controller, or included in an export.
+
+#### Work package 4 — Preserve authenticated protocol selection and storage
+
+Enrollment offers only the approved 2-of-3 holders `1,2,3` and 3-of-5 holders
+`1,2,3,4,5`, with the separately typed 4-of-5 authorizer quorum. Recovery may
+choose a valid threshold subset only from the authenticated descriptor's
+declared holders. It has no arbitrary `k,n`, membership, endpoint, suite,
+policy, downgrade, or fallback control.
+
+`LOCUS-client-recovery-package-v1` is an additive bounded transport for the
+existing encrypted backup and authenticated public recovery metadata. Import
+bytes and metadata are untrusted until exact decoding, length/digest checks,
+operator signatures, discovery/current-pointer binding, and the required
+current-party quorum pass. Missing or unsupported authenticated configuration
+fails closed. The package does not replace admission, the storage gateway and
+local S3-compatible provider, current-state validation, authorization, or
+online threshold-party participation, and it contains no party state or
+plaintext secret.
+
+#### Work package 5 — Close the managed pre-P8 gate
+
+Extend focused tests and the disposable integrated smoke through the Manager
+and controller APIs. Preserve the complete P7.5 suite/topology, CuePolicy,
+threshold-subset, authorization, wrong-input, unavailable-role, restart,
+provider-outage, replay, stale-CAS, downgrade, role-state, network, output-scan,
+and cleanup matrix while adding the new management and package boundaries.
+Keep the existing successor/crash suite green as a separate protocol-
+compatibility control; P7.7 completion does not require a successor UI route.
+
+Acceptance:
+
+- `integrated-start` has no `--mode`, publishes only the documented loopback
+  Manager endpoint initially, and reaches a healthy base graph with zero
+  Client containers.
+- The resolved and live graph match the newly assigned managed configuration;
+  only the controller has a Docker-socket mount, and Manager/Client containers
+  cannot contact the Docker engine directly.
+- `management` contains only Manager and controller; `client-lifecycle`
+  contains only the controller and managed Clients. A managed Client cannot
+  reach the Manager UI/API, and its lifecycle request cannot name another
+  instance or invoke an operator-only action.
+- `manager-edge` contains only the Manager and `browser-edge` only dynamic
+  Clients. Each publishes a distinct host-loopback UI path; neither creates a
+  container-level Manager-to-Client route.
+- Manager lifecycle actions are idempotent and exact-project scoped. Unknown,
+  stale, cross-project, duplicate, forged, replayed, cross-origin, arbitrary-
+  specification, and disallowed-transition requests fail without changing an
+  allowed container.
+- Client creation produces a fresh public instance identity and proof-key
+  binding. Destruction makes that UI unavailable, removes its exact client-
+  scoped state, and a fresh client rejects a deliberate inherited-state marker.
+- Client stop/start, restart, and kill/start retain the public instance ID but
+  rotate the proof identity and clear the volatile server-side key, export/
+  import, and operation/session state; the UI labels and confirms those
+  destructive reset semantics.
+- Both suites at both paired topologies and all four registered CuePolicies
+  complete enrollment, package download, original-client destruction, fresh-
+  client package import, authenticated recovery, key replacement, and public-
+  identity verification through the deployed services.
+- Every exact threshold subset succeeds only under 4-of-5 authorization;
+  below-threshold, wrong-input, invalid-package, unauthenticated-metadata,
+  override, downgrade, unavailable-role, replay, stale-pointer, and injected
+  lifecycle-failure cases fail in their registered categories.
+- Package/parser positive controls, Manager/controller containment positive
+  controls, Client A/Client B isolation controls, prohibited-output scans,
+  role-state/network audits, and exact disposable cleanup all pass.
+- Default stop/start preserves exact credential identities and enrolled state;
+  expired or incompatible credentials fail closed, while explicit emergency
+  `integrated-stop --reset-state` removes all exact-project role/provider state
+  and produces a fresh trust domain and empty deployment on the next start.
+- The security-matrix-v2 schema and focused preservation tests pin v1 and
+  C01--C26 exactly and cover managed contracts M01--M05; the complete P7.7 gate,
+  rather than that focused check alone, assigns the matrix profile.
+- Existing same-suite and cross-suite successor/crash regression controls stay
+  green without adding successor operations to Client API v2 or its UI.
+- Normal operator documentation uses one `integrated-start` command followed
+  by Manager and Client UI actions. Emergency CLI cleanup is separately labeled
+  and never substitutes for the Manager-controlled smoke path.
+- Active architecture, evidence, artifact, contributor, and operator documents
+  identify the managed profiles as implemented and Assigned while preserving
+  the separate P8/P9 collection and manuscript gates.
+
+Completion record (2026-08-11):
+
+- The enhanced disposable Docker smoke passed all four suite/topology arms, 26
+  threshold subsets, four isolated clean Clients, live control-plane isolation,
+  all documented lifecycle actions, prohibited-output scans, 15 bootstrap-role
+  and 15 post-operation role audits, and exact cleanup.
+- Normal stop/restart recovered the enrolled key with an unchanged CA. The
+  explicit destructive reset created a fresh CA and empty remote state, rejected
+  the old package, and left no exact-project resources after cleanup.
+- After the final controller/bootstrap fixes, `integrated-check`, 27 focused
+  tests, formatting, linting, typing, managed configuration validation, and the
+  final browser acceptance all passed.
+- The exact bootstrap capability/network boundary, lifecycle/reset semantics,
+  package and key-display limitations, network separation, and credential
+  lifetime are documented. All twelve D025 managed identifiers are `Assigned`,
+  not `Frozen`.
+- These are pre-evidence implementation observations. No retained P8/P9 result,
+  trace, or result-schema identifier was created, no claim status changed, and
+  no manuscript edit was authorized.
+
 ---
 
 ## P8 — Security, reliability, and information-flow assurance
 
-Entry gate: P7.5 work package 5 and P7.6 must pass. P8 applies the existing
-C01--C26 contracts to the exact integrated deployment manifest from the
-self-contained `prototype_final/` workspace. Unit, property, and component
-assurance remains necessary, but every system-facing conclusion must also
-exercise that workspace's container-backed UI/client path and actual role
-state or traffic boundary.
+Entry gate: P7.5 work package 5, P7.6, and P7.7 passed. P8 applies the
+P7.7-assigned `LOCUS-security-matrix-v2` contracts to the exact managed
+deployment manifest from the self-contained `prototype_final/` workspace.
+Unit, property, and component assurance remains necessary, but every system-
+facing conclusion must also exercise the Manager-created container-backed
+Client UI/API path, controller boundary, imported/exported package boundary,
+and actual role state or traffic boundary.
 
 ### P8.0 Reconcile the implemented baseline and freeze the assurance sequence
 
@@ -2393,9 +2637,16 @@ Completion record (2026-08-10):
   to P8.3, and performance/resilience schemas to P9.2. No retained P8/P9 result
   was collected or identifier assigned by this reconciliation.
 
+D025 postdates this completion record. P7.7 separately completed the managed-
+system reconciliation; P8.0 remains an accurate record of the earlier D023/
+P7.5 normalization rather than evidence for the D025 profile.
+
 ### P8.1 Add decoder and state-machine assurance
 
 Status: `Proposed`
+
+Readiness: P7.7's implementation and assignment gate is satisfied. P8.1 is the
+next ready step; it must not collect retained evidence assigned to P8.2/P8.3.
 
 Add:
 
@@ -2413,9 +2664,11 @@ Add:
 - path and symlink containment;
 - prohibited-output scans;
 - integrated service decoder coverage for admission, discovery, storage,
-  resolver, party, UI/API, health, and operator endpoints;
+  resolver, party, managed Client UI/API, Manager UI/API, controller,
+  client-recovery-package, health, and operator endpoints;
 - resolved/live Compose graph mutation tests; and
-- full-system concurrency and restart schedules through the public client API.
+- full-system concurrency and restart schedules through the public Manager and
+  Client APIs, including simultaneous or stale lifecycle operations.
 
 Acceptance:
 
@@ -2448,6 +2701,10 @@ Required surfaces:
 - identity/admission provider metadata;
 - lifecycle predecessor/successor states;
 - UI/client-gateway container after enrollment and after recovery;
+- Manager and controller state/configuration, sanitized lifecycle records, and
+  Docker-socket exposure boundary;
+- every live and destroyed managed-client instance boundary plus the exported-
+  package holder view;
 - admission, operator/discovery, storage-gateway, resolver, object-store, and
   every party container/volume in the integrated graph; and
 - exact matching unions of those views for each suite/topology arm.
@@ -2478,8 +2735,9 @@ Prefer structured instrumentation that records:
 
 Instrumentation is attached to the integrated service adapters and fixed role
 directory. Component-only traffic cannot support a system information-flow
-claim. Browser-observed requests, client-to-service contacts, and every
-inter-service contact are included by category without retaining payloads.
+claim. Browser-to-Manager, Manager-to-controller, controller-to-Docker,
+browser-to-Client, Client-to-service, package upload/download, and every inter-
+service contact are included by category without retaining payloads.
 
 Packet captures are not retained. Any temporary inspection requires a new
 approved trace policy and synthetic local traffic.
@@ -2511,10 +2769,10 @@ Acceptance:
 
 ## P9 — Performance and resilience evaluation
 
-Entry gate: P7.5 work package 5 and the applicable P8 trace, state, and
-output-safety gates must pass. The integrated deployment is the primary
-measurement system. Native and component microbenchmarks may explain costs but
-cannot substitute for or be pooled with end-to-end results.
+Entry gate: P7.7 and the applicable P8 trace, state, and output-safety gates
+must pass. The managed integrated deployment is the primary measurement
+system. Native and component microbenchmarks may explain costs but cannot
+substitute for or be pooled with end-to-end results.
 
 ### P9.1 Define revised methodology before collection
 
@@ -2539,6 +2797,8 @@ Measure:
 - cross-host/WAN latency where authorized;
 - loopback browser-to-client request latency as a separately labeled UI
   observation; and
+- Manager startup plus managed-client create, stop/start, restart, destroy,
+  export, and import latency as separately labeled operator/UI observations;
 - end-to-end client-API latency across every required integrated service,
   excluding browser rendering from protocol timings.
 
@@ -2656,8 +2916,9 @@ Review:
 - privacy and logging;
 - UI persistence;
 - evidence methodology;
-- the resolved and live D023 service graph, role identities, credentials,
-  networks, mounts, provider boundary, and active-client isolation; and
+- the resolved and live D025 managed service graph, Manager/controller trust
+  boundary, role identities, credentials, networks, mounts, provider boundary,
+  package boundary, and dynamic active-client isolation; and
 - one complete enrollment, clean recovery, and successor workflow through the
   container-backed client API, without direct state injection.
 
@@ -2675,7 +2936,8 @@ The artifact should reproduce:
 - same-host reference deployment;
 - feasible multi-host workflow;
 - deterministic processing and derived outputs;
-- the D023 UI-to-container integrated deployment and all required services;
+- the D025 Manager-to-dynamic-Client integrated deployment and all required
+  services;
 - enrollment and clean-client recovery for all four suite/topology arms; and
 - at least one same-suite and one cross-suite successor flow.
 
@@ -2696,9 +2958,9 @@ Acceptance:
 
 - Every promoted claim identifies exact profile, assumptions, adversary,
   evidence, and limitation.
-- Every new promoted system/performance result identifies the D023 integrated
-  deployment family and exact suite/topology/policy/provider scenario; legacy
-  and component evidence remains explicitly scoped.
+- Every new promoted system/performance result identifies the D025 managed
+  integrated deployment family and exact suite/topology/policy/provider
+  scenario; D023, legacy, and component evidence remains explicitly scoped.
 - Global rate limiting, memorability, entropy, production readiness, independent
   administration, and audit remain non-claims unless separately established.
 
@@ -2731,9 +2993,10 @@ Skipped or unapproved deltas remain unchanged.
 
 ## Recommended next execution slice
 
-Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.6 are
-complete for implementation chronology. P6.4's actual host-separation tiers remain blocked
-on infrastructure and do not block D023's honest same-host integrated profile.
+Execution remains chronological. P0--P5A, P6.1--P6.3, and P7.1--P7.7 are
+complete for implementation chronology. P6.4's
+actual host-separation tiers remain blocked on infrastructure and do not block
+the honest same-host managed integrated profile.
 
 The next sequence is:
 

@@ -220,6 +220,46 @@ boundary. Its durable state and logs may contain only explicitly permitted
 public, bounded operation metadata; Client A state and credentials must not be
 available to clean Client B.
 
+### D025 managed active-client and control boundary
+
+D025 does not change the protected path. The Manager and root-equivalent
+container controller are outside it and must never receive cues, canonical
+policy output, suite password/state, `S_R`, `K_wrap`, plaintext protected-key
+material, or client recovery-package bytes. Only the managed Client/browser may
+transiently reveal its own synthetic plaintext private key under the new UI/API
+profile; that value remains prohibited from logs, persistence, Manager/
+controller messages, exports, and retained evidence.
+
+`management` carries Manager-to-controller lifecycle operations only.
+`client-lifecycle` carries a managed Client's request about its own exact
+instance only. The Client cannot reach the Manager UI/API, and the controller
+does not relay protocol traffic. An imported client recovery package is
+untrusted until its exact codec, signatures, digests, current pointer,
+discovery, and current-party quorum validate. It cannot override the enrolled
+suite, policy, membership, threshold, endpoint, or fallback rules, and it does
+not replace the local provider or online threshold parties.
+
+`manager-edge` carries only the Manager's host-loopback-published UI path;
+`browser-edge` carries only dynamic Client loopback-published UI paths. They
+are distinct from each other and from the internal lifecycle networks. A
+Client is never attached to `manager-edge`, so browser publication does not add
+a container-level Client-to-Manager path.
+
+Client stop/start, restart, and kill/start preserve only the public instance ID
+and fixed container specification. They rotate the process proof identity and
+clear the server-side key slot, export/import cache, and operation/session set.
+Destroy additionally removes the container and instance ID. These transitions
+establish bounded process isolation only, not forensic erasure or browser/host-
+memory disposal; an already loaded external browser document may remain until
+closed or reloaded.
+
+Default stop/start preserves the exact role/provider volumes and their
+synthetic credentials. The managed profile's 366-day CA and 365-day role TLS
+certificates are not renewed in place. Expired or manifest-incompatible state
+fails closed. Emergency `integrated-stop --reset-state` deletes the exact-
+project volumes and therefore the trust domain, credentials, provider objects,
+party state, and recoverability of epochs present only in that deployment.
+
 ## Cross-role invariants
 
 P1.3 represents these boundaries as typed, in-memory contracts. The generic
@@ -299,5 +339,9 @@ implemented behavior.
   approved external adapter.
 - The integrated networkless bootstrap role may create synthetic service
   credentials, public configuration, empty role roots, and fixtures only. It
-  must have no runtime network and cannot generate, deliver, or persist
-  recovery-suite state or any client secret-path value.
+  runs once as root with every Linux capability dropped except exactly `CHOWN`
+  and `DAC_READ_SEARCH`, uses `network_mode: none`, receives no Docker socket,
+  and exits before unprivileged runtime services start. Those capabilities are
+  limited to creating and revalidating owner-only per-role files. Bootstrap
+  cannot generate, deliver, or persist recovery-suite state or any client
+  secret-path value.

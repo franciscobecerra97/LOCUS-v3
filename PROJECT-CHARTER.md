@@ -89,6 +89,33 @@ controls and cannot substitute for a result from the D024 workspace. This
 organizational isolation changes no protocol, deployment, or evidence
 identifier.
 
+D025 approves a separately versioned managed deployment inside that workspace.
+The implemented mode-free launcher starts the common service plane, a loopback
+Manager UI, and a dedicated internal container controller, but no Client
+container. The Manager creates and destroys transient Client UI containers; one
+Client UI exposes the existing enrollment and recovery protocols plus an additive
+client recovery-package export/import transport. The controller's Docker-socket
+access is root-equivalent trusted operator infrastructure. The local provider,
+authenticated current-state path, fixed paired holder profiles, distinct 4-of-
+5 authorization, and online threshold-party requirement remain. P7.7 is
+complete and all twelve managed identifiers are Assigned. The profile is now
+the P8 system under test, but no retained P8/P9 evidence exists yet.
+
+The managed control plane uses internal `management` (Manager/controller) and
+`client-lifecycle` (Client/controller) networks plus separate `manager-edge`
+and `browser-edge` loopback-publication paths. Client process restart actions
+clear volatile secret/session state even when the public client ID remains.
+Normal stop preserves project state; emergency `integrated-stop --reset-state`
+deletes all role/provider volumes and credentials. The bounded 366/365-day CA/
+leaf credential lifetime has no in-place renewal and is not a production PKI
+claim.
+
+The one-shot bootstrap runs as root with every capability dropped except
+exactly `CHOWN` and `DAC_READ_SEARCH`, has no network or Docker socket, and exits
+before unprivileged runtime services start. It may create and revalidate only
+the approved synthetic credentials, public configuration, empty role roots,
+fixtures, and their owner-only files.
+
 ## What is inherited
 
 - TPASS construction and security assumptions.
@@ -126,13 +153,15 @@ baseline facts and must receive new identifiers and provenance.
 
 ## Success condition
 
-The project succeeds when an unfamiliar reviewer can take an isolated clean
-client through the loopback UI, use only the declared bootstrap inputs and
-fictional recovery cues, authenticate the current configuration, and traverse
-the deployed admission, discovery, storage-gateway/provider, applicable
-resolver, and recovery-party boundaries to recover the exact original
-synthetic private key and verify its public identity. The reviewer must also
-reproduce the bounded security and performance evidence from that same
+The project succeeds when an unfamiliar reviewer can start the integrated
+environment once, use its loopback Manager UI to create an enrollment Client,
+generate a synthetic key, complete enrollment, export the client recovery
+package, destroy that Client, and create a distinct clean recovery Client. The
+new Client must authenticate the imported package and current configuration,
+traverse the deployed admission, discovery, storage-gateway/provider,
+applicable resolver, and recovery-party boundaries, recover the exact original
+synthetic private key, and verify its public identity. The reviewer must also
+reproduce the bounded security and performance evidence from that same managed
 integrated system, built only from `prototype_final/`, without external
 credentials or hidden developer state. The
 manuscript, claim/evidence matrix, technical documentation, generated inputs,

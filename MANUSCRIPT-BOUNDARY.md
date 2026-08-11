@@ -60,3 +60,17 @@ system description, result, table, figure, claim, and limitation must still be
 presented as an exact manuscript delta for separate owner approval. Any
 approved result must identify the evaluated integrated profile; component or
 historical evidence may not be relabeled as full-system evidence.
+
+D025 likewise authorized only the P7.7 architecture and implementation work.
+P7.7 is complete and its twelve managed identifiers are Assigned, but its smoke
+and focused checks are not retained P8/P9 evidence. It does not authorize
+manuscript wording about a Manager UI, dynamic clients,
+container lifecycle control, client recovery-package export/import, private-key
+visibility, improved usability, or an evaluated managed system. The dedicated
+controller's root-equivalent Docker-socket trust, same-host scope, browser/key-
+display exposure, non-forensic client destruction, local-provider boundary,
+continued online-party requirement, disjoint edge/lifecycle networks,
+destructive volatile reset semantics, lack of in-place credential renewal, and
+full-state effect of emergency `--reset-state` cannot be omitted from any later
+proposed description. Such wording remains subject to the independent review,
+P8/P9 evidence, artifact, claim-closure, and exact owner-approval gates above.

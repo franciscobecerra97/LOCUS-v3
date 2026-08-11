@@ -1,13 +1,38 @@
 # Target Architecture
 
 Status: owner-approved target design for D001, D003--D005,
-D008--D010, D014--D018, and D023. D015 supersedes D002/D006; D018
-supersedes D007/D016. D023's fully connected same-host reference system is
-implemented and is the required P8/P9 system under test without changing any completed
+D008--D010, D014--D018, D023, and D025. D015 supersedes D002/D006;
+D018 supersedes D007/D016. D023's fully connected same-host reference system is
+implemented. D025/P7.7's separately versioned Manager/controller and dynamic-
+Client deployment is implemented and Assigned; P8.1 is the next ready step,
+but retained P8/P9 evidence remains gated. It does not change any completed
 component or frozen deployment profile. This document does not
 supersede the implemented baseline architecture or current manuscript until the affected
 implementation/evidence gates and a separate exact manuscript delta are
 approved by the owner.
+
+The D025 control plane has two disjoint internal networks: `management` joins
+only Manager and controller, while `client-lifecycle` joins only controller and
+managed Clients. A managed Client cannot reach the Manager UI/API. Only the
+controller receives the root-equivalent Docker socket; neither UI does. The
+two browser-publication networks are also disjoint: `manager-edge` contains
+only the Manager and `browser-edge` only dynamic Clients, each with a separate
+host-loopback path. Neither becomes a Manager-to-Client network. The assigned
+client recovery package is additive and does not replace the local provider,
+authenticated current state, admission, authorization, or online threshold
+parties.
+
+Client stop/start, restart, and kill/start retain the public client-instance ID
+but rotate the process proof identity and clear the server-side key slot,
+export/import cache, and operation/session set. Destroy removes the instance
+and ID; already loaded browser content remains outside that process reset.
+Managed bootstrap issues a
+366-day CA and 365-day role TLS certificates with no in-place renewal. Default
+stop preserves volumes; only explicit emergency `integrated-stop --reset-state`
+removes all exact-project credentials and protocol/provider state.
+The one-shot bootstrap runs as root with every Linux capability dropped except
+exactly `CHOWN` and `DAC_READ_SEARCH`, uses `network_mode: none`, receives no
+Docker socket, and exits before unprivileged runtime services start.
 
 P1.3 now implements the suite-neutral in-memory contract layer described here,
 including a thin frozen-Yi compatibility adapter and typed CuePolicy/resolver
@@ -21,8 +46,11 @@ families are reserved by decision and chronological schema gate, not assigned
 usable identifiers in advance.
 
 P1.5 completes the prospective six-phase/twelve-view information-flow matrix
-and the schema-checked C01--C26 security contracts. These define later
-implementation and evidence obligations without promoting unsupported claims.
+and the schema-checked C01--C26 security contracts. D025/P7.7 assigns a matrix-
+v2 revision that preserves those meanings and adds M01--M05 for managed-control,
+package, dynamic reset, credential-lifetime, edge-network, and transient-key-
+display boundaries. These define later evidence obligations without promoting
+unsupported claims.
 
 P2.1 now implements the strict descriptor, signed current-pointer,
 two-entry manifest, and deterministic bounded ZIP codecs described below.
@@ -250,12 +278,24 @@ activation, predecessor retirement, and eventual membership replacement.
 - isolated Client A enrollment and clean Client B recovery roots; and
 - no external accounts.
 
-P7.5 implements this target on one Docker engine and makes it the mandatory
-full-system boundary for later central P8/P9 evidence. The browser neither
+P7.5 implements this predecessor on one Docker engine. The browser neither
 controls Docker nor contacts parties or object storage directly. A networkless
 bootstrap step may create synthetic credentials, public configuration, empty
 role roots, and fixtures, but it may not inject recovery-suite state or
 secret-bearing client state.
+
+D025/P7.7's assigned managed deployment is the mandatory full-system boundary
+for P8 and later work. Its mode-free launcher starts the common service plane,
+Manager, and controller with no Client. Manager-created Clients use Client API
+v2 and the managed Client UI for enrollment and package-based recovery. The
+controller alone holds the root-equivalent Docker socket. `management` is
+Manager/controller only; `client-lifecycle` is Client/controller only; a
+Client cannot reach the Manager UI/API. `manager-edge` and `browser-edge`
+publish only the Manager and dynamic Client loopback paths respectively.
+Stop/start, restart, and kill/start clear volatile Client state without changing
+the public client ID; destroy/create changes it. The local provider and
+authenticated protocol path remain mandatory. The implementation and matrix/
+schema passed P7.7, but remain pre-evidence development observations.
 
 The existing runnable local profiles remain narrower controls. The P6 endpoint
 overlay is useful for exercising the eventual public host configuration while
@@ -323,10 +363,13 @@ package 1; it does not rename either P7 identifier.
 - Physical bundle colocation must not collapse the immutable-backup,
   immutable-descriptor, and mutable-current-pointer contracts.
 - UI choice must not change canonical bytes.
-- The browser may reach only the loopback UI/client gateway; it receives no
-  provider credential, party credential, Docker socket, or operator secret.
-- Central P8/P9 system results must bind the exact D023 integrated manifest;
-  component tests and frozen deployments remain supporting controls.
+- In D023, the browser may reach only the loopback UI/client gateway. In D025,
+  it may reach the separate loopback Manager and a Manager-created Client UI;
+  neither receives a provider credential, party credential, Docker socket, or
+  operator secret.
+- Central P8/P9 retained results must bind the exact D025 managed manifest and
+  remain blocked until their applicable schema/trace/result gates; D023,
+  component tests, and frozen deployments remain supporting controls.
 - Admission failure must not become a recovery-suite correctness result.
 - A descriptor cannot introduce a local cue test.
 - The selected admission issuer is an explicit availability prerequisite. The

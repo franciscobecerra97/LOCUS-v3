@@ -1,0 +1,217 @@
+x-runtime: &runtime
+  image: "${LOCUS_INTEGRATED_IMAGE:?set LOCUS_INTEGRATED_IMAGE}"
+  build:
+    context: ..
+    dockerfile: deploy/Dockerfile
+  user: "65532:65532"
+  read_only: true
+  tmpfs:
+    - /tmp:rw,noexec,nosuid,nodev,size=16m
+  cap_drop: [ALL]
+  security_opt: ["no-new-privileges:true"]
+  ulimits:
+    core: {soft: 0, hard: 0}
+  restart: "no"
+  stop_grace_period: 3s
+
+x-service-health: &service-health
+  interval: 2s
+  timeout: 3s
+  retries: 30
+  start_period: 3s
+
+x-common-dependencies: &common-dependencies
+  bootstrap: {condition: service_completed_successfully}
+
+services:
+  bootstrap:
+    <<: *runtime
+    user: "0:0"
+    network_mode: none
+    cap_add: [CHOWN, DAC_READ_SEARCH]
+    command: ["python", "-m", "locus.integrated_bootstrap", "--root", "/roles", "--manifest", "/manifest.json", "--owner-uid", "65532", "--owner-gid", "65532", "--allow-existing"]
+    volumes:
+      - {type: bind, source: ./managed-manifest.json, target: /manifest.json, read_only: true}
+      - {type: volume, source: admission-data, target: /roles/admission}
+      - {type: volume, source: bootstrap-data, target: /roles/bootstrap}
+      - {type: volume, source: managed-client-data, target: /roles/managed-client}
+      - {type: volume, source: manager-controller-data, target: /roles/manager-controller}
+      - {type: volume, source: manager-ui-data, target: /roles/manager-ui}
+      - {type: volume, source: operator-data, target: /roles/operator}
+      - {type: volume, source: party1-data, target: /roles/party1}
+      - {type: volume, source: party2-data, target: /roles/party2}
+      - {type: volume, source: party3-data, target: /roles/party3}
+      - {type: volume, source: party4-data, target: /roles/party4}
+      - {type: volume, source: party5-data, target: /roles/party5}
+      - {type: volume, source: resolver-data, target: /roles/resolver}
+      - {type: volume, source: s3-role-data, target: /roles/s3}
+      - {type: volume, source: storage-gateway-data, target: /roles/storage-gateway}
+
+  admission:
+    <<: *runtime
+    command: ["python", "-m", "locus.integrated_services", "admission", "--root", "/role"]
+    volumes: [{type: volume, source: admission-data, target: /role}]
+    networks: [admission]
+    depends_on: *common-dependencies
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://admission:8443", "--root", "/role"]
+
+  operator:
+    <<: *runtime
+    command: ["python", "-m", "locus.integrated_services", "operator", "--root", "/role"]
+    volumes: [{type: volume, source: operator-data, target: /role}]
+    networks: [control]
+    depends_on: *common-dependencies
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://operator:8443", "--root", "/role"]
+
+  resolver:
+    <<: *runtime
+    command: ["python", "-m", "locus.integrated_services", "resolver", "--root", "/role"]
+    volumes: [{type: volume, source: resolver-data, target: /role}]
+    networks: [resolver]
+    depends_on: *common-dependencies
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://resolver:8443", "--root", "/role"]
+
+  storage-gateway:
+    <<: *runtime
+    command: ["python", "-m", "locus.integrated_services", "storage-gateway", "--root", "/role"]
+    environment:
+      LOCUS_S3_ACCESS_KEY: "${LOCUS_S3_ACCESS_KEY:?set LOCUS_S3_ACCESS_KEY}"
+      LOCUS_S3_BUCKET: "${LOCUS_S3_BUCKET:?set LOCUS_S3_BUCKET}"
+      LOCUS_S3_ENDPOINT: http://s3:8333
+      LOCUS_S3_SECRET_KEY: "${LOCUS_S3_SECRET_KEY:?set LOCUS_S3_SECRET_KEY}"
+    volumes: [{type: volume, source: storage-gateway-data, target: /role}]
+    networks: [cloud, storage]
+    depends_on:
+      bootstrap: {condition: service_completed_successfully}
+      s3: {condition: service_healthy}
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://storage-gateway:8443", "--root", "/role"]
+
+  s3:
+    image: chrislusf/seaweedfs:4.29@sha256:d47c7ee99fcb951351d7194915f4e3a5ea604a8e8871183d713907dec4fb9bf5
+    command: ["-alsologtostderr=false", "-logdir=/tmp", "-stderrthreshold=ERROR", "mini", "-dir=/data"]
+    environment:
+      AWS_ACCESS_KEY_ID: "${LOCUS_S3_ACCESS_KEY:?set LOCUS_S3_ACCESS_KEY}"
+      AWS_SECRET_ACCESS_KEY: "${LOCUS_S3_SECRET_KEY:?set LOCUS_S3_SECRET_KEY}"
+      S3_BUCKET: "${LOCUS_S3_BUCKET:?set LOCUS_S3_BUCKET}"
+    read_only: true
+    tmpfs: ["/tmp:rw,noexec,nosuid,nodev,size=16m"]
+    volumes: [{type: volume, source: s3-data, target: /data}]
+    networks: [cloud]
+    cap_drop: [ALL]
+    cap_add: [CHOWN, SETGID, SETUID]
+    security_opt: ["no-new-privileges:true"]
+    ulimits:
+      core: {soft: 0, hard: 0}
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:9333/cluster/status"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+      start_period: 5s
+    restart: "no"
+
+  party1: &party
+    <<: *runtime
+    command: ["python", "-m", "locus.integrated_services", "party", "--root", "/role", "--holder-id", "1"]
+    volumes: [{type: volume, source: party1-data, target: /role}]
+    networks: [recovery]
+    depends_on: *common-dependencies
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://party1:8443", "--root", "/role"]
+  party2:
+    <<: *party
+    command: ["python", "-m", "locus.integrated_services", "party", "--root", "/role", "--holder-id", "2"]
+    volumes: [{type: volume, source: party2-data, target: /role}]
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://party2:8443", "--root", "/role"]
+  party3:
+    <<: *party
+    command: ["python", "-m", "locus.integrated_services", "party", "--root", "/role", "--holder-id", "3"]
+    volumes: [{type: volume, source: party3-data, target: /role}]
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://party3:8443", "--root", "/role"]
+  party4:
+    <<: *party
+    command: ["python", "-m", "locus.integrated_services", "party", "--root", "/role", "--holder-id", "4"]
+    volumes: [{type: volume, source: party4-data, target: /role}]
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://party4:8443", "--root", "/role"]
+  party5:
+    <<: *party
+    command: ["python", "-m", "locus.integrated_services", "party", "--root", "/role", "--holder-id", "5"]
+    volumes: [{type: volume, source: party5-data, target: /role}]
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://party5:8443", "--root", "/role"]
+
+  manager-controller:
+    <<: *runtime
+    user: "0:0"
+    command: ["python", "-m", "locus.integrated_controller", "--root", "/role"]
+    environment:
+      LOCUS_DOCKER_PROJECT: "${COMPOSE_PROJECT_NAME:?set COMPOSE_PROJECT_NAME}"
+      LOCUS_INTEGRATED_IMAGE: "${LOCUS_INTEGRATED_IMAGE_ID:?set LOCUS_INTEGRATED_IMAGE_ID}"
+      LOCUS_MANAGED_CLIENT_VOLUME: "${COMPOSE_PROJECT_NAME}_managed-client-data"
+    volumes:
+      - {type: volume, source: manager-controller-data, target: /role, read_only: true}
+      - {type: bind, source: /var/run/docker.sock, target: /var/run/docker.sock, read_only: true}
+    networks: [client-lifecycle, management]
+    depends_on: *common-dependencies
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_health", "--endpoint", "https://manager-controller:8443", "--root", "/role"]
+
+  manager-ui:
+    <<: *runtime
+    command: ["python", "-m", "locus.integrated_manager", "--root", "/role", "--port", "8080"]
+    volumes: [{type: volume, source: manager-ui-data, target: /role, read_only: true}]
+    networks: [management, manager-edge]
+    ports: [{target: 8080, published: "${LOCUS_MANAGER_PORT:-8765}", host_ip: 127.0.0.1, protocol: tcp}]
+    depends_on:
+      bootstrap: {condition: service_completed_successfully}
+      manager-controller: {condition: service_healthy}
+    healthcheck:
+      <<: *service-health
+      test: ["CMD", "python", "-m", "locus.integrated_manager_health"]
+
+networks:
+  admission: {internal: true}
+  browser-edge: {}
+  client-lifecycle: {internal: true}
+  cloud: {internal: true}
+  control: {internal: true}
+  manager-edge: {}
+  management: {internal: true}
+  recovery: {internal: true}
+  resolver: {internal: true}
+  storage: {internal: true}
+
+volumes:
+  admission-data: {}
+  bootstrap-data: {}
+  managed-client-data:
+    name: "${COMPOSE_PROJECT_NAME}_managed-client-data"
+  manager-controller-data: {}
+  manager-ui-data: {}
+  operator-data: {}
+  party1-data: {}
+  party2-data: {}
+  party3-data: {}
+  party4-data: {}
+  party5-data: {}
+  resolver-data: {}
+  s3-data: {}
+  s3-role-data: {}
+  storage-gateway-data: {}

@@ -53,7 +53,10 @@
     "LOCUS-canonical-email-set-v1",
     "LOCUS-canonical-phone-set-v1",
     "LOCUS-clean-client-isolation-v1",
+    "LOCUS-clean-client-isolation-v2",
     "LOCUS-client-api-v1",
+    "LOCUS-client-api-v2",
+    "LOCUS-client-recovery-package-v1",
     "LOCUS-cloud-backup-object-v1",
     "LOCUS-cloud-backup-object-v2",
     "LOCUS-cloud-backup-reference-v1",
@@ -65,6 +68,7 @@
     "LOCUS-compose-profile-evidence-v1",
     "LOCUS-compose-recovery-v1",
     "LOCUS-compose-recovery-v2",
+    "LOCUS-container-controller-api-v1",
     "LOCUS-cue-policy-conformance-v1",
     "LOCUS-cue-policy-corpus-v1",
     "LOCUS-descriptor-bundle-store-v1",
@@ -85,15 +89,22 @@
     "LOCUS-improvement-portable-contents-v4",
     "LOCUS-in-process-walkthrough-v1",
     "LOCUS-install-vote-v1",
+    "LOCUS-integrated-manager-config-v1",
+    "LOCUS-integrated-manager-deployment-v1",
     "LOCUS-integrated-reference-config-v1",
     "LOCUS-integrated-reference-deployment-v1",
     "LOCUS-loc-id-v1",
+    "LOCUS-local-container-controller-v1",
     "LOCUS-local-context-v0",
     "LOCUS-local-context-v1",
+    "LOCUS-local-manager-ui-v1",
     "LOCUS-local-research-ui-v1",
     "LOCUS-local-synthetic-admission-v1",
     "LOCUS-location-person-pair-v1",
     "LOCUS-location-person-set-v1",
+    "LOCUS-managed-client-instance-v1",
+    "LOCUS-managed-client-ui-v1",
+    "LOCUS-manager-api-v1",
     "LOCUS-no-resolver-v1",
     "LOCUS-paired-suite-deployment-2of3-v1",
     "LOCUS-paired-suite-deployment-3of5-v1",
@@ -135,6 +146,7 @@
     "LOCUS-response-freshness-vote-v1",
     "LOCUS-runtime-epoch-package-v1",
     "LOCUS-security-matrix-v1",
+    "LOCUS-security-matrix-v2",
     "LOCUS-security-policy-v0",
     "LOCUS-security-policy-v1",
     "LOCUS-storage-metric-v1",
@@ -171,10 +183,11 @@
       "family": "artifact",
       "allocation_phase": "P10.3",
       "decisions": [
-        "D018"
+        "D018",
+        "D025"
       ],
-      "required_gate": "Approve the revised portable-artifact manifest, allowlist, provenance rules, and deterministic package tests.",
-      "compatibility_rule": "Frozen anonymous-artifact v1 and v2 packages remain immutable; later evidence is packaged under a new artifact identifier."
+      "required_gate": "After P7.7/P8/P9, approve the revised portable-artifact manifest, managed-system allowlist, provenance rules, Manager/Client reviewer workflow, and deterministic package tests.",
+      "compatibility_rule": "Frozen anonymous-artifact v1 and v2 packages remain immutable; the later D025 implementation and evidence are packaged under a new artifact identifier."
     },
     {
       "family": "backup-and-bundle",
@@ -182,10 +195,11 @@
       "decisions": [
         "D001",
         "D014",
-        "D015"
+        "D015",
+        "D025"
       ],
-      "required_gate": "P2.1 v1 allocation required the descriptor, current-pointer, bundle, manifest, trust, limit, and suite-binding profiles with bounded canonical vectors; every later semantic change repeats that gate.",
-      "compatibility_rule": "New bundle members and pointers do not reinterpret frozen backup or cloud-object formats; semantic changes require a new epoch and identifier."
+      "required_gate": "P2.1 v1 allocation required the descriptor, current-pointer, bundle, manifest, trust, limit, and suite-binding profiles with bounded canonical vectors. P7.7 assigned the additive D025 client recovery-package after its schema, limits, vector, strict decoder, authenticated import checks, and negative tests passed.",
+      "compatibility_rule": "The client recovery package is an additive transport and cannot reinterpret enclosed backup, descriptor, bundle, pointer, receipt, or cloud-object bytes; any changed enclosed semantics require their own new epoch and identifier."
     },
     {
       "family": "deployment",
@@ -222,10 +236,11 @@
         "D018",
         "D021",
         "D022",
-        "D023"
+        "D023",
+        "D025"
       ],
-      "required_gate": "Freeze the strict service and topology manifest, role-state and credential boundaries, canonical synthetic manifest, resolved-graph vector, compatibility rules, validators, and first implementation together.",
-      "compatibility_rule": "The integrated family cannot reinterpret Compose v2, P6 process profiles, client API v1, UI v1, or retained evidence; changed provider, topology, admission adapter, UI/API semantics, role placement, or measurement boundary requires a distinct profile."
+      "required_gate": "P7.5 assigned the D023 reference family. P7.7 assigned all twelve D025 managed profiles after strict schemas, vectors, compatibility rules, negative tests, exact internal/edge-network membership, volatile Client reset and credential/reset checks, focused validation, and the complete managed smoke passed.",
+      "compatibility_rule": "The D025 managed identifiers are Assigned, not Frozen. They cannot reinterpret the D023 reference family, Compose v2, P6 profiles, client API/UI v1, clean-client v1, protocol formats, or retained evidence. Assignment creates no P8/P9 result; any later semantic or measurement-boundary change requires another distinct profile."
     },
     {
       "family": "policy-and-resolver",
@@ -253,10 +268,11 @@
         "D008",
         "D017",
         "D018",
-        "D023"
+        "D023",
+        "D025"
       ],
-      "required_gate": "P8.2 first approves security and state scenarios, aggregate fields, provenance, positive controls, and result schemas before collection; P9.2 later repeats the gate for performance and resilience results.",
-      "compatibility_rule": "Security/state and performance/resilience results remain distinct; new suite and deployment results use separate families, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
+      "required_gate": "P7.7 assigned the complete D025 managed family without collecting evidence. P8.2 must first approve security and state scenarios, aggregate fields, provenance, positive controls, and result schemas before collection; P9.2 later repeats the gate for performance and resilience results.",
+      "compatibility_rule": "Security/state and performance/resilience results remain distinct; D025 managed, D023 predecessor, suite, and topology results use separate bindings, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
     },
     {
       "family": "trace",
@@ -265,10 +281,11 @@
         "D004",
         "D008",
         "D009",
-        "D023"
+        "D023",
+        "D025"
       ],
-      "required_gate": "Approve the privacy-safe collection boundary, synthetic topology, retained aggregate fields, exclusions, and trace schema.",
-      "compatibility_rule": "A changed collection boundary, topology, role view, or retained field set requires a new trace and evidence profile."
+      "required_gate": "P7.7 is complete, but P8.3 must still approve the privacy-safe D025 collection boundary, including Manager/controller, management/client-lifecycle networks, client instances, package transport, synthetic topology, retained aggregate fields, exclusions, and trace schema before collection.",
+      "compatibility_rule": "A changed collection boundary, topology, Manager/controller or client role view, package view, network membership, or retained field set requires a new trace and evidence profile; D023 traces cannot substitute."
     }
   ]
 }

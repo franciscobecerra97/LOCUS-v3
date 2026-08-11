@@ -3,6 +3,57 @@
 Status: P7.1 implemented and tested on 2026-08-03. D023 preserves this API, and
 the P7.5 deployment-backed realization and pre-evidence gate are complete.
 
+D025/P7.7 assigns `LOCUS-client-api-v2` for the implemented managed Client
+workflow; v1 remains immutable. V2 freezes key generation/transient reveal,
+client recovery-package export/import, authenticated recovery/key replacement,
+and exact self-destruction semantics while keeping recovery configuration
+descriptor-bound. The separate
+Manager API and controller API are not Client API operations, and a managed
+Client cannot reach the Manager UI/API.
+
+Manager-issued Client stop/start, restart, and kill/start are outside Client
+API v2. They preserve the public client-instance ID but start a fresh process
+proof identity with an empty server-side key slot, export/import cache, and
+operation/session set. Client API v2 self-destruction removes the exact
+container and ID through the separately authenticated `client-lifecycle`
+controller route. Neither behavior is session continuity or forensic erasure.
+
+Client API v2 does not add a successor-enrollment route. The existing same- and
+cross-suite successor core remains unchanged and must continue to pass its
+compatibility/crash controls outside the D025 Manager/Client UX.
+
+## Managed Client API v2
+
+The managed HTTP adapter in `prototype_final/` has this exact same-origin,
+no-store surface. JSON requests reject missing, duplicate, unknown, oversized,
+or wrong-version fields. Every POST requires the current process CSRF token and
+exact loopback origin; package import instead receives bounded bytes with media
+type `application/vnd.locus.recovery-package+json`.
+
+| Route | Exact request | Result boundary |
+| --- | --- | --- |
+| `GET /api/v2/session` | None | Public client ID, managed-instance/proof binding, current public key fingerprint, UI/API profiles, and CSRF token |
+| `GET /api/v2/catalog` | None | Four policies, two suites, fixed paired 2-of-3/3-of-5 holder profiles, and separate 4-of-5 authorization quorum |
+| `POST /api/v2/key/generate` | `api_version`, `operation_id` | Fresh volatile synthetic Ed25519 seed and public fingerprint on a transient-secret response |
+| `POST /api/v2/key/reveal` | `api_version` | Current synthetic seed and public fingerprint on a transient-secret response |
+| `POST /api/v2/preview-policy` | `api_version`, `policy_id`, `recovery_input` | Transient normalized preview produced by the registered CuePolicy |
+| `POST /api/v2/enroll` | `api_version`, `deployment_profile_id`, `operation_id`, `policy_id`, `recovery_input`, `suite_id` | Authenticated enrollment result plus one opaque download capability; the server-side key slot supplies the protected key |
+| `POST /api/v2/package/export` | `api_version`, `download_id` | Exact `LOCUS-client-recovery-package-v1` attachment |
+| `POST /api/v2/package/import` | Raw package bytes | Descriptor/current/party-authenticated suite, policy, paired profile, threshold, holders, quorum, and public key identity; no browser-selected override |
+| `POST /api/v2/recover` | `api_version`, `operation_id`, `recovery_input`, `selected_holder_ids` | Exact-threshold recovery, key-identity verification, and atomic replacement of the volatile key slot |
+| `POST /api/v2/self-destroy` | `api_version`, `operation_id` | Accepted one-instance destruction request through the isolated Client/controller route |
+
+The server reports only completed protocol phases returned by the underlying
+operation. While a synchronous request is running, the UI shows an honest busy
+state; it does not fabricate live intermediate events. Suite, policy,
+membership, endpoints, and thresholds restored from an imported package are
+locked after authentication. Missing authenticated metadata fails closed.
+
+The generated/recovered private-key seed is the one intentional v2 change from
+the non-serializing v1 HTTP boundary. It exists only in the active Client
+process and transient response/document state: never in the package, Manager,
+controller, logs, URLs, browser storage, role volumes, or retained output.
+
 ## Boundary
 
 `LOCUS-client-api-v1` is the stable local research-client facade implemented

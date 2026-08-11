@@ -42,6 +42,13 @@ that self-contained workspace through its `integrated-*` command surface.
 Existing root `prototype/`, `deploy/`, native crates, and `tasks.py` remain
 historical/component controls and migration provenance; do not extend them for
 new P8+ behavior or use them as the primary system under test.
+D025 approves a newly versioned Manager-controlled deployment in that same
+workspace. P7.7 is complete: it replaces CLI-selected enrollment/recovery
+clients with a loopback Manager UI, a narrowly scoped internal Docker
+controller, dynamically created Client UI containers, and authenticated client
+recovery-package export/import. The twelve D025 managed identifiers are
+Assigned, not Frozen. This implementation milestone does not authorize retained
+P8/P9 collection or manuscript wording.
 
 This repository is the integrated continuation of LOCUS. It maintains the
 implementation, active technical documentation, manuscript source and rendered
@@ -297,18 +304,25 @@ data. Normal reviewer workflows must not require external credentials.
 - The UI is a thin caller and must not duplicate protocol or canonicalization
   logic.
 - Disable telemetry and prohibit secret-bearing logs, persistence, history,
-  clipboard use, screenshots, and crash output.
+  clipboard use, retained screenshots, and crash output. D025 alone permits an
+  explicitly requested synthetic private key to appear transiently inside the
+  active Client UI/browser boundary; it must never reach the Manager,
+  controller, logs, storage, exported package, or retained evidence.
 - "Clean client" means isolated from the enrollment client state. It does not
   mean forensic secure erasure.
 
-### Integrated reference deployment
+### Integrated reference deployments
 
 - Implement D023 as a new deployment/configuration family; never repurpose
   `LOCUS-compose-deployment-v2`, a P6 process profile,
   `LOCUS-client-api-v1`, or `LOCUS-local-research-ui-v1`.
-- Keep the browser outside Docker and publish only the UI/client-gateway
-  endpoint on host loopback. The browser must not contact the provider,
-  resolver, admission service, operator service, or parties directly.
+- The completed D023 predecessor keeps the browser outside Docker and publishes
+  only its UI/client-gateway endpoint on host loopback.
+- The D025 profile initially publishes only its loopback Manager endpoint and
+  creates no Client container. A Manager-created Client receives a separate
+  loopback UI endpoint. Neither browser interface may contact the provider,
+  resolver, admission service, operator service, parties, or Docker engine
+  directly.
 - The integrated client backend must use authenticated remote-service adapters
   for admission, discovery, storage, resolution, enrollment, recovery, and
   lifecycle operations. Deployment mode is operator configuration, never an
@@ -317,11 +331,56 @@ data. Normal reviewer workflows must not require external credentials.
   public configuration, empty role roots, and fixtures only. It must not inject
   recovery-suite state, cues, protected-key material, or secret-bearing client
   state into runtime volumes.
+- In the assigned D025 deployment, that one-shot bootstrap runs as root with
+  all capabilities dropped except exactly `CHOWN` and `DAC_READ_SEARCH`, has
+  `network_mode: none`, receives no Docker socket, and exits before unprivileged
+  runtime services start. Those capabilities are limited to creating and
+  revalidating owner-only per-role files; they do not expand its allowed data.
 - The default reproducible provider is local S3-compatible storage behind the
   application gateway. AWS and actual multi-host profiles are optional,
   separately authorized, separately versioned variants.
 - Same-host container/process separation does not establish host separation or
   independent administration.
+- Only the dedicated D025 controller may receive the local Docker socket. The
+  Manager and Client containers must never mount it. Treat the controller and
+  socket as root-equivalent trusted operator infrastructure; do not publish a
+  controller host endpoint, and isolate Manager requests on `management` from
+  Client self-lifecycle requests on `client-lifecycle`. Accept only fixed,
+  project-labeled lifecycle operations over its authenticated API. Never
+  accept caller-supplied images, commands, mounts, host paths, networks,
+  environment, labels, projects, or arbitrary Docker identifiers.
+- Keep lifecycle authority on two disjoint internal networks: `management`
+  contains only Manager and controller, while `client-lifecycle` contains only
+  controller and managed Clients. A managed Client must not join `management`
+  or reach the Manager UI/API; its controller operation must be scoped to its
+  own exact instance.
+- Keep browser publication on two further disjoint networks: `manager-edge`
+  contains only the Manager, while `browser-edge` contains only dynamic
+  Clients. They expose separate host-loopback UI paths and must never become a
+  container-level Manager-to-Client route. Clients must not join or reach
+  `manager-edge`.
+- Treat every imported client recovery package and its metadata as untrusted
+  until bounded decoding, digest/signature, current-pointer/discovery, and
+  current-party checks succeed. Missing authenticated configuration fails
+  closed;
+  recovery never gains a manual suite, policy, membership, endpoint, or
+  fallback override.
+- The D025 UI exposes only the registered 2-of-3 and 3-of-5 holder profiles and
+  the distinct 4-of-5 authorization quorum. It does not implement arbitrary
+  `k,n` or general membership change.
+- Treat Client stop/start, restart, and kill/start as destructive volatile
+  resets: the public client-instance ID remains, but the process proof identity
+  rotates and its server-side key slot, export/import cache, and operation/
+  session set are empty. Destroy removes the exact Client and ID; a later create
+  receives a fresh ID. UI labels, confirmations, tests, and documentation must
+  not imply session continuity or that an already loaded browser document was
+  erased.
+- Managed bootstrap credentials have a bounded 366-day CA/365-day leaf
+  lifetime and no in-place renewal. Normal Manager stop and emergency
+  `integrated-stop` preserve exact-project volumes. Only explicit emergency
+  `integrated-stop --reset-state` may remove all exact-project role/provider
+  volumes and credentials; describe it as an irreversible local reset that
+  also destroys the deployment state required by prior packages.
 - `prototype_final/` is the D024 active source boundary. It must remain
   dependency-complete and must not import source, scripts, tests, deployment
   assets, or generated state from outside that directory at runtime.
@@ -329,6 +388,12 @@ data. Normal reviewer workflows must not require external credentials.
   `integrated-stop`, and `integrated-smoke` from its executor. Add a new command
   only when a later approved PLAN gate requires it and keep the
   `integrated-*` namespace.
+- Under D025, normal manual operation uses `integrated-start` without a mode
+  and then the Manager and Client UIs. Manager stop-system is the normal stop
+  path. `integrated-stop` may remain only for exact-project emergency/orphan
+  cleanup and automated smoke cleanup; it preserves role volumes unless the
+  operator explicitly supplies `--reset-state`, and it is not an enrollment/
+  recovery mode.
 - P8+ tests belong under `prototype_final/tests/`; do not add new behavior tests
   to the legacy root `prototype/tests/` unless they specifically preserve a
   frozen compatibility boundary.
@@ -386,13 +451,21 @@ Every security-sensitive scenario must document:
 Raw retained output is append-only, aggregate-only, and provenance-bound.
 Never overwrite v2 or mix old and new profiles in one processed corpus.
 
-After D023, the principal P8/P9 system-facing evidence and later artifact
-results must exercise the exact integrated UI-to-service graph and bind its
-validated manifest, resolved graph, images, service identities, network
-topology, provider, suite, threshold, policy, failure schedule, and source
-state. Primitive vectors, unit/property tests, component harnesses,
+The principal P8/P9 system-facing evidence and later artifact
+results must exercise the exact D025 Manager-created Client-to-service graph,
+Manager/controller and package boundaries, and bind its validated manifest,
+resolved graph, images, service identities, network topology, provider, suite,
+threshold, policy, failure schedule, client instances, and source state. P7.7
+assigned and verified the implementation, but collected no retained P8/P9
+evidence. Primitive vectors,
+unit/property tests, D023 predecessor runs, component harnesses,
 microbenchmarks, P6 profiles, and frozen deployments remain supporting controls
 only; do not pool or relabel them as integrated-system results.
+
+The assigned `LOCUS-security-matrix-v2` artifact at
+`prototype_final/docs/security-matrix-v2.json` and its schema pin v1/C01--C26
+and define managed contracts M01--M05. Assignment and P7.7 acceptance are
+implementation governance, not retained evidence or claim promotion.
 
 New implementation claims require new evidence. Tests show implementation
 behavior, not cryptographic proof, human usability, or production readiness.
@@ -456,7 +529,9 @@ uv run --frozen python tasks.py integrated-smoke
 
 The root `tasks.py check`, walkthrough, P7 UI, S3, frozen deployment, and
 artifact commands remain historical/component controls. They are not the P8+
-default gate and must not collect new integrated evidence.
+default gate and must not collect new integrated evidence. The assigned managed
+profiles and P7.7 smoke are implementation controls only; do not collect P8/P9
+evidence before the applicable PLAN schema, trace, path, and output gates.
 
 Do not run real-provider or external-service profiles without the corresponding
 owner decision and execution authorization.

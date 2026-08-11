@@ -27,6 +27,24 @@ D024 isolates the active integrated source, deployment assets, executor, and
 focused tests under `prototype_final/`. P8+ work uses that directory; this
 historical deployment document and the root executor remain controls only.
 
+D025/P7.7 assigns the implemented managed deployment in `prototype_final/`.
+It adds a loopback Manager, dynamic Clients, and a
+dedicated root-equivalent Docker controller without changing the protocol or
+local-provider roles. Only the controller may mount the socket. `management`
+joins Manager/controller only, `client-lifecycle` joins controller/Clients
+only, `manager-edge` publishes only the Manager loopback path, and
+`browser-edge` publishes only dynamic Client loopback paths. A Client cannot
+join `manager-edge` or reach the Manager UI/API. Client stop/start, restart,
+and kill/start retain its public ID but reset proof identity and volatile state.
+Normal stop preserves role/provider volumes; emergency
+`integrated-stop --reset-state` removes them all. The managed CA/role TLS
+lifetime is 366/365 days with no in-place renewal. The D023 deployment remains
+an immutable supporting predecessor. The managed one-shot bootstrap runs as
+root with every capability dropped except exactly `CHOWN` and
+`DAC_READ_SEARCH`, uses `network_mode: none`, receives no Docker socket, and
+exits before unprivileged services. P7.7's managed graph, smoke, browser, and
+cleanup gate passed, but no retained P8/P9 evidence was collected.
+
 The performance runner builds its reference image under the fixed
 `locus-performance-image-v1` Compose identity before a block and reuses the
 inspected image ID in all three disposable scenario records. This avoids
@@ -104,12 +122,16 @@ commands together; this frozen deployment document does not reinterpret them.
 | Snapshot collector | fresh snapshot volume | client bundle and exact S3 object | `cloud` | party volumes, resolver network, retained output beyond the canonical object/manifest |
 | Offline snapshot attacker | none | read-only two-file snapshot volume | none | client/party/cloud volumes, credentials, resolver data, every network |
 
-The provisioner is an explicit initialization authority, not an independently
-secure party. It exits before runtime recovery. Re-running it over a partial or
+The frozen historical Compose provisioner is an explicit initialization
+authority, not an independently secure party. It exits before runtime recovery.
+Re-running it over a partial or
 inconsistent layout fails closed; an already complete layout is verified rather
 than overwritten. It drops all Linux capabilities and restores only `CHOWN`,
 `FOWNER`, and read-only `DAC_READ_SEARCH`, which are required to initialize,
 transfer ownership of, and audit the private named volumes.
+
+Those three historical capabilities do not describe the assigned D025
+bootstrap, whose exact `CHOWN` plus `DAC_READ_SEARCH` scope is recorded above.
 
 ## Startup and recovery flow
 
@@ -318,9 +340,10 @@ resolver-unavailable bootstrap remain development evidence only. P6.2-P6.4 and
 the frozen P7 corpus now have clean, labeled, immutable aggregate-only records;
 independent clean-host reproduction remains required.
 
-These historical/component results do not support a claim about the D023
-full-system path. P7.5 is closed; central P8 assurance and P9
-performance/resilience results must bind the exact integrated manifest and
-traverse its UI/client gateway and authenticated services. Unit, native,
+These historical/component results do not support a claim about the D023 or
+D025 full-system path. P7.5 and P7.7 are closed implementation gates; P8.1 is
+ready, while later retained P8/P9 results must bind the
+exact assigned managed manifest and traverse its Manager-created Client UI/API,
+controller, package, and authenticated service boundaries. Unit, native,
 same-process UI, P6, and this frozen Compose profile remain supporting controls,
-not substitutes. No manuscript wording is authorized by D023 alone.
+not substitutes. No manuscript wording is authorized by D023 or D025 alone.

@@ -1,10 +1,25 @@
 # LOCUS Reference Architecture
 
-Status: living architecture boundary, synchronized 2026-08-04. The frozen
+Status: living architecture boundary, synchronized 2026-08-11. The frozen
 same-host Yi deployment below remains historical/component scope. D023 approves
-a new P7.5 integrated reference system as the future P8/P9 system under test.
+a new P7.5 integrated reference predecessor.
 Its manifest, service plane, deployed UI bridge, lifecycle workflow, expanded
 fault matrix, and clean-checkout gate are implemented and pass.
+
+D025/P7.7's separately versioned Manager/controller, dynamic Client, and client
+recovery-package transition is implemented and all twelve managed identifiers
+are Assigned. Only its
+controller may hold the root-equivalent Docker socket. `management` connects
+Manager/controller only, `client-lifecycle` connects Client/controller only,
+`manager-edge` publishes only the Manager loopback path, and `browser-edge`
+publishes only dynamic Client loopback paths. A Client cannot join
+`manager-edge` or reach the Manager UI/API. Stop/start, restart, and kill/start
+retain the public client ID but rotate proof identity and clear volatile key/
+session state. The 366-day CA and 365-day role certificates have no in-place
+renewal; an explicit emergency full-state reset is destructive. D023 remains
+a supporting immutable predecessor. The one-shot bootstrap runs as root with
+only `CHOWN` and `DAC_READ_SEARCH`, no network or Docker socket, and exits before
+unprivileged services. P8.1 is ready, but no retained D025 evidence exists yet.
 
 The cue-specific boundary and role-visible data are diagrammed in
 `docs/cue-data-flow.md`.
@@ -122,4 +137,6 @@ contracts are `docs/threat-model.md`, `docs/cue-policy.md`,
 `LOCUS-compose-deployment-v2` meaning and is not the D023 integrated system.
 The P7 same-process UI/API remains a component conformance control for the same
 reason. Central P8/P9 system evidence must bind and traverse the new integrated
-manifest rather than infer full-system behavior from either narrower profile.
+managed manifest rather than infer full-system behavior from D023 or either
+narrower profile. P7.7's green smoke is development verification; collection
+remains unauthorized until the applicable P8/P9 evidence gates pass.

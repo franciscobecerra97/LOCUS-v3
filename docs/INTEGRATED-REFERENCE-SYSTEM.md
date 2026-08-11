@@ -1,15 +1,31 @@
 # Integrated Reference System
 
 Status: D023 implementation and pre-evidence gate complete; D024 isolated it
-under `prototype_final/`. P8 is the next chronological phase.
+under `prototype_final/`. D025/P7.7 Manager-controlled deployment and assignment
+gate complete. P8.1 is the next ready assurance step; no retained P8/P9 evidence
+has been collected.
 
 ## Purpose
 
-P7.5 replaces fragmentation as the future evaluation boundary. It does not
-remove the smaller profiles: it composes their already approved contracts into
-one new reference system whose browser workflow crosses the actual service,
-container, network, credential, and persistent-state boundaries that P8 and P9
-will evaluate.
+P7.5 first replaced fragmentation with the completed D023 predecessor. D025/
+P7.7 now makes the assigned managed deployment the P8+ system boundary. Neither
+removes the smaller profiles: the managed graph composes their approved
+contracts across the service, container, network, credential, and persistent-
+state boundaries that later assurance and evidence must evaluate.
+
+D025 assigns a separately versioned deployment rather than reinterpreting this
+completed profile. Its implementation starts a loopback Manager and constrained
+controller with no Client, creates transient Client containers from the
+Manager, and exposes enrollment plus authenticated recovery-package import in
+one Client UI. Only the root-equivalent controller receives the Docker socket.
+`management` is Manager-to-controller only; `client-lifecycle` is managed-
+Client-to-controller only. `manager-edge` publishes only the Manager loopback
+path and `browser-edge` only dynamic Client loopback paths. Neither edge is a
+Manager-to-Client network; a Client cannot join `manager-edge` or reach the
+Manager UI/API. The local provider and every authenticated protocol boundary
+below remain. The twelve D025 managed identifiers are Assigned, not Frozen;
+this D023 profile is an immutable supporting predecessor. Assignment does not
+authorize P8/P9 collection before its separate schema and evidence gates.
 
 The integrated profile is new. It does not modify or reinterpret frozen
 `LOCUS-compose-deployment-v2`, retained v2 evidence, P6.3 process comparison
@@ -22,14 +38,15 @@ controls, the P7 same-process API facade, or the P7 UI profile.
 | P7 same-process UI/API | Fast semantic and browser component control | Cannot support an integrated-system result |
 | Frozen Compose v2 | Historical Yi-only deployment and retained v2 provenance | Remains frozen and non-transferable |
 | P6.3/P6.4 process profiles | Suite/topology and endpoint/placement controls | Supporting only; same-host staging is not host independence |
-| P7.5 integrated local reference | Primary UI-to-services implementation, assurance, evaluation, and artifact target | Required for new central P8/P9 results after its gates pass |
+| P7.5 integrated local reference | Completed UI-to-services predecessor and migration control | Immutable supporting predecessor; cannot support a D025 managed-system result |
+| D025 managed integrated deployment | Manager/controller plus dynamically created Client UI/API over the unchanged service plane | Assigned and implementation-verified at P7.7; P8/P9 retained evidence remains gated |
 | Optional AWS or multi-host integrated variants | Supplemental provider or placement measurements | Separately authorized, versioned, and reported |
 
 These profiles are intentionally distinct because they answer different
 questions. D023 makes only the P7.5 family the future complete-system boundary;
 it does not make the older profiles redundant or evidence-equivalent.
 
-## Target system
+## Completed D023 predecessor system
 
 ```text
 host browser
@@ -137,9 +154,50 @@ The clean recovery path then:
 No active path may rely on direct party-volume state injection, a surviving
 Client A credential, hidden developer state, or the P7 in-memory record store.
 
-## Operator workflow
+## D025 managed operator and lifecycle profile
 
-P7.5 provides:
+The implemented normal workflow uses one mode-free `integrated-start`. It
+starts the service plane, controller, and Manager UI with zero Client
+containers. The Manager creates a dynamic Client and is the normal whole-system
+stop path. The Client UI handles enrollment/export and package-import recovery;
+the Manager UI never handles protocol material.
+
+Client process controls are intentionally destructive to volatile state.
+`stop` and `kill` make the UI unavailable but retain its container and public
+client ID. A later `start`, and every `restart`, rotates the proof identity and
+clears the server-side key slot, export/import cache, and operation/session set
+under that same ID. `destroy` removes the container and ID; a later create
+receives a new ID. These semantics must be confirmed in the UI and do not
+establish forensic erasure. An already loaded external browser document may
+remain rendered until closed or reloaded.
+
+Normal Manager stop and emergency `integrated-stop` preserve exact-project
+role/provider volumes. The explicit emergency
+`integrated-stop --reset-state` option deletes those volumes, credentials,
+provider objects, party state, and enrolled epochs. The next start creates a
+fresh trust domain. There is no in-place renewal of the managed 366-day CA or
+365-day role TLS certificates; expired or manifest-incompatible preserved state
+fails closed until full reset. A package cannot recover an epoch whose only
+compatible remote state was erased.
+
+The one-shot bootstrap runs as root with all Linux capabilities dropped except
+exactly `CHOWN` and `DAC_READ_SEARCH`, uses `network_mode: none`, receives no
+Docker socket, and exits before the unprivileged runtime services start. Those
+capabilities are used only to create and revalidate owner-only per-role files;
+bootstrap remains limited to synthetic credentials, public configuration,
+empty role roots, and fixtures.
+
+P7.7 acceptance exercised all four suite/topology arms, 26 threshold subsets,
+four isolated clean Clients, live controller/network isolation, all documented
+lifecycle actions, browser behavior, output scans, 15 bootstrap-role and 15
+post-operation role audits, state-preserving normal restart with the same CA,
+destructive reset with a fresh CA and old-package rejection, and exact cleanup.
+The final integrated check and focused controller/bootstrap checks are green.
+These are implementation observations, not retained P8/P9 evidence.
+
+## Historical D023 predecessor operator workflow
+
+P7.5 provides the last completed predecessor workflow:
 
 - one cross-platform task that validates configuration, creates the disposable
   deployment, starts every required service, waits for health, and exposes the
@@ -149,14 +207,16 @@ P7.5 provides:
   containers, networks, volumes and generated credentials; and
 - explicit exact-target cleanup and status operations for an interactive run.
 
-Run from `prototype_final/`. Use `uv run --frozen python tasks.py
-integrated-config` to validate both
-resolved graphs, `integrated-start --mode enrollment` for Client A,
-`integrated-start --mode recovery` to replace it with Client B while keeping
-the service plane, and `integrated-stop` to stop client containers. Add
-`--destroy` only for exact-project container/volume/image destruction. The
-disposable normal/fault workflow is `integrated-smoke`. The browser does not
-control Docker and receives no Docker socket or operator credential.
+That predecessor used separate enrollment/recovery startup modes and a CLI
+destroy option. Those flags are recorded only as migration provenance; they are
+not commands for the active executor. Its browser did not control Docker and
+received no Docker socket or operator credential.
+
+P7.7 replaced this as the normal interactive workflow with a mode-free
+`integrated-start`, Manager-created Clients, and Manager stop-system. The old
+mode and CLI-destroy options are no longer accepted by the active executor;
+their source history is provenance only. Exact-project CLI cleanup remains an
+emergency and automated-smoke path, not the normal workflow.
 
 The root executor and source tree are retained historical/component controls.
 They are not active P8+ implementation or evidence paths and cannot replace a
@@ -197,15 +257,19 @@ These are implementation gates, not retained P8/P9 evidence or paper results.
 
 ## Assurance and evaluation dependency
 
-P8 instantiates the existing C01--C26 contracts against the exact integrated
-manifest. Component fuzzing and unit/property tests remain necessary, while
-system-facing state, network, crash, replay, and output conclusions must be
-observed on this deployment.
+P7.7 is complete, so P8.1 is ready. The assigned
+`prototype_final/docs/security-matrix-v2.json`/schema pin v1 and C01--C26 and
+add managed contracts M01--M05. P8 instantiates those contracts
+against the exact managed manifest. Component fuzzing and unit/property tests
+remain necessary, while system-facing state, network, crash, replay, lifecycle-
+control, package, and output conclusions must be observed on the Manager-
+created Client deployment. This D023 profile remains a supporting predecessor.
 
 P9 freezes methodology and schemas only after P8 defines safe collection.
-Central performance and resilience results use the integrated deployment and
-bind its suite, topology, policy, provider, host tier, client boundary and
-source provenance. Stable client-API timing is the primary end-to-end protocol
+Central performance and resilience results use the managed integrated
+deployment and bind its suite, topology, policy, provider, host tier, Manager/
+controller, package, and client boundaries plus source provenance. Stable
+client-API timing is the primary end-to-end protocol
 measure; optional browser-observed latency is reported separately so rendering
 cost is not silently mixed with protocol cost. Native microbenchmarks may
 explain components but cannot substitute for end-to-end results.

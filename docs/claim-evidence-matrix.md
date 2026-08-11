@@ -1,6 +1,6 @@
 # LOCUS Claim-Evidence Matrix
 
-Status date: 2026-08-04. This document gates manuscript claims for the ASIACCS 2027 Cycle 1 submission.
+Status date: 2026-08-11. This document gates manuscript claims for the ASIACCS 2027 Cycle 1 submission.
 
 ## Evidence-State Rules
 
@@ -23,7 +23,14 @@ ordinary development output, not retained evidence; they do not by themselves
 change a paper-claim state below or authorize a manuscript delta.
 
 D024 makes `prototype_final/` the sole active source for future runs of that
-graph. Root commands and tests remain supporting controls only.
+graph. D025/P7.7's Manager/controller, dynamic Client, client recovery-package,
+and clean-client-v2 transition is implemented and all twelve managed profiles
+are Assigned. P7.7 collected no retained P8/P9 evidence and changes no claim
+status below; the completed D023 gate remains supporting development output
+until separately versioned D025 evidence exists. Root commands and tests remain
+supporting controls only. The assigned security-matrix-v2 artifact pins the
+immutable v1 bytes and C01--C26 IDs while adding M01--M05; it is a governance
+profile and does not promote any row.
 
 ## Claim Matrix
 

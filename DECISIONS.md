@@ -30,6 +30,7 @@ gates before their affected implementation work.
 | D022 | P7 local research UI runtime | Standards-based HTML/CSS/JavaScript served only on loopback by the pinned Python runtime over `LOCUS-client-api-v1`; no third-party web framework, telemetry, or browser storage | Approved |
 | D023 | Primary integrated reference system and evidence target | One separately versioned, same-host Docker reference system connects the loopback UI/client gateway to every authenticated LOCUS service and becomes the mandatory P8/P9 system-under-test; component and historical profiles remain supporting controls only | Approved |
 | D024 | Final prototype source and command boundary | Create a self-contained `prototype_final/` workspace containing only the D023 integrated implementation, focused tests, native dependencies, deployment assets, documentation, and `integrated-*` executor commands; direct all P8+ implementation and evidence work to it while preserving existing paths as historical/component controls | Approved |
+| D025 | Manager-controlled integrated deployment and transient client workflow | Replace the D023 enrollment/recovery startup profiles in the active D024 workspace with a newly versioned loopback Manager UI, an internal narrow Docker lifecycle controller, and dynamically created transient Client UI containers; preserve the approved protocol profiles and local provider path while adding a client recovery-package export/import transport | Approved |
 
 ## Approved architecture records
 
@@ -988,6 +989,187 @@ to the frozen evaluated profile. A future approved manuscript delta may
 describe `prototype_final/` only after P8/P9, independent human validation,
 artifact reproduction, claim closure, and the separate P10 owner gate.
 
+### D025 — Manager-controlled integrated deployment and transient client workflow
+
+Decision ID: D025
+
+Date: 2026-08-11
+
+Status: Approved
+
+Chosen option: Replace the active D024 deployment's CLI-selected enrollment and
+recovery clients with one `integrated-start` entry point that starts the common
+service plane, a loopback-only Manager UI, and a separate internal lifecycle
+controller. The Manager creates, starts, stops, restarts, kills, and destroys
+transient Client UI containers from one fixed image and exact project-scoped
+template. Each client receives a fresh in-memory proof key and displays its
+public client-instance identifier under the assigned managed-client-instance
+profile. The same Client UI exposes key generation, enrollment, client
+recovery-package export, authenticated package import, recovery, key
+replacement, and self-destruction. The existing Yi/aPPSS, CuePolicy,
+admission, 4-of-5 authorization, storage-gateway/local-provider, descriptor,
+and party protocols remain the implementation underneath those workflows.
+
+The Manager UI has no Docker socket. A separate controller receives the local
+Docker socket and has no host-published endpoint. It accepts authenticated
+Manager requests only on `management` and authenticated Client self-lifecycle
+requests only on `client-lifecycle`, validates exact project labels and fixed
+container templates, and never accepts caller-supplied images, commands,
+mounts, networks, or host paths. Docker-socket access is nevertheless
+root-equivalent control of the local Docker engine; this is an explicit
+same-host research/operator trust assumption and not a production control
+plane.
+
+The controller is the only bridge between two disjoint lifecycle networks.
+`management` carries only authenticated Manager-to-controller status and
+operator lifecycle requests. `client-lifecycle` carries only an authenticated
+managed Client's narrowly scoped request concerning its own exact instance,
+including self-destruction. A managed Client is not attached to `management`
+and cannot reach the Manager UI/API; the Manager is not attached to
+`client-lifecycle`. Neither network carries LOCUS cue, suite, backup, or party
+protocol traffic.
+
+Browser publication also uses distinct networks. `manager-edge` is attached
+only to the Manager and carries its host-loopback-published UI path;
+`browser-edge` is attached only to dynamic Clients and carries their separately
+published loopback UI paths. Neither is a Manager-to-Client network, and a
+managed Client never joins or directly reaches `manager-edge`.
+
+The Client UI may show a generated or recovered synthetic private key only as
+a transient active-client response. It must not log, persist, place in browser
+storage, or include that key in an exported artifact. Client destruction
+removes the container and its memory. It is bounded state disposal, not
+forensic erasure. The browser remains part of the active-client boundary, so
+screen capture and a malicious local browser environment remain limitations.
+
+Client process actions have deliberately destructive volatile-state semantics.
+`stop` and `kill` make the Client endpoint unavailable but retain its container
+and public client-instance identifier. A later `start`, and every `restart`,
+starts with a fresh proof identity and empty server-side key slot, export/import
+cache, and operation/session set under that same public client-instance
+identifier. `destroy` removes the container
+and identifier; a later `create` produces a distinct identifier. These actions
+are not session continuity or forensic erasure and must be labeled accordingly
+in the Manager UI. A document already loaded in the external browser can remain
+rendered until it is closed or reloaded.
+
+The downloadable `LOCUS-client-recovery-package-v1` contains the encrypted
+backup and authenticated public recovery metadata needed to bind an import to
+the existing remote epoch. It contains no raw cue, private key, password,
+recovery secret, wrapping key, provider credential, or party state. Importing
+the package does not replace the threshold parties, current-pointer checks,
+discovery, admission, authorization, or local S3-compatible storage path. A
+real external cloud provider remains out of scope.
+
+Every imported package and all metadata it carries are untrusted until bounded
+canonical decoding, exact length and digest checks, operator-signature
+validation, current-pointer/discovery authentication, and the required current-
+party quorum succeed. The Client UI may display an explicitly marked untrusted
+summary before that gate, but it must not use unauthenticated package fields to
+select a suite, CuePolicy, holder membership, threshold, endpoint, or fallback.
+Missing or unsupported authenticated configuration fails closed rather than
+becoming a manual recovery-time override.
+
+The UI exposes only the already approved paired profiles: 2-of-3 holders
+`1,2,3` and 3-of-5 holders `1,2,3,4,5`, with the separate 4-of-5 authorizer
+quorum. It may let the recovering client choose a valid threshold subset of
+the descriptor-declared holders. It does not create arbitrary `k,n`, change
+membership, reinterpret a suite profile, or permit recovery-time suite or
+policy override.
+
+Alternatives considered: Continue requiring CLI enrollment/recovery modes;
+mount the Docker socket directly into the browser-facing Manager UI; permit
+arbitrary container specifications or arbitrary holder memberships; remove
+the storage/provider and descriptor path in favor of a downloaded ciphertext
+alone; or return the private key through the frozen v1 client API/UI.
+
+New trust assumptions: The local operator trusts the narrow lifecycle
+controller and Docker engine. All managed clients share the deployment's
+synthetic transport-client identity but receive distinct proof keys bound into
+admission capabilities; this is not independent client administration or
+production device identity. Manager access is loopback-only and intended for a
+single local research operator.
+
+The managed bootstrap credentials are bounded research credentials, not a
+production PKI: the generated CA is valid for 366 days and role TLS
+certificates for 365 days. Normal Manager stop and emergency CLI cleanup
+without state reset preserve the exact-project volumes and credentials. There
+is no in-place renewal. Expired or manifest-incompatible state fails closed;
+the explicit emergency `integrated-stop --reset-state` path removes all exact-
+project role/provider volumes so the next start creates a new trust domain and
+empty protocol state. Reset therefore also destroys local recoverability for
+prior exported packages whose party/provider epoch state existed only there.
+
+The one-shot bootstrap runs as root with every Linux capability dropped except
+exactly `CHOWN` and `DAC_READ_SEARCH`, uses `network_mode: none`, receives no
+Docker socket, and exits before the unprivileged runtime roles start. The two
+capabilities are limited to creating and revalidating owner-only per-role files;
+they do not authorize runtime networking or secret-bearing protocol state.
+
+Privacy implications: The private key is intentionally visible inside the
+active browser/client boundary and therefore susceptible to screen capture or
+a compromised browser. It remains prohibited from logs, durable client state,
+manager/controller messages, and the client recovery package. Manager status is
+limited to public container/client identifiers, health, ports, and lifecycle
+state. Docker inspection data and environment values must not be returned to
+the browser.
+
+Compatibility/version impact: Do not reinterpret
+`LOCUS-integrated-reference-deployment-v1`,
+`LOCUS-integrated-reference-config-v1`, `LOCUS-client-api-v1`, or
+`LOCUS-local-research-ui-v1`. D025 approved the exact names
+`LOCUS-integrated-manager-deployment-v1`,
+`LOCUS-integrated-manager-config-v1`, `LOCUS-manager-api-v1`,
+`LOCUS-local-manager-ui-v1`, `LOCUS-container-controller-api-v1`,
+`LOCUS-local-container-controller-v1`, `LOCUS-client-api-v2`,
+`LOCUS-managed-client-ui-v1`, `LOCUS-client-recovery-package-v1`,
+`LOCUS-clean-client-isolation-v2`, `LOCUS-managed-client-instance-v1`, and
+`LOCUS-security-matrix-v2`. P7.7 reviewed each strict manifest or schema,
+compatibility rule, canonical vector, negative tests, and first implementation
+together and assigned all twelve identifiers. They are `Assigned`, not
+`Frozen`; frozen suite, backup, CuePolicy, admission, descriptor, and evidence
+identifiers retain their meanings.
+
+Required implementation gate: Before P8, freeze the expanded security contract without
+changing the C01--C26 meanings; validate the exact managed graph; demonstrate
+that startup creates no Client UI container; exercise Manager lifecycle
+allowlists and rejection paths; complete enrollment, package download, client
+destruction, fresh-client import/recovery/key replacement, and fresh client-ID
+checks for both suites, both paired topologies, and all four registered
+CuePolicies; verify exact threshold-subset and 4-of-5 behavior; preserve wrong-
+input, unavailability, restart, replay, stale-pointer, downgrade, storage-
+failure, and successor-core compatibility coverage; scan output and role/client
+state; validate Manager/client edge separation, destructive volatile process
+resets, credential reuse/expiry rejection, and explicit full-state reset; and
+stop/clean the exact disposable project. These are implementation
+observations only until later P8 schemas and retained collection gates pass.
+
+P7.7 acceptance record (2026-08-11): The enhanced disposable smoke passed all
+four suite/topology arms, 26 threshold subsets, four isolated clean Clients,
+live control isolation and lifecycle actions, prohibited-output scans, 15 plus
+15 role audits, normal stop/restart recovery with the same CA, destructive reset
+with a fresh CA and old-package rejection, and exact cleanup. After the final
+focused controller/bootstrap fixes, the full integrated check, 27 focused
+tests, formatting, linting, typing, configuration validation, and final browser
+acceptance passed. This assigns the managed profiles and closes
+P7.7, but creates no retained P8/P9 evidence and authorizes no manuscript edit.
+
+Files or components authorized: `prototype_final/` task runner, manifest and
+schema, Compose/Docker assets, bootstrap roles, lifecycle controller, Manager
+UI, managed Client UI/API, client recovery-package codec/schema, focused tests,
+smoke workflow, and corresponding project/architecture/evidence/artifact
+documentation. Historical root implementations remain unchanged controls.
+
+The managed Client API/UI need not expose successor enrollment. The existing
+successor core and its same-/cross-suite crash-resumable behavior remain
+unchanged compatibility controls outside this Manager/Client UX.
+
+Manuscript implication: None authorized. The new Manager/Client workflow,
+private-key visibility, Docker-controller assumption, package transport, and
+results may be described in the manuscript only through a later exact owner-
+approved delta after independent validation, P8/P9 evidence, artifact
+reproduction, and claim closure.
+
 ## Decision record template
 
 When the owner decides an item, append:
@@ -1008,7 +1190,7 @@ Manuscript implication:
 
 ## Manuscript change authorization
 
-Approval of D001--D024 authorizes only the recorded architecture or
+Approval of D001--D025 authorizes only the recorded architecture or
 implementation scope. It does not authorize corresponding paper wording.
 
 Record every proposed manuscript change separately:

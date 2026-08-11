@@ -16,6 +16,13 @@ system. Central P8/P9 evidence must use that exact graph. D023 and the completed
 implementation gate do not promote any cell by themselves, change a
 persistent-state permission, or reinterpret frozen Compose/UI evidence.
 
+D025/P7.7 assigns the changed control/UI/clean-client instantiation and security
+matrix v2. Matrix v1 and its C01--C26 meanings remain exact; the additive v2
+artifact/schema pin those bytes and IDs and add M01--M05 for Manager/controller,
+client-recovery-package, dynamic-client/reset, credential, edge-network, and
+transient-key-display boundaries. P7.7 is complete, but collected no retained
+P8/P9 evidence and promotes no matrix cell.
+
 This table is the starting contract. Update it before implementing new roles or
 retained observations.
 
@@ -266,6 +273,62 @@ client boundary, and host tier. Same-process tests, native microbenchmarks, P6
 process controls, and frozen Compose evidence remain supporting views only.
 The first profile is one host and one operator; it supplies no multi-host,
 independent-administration, live-provider, or production-security result.
+
+## D025 assigned managed deployment
+
+The assigned D025 profile adds only these role views:
+
+- The Manager UI/API may observe sanitized service/client instance IDs,
+  lifecycle state, health, loopback ports, and operation categories. It may not
+  receive cues, package bytes, plaintext keys, suite state, provider
+  credentials, Docker inspection/environment output, or party state.
+- The root-equivalent controller may observe exact project/container IDs,
+  labels, fixed templates, lifecycle requests, and Docker operation outcomes.
+  It may not return raw inspection, environment, mount-source, credential, log,
+  or protocol payload data to either UI.
+- A managed Client/browser may transiently observe its own public instance ID,
+  fictional cues, synthetic private key when explicitly revealed, and its
+  imported/exported client recovery package. The key is ephemeral only; the
+  package is explicitly user-exported persistent ciphertext and authenticated
+  public metadata, never plaintext key or party state.
+- Preserved credential volumes contain the synthetic trust root, role TLS/
+  signing material, and controller lifecycle secret. The managed CA/leaf
+  lifetime is 366/365 days with no in-place renewal; these values are never UI
+  output.
+- The one-shot bootstrap may observe only its approved synthetic credential,
+  public-configuration, empty-role-root, fixture, and owner-only file inputs. It
+  runs as root with only `CHOWN` and `DAC_READ_SEARCH`, has no network or Docker
+  socket, exits before runtime services, and may not receive protocol state.
+
+Lifecycle networks remain disjoint. `management` contains Manager and
+controller only. `client-lifecycle` contains controller and managed Clients
+only. A managed Client cannot reach the Manager UI/API, and the self-lifecycle
+route may name only that Client's exact instance. Admission, discovery,
+storage, resolver, and party traffic continues on the existing role networks;
+the controller is not a protocol relay.
+
+Browser-publication networks are separately disjoint. `manager-edge` contains
+only the Manager and `browser-edge` only dynamic Clients. Each provides a
+distinct host-loopback path; neither provides container-level Manager-to-Client
+reachability.
+
+Client stop/start, restart, and kill/start preserve the public instance ID but
+discard process proof identity and clear the server-side key slot, export/
+import cache, and operation/session set. Destroy removes the container and ID.
+An already loaded browser document may remain rendered until closed or
+reloaded. Default stop preserves role and
+provider volumes. Emergency `integrated-stop --reset-state` deletes every
+exact-project credential and protocol/provider volume; a subsequent start has
+a new trust domain and cannot use an old package without compatible remote
+state preserved elsewhere.
+
+Imported package fields are untrusted until bounded decoding, exact digest and
+signature checks, authenticated discovery/current-pointer validation, and the
+required current-party quorum succeed. Before that point they cannot select a
+suite, policy, holder set, threshold, endpoint, or fallback. The package does
+not replace the provider or online parties. The assigned security-matrix-v2
+artifact pins v1/C01--C26 and records these as M01--M05. Assignment is an
+implementation-governance result, not evidence or a paper claim.
 
 ## Application storage gateway view
 

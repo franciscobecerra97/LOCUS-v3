@@ -39,18 +39,22 @@ reviewed version change, including:
 - same-host and feasible multi-host deployment;
 - deterministic evidence processing.
 
-P7.5 now provides the expanded-system implementation workflow, isolated by
-D024 under `prototype_final/`, beginning at the loopback UI/client gateway and
-traversing the authenticated admission, discovery, application-storage,
-resolver, and five-party container roles. From that directory, use `tasks.py
-integrated-config` for graph validation and `tasks.py
-integrated-smoke` for the disposable pre-evidence matrix; the interactive path
-uses `integrated-start --mode enrollment`, `integrated-start --mode recovery`,
-and `integrated-stop`. The gate covers the declared Yi/aPPSS and 2-of-3/3-of-5
-arms, clean-client recovery, and supported lifecycle transitions. Its output is
-ordinary implementation verification: P8/P9 must assign schemas and collect
-new retained results before any security, reliability, performance, or
-resilience result is promoted. Component commands remain supporting controls.
+Completed P7.7 provides the assigned managed integrated-system workflow,
+isolated by D024
+under `prototype_final/`, beginning at the loopback Manager UI and traversing a
+dynamically created Client, authenticated admission, discovery,
+application-storage, resolver, and five-party container roles. From that
+directory, use `tasks.py integrated-config` for graph validation and `tasks.py
+integrated-smoke` for the disposable pre-evidence matrix. The interactive path
+uses one mode-free `integrated-start`; Client creation, enrollment, recovery,
+destruction, and normal system stop are Manager/Client UI actions. The
+emergency `integrated-stop` preserves role state, while its explicit
+`--reset-state` option irreversibly removes exact-project synthetic state. The
+gate passed across the declared Yi/aPPSS and 2-of-3/3-of-5 arms, clean-client exact-key
+recovery, and supported lifecycle transitions. Its output is ordinary
+implementation verification: P8/P9 must collect newly versioned retained
+results before any security, reliability, performance, or resilience result is
+promoted. Component commands remain supporting controls.
 
 Audit the active v2 source allowlist without creating an archive:
 

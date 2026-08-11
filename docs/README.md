@@ -16,9 +16,8 @@ For proposed architecture, start with:
 
 - `TARGET-ARCHITECTURE.md`
 - `SYSTEM-INTERFACES.md`
-- `INTEGRATED-REFERENCE-SYSTEM.md` for D023's approved P7.5 UI-to-services
-  construction, trust boundaries, four suite/topology arms, and pre-evidence
-  acceptance matrix
+- `INTEGRATED-REFERENCE-SYSTEM.md` for D023's completed P7.5 UI-to-services
+  predecessor and D025/P7.7's assigned Manager/controller deployment
 - `APPSS-MIGRATION.md`
 - `APPSS-PROFILE.md`
 - `RECOVERY-SUITE-MAPPING-REVIEW.md` for D019's claim-focused Yi/aPPSS and
@@ -36,7 +35,10 @@ For proposed architecture, start with:
 - `RECOVERY-DESCRIPTOR.md`
 - `CUE-POLICY-REGISTRY.md`
 - `INFORMATION-FLOW.md`
-- `security-matrix-v1.json` for the schema-checked C01--C26 security contracts
+- `security-matrix-v1.json` for the immutable schema-checked C01--C26 security
+  contracts; `prototype_final/docs/security-matrix-v2.json` and its strict
+  schema are the assigned D025 profile that pins v1/C01--C26 and adds M01--M05;
+  neither matrix is retained evidence
 - root `PROTOCOL-INVARIANTS.md`
 - root `VERSION-REGISTRY.md` plus machine-readable
   `version-registry-v1.json`
@@ -44,8 +46,10 @@ For proposed architecture, start with:
 `schemas/` contains inherited active evidence schemas, the P1.4/P1.5
 governance schemas, the P2.1 descriptor/current-pointer/manifest schemas, the
 P2.2 installed-trust/recovery-receipt/party-current-summary schemas, and the
-P2.4 aggregate descriptor-security development schema. New schemas must receive
-new identifiers rather than changing the meaning of existing versions.
+P2.4 aggregate descriptor-security development schema. The strict assigned
+D025 security-matrix-v2 schema lives inside `prototype_final/docs/schemas/`.
+New schemas must receive new identifiers
+rather than changing the meaning of existing versions.
 
 `prototype/test-vectors/descriptor-store-v1.txt` pins the P2.3 provider-neutral
 descriptor, bundle, and hashed-handle current-pointer key grammar to the P2.1
@@ -71,14 +75,17 @@ but it does not supersede implemented baseline behavior or the manuscript until
 the matching implementation/evidence gates and a separate manuscript delta are
 approved.
 
-D023's P7.5 integrated reference system and pre-evidence gate are complete. The
-current P7 in-memory UI and frozen same-host Compose deployment remain
-separately identified controls; central P8/P9 system evidence must use the
-implemented integrated profile and its authenticated UI-to-service graph. Use
-the executor inside `prototype_final/`: `tasks.py integrated-config`,
-`integrated-start`, `integrated-stop`, and `integrated-smoke`. D024 makes that
-directory the sole P8+ active implementation. Its same-host construction does not
-satisfy the still-open P6.4 VM/host-separation gate.
+D023's P7.5 integrated reference system and pre-evidence gate are complete.
+D025/P7.7's separately versioned Manager/controller, dynamic Client, and client
+recovery-package migration is implemented and Assigned. P8.1 is the next ready
+step, but no retained P8/P9 evidence exists. The current P7
+in-memory UI, D023 deployment, and frozen same-host Compose deployment remain
+separately identified controls; none substitutes for a future managed-system
+result. Use the executor inside `prototype_final/` for development checks. The
+normal workflow is one mode-free `integrated-start` followed by Manager and
+Client UI operations; the complete P7.7 gate passed. D024
+makes that directory the sole active implementation boundary. Its same-host
+construction does not satisfy the still-open P6.4 VM/host-separation gate.
 
 `upstream-baseline/` is a byte-for-byte provenance snapshot. Do not edit it;
 maintain current facts at the normal active paths.

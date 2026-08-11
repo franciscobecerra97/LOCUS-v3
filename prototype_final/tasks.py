@@ -1,4 +1,4 @@
-"""Five-command executor for the final integrated LOCUS prototype."""
+"""Five-command executor for the managed integrated LOCUS prototype."""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ import ast
 import hashlib
 import json
 import os
+import re
 import secrets
 import shutil
 import socket
@@ -18,23 +19,38 @@ import urllib.request
 from collections.abc import Sequence
 from itertools import combinations
 from pathlib import Path
-from typing import cast
+from typing import Any, cast
 
 ROOT = Path(__file__).resolve().parent
 PYTHON = sys.executable
-INTEGRATED_COMPOSE = ROOT / "deploy" / "compose.integrated.yaml"
-INTEGRATED_MANIFEST = ROOT / "deploy" / "integrated-manifest.json"
+MANAGED_COMPOSE = ROOT / "deploy" / "compose.managed.yaml"
+MANAGED_MANIFEST = ROOT / "deploy" / "managed-manifest.json"
+DEFAULT_PROJECT = "locus-managed-final"
+DEFAULT_MANAGER_PORT = 8765
+CLIENT_API_VERSION = "LOCUS-client-api-v2"
+PACKAGE_MEDIA_TYPE = "application/vnd.locus.recovery-package+json"
+IMAGE_ID_PATTERN = re.compile(r"sha256:[0-9a-f]{64}\Z")
+PROJECT_PATTERN = re.compile(r"[a-z0-9][a-z0-9-]{0,47}\Z")
+
+
+def _operation_id(prefix: str) -> str:
+    return f"{prefix}-{secrets.token_hex(12)}"
 
 
 def run(command: Sequence[str], *, env: dict[str, str] | None = None) -> None:
-    """Run a command from the repository root and fail on a non-zero exit."""
+    """Run one visible project command and fail on a non-zero exit."""
 
     print("+", subprocess.list2cmdline(list(command)), flush=True)
     subprocess.run(list(command), cwd=ROOT, check=True, env=env)
 
 
-def run_capture(command: Sequence[str], *, env: dict[str, str] | None = None) -> str:
-    """Run a command while retaining output that may contain smoke credentials."""
+def run_capture(
+    command: Sequence[str],
+    *,
+    env: dict[str, str] | None = None,
+    check: bool = True,
+) -> str:
+    """Run one command while retaining bounded diagnostic output in memory."""
 
     print("+", subprocess.list2cmdline(list(command)), flush=True)
     result = subprocess.run(
@@ -47,40 +63,12 @@ def run_capture(command: Sequence[str], *, env: dict[str, str] | None = None) ->
         encoding="utf-8",
         errors="replace",
     )
-    if result.returncode != 0:
+    if check and result.returncode != 0:
         raise subprocess.CalledProcessError(result.returncode, list(command))
     return result.stdout
 
 
-def run_capture_input(
-    command: Sequence[str], input_text: str, *, env: dict[str, str] | None = None
-) -> str:
-    """Run a command with bounded synthetic stdin and retain only its output."""
-
-    if len(input_text.encode("utf-8")) > 32_768:
-        raise RuntimeError("bounded command input is too large")
-    print("+", subprocess.list2cmdline(list(command)), flush=True)
-    result = subprocess.run(
-        list(command),
-        cwd=ROOT,
-        check=False,
-        env=env,
-        input=input_text,
-        capture_output=True,
-        text=True,
-        encoding="utf-8",
-        errors="replace",
-    )
-    if result.returncode != 0:
-        raise RuntimeError(
-            "bounded probe failed: " + result.stderr[-2000:].replace("\r", " ")
-        )
-    return result.stdout
-
-
 def require(executable: str) -> str:
-    """Return an executable path or stop with a useful setup message."""
-
     path = shutil.which(executable)
     if path is None:
         raise SystemExit(
@@ -90,51 +78,71 @@ def require(executable: str) -> str:
     return path
 
 
-def native_build() -> None:
-    """Build and install the local Rust extension into the active uv environment."""
+def _project(value: str) -> str:
+    if PROJECT_PATTERN.fullmatch(value) is None:
+        raise argparse.ArgumentTypeError(
+            "project must be 1-48 lowercase letters, digits, or hyphens"
+        )
+    return value
 
-    require("uv")
+
+def _port(value: str) -> int:
+    try:
+        port = int(value)
+    except ValueError as exc:
+        raise argparse.ArgumentTypeError("port must be an integer") from exc
+    if not 1 <= port <= 65535:
+        raise argparse.ArgumentTypeError("port must be between 1 and 65535")
+    return port
+
+
+def _free_loopback_port() -> int:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
+        listener.bind(("127.0.0.1", 0))
+        return int(listener.getsockname()[1])
+
+
+def _environment(project: str, manager_port: int) -> dict[str, str]:
+    seed = hashlib.sha256(f"LOCUS managed local {project}".encode()).hexdigest()
     environment = os.environ.copy()
-    environment["VIRTUAL_ENV"] = sys.prefix
-    run(
-        [PYTHON, "-m", "maturin", "develop", "--uv", "--locked"],
-        env=environment,
-    )
-
-
-def _integrated_environment(project: str, port: int) -> dict[str, str]:
-    environment = os.environ.copy()
-    seed = hashlib.sha256(f"LOCUS integrated local {project}".encode()).hexdigest()
     environment.update(
         {
-            "LOCUS_INTEGRATED_IMAGE": "locus-integrated-reference-final:local",
+            "COMPOSE_PROJECT_NAME": project,
+            "LOCUS_INTEGRATED_IMAGE": f"locus-managed-{project}:local",
+            "LOCUS_INTEGRATED_IMAGE_ID": "sha256:" + "0" * 64,
+            "LOCUS_MANAGER_PORT": str(manager_port),
             "LOCUS_S3_ACCESS_KEY": f"local-{seed[:24]}",
             "LOCUS_S3_BUCKET": f"locus-{seed[:20]}",
             "LOCUS_S3_SECRET_KEY": seed,
-            "LOCUS_UI_PORT": str(port),
         }
     )
     return environment
 
 
-def _integrated_compose_command(project: str, profile: str) -> list[str]:
+def _compose(project: str) -> list[str]:
     return [
         require("docker"),
         "compose",
         "--project-name",
         project,
         "--file",
-        str(INTEGRATED_COMPOSE),
-        "--profile",
-        profile,
+        str(MANAGED_COMPOSE),
     ]
 
 
-def _validate_integrated_compose(value: dict[str, object], *, client: str) -> None:
+def _networks(raw: object, label: str) -> set[str]:
+    if not isinstance(raw, dict):
+        raise RuntimeError(f"invalid network membership for {label}")
+    return set(raw)
+
+
+def _validate_managed_compose(value: dict[str, object]) -> None:
     services = value.get("services")
-    expected = {
+    expected_services = {
         "admission",
         "bootstrap",
+        "manager-controller",
+        "manager-ui",
         "operator",
         "party1",
         "party2",
@@ -144,48 +152,65 @@ def _validate_integrated_compose(value: dict[str, object], *, client: str) -> No
         "resolver",
         "s3",
         "storage-gateway",
-        client,
     }
-    if not isinstance(services, dict) or set(services) != expected:
-        raise RuntimeError("integrated Compose has an unexpected service set")
+    if not isinstance(services, dict) or set(services) != expected_services:
+        raise RuntimeError("managed Compose has an unexpected static service set")
     networks = value.get("networks")
-    expected_networks = {
+    expected_static_networks = {
         "admission",
-        "browser-edge",
+        "client-lifecycle",
         "cloud",
         "control",
+        "manager-edge",
+        "management",
         "recovery",
         "resolver",
         "storage",
     }
-    if not isinstance(networks, dict) or set(networks) != expected_networks:
-        raise RuntimeError("integrated Compose networks are not exact")
-    for network_name, item in networks.items():
-        if not isinstance(item, dict) or (
-            network_name != "browser-edge" and item.get("internal") is not True
-        ):
-            raise RuntimeError("integrated service network is not internal")
+    if not isinstance(networks, dict) or set(networks) != expected_static_networks:
+        raise RuntimeError("managed Compose static networks are not exact")
+    for logical_name, raw in networks.items():
+        if not isinstance(raw, dict):
+            raise RuntimeError("invalid managed network")
+        expected_internal = logical_name != "manager-edge"
+        if raw.get("internal", False) is not expected_internal:
+            raise RuntimeError(f"managed network is not internal: {logical_name}")
+
     expected_membership = {
         "admission": {"admission"},
+        "manager-controller": {"client-lifecycle", "management"},
+        "manager-ui": {"management", "manager-edge"},
         "operator": {"control"},
         "resolver": {"resolver"},
         "s3": {"cloud"},
         "storage-gateway": {"cloud", "storage"},
-        client: {
-            "admission",
-            "browser-edge",
-            "control",
-            "recovery",
-            "resolver",
-            "storage",
-        },
         **{f"party{index}": {"recovery"} for index in range(1, 6)},
     }
+    socket_holders: list[str] = []
     for name, raw in services.items():
         if not isinstance(raw, dict):
-            raise RuntimeError("invalid integrated service")
+            raise RuntimeError("invalid managed service")
+        if raw.get("read_only") is not True:
+            raise RuntimeError(f"managed service root is writable: {name}")
+        if raw.get("security_opt") != ["no-new-privileges:true"]:
+            raise RuntimeError(f"managed service lacks no-new-privileges: {name}")
+        if name == "bootstrap":
+            if raw.get("network_mode") != "none" or raw.get("networks") not in (
+                None,
+                {},
+            ):
+                raise RuntimeError("managed bootstrap is not networkless")
+            if raw.get("cap_add") != ["CHOWN", "DAC_READ_SEARCH"]:
+                raise RuntimeError("managed bootstrap capabilities are not exact")
+        elif _networks(raw.get("networks"), name) != expected_membership[name]:
+            raise RuntimeError(f"invalid managed network membership: {name}")
+        elif name == "s3" and raw.get("cap_add") != ["CHOWN", "SETGID", "SETUID"]:
+            raise RuntimeError("managed provider capabilities are not exact")
+        elif name != "s3" and raw.get("cap_add") not in (None, []):
+            raise RuntimeError(f"managed runtime gained capabilities: {name}")
+
         ports = raw.get("ports")
-        if name == client:
+        if name == "manager-ui":
             if (
                 not isinstance(ports, list)
                 or len(ports) != 1
@@ -193,62 +218,61 @@ def _validate_integrated_compose(value: dict[str, object], *, client: str) -> No
                 or ports[0].get("host_ip") != "127.0.0.1"
                 or ports[0].get("target") != 8080
             ):
-                raise RuntimeError("integrated UI is not loopback-only")
+                raise RuntimeError("Manager UI is not loopback-only")
         elif ports not in (None, []):
-            raise RuntimeError("an internal integrated service publishes a port")
-        if raw.get("read_only") is not True or raw.get("ulimits") != {"core": {}}:
-            raise RuntimeError("integrated service hardening is incomplete")
-        if raw.get("security_opt") != ["no-new-privileges:true"]:
-            raise RuntimeError("integrated service lacks no-new-privileges")
-        if name == "bootstrap":
-            if raw.get("network_mode") != "none" or raw.get("networks") not in (
-                None,
-                {},
-            ):
-                raise RuntimeError("integrated bootstrap is not networkless")
-        else:
-            membership = raw.get("networks")
-            if (
-                not isinstance(membership, dict)
-                or set(membership) != expected_membership[name]
-            ):
-                raise RuntimeError(f"invalid integrated network membership: {name}")
+            raise RuntimeError(f"internal service publishes a host port: {name}")
+
         mounts = raw.get("volumes", [])
-        if not isinstance(mounts, list) or any(
-            isinstance(item, dict)
-            and item.get("source")
-            in {"/var/run/docker.sock", "\\.\\pipe\\docker_engine"}
-            for item in mounts
-        ):
-            raise RuntimeError("invalid integrated service mount")
+        if not isinstance(mounts, list):
+            raise RuntimeError("invalid managed service mounts")
+        for mount in mounts:
+            if not isinstance(mount, dict):
+                raise RuntimeError("invalid managed service mount")
+            source = str(mount.get("source", ""))
+            target = str(mount.get("target", ""))
+            if source in {
+                "/var/run/docker.sock",
+                r"\\.\pipe\docker_engine",
+            } or target in {
+                "/var/run/docker.sock",
+                r"\\.\pipe\docker_engine",
+            }:
+                if (
+                    name != "manager-controller"
+                    or mount.get("type") != "bind"
+                    or source != "/var/run/docker.sock"
+                    or target != "/var/run/docker.sock"
+                    or mount.get("read_only") is not True
+                ):
+                    raise RuntimeError(
+                        "Docker socket escaped the exact controller mount"
+                    )
+                socket_holders.append(name)
+    if socket_holders != ["manager-controller"]:
+        raise RuntimeError("exactly one controller must hold the Docker socket")
 
 
 def integrated_config() -> None:
     source_path = str(ROOT)
     if source_path not in sys.path:
         sys.path.insert(0, source_path)
-    from locus.integrated_manifest import load_integrated_manifest
+    from locus.managed_manifest import load_managed_manifest
 
-    manifest = load_integrated_manifest(INTEGRATED_MANIFEST)
-    for profile, client in (("enrollment", "ui-client-a"), ("recovery", "ui-client-b")):
-        environment = _integrated_environment("locus-integrated-config", 8765)
-        configured = json.loads(
-            run_capture(
-                [
-                    *_integrated_compose_command("locus-integrated-config", profile),
-                    "config",
-                    "--format",
-                    "json",
-                ],
-                env=environment,
-            )
-        )
-        _validate_integrated_compose(configured, client=client)
+    manifest = load_managed_manifest(MANAGED_MANIFEST)
+    project = "locus-managed-config"
+    environment = _environment(project, DEFAULT_MANAGER_PORT)
+    configured = json.loads(
+        run_capture([*_compose(project), "config", "--format", "json"], env=environment)
+    )
+    if not isinstance(configured, dict):
+        raise RuntimeError("managed Compose did not resolve to an object")
+    _validate_managed_compose(cast(dict[str, object], configured))
     print(
         json.dumps(
             {
                 "deployment_id": manifest["deployment_id"],
-                "profiles": 2,
+                "dynamic_clients": 0,
+                "graphs": 1,
                 "status": "valid",
             },
             sort_keys=True,
@@ -256,63 +280,547 @@ def integrated_config() -> None:
     )
 
 
-def integrated_start(args: argparse.Namespace) -> None:
-    integrated_config()
-    environment = _integrated_environment(args.project, args.port)
-    command = _integrated_compose_command(args.project, args.mode)
-    run([*command, "build", "bootstrap"], env=environment)
-    running = set(
-        run_capture(
-            [*command, "ps", "--services", "--status", "running"], env=environment
-        ).splitlines()
+def _image_id(environment: dict[str, str]) -> str:
+    image = run_capture(
+        [
+            require("docker"),
+            "image",
+            "inspect",
+            "--format",
+            "{{.Id}}",
+            environment["LOCUS_INTEGRATED_IMAGE"],
+        ],
+        env=environment,
+    ).strip()
+    if IMAGE_ID_PATTERN.fullmatch(image) is None:
+        raise RuntimeError("managed image did not resolve to an immutable image ID")
+    return image
+
+
+def _browser_edge_name(project: str) -> str:
+    return f"{project}_browser-edge"
+
+
+def _browser_edge_inspection(
+    project: str, environment: dict[str, str]
+) -> dict[str, object] | None:
+    output = run_capture(
+        [require("docker"), "network", "inspect", _browser_edge_name(project)],
+        env=environment,
+        check=False,
     )
-    common = {"admission", "operator", "resolver", "storage-gateway", "s3"} | {
-        f"party{index}" for index in range(1, 6)
-    }
-    if args.mode == "recovery" and common <= running:
-        enrollment = _integrated_compose_command(args.project, "enrollment")
-        run([*enrollment, "stop", "ui-client-a"], env=environment)
-        run([*enrollment, "rm", "--force", "ui-client-a"], env=environment)
+    if not output.strip():
+        return None
+    value = json.loads(output)
+    if value == []:
+        return None
+    if not isinstance(value, list) or len(value) != 1 or not isinstance(value[0], dict):
+        raise RuntimeError("invalid browser-edge network inspection")
+    return cast(dict[str, object], value[0])
+
+
+def _validate_browser_edge_network(project: str, value: dict[str, object]) -> None:
+    labels = value.get("Labels")
+    if (
+        value.get("Name") != _browser_edge_name(project)
+        or value.get("Driver") != "bridge"
+        or value.get("Internal") is not False
+        or not isinstance(labels, dict)
+        or labels.get("com.docker.compose.project") != project
+        or labels.get("com.docker.compose.network") != "browser-edge"
+        or labels.get("com.locus.managed-network") != "true"
+    ):
+        raise RuntimeError("browser-edge network is outside the managed project")
+
+
+def _ensure_browser_edge_network(project: str, environment: dict[str, str]) -> None:
+    observed = _browser_edge_inspection(project, environment)
+    if observed is None:
         run(
             [
                 require("docker"),
-                "run",
-                "--rm",
-                "--network",
-                "none",
-                "--read-only",
-                "--volume",
-                f"{args.project}_client-a-data:/audit:ro",
-                environment["LOCUS_INTEGRATED_IMAGE"],
-                "python",
-                "-m",
-                "locus.integrated_state_audit",
-                "--root",
-                "/audit",
+                "network",
+                "create",
+                "--driver",
+                "bridge",
+                "--label",
+                f"com.docker.compose.project={project}",
+                "--label",
+                "com.docker.compose.network=browser-edge",
+                "--label",
+                "com.locus.managed-network=true",
+                _browser_edge_name(project),
             ],
             env=environment,
+        )
+        observed = _browser_edge_inspection(project, environment)
+    if observed is None:
+        raise RuntimeError("browser-edge network was not created")
+    _validate_browser_edge_network(project, observed)
+
+
+def _remove_browser_edge_network(project: str, environment: dict[str, str]) -> None:
+    observed = _browser_edge_inspection(project, environment)
+    if observed is None:
+        return
+    _validate_browser_edge_network(project, observed)
+    run(
+        [require("docker"), "network", "rm", _browser_edge_name(project)],
+        env=environment,
+    )
+
+
+def _dynamic_client_ids(project: str, environment: dict[str, str]) -> list[str]:
+    output = run_capture(
+        [
+            require("docker"),
+            "ps",
+            "--all",
+            "--quiet",
+            "--filter",
+            f"label=com.locus.project={project}",
+            "--filter",
+            "label=com.locus.managed-client=true",
+        ],
+        env=environment,
+    )
+    return [line for line in output.splitlines() if line]
+
+
+def _validate_dynamic_client(
+    container_id: str, project: str, environment: dict[str, str]
+) -> None:
+    encoded = run_capture([require("docker"), "inspect", container_id], env=environment)
+    value = json.loads(encoded)
+    if not isinstance(value, list) or len(value) != 1 or not isinstance(value[0], dict):
+        raise RuntimeError("invalid managed-client inspection")
+    inspected = value[0]
+    config = inspected.get("Config")
+    labels = config.get("Labels") if isinstance(config, dict) else None
+    client_id = labels.get("com.locus.client-id") if isinstance(labels, dict) else None
+    if (
+        not isinstance(labels, dict)
+        or labels.get("com.locus.project") != project
+        or labels.get("com.locus.managed-client") != "true"
+        or labels.get("com.locus.controller-profile")
+        != "LOCUS-local-container-controller-v1"
+        or not isinstance(client_id, str)
+        or inspected.get("Name") != f"/{project}-{client_id}"
+    ):
+        raise RuntimeError("container is outside the exact managed-client scope")
+
+
+def _container_inspection(
+    container_id: str, environment: dict[str, str]
+) -> dict[str, Any]:
+    encoded = run_capture([require("docker"), "inspect", container_id], env=environment)
+    try:
+        values = json.loads(encoded)
+    except (json.JSONDecodeError, TypeError) as exc:
+        raise RuntimeError("Docker returned an invalid container inspection") from exc
+    if (
+        not isinstance(values, list)
+        or len(values) != 1
+        or not isinstance(values[0], dict)
+    ):
+        raise RuntimeError("Docker returned an ambiguous container inspection")
+    return cast(dict[str, Any], values[0])
+
+
+def _assert_live_control_isolation(
+    *,
+    project: str,
+    client: dict[str, object],
+    environment: dict[str, str],
+) -> None:
+    """Prove the two browser UIs lack Docker and Manager/Client reachability."""
+
+    client_id = client.get("id")
+    public_client_id = client.get("client_id")
+    if not isinstance(client_id, str) or not isinstance(public_client_id, str):
+        raise RuntimeError("managed Client identity is unavailable")
+    service_ids: dict[str, str] = {}
+    for service in ("manager-controller", "manager-ui"):
+        identifier = run_capture(
+            [*_compose(project), "ps", "--quiet", service], env=environment
+        ).strip()
+        if not identifier:
+            raise RuntimeError(f"managed isolation role is unavailable: {service}")
+        service_ids[service] = identifier
+    inspections = {
+        "client": _container_inspection(client_id, environment),
+        "manager-controller": _container_inspection(
+            service_ids["manager-controller"], environment
+        ),
+        "manager-ui": _container_inspection(service_ids["manager-ui"], environment),
+    }
+    expected_networks = {
+        "client": {
+            f"{project}_admission",
+            f"{project}_browser-edge",
+            f"{project}_client-lifecycle",
+            f"{project}_control",
+            f"{project}_recovery",
+            f"{project}_resolver",
+            f"{project}_storage",
+        },
+        "manager-controller": {
+            f"{project}_client-lifecycle",
+            f"{project}_management",
+        },
+        "manager-ui": {f"{project}_management", f"{project}_manager-edge"},
+    }
+    for role, inspection in inspections.items():
+        network_settings = inspection.get("NetworkSettings")
+        networks = (
+            network_settings.get("Networks")
+            if isinstance(network_settings, dict)
+            else None
+        )
+        if not isinstance(networks, dict) or set(networks) != expected_networks[role]:
+            raise RuntimeError(f"managed live network isolation changed: {role}")
+        mounts = inspection.get("Mounts")
+        if not isinstance(mounts, list):
+            raise RuntimeError(f"managed mount inventory is unavailable: {role}")
+        socket_mounts = [
+            item
+            for item in mounts
+            if isinstance(item, dict)
+            and item.get("Destination") == "/var/run/docker.sock"
+        ]
+        if (role == "manager-controller" and len(socket_mounts) != 1) or (
+            role != "manager-controller" and socket_mounts
+        ):
+            raise RuntimeError(f"managed Docker-socket scope changed: {role}")
+    probes = (
+        (client_id, "manager-ui", 8443),
+        (
+            service_ids["manager-ui"],
+            f"{project}-{public_client_id}",
+            8080,
+        ),
+    )
+    for container_id, hostname, port in probes:
+        script = (
+            "from pathlib import Path\n"
+            "import socket\n"
+            "if Path('/var/run/docker.sock').exists(): raise SystemExit(2)\n"
+            f"try: socket.getaddrinfo({hostname!r}, {port})\n"
+            "except socket.gaierror: raise SystemExit(0)\n"
+            "raise SystemExit(3)\n"
         )
         run(
-            [
-                *command,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--wait",
-                "ui-client-b",
-            ],
+            [require("docker"), "exec", container_id, "python", "-c", script],
             env=environment,
         )
-    else:
-        run([*command, "up", "--detach", "--no-build", "--wait"], env=environment)
+
+
+def _remove_dynamic_clients(project: str, environment: dict[str, str]) -> int:
+    identifiers = _dynamic_client_ids(project, environment)
+    for identifier in identifiers:
+        _validate_dynamic_client(identifier, project, environment)
+        run(
+            [require("docker"), "rm", "--force", "--volumes", identifier],
+            env=environment,
+        )
+    return len(identifiers)
+
+
+def _raw_request(
+    port: int,
+    path: str,
+    *,
+    method: str = "GET",
+    body: bytes | None = None,
+    content_type: str | None = None,
+    csrf: str | None = None,
+    expected: tuple[int, ...] = (200,),
+    retries: int = 1,
+) -> tuple[bytes, Any]:
+    headers = {"Accept": "application/json"}
+    if body is not None:
+        if content_type is None:
+            raise RuntimeError("HTTP body requires an exact content type")
+        headers["Content-Type"] = content_type
+    if csrf is not None:
+        headers["X-LOCUS-CSRF"] = csrf
+        headers["Origin"] = f"http://127.0.0.1:{port}"
+    request = urllib.request.Request(
+        f"http://127.0.0.1:{port}{path}",
+        data=body,
+        headers=headers,
+        method=method,
+    )
+    last_error: BaseException | None = None
+    for attempt in range(retries):
+        try:
+            with urllib.request.urlopen(request, timeout=130) as response:  # noqa: S310
+                maximum = 4 * 1024 * 1024
+                encoded = response.read(maximum + 1)
+                if len(encoded) > maximum:
+                    raise RuntimeError("managed UI response exceeded its bound")
+                status = response.status
+                response_headers = response.headers
+        except urllib.error.HTTPError as error:
+            encoded = error.read(512 * 1024 + 1)
+            status = error.code
+            response_headers = error.headers
+        except (urllib.error.URLError, ConnectionError, TimeoutError) as error:
+            last_error = error
+            if attempt + 1 == retries:
+                raise
+            time.sleep(0.25)
+            continue
+        if status not in expected:
+            raise RuntimeError(f"managed UI returned HTTP {status} for {path}")
+        return encoded, response_headers
+    assert last_error is not None
+    raise last_error
+
+
+def _json_request(
+    port: int,
+    path: str,
+    value: dict[str, object] | None = None,
+    *,
+    csrf: str | None = None,
+    expected: tuple[int, ...] = (200,),
+    retries: int = 1,
+) -> dict[str, object]:
+    body = (
+        None
+        if value is None
+        else json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    )
+    encoded, _headers = _raw_request(
+        port,
+        path,
+        method="GET" if body is None else "POST",
+        body=body,
+        content_type=None if body is None else "application/json",
+        csrf=csrf,
+        expected=expected,
+        retries=retries,
+    )
+    try:
+        result = json.loads(encoded)
+    except (UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise RuntimeError("managed UI returned invalid JSON") from exc
+    if not isinstance(result, dict):
+        raise RuntimeError("managed UI returned a non-object")
+    return cast(dict[str, object], result)
+
+
+def _manager_session(port: int, *, retries: int = 1) -> str:
+    result = _json_request(port, "/api/manager/v1/session", retries=retries)
+    token = result.get("csrf_token")
+    if result.get("status") != "ready" or not isinstance(token, str):
+        raise RuntimeError("Manager UI session is unavailable")
+    return token
+
+
+def _assert_ui_assets(
+    port: int, *, html_marker: bytes, script_path: str, style_path: str
+) -> None:
+    """Verify that the built runtime image contains one complete browser UI."""
+
+    expected = (
+        ("/", "text/html", html_marker),
+        (script_path, "text/javascript", b'"use strict"'),
+        (style_path, "text/css", b"{"),
+    )
+    for path, media_type, marker in expected:
+        body, headers = _raw_request(port, path, retries=20)
+        if headers.get_content_type() != media_type or marker not in body:
+            raise RuntimeError(f"managed UI asset is missing or invalid: {path}")
+
+
+def _manager_status(port: int) -> dict[str, object]:
+    return _json_request(port, "/api/manager/v1/status")
+
+
+def _manager_post(
+    port: int,
+    csrf: str,
+    path: str,
+    value: dict[str, object],
+    *,
+    expected: tuple[int, ...] = (200,),
+) -> dict[str, object]:
+    return _json_request(port, path, value, csrf=csrf, expected=expected)
+
+
+def _stop_through_manager(port: int, csrf: str, *, label: str) -> None:
+    result = _manager_post(
+        port,
+        csrf,
+        "/api/manager/v1/system-stop",
+        {"operation_id": _operation_id(label)},
+        expected=(202,),
+    )
+    if result.get("shutdown_status") != "stopping":
+        raise RuntimeError("Manager did not acknowledge the system stop")
+    deadline = time.monotonic() + 75
+    while time.monotonic() < deadline:
+        try:
+            status = _manager_status(port)
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            return
+        if status.get("shutdown_status") == "failed":
+            raise RuntimeError("Manager reported a failed system stop")
+        time.sleep(0.25)
+    raise RuntimeError("Manager stop did not make the system unavailable")
+
+
+def _wait_role(
+    port: int,
+    role: str,
+    *,
+    state: str,
+    healthy: bool = False,
+    timeout: float = 45,
+) -> dict[str, object]:
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        status = _manager_status(port)
+        containers = status.get("containers")
+        if isinstance(containers, list):
+            for raw in containers:
+                if (
+                    isinstance(raw, dict)
+                    and raw.get("role") == role
+                    and raw.get("state") == state
+                    and (not healthy or "healthy" in str(raw.get("health", "")))
+                ):
+                    return cast(dict[str, object], raw)
+        time.sleep(0.25)
+    raise RuntimeError(f"managed role did not reach {state}: {role}")
+
+
+def _manager_action(port: int, csrf: str, role: str, action: str) -> dict[str, object]:
+    status = _manager_status(port)
+    containers = status.get("containers")
+    if not isinstance(containers, list):
+        raise RuntimeError("Manager status omitted containers")
+    matches = [
+        item
+        for item in containers
+        if isinstance(item, dict) and item.get("role") == role
+    ]
+    if len(matches) != 1 or not isinstance(matches[0].get("id"), str):
+        raise RuntimeError(f"Manager role inventory is ambiguous: {role}")
+    _manager_post(
+        port,
+        csrf,
+        "/api/manager/v1/container-action",
+        {
+            "action": action,
+            "container_id": cast(str, matches[0]["id"]),
+            "operation_id": _operation_id(f"smoke-{role}-{action}"),
+        },
+    )
+    return cast(dict[str, object], matches[0])
+
+
+def _start_project(
+    *, project: str, manager_port: int, environment: dict[str, str]
+) -> dict[str, object]:
+    if _dynamic_client_ids(project, environment):
+        raise RuntimeError(
+            "an orphaned managed client exists; run integrated-stop for this project"
+        )
+    command = _compose(project)
+    run(
+        [
+            require("docker"),
+            "build",
+            "--file",
+            str(ROOT / "deploy" / "Dockerfile"),
+            "--tag",
+            environment["LOCUS_INTEGRATED_IMAGE"],
+            str(ROOT),
+        ],
+        env=environment,
+    )
+    environment["LOCUS_INTEGRATED_IMAGE_ID"] = _image_id(environment)
+    _ensure_browser_edge_network(project, environment)
+    run(
+        [
+            *command,
+            "up",
+            "--detach",
+            "--no-build",
+            "--wait",
+            "--wait-timeout",
+            "120",
+        ],
+        env=environment,
+    )
+    _manager_session(manager_port, retries=80)
+    _assert_ui_assets(
+        manager_port,
+        html_marker=b"LOCUS Manager",
+        script_path="/assets/manager.js",
+        style_path="/assets/manager.css",
+    )
+    status = _manager_status(manager_port)
+    containers = status.get("containers")
+    if not isinstance(containers, list) or any(
+        isinstance(item, dict) and item.get("role") == "client" for item in containers
+    ):
+        raise RuntimeError("managed startup created an unexpected client")
+    return status
+
+
+def _resume_project(
+    *, project: str, manager_port: int, environment: dict[str, str]
+) -> tuple[dict[str, object], str]:
+    """Restart an intentionally stopped project without rebuilding or resetting state."""
+
+    if _dynamic_client_ids(project, environment):
+        raise RuntimeError("managed restart found an unexpected Client")
+    _ensure_browser_edge_network(project, environment)
+    run(
+        [
+            *_compose(project),
+            "up",
+            "--detach",
+            "--no-build",
+            "--wait",
+            "--wait-timeout",
+            "120",
+        ],
+        env=environment,
+    )
+    csrf = _manager_session(manager_port, retries=80)
+    status = _manager_status(manager_port)
+    containers = status.get("containers")
+    if not isinstance(containers, list) or len(containers) != 13:
+        raise RuntimeError("managed restart did not restore the exact static inventory")
+    if any(
+        isinstance(item, dict) and item.get("role") == "client" for item in containers
+    ):
+        raise RuntimeError("managed restart created an unexpected Client")
+    return status, csrf
+
+
+def integrated_start(args: argparse.Namespace) -> None:
+    integrated_config()
+    environment = _environment(args.project, args.port)
+    status = _start_project(
+        project=args.project, manager_port=args.port, environment=environment
+    )
+    containers = status.get("containers")
     print(
         json.dumps(
             {
-                "client": "A" if args.mode == "enrollment" else "B",
+                "clients": 0,
+                "manager_url": f"http://127.0.0.1:{args.port}/",
                 "project": args.project,
+                "static_containers": len(containers)
+                if isinstance(containers, list)
+                else 0,
                 "status": "ready",
-                "url": f"http://127.0.0.1:{args.port}/",
             },
             sort_keys=True,
         )
@@ -320,102 +828,144 @@ def integrated_start(args: argparse.Namespace) -> None:
 
 
 def integrated_stop(args: argparse.Namespace) -> None:
-    environment = _integrated_environment(args.project, args.port)
-    command = _integrated_compose_command(args.project, "enrollment")
-    if args.destroy:
-        run(
-            [
-                *command,
-                "down",
-                "--remove-orphans",
-                "--volumes",
-                "--rmi",
-                "local",
-            ],
-            env=environment,
+    """Emergency/orphan cleanup; normal shutdown belongs to the Manager UI."""
+
+    environment = _environment(args.project, DEFAULT_MANAGER_PORT)
+    removed = _remove_dynamic_clients(args.project, environment)
+    command = [*_compose(args.project), "down", "--remove-orphans"]
+    if args.reset_state:
+        command.append("--volumes")
+    run(command, env=environment)
+    _remove_browser_edge_network(args.project, environment)
+    print(
+        json.dumps(
+            {
+                "clients_removed": removed,
+                "project": args.project,
+                "role_volumes": "removed" if args.reset_state else "preserved",
+                "status": "stopped",
+            },
+            sort_keys=True,
         )
-    else:
-        both_profiles = [
-            require("docker"),
-            "compose",
-            "--project-name",
-            args.project,
-            "--file",
-            str(INTEGRATED_COMPOSE),
-            "--profile",
-            "enrollment",
-            "--profile",
-            "recovery",
-        ]
-        run([*both_profiles, "stop", "ui-client-a", "ui-client-b"], env=environment)
+    )
 
 
-def _post_json(
-    port: int, path: str, value: dict[str, object], *, expected: int = 200
+def _create_client(manager_port: int, manager_csrf: str) -> dict[str, object]:
+    result = _manager_post(
+        manager_port,
+        manager_csrf,
+        "/api/manager/v1/clients",
+        {"operation_id": _operation_id("smoke-create-client")},
+        expected=(201,),
+    )
+    client = result.get("client")
+    if (
+        result.get("status") != "created"
+        or not isinstance(client, dict)
+        or not isinstance(client.get("port"), int)
+        or not isinstance(client.get("client_id"), str)
+        or not isinstance(client.get("id"), str)
+    ):
+        raise RuntimeError("Manager did not create one valid client")
+    return cast(dict[str, object], client)
+
+
+def _client_session(client_port: int, *, retries: int = 80) -> dict[str, object]:
+    result = _json_request(client_port, "/api/v2/session", retries=retries)
+    if (
+        result.get("status") != "ready"
+        or result.get("api_version") != CLIENT_API_VERSION
+        or not isinstance(result.get("csrf_token"), str)
+        or not isinstance(result.get("client_identity"), str)
+    ):
+        raise RuntimeError("managed Client session is unavailable")
+    return result
+
+
+def _client_post(
+    client_port: int,
+    csrf: str,
+    path: str,
+    value: dict[str, object],
+    *,
+    expected: tuple[int, ...] = (200,),
 ) -> dict[str, object]:
-    encoded = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
-    request = urllib.request.Request(
-        f"http://127.0.0.1:{port}{path}",
-        data=encoded,
-        headers={"Content-Type": "application/json"},
+    return _json_request(client_port, path, value, csrf=csrf, expected=expected)
+
+
+def _client_package_export(client_port: int, csrf: str, download_id: str) -> bytes:
+    body = json.dumps(
+        {"api_version": CLIENT_API_VERSION, "download_id": download_id},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    package, headers = _raw_request(
+        client_port,
+        "/api/v2/package/export",
         method="POST",
+        body=body,
+        content_type="application/json",
+        csrf=csrf,
     )
-    for attempt in range(50):
+    if headers.get_content_type() != PACKAGE_MEDIA_TYPE:
+        raise RuntimeError("Client exported the wrong package media type")
+    return package
+
+
+def _client_package_import(
+    client_port: int,
+    csrf: str,
+    package: bytes,
+    *,
+    expected: tuple[int, ...] = (200,),
+) -> dict[str, object]:
+    encoded, _headers = _raw_request(
+        client_port,
+        "/api/v2/package/import",
+        method="POST",
+        body=package,
+        content_type=PACKAGE_MEDIA_TYPE,
+        csrf=csrf,
+        expected=expected,
+    )
+    value = json.loads(encoded)
+    if not isinstance(value, dict):
+        raise RuntimeError("Client package import returned a non-object")
+    return cast(dict[str, object], value)
+
+
+def _wait_client_removed(manager_port: int, client_port: int) -> None:
+    deadline = time.monotonic() + 20
+    unavailable = False
+    empty = False
+    while time.monotonic() < deadline:
         try:
-            with urllib.request.urlopen(  # noqa: S310
-                request, timeout=120
-            ) as response:
-                status = response.status
-                body = response.read(256 * 1024)
-            break
-        except urllib.error.HTTPError as error:
-            status = error.code
-            body = error.read(256 * 1024)
-            break
-        except urllib.error.URLError:
-            if attempt == 49:
-                raise
-            time.sleep(0.2)
-    if status != expected:
-        raise RuntimeError(f"integrated UI returned HTTP {status} for {path}")
-    result = json.loads(body)
-    if not isinstance(result, dict):
-        raise RuntimeError("integrated UI returned a non-object")
-    return cast(dict[str, object], result)
-
-
-def integrated_smoke() -> None:
-    integrated_config()
-    project = f"locus-int-{secrets.token_hex(5)}"
-    port = _free_loopback_port()
-    environment = _integrated_environment(project, port)
-    environment["LOCUS_INTEGRATED_SUCCESSOR_CRASH_PHASES"] = ",".join(
-        (
-            "PRESERVE_ORIGINAL_KEY",
-            "PREPARE_PARTIES",
-            "PUBLISH_BACKUP",
-            "PUBLISH_DESCRIPTOR",
-            "VERIFY_READINESS",
-            "VERIFY_SUCCESSOR_RECOVERY",
-            "ACTIVATE_SUCCESSOR",
-            "RETIRE_PREDECESSOR",
+            _raw_request(client_port, "/healthz", retries=1)
+        except (urllib.error.URLError, ConnectionError, TimeoutError):
+            unavailable = True
+        status = _manager_status(manager_port)
+        containers = status.get("containers")
+        empty = isinstance(containers, list) and not any(
+            isinstance(item, dict) and item.get("role") == "client"
+            for item in containers
         )
-    )
-    enrollment = _integrated_compose_command(project, "enrollment")
-    recovery = _integrated_compose_command(project, "recovery")
-    synthetic_key = bytes(range(32)).hex()
-    email = ["Ada@Example.COM", "grace@example.net", "linus@example.org"]
-    policy_inputs: dict[str, object] = {
-        "LOCUS-canonical-email-set-v1": email,
+        if unavailable and empty:
+            return
+        time.sleep(0.25)
+    raise RuntimeError("destroyed Client remained reachable or inventoried")
+
+
+def _policy_inputs() -> dict[str, object]:
+    return {
+        "LOCUS-canonical-email-set-v1": [
+            "Ada@Example.COM",
+            "grace@example.net",
+            "linus@example.org",
+        ],
         "LOCUS-canonical-phone-set-v1": [
             "+352621000001",
             "+352621000002",
             "+352621000003",
-        ],
-        "LOCUS-quantized-coordinate-set-v1": [
-            {"latitude": "49.61160001", "longitude": "6.13190001"},
-            {"latitude": "48.8566", "longitude": "2.3522"},
-            {"latitude": "51.5074", "longitude": "-0.1278"},
         ],
         "LOCUS-location-person-set-v1": [
             {
@@ -431,74 +981,127 @@ def integrated_smoke() -> None:
                 "person": {"type": "email", "value": "linus@example.org"},
             },
         ],
+        "LOCUS-quantized-coordinate-set-v1": [
+            {"latitude": "49.61160001", "longitude": "6.13190001"},
+            {"latitude": "48.8566", "longitude": "2.3522"},
+            {"latitude": "51.5074", "longitude": "-0.1278"},
+        ],
     }
-    arms = (
-        ("LOCUS-TPASS-YI-ZK-RISTRETTO255-v1", "LOCUS-paired-suite-deployment-2of3-v1"),
-        (
-            "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
-            "LOCUS-paired-suite-deployment-2of3-v1",
-        ),
-        ("LOCUS-TPASS-YI-ZK-RISTRETTO255-v1", "LOCUS-paired-suite-deployment-3of5-v1"),
-        (
-            "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
-            "LOCUS-paired-suite-deployment-3of5-v1",
-        ),
+
+
+def _exercise_manager_actions(port: int, csrf: str) -> None:
+    _manager_action(port, csrf, "resolver", "stop")
+    _wait_role(port, "resolver", state="exited")
+    _manager_action(port, csrf, "resolver", "start")
+    _wait_role(port, "resolver", state="running", healthy=True)
+    _manager_action(port, csrf, "resolver", "restart")
+    _wait_role(port, "resolver", state="running", healthy=True)
+    _manager_action(port, csrf, "resolver", "kill")
+    _wait_role(port, "resolver", state="exited")
+    _manager_action(port, csrf, "resolver", "start")
+    _wait_role(port, "resolver", state="running", healthy=True)
+
+
+def _exercise_client_process_actions(
+    manager_port: int,
+    manager_csrf: str,
+    client_port: int,
+    initial_session: dict[str, object],
+    stale_csrf: str,
+    stale_download_id: str,
+) -> tuple[dict[str, object], int]:
+    """Show that process lifecycle erases volatile state but not container identity."""
+
+    client_id = initial_session.get("client_id")
+    identities = {initial_session.get("client_identity")}
+    sequence = (("stop", False), ("start", True), ("restart", True), ("kill", False))
+    latest = initial_session
+    current_port = client_port
+    for action, becomes_running in sequence:
+        _manager_action(manager_port, manager_csrf, "client", action)
+        if becomes_running:
+            item = _wait_role(manager_port, "client", state="running", healthy=True)
+            if not isinstance(item.get("port"), int):
+                raise RuntimeError("Client process transition lost its loopback port")
+            current_port = cast(int, item["port"])
+            latest = _client_session(current_port)
+            if (
+                latest.get("client_id") != client_id
+                or latest.get("key_loaded") is not False
+            ):
+                raise RuntimeError("Client process transition preserved invalid state")
+            identities.add(latest.get("client_identity"))
+        else:
+            _wait_role(manager_port, "client", state="exited")
+    _manager_action(manager_port, manager_csrf, "client", "start")
+    item = _wait_role(manager_port, "client", state="running", healthy=True)
+    if not isinstance(item.get("port"), int):
+        raise RuntimeError("Client process transition lost its loopback port")
+    current_port = cast(int, item["port"])
+    latest = _client_session(current_port)
+    if latest.get("client_id") != client_id or latest.get("key_loaded") is not False:
+        raise RuntimeError("Client process transition preserved invalid state")
+    identities.add(latest.get("client_identity"))
+    if len(identities) != 4:
+        raise RuntimeError("Client process transitions did not rotate proof identity")
+    current_csrf = latest.get("csrf_token")
+    if not isinstance(current_csrf, str):
+        raise RuntimeError("restarted Client omitted its fresh CSRF token")
+    stale_csrf_result = _client_post(
+        current_port,
+        stale_csrf,
+        "/api/v2/key/reveal",
+        {"api_version": CLIENT_API_VERSION},
+        expected=(400,),
     )
-    receipts: list[str] = []
-    policy_receipts: list[tuple[str, object, str]] = []
-    try:
-        if os.environ.get("LOCUS_INTEGRATED_NO_BUILD") != "1":
-            run([*enrollment, "build", "bootstrap"], env=environment)
-        run([*enrollment, "up", "--detach", "--no-build", "--wait"], env=environment)
-        for index, (suite, profile) in enumerate(arms, start=1):
-            result = _post_json(
-                port,
-                "/api/v1/enroll",
-                {
-                    "api_version": "LOCUS-client-api-v1",
-                    "deployment_profile_id": profile,
-                    "operation_id": f"integrated-enroll-{index}",
-                    "policy_id": "LOCUS-canonical-email-set-v1",
-                    "protected_key": {"hex": synthetic_key, "mode": "import-synthetic"},
-                    "recovery_input": email,
-                    "suite_id": suite,
-                },
-            )
-            if result.get("status") != "enrolled" or not isinstance(
-                result.get("receipt"), str
-            ):
-                raise RuntimeError("integrated enrollment did not complete")
-            receipts.append(cast(str, result["receipt"]))
-        for index, (policy_id, recovery_input) in enumerate(
-            policy_inputs.items(), start=1
-        ):
-            result = _post_json(
-                port,
-                "/api/v1/enroll",
-                {
-                    "api_version": "LOCUS-client-api-v1",
-                    "deployment_profile_id": "LOCUS-paired-suite-deployment-2of3-v1",
-                    "operation_id": f"integrated-policy-enroll-{index}",
-                    "policy_id": policy_id,
-                    "protected_key": {
-                        "hex": synthetic_key,
-                        "mode": "import-synthetic",
-                    },
-                    "recovery_input": recovery_input,
-                    "suite_id": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
-                },
-            )
-            if result.get("status") != "enrolled" or not isinstance(
-                result.get("receipt"), str
-            ):
-                raise RuntimeError("integrated policy enrollment did not complete")
-            policy_receipts.append(
-                (policy_id, recovery_input, cast(str, result["receipt"]))
-            )
-        run([*enrollment, "stop", "ui-client-a"], env=environment)
-        run([*enrollment, "rm", "--force", "ui-client-a"], env=environment)
-        volume = f"{project}_client-a-data"
-        run(
+    if stale_csrf_result.get("category") != "request_authentication_rejected":
+        raise RuntimeError("Client process reset accepted its old CSRF token")
+    stale_download = _client_post(
+        current_port,
+        current_csrf,
+        "/api/v2/package/export",
+        {"api_version": CLIENT_API_VERSION, "download_id": stale_download_id},
+        expected=(400,),
+    )
+    if stale_download.get("category") != "package_export_rejected":
+        raise RuntimeError("Client process reset retained an old package download")
+    stale_import = _client_post(
+        current_port,
+        current_csrf,
+        "/api/v2/recover",
+        {
+            "api_version": CLIENT_API_VERSION,
+            "operation_id": "smoke-reset-package-state",
+            "recovery_input": [],
+            "selected_holder_ids": [],
+        },
+        expected=(400,),
+    )
+    if stale_import.get("category") != "package_required":
+        raise RuntimeError("Client process reset retained an imported package")
+    return latest, current_port
+
+
+def _audit_role_volumes(project: str, environment: dict[str, str]) -> int:
+    roles = (
+        ("admission-data", "admission"),
+        ("bootstrap-data", "bootstrap"),
+        ("managed-client-data", "managed-client-template"),
+        ("manager-controller-data", "manager-controller"),
+        ("manager-ui-data", "manager-ui"),
+        ("operator-data", "operator"),
+        ("party1-data", "party"),
+        ("party2-data", "party"),
+        ("party3-data", "party"),
+        ("party4-data", "party"),
+        ("party5-data", "party"),
+        ("resolver-data", "resolver"),
+        ("s3-data", "provider"),
+        ("s3-role-data", "s3-role"),
+        ("storage-gateway-data", "storage-gateway"),
+    )
+    for volume_name, role in roles:
+        output = run_capture(
             [
                 require("docker"),
                 "run",
@@ -507,552 +1110,747 @@ def integrated_smoke() -> None:
                 "none",
                 "--read-only",
                 "--volume",
-                f"{volume}:/audit:ro",
+                f"{project}_{volume_name}:/audit:ro",
                 environment["LOCUS_INTEGRATED_IMAGE"],
                 "python",
                 "-m",
                 "locus.integrated_state_audit",
                 "--root",
                 "/audit",
+                "--role",
+                role,
             ],
             env=environment,
         )
-        run(
+        lines = [line for line in output.splitlines() if line.startswith("{")]
+        if not lines or json.loads(lines[-1]).get("status") != "clean":
+            raise RuntimeError(f"managed role-state audit failed: {role}")
+    return len(roles)
+
+
+def _volume_file_digest(
+    project: str,
+    environment: dict[str, str],
+    *,
+    volume_name: str,
+    relative_path: str,
+) -> str:
+    """Return only a public file digest from one exact managed role volume."""
+
+    if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,63}", volume_name):
+        raise RuntimeError("invalid managed volume name")
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]{0,127}", relative_path):
+        raise RuntimeError("invalid managed volume file")
+    script = (
+        "from pathlib import Path\n"
+        "import hashlib\n"
+        f"data = (Path('/audit') / {relative_path!r}).read_bytes()\n"
+        "print(hashlib.sha256(data).hexdigest())\n"
+    )
+    output = run_capture(
+        [
+            require("docker"),
+            "run",
+            "--rm",
+            "--network",
+            "none",
+            "--read-only",
+            "--volume",
+            f"{project}_{volume_name}:/audit:ro",
+            environment["LOCUS_INTEGRATED_IMAGE"],
+            "python",
+            "-c",
+            script,
+        ],
+        env=environment,
+    ).strip()
+    if re.fullmatch(r"[0-9a-f]{64}", output) is None:
+        raise RuntimeError("managed public-state digest is invalid")
+    return output
+
+
+def _cleanup_smoke_project(project: str, environment: dict[str, str]) -> None:
+    failures: list[str] = []
+    try:
+        _remove_dynamic_clients(project, environment)
+    except BaseException as error:
+        failures.append(f"clients:{type(error).__name__}")
+    try:
+        run_capture(
             [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--wait",
-                "ui-client-b",
+                *_compose(project),
+                "down",
+                "--volumes",
+                "--remove-orphans",
+                "--rmi",
+                "local",
             ],
             env=environment,
+            check=False,
         )
-        for index, receipt in enumerate(receipts, start=1):
-            result = _post_json(
-                port,
-                "/api/v1/recover",
+    except BaseException as error:
+        failures.append(f"compose:{type(error).__name__}")
+    try:
+        run_capture(
+            [
+                require("docker"),
+                "image",
+                "rm",
+                environment["LOCUS_INTEGRATED_IMAGE"],
+            ],
+            env=environment,
+            check=False,
+        )
+    except BaseException as error:
+        failures.append(f"image:{type(error).__name__}")
+    try:
+        _remove_browser_edge_network(project, environment)
+    except BaseException as error:
+        failures.append(f"browser-edge:{type(error).__name__}")
+    leftovers: dict[str, str] = {}
+    queries = {
+        "compose_containers": [
+            require("docker"),
+            "ps",
+            "--all",
+            "--filter",
+            f"label=com.docker.compose.project={project}",
+            "--format",
+            "{{.ID}}",
+        ],
+        "networks": [
+            require("docker"),
+            "network",
+            "ls",
+            "--filter",
+            f"label=com.docker.compose.project={project}",
+            "--format",
+            "{{.ID}}",
+        ],
+        "volumes": [
+            require("docker"),
+            "volume",
+            "ls",
+            "--filter",
+            f"label=com.docker.compose.project={project}",
+            "--format",
+            "{{.Name}}",
+        ],
+        "images": [
+            require("docker"),
+            "images",
+            "--filter",
+            f"reference={environment['LOCUS_INTEGRATED_IMAGE']}",
+            "--format",
+            "{{.ID}}",
+        ],
+    }
+    for label, command in queries.items():
+        try:
+            leftovers[label] = run_capture(command, env=environment).strip()
+        except BaseException as error:
+            failures.append(f"inspect-{label}:{type(error).__name__}")
+    try:
+        leftovers["managed_clients"] = "\n".join(
+            _dynamic_client_ids(project, environment)
+        )
+    except BaseException as error:
+        failures.append(f"inspect-clients:{type(error).__name__}")
+    remaining = sorted(label for label, value in leftovers.items() if value)
+    if failures or remaining:
+        detail = ",".join([*failures, *[f"leftover-{item}" for item in remaining]])
+        raise RuntimeError(f"managed smoke cleanup failed: {detail}")
+
+
+def integrated_smoke() -> None:
+    integrated_config()
+    project = f"locus-managed-smoke-{secrets.token_hex(4)}"
+    manager_port = _free_loopback_port()
+    environment = _environment(project, manager_port)
+    manager_csrf = ""
+    original_key = ""
+    client_a_logs = ""
+    original_cues = _policy_inputs()
+    packages: list[dict[str, object]] = []
+    subset_recoveries = 0
+    try:
+        status = _start_project(
+            project=project, manager_port=manager_port, environment=environment
+        )
+        containers = status.get("containers")
+        if not isinstance(containers, list) or len(containers) != 13:
+            raise RuntimeError("managed static inventory is incomplete")
+        manager_csrf = _manager_session(manager_port)
+        _exercise_manager_actions(manager_port, manager_csrf)
+
+        client_a = _create_client(manager_port, manager_csrf)
+        client_a_port = cast(int, client_a["port"])
+        session_a = _client_session(client_a_port)
+        _assert_ui_assets(
+            client_a_port,
+            html_marker=b"LOCUS Client",
+            script_path="/assets/client.js",
+            style_path="/assets/client.css",
+        )
+        _assert_live_control_isolation(
+            project=project, client=client_a, environment=environment
+        )
+        client_a_csrf = cast(str, session_a["csrf_token"])
+        generated = _client_post(
+            client_a_port,
+            client_a_csrf,
+            "/api/v2/key/generate",
+            {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-generate-a"},
+        )
+        generated_key = generated.get("private_key")
+        if not isinstance(generated_key, str) or len(generated_key) != 64:
+            raise RuntimeError("Client A did not reveal a synthetic Ed25519 seed")
+        original_key = generated_key
+
+        arms = (
+            (
+                "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
+                "LOCUS-paired-suite-deployment-2of3-v1",
+                "LOCUS-canonical-email-set-v1",
+            ),
+            (
+                "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+                "LOCUS-paired-suite-deployment-2of3-v1",
+                "LOCUS-canonical-phone-set-v1",
+            ),
+            (
+                "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
+                "LOCUS-paired-suite-deployment-3of5-v1",
+                "LOCUS-location-person-set-v1",
+            ),
+            (
+                "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+                "LOCUS-paired-suite-deployment-3of5-v1",
+                "LOCUS-quantized-coordinate-set-v1",
+            ),
+        )
+        expected_thresholds = {
+            "LOCUS-paired-suite-deployment-2of3-v1": {"k": 2, "n": 3},
+            "LOCUS-paired-suite-deployment-3of5-v1": {"k": 3, "n": 5},
+        }
+        expected_suite_profiles = {
+            (
+                "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
+                "LOCUS-paired-suite-deployment-2of3-v1",
+            ): "LOCUS-APPSS-2of3-v1",
+            (
+                "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
+                "LOCUS-paired-suite-deployment-3of5-v1",
+            ): "LOCUS-APPSS-3of5-v1",
+            (
+                "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+                "LOCUS-paired-suite-deployment-2of3-v1",
+            ): "LOCUS-TPASS-YI-2of3-v1",
+            (
+                "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+                "LOCUS-paired-suite-deployment-3of5-v1",
+            ): "LOCUS-TPASS-YI-3of5-v1",
+        }
+        for index, (suite_id, profile_id, policy_id) in enumerate(arms, start=1):
+            result = _client_post(
+                client_a_port,
+                client_a_csrf,
+                "/api/v2/enroll",
                 {
-                    "api_version": "LOCUS-client-api-v1",
-                    "operation_id": f"integrated-recover-{index}",
-                    "receipt": receipt,
-                    "recovery_input": email,
+                    "api_version": CLIENT_API_VERSION,
+                    "deployment_profile_id": profile_id,
+                    "operation_id": f"smoke-enroll-{index}",
+                    "policy_id": policy_id,
+                    "recovery_input": original_cues[policy_id],
+                    "suite_id": suite_id,
                 },
             )
+            download_id = result.get("download_id")
+            if result.get("status") != "enrolled" or not isinstance(download_id, str):
+                raise RuntimeError("managed enrollment did not complete")
+            suite_profile_id = result.get("suite_profile_id")
             if (
-                result.get("status") != "recovered"
-                or result.get("key_identity_verified") is not True
+                result.get("deployment_profile_id") != profile_id
+                or suite_profile_id != expected_suite_profiles[(suite_id, profile_id)]
+                or suite_profile_id == profile_id
             ):
                 raise RuntimeError(
-                    "integrated recovery did not verify the protected key"
+                    "managed enrollment confused deployment and suite profiles"
                 )
-        replay = _post_json(
-            port,
-            "/api/v1/recover",
+            package = _client_package_export(client_a_port, client_a_csrf, download_id)
+            prohibited_package_values = (
+                original_key,
+                "Ada@Example.COM",
+                "+352621000001",
+                "49.61160001",
+            )
+            if any(value.encode() in package for value in prohibited_package_values):
+                raise RuntimeError("encrypted package exposed client-only input")
+            packages.append(
+                {
+                    "bytes": package,
+                    "deployment_profile_id": profile_id,
+                    "policy_id": policy_id,
+                    "suite_profile_id": suite_profile_id,
+                    "suite_id": suite_id,
+                    "threshold": expected_thresholds[profile_id],
+                }
+            )
+
+        resumed_a, client_a_port = _exercise_client_process_actions(
+            manager_port,
+            manager_csrf,
+            client_a_port,
+            session_a,
+            client_a_csrf,
+            cast(str, download_id),
+        )
+        client_a_csrf = cast(str, resumed_a["csrf_token"])
+
+        client_a_logs = run_capture(
+            [require("docker"), "logs", cast(str, client_a["id"])],
+            env=environment,
+        )
+        _client_post(
+            client_a_port,
+            client_a_csrf,
+            "/api/v2/self-destroy",
+            {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-destroy-a"},
+            expected=(202,),
+        )
+        _wait_client_removed(manager_port, client_a_port)
+
+        client_b = _create_client(manager_port, manager_csrf)
+        client_b_port = cast(int, client_b["port"])
+        session_b = _client_session(client_b_port)
+        _assert_ui_assets(
+            client_b_port,
+            html_marker=b"LOCUS Client",
+            script_path="/assets/client.js",
+            style_path="/assets/client.css",
+        )
+        client_b_csrf = cast(str, session_b["csrf_token"])
+        if (
+            session_a["client_id"] == session_b["client_id"]
+            or session_a["client_identity"] == session_b["client_identity"]
+            or session_a["proof_key_thumbprint"] == session_b["proof_key_thumbprint"]
+        ):
+            raise RuntimeError("clean Client B did not receive a fresh public identity")
+        temporary = _client_post(
+            client_b_port,
+            client_b_csrf,
+            "/api/v2/key/generate",
+            {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-generate-b"},
+        )
+        temporary_value = temporary.get("private_key")
+        if not isinstance(temporary_value, str):
+            raise RuntimeError("Client B did not create its temporary key")
+        temporary_key = temporary_value
+        if temporary_key == original_key:
+            raise RuntimeError("Client B temporary key was not fresh")
+
+        corrupted = b"[" + cast(bytes, packages[0]["bytes"])[1:]
+        rejected_package = _client_package_import(
+            client_b_port,
+            client_b_csrf,
+            corrupted,
+            expected=(400,),
+        )
+        if rejected_package.get("category") != "package_import_rejected":
+            raise RuntimeError("corrupt package was not rejected")
+
+        first_success_operation = ""
+        for package_index, record in enumerate(packages, start=1):
+            imported = _client_package_import(
+                client_b_port, client_b_csrf, cast(bytes, record["bytes"])
+            )
+            if (
+                imported.get("status") != "package_authenticated"
+                or imported.get("suite_id") != record["suite_id"]
+                or imported.get("policy_id") != record["policy_id"]
+                or imported.get("deployment_profile_id")
+                != record["deployment_profile_id"]
+                or imported.get("suite_profile_id") != record["suite_profile_id"]
+                or imported.get("threshold") != record["threshold"]
+            ):
+                raise RuntimeError("package metadata was not authenticated exactly")
+            threshold = imported.get("threshold")
+            holders = imported.get("holder_ids")
+            if not isinstance(threshold, dict) or not isinstance(holders, list):
+                raise RuntimeError("authenticated package omitted holder configuration")
+            k = threshold.get("k")
+            if not isinstance(k, int) or any(
+                not isinstance(item, int) for item in holders
+            ):
+                raise RuntimeError(
+                    "authenticated package has invalid holder configuration"
+                )
+            n = threshold.get("n")
+            if (
+                not isinstance(n, int)
+                or holders != list(range(1, n + 1))
+                or imported.get("authorization_quorum") != 4
+            ):
+                raise RuntimeError("authenticated package changed fixed party topology")
+
+            if package_index == 1:
+                wrong = _client_post(
+                    client_b_port,
+                    client_b_csrf,
+                    "/api/v2/recover",
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "operation_id": "smoke-wrong-input",
+                        "recovery_input": [
+                            "wrong1@example.test",
+                            "wrong2@example.test",
+                            "wrong3@example.test",
+                        ],
+                        "selected_holder_ids": holders[:k],
+                    },
+                    expected=(400,),
+                )
+                if wrong.get("category") != "recovery_rejected":
+                    raise RuntimeError("wrong recovery input was not normalized")
+                still_temporary = _client_post(
+                    client_b_port,
+                    client_b_csrf,
+                    "/api/v2/key/reveal",
+                    {"api_version": CLIENT_API_VERSION},
+                )
+                if still_temporary.get("private_key") != temporary_key:
+                    raise RuntimeError("failed recovery replaced the current key")
+                override = _client_post(
+                    client_b_port,
+                    client_b_csrf,
+                    "/api/v2/recover",
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "operation_id": "smoke-suite-override",
+                        "recovery_input": original_cues[cast(str, record["policy_id"])],
+                        "selected_holder_ids": holders[:k],
+                        "suite_id": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+                    },
+                    expected=(400,),
+                )
+                if override.get("category") != "recovery_rejected":
+                    raise RuntimeError("recovery-time suite override was not rejected")
+                invalid_subset = _client_post(
+                    client_b_port,
+                    client_b_csrf,
+                    "/api/v2/recover",
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "operation_id": "smoke-invalid-subset",
+                        "recovery_input": original_cues[cast(str, record["policy_id"])],
+                        "selected_holder_ids": holders[: max(0, k - 1)],
+                    },
+                    expected=(400,),
+                )
+                if invalid_subset.get("category") != "recovery_rejected":
+                    raise RuntimeError("invalid holder subset was not rejected")
+
+            for subset_index, subset in enumerate(combinations(holders, k), start=1):
+                operation_id = f"smoke-recover-{package_index}-{subset_index}"
+                result = _client_post(
+                    client_b_port,
+                    client_b_csrf,
+                    "/api/v2/recover",
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "operation_id": operation_id,
+                        "recovery_input": original_cues[cast(str, record["policy_id"])],
+                        "selected_holder_ids": list(subset),
+                    },
+                )
+                if (
+                    result.get("status") != "recovered"
+                    or result.get("key_identity_verified") is not True
+                    or result.get("key_replaced") is not True
+                ):
+                    raise RuntimeError("exact-threshold managed recovery failed")
+                subset_recoveries += 1
+                if not first_success_operation:
+                    first_success_operation = operation_id
+            revealed = _client_post(
+                client_b_port,
+                client_b_csrf,
+                "/api/v2/key/reveal",
+                {"api_version": CLIENT_API_VERSION},
+            )
+            if revealed.get("private_key") != original_key:
+                raise RuntimeError("recovered key did not match Client A's key")
+
+        replay = _client_post(
+            client_b_port,
+            client_b_csrf,
+            "/api/v2/recover",
             {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-recover-1",
-                "receipt": receipts[0],
-                "recovery_input": email,
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": first_success_operation,
+                "recovery_input": original_cues[cast(str, packages[-1]["policy_id"])],
+                "selected_holder_ids": [1, 2, 3],
             },
-            expected=409,
+            expected=(409,),
         )
         if replay.get("category") != "operation_conflict":
-            raise RuntimeError("completed-operation replay was not rejected")
-        subset_recoveries = 0
-        for holder_ids, threshold, selected_receipts, topology in (
-            ((1, 2, 3), 2, receipts[:2], "2of3"),
-            ((1, 2, 3, 4, 5), 3, receipts[2:], "3of5"),
-        ):
-            ordered_subsets: list[tuple[int, ...]] = []
-            for subset in combinations(holder_ids, threshold):
-                remainder = tuple(
-                    holder_id for holder_id in holder_ids if holder_id not in subset
-                )
-                order = (*subset, *remainder)
-                ordered_subsets.extend((order, order))
-            environment["LOCUS_INTEGRATED_HOLDER_SCHEDULE"] = ";".join(
-                ",".join(str(holder_id) for holder_id in order)
-                for order in ordered_subsets
-            )
-            run(
-                [
-                    *recovery,
-                    "up",
-                    "--detach",
-                    "--no-build",
-                    "--no-deps",
-                    "--force-recreate",
-                    "--wait",
-                    "ui-client-b",
-                ],
-                env=environment,
-            )
-            for subset_index, _subset in enumerate(
-                combinations(holder_ids, threshold), start=1
-            ):
-                for suite_index, receipt in enumerate(selected_receipts, start=1):
-                    result = _post_json(
-                        port,
-                        "/api/v1/recover",
-                        {
-                            "api_version": "LOCUS-client-api-v1",
-                            "operation_id": (
-                                f"integrated-subset-{topology}-{subset_index}-"
-                                f"{suite_index}"
-                            ),
-                            "receipt": receipt,
-                            "recovery_input": email,
-                        },
-                    )
-                    if result.get("status") != "recovered":
-                        raise RuntimeError("exact threshold subset recovery failed")
-                    subset_recoveries += 1
-        environment["LOCUS_INTEGRATED_HOLDER_SCHEDULE"] = ""
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--force-recreate",
-                "--wait",
-                "ui-client-b",
-            ],
-            env=environment,
+            raise RuntimeError("completed recovery replay was not rejected")
+
+        _manager_action(manager_port, manager_csrf, "party5", "stop")
+        _wait_role(manager_port, "party5", state="exited")
+        _client_package_import(
+            client_b_port, client_b_csrf, cast(bytes, packages[0]["bytes"])
         )
-        environment["LOCUS_INTEGRATED_DISABLED_HOLDERS"] = "3,4,5"
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--force-recreate",
-                "--wait",
-                "ui-client-b",
-            ],
-            env=environment,
-        )
-        below_threshold = _post_json(
-            port,
-            "/api/v1/recover",
+        with_one_down = _client_post(
+            client_b_port,
+            client_b_csrf,
+            "/api/v2/recover",
             {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-below-threshold",
-                "receipt": receipts[2],
-                "recovery_input": email,
-            },
-            expected=400,
-        )
-        if below_threshold.get("category") != "recovery_rejected":
-            raise RuntimeError("below-threshold failure was not normalized")
-        threshold_logs = run_capture(
-            [*recovery, "logs", "--no-color", "ui-client-b"], env=environment
-        )
-        if '"stage":"suite-recovery"' not in threshold_logs:
-            raise RuntimeError(
-                "below-threshold failure did not pass authorization first"
-            )
-        environment["LOCUS_INTEGRATED_DISABLED_HOLDERS"] = ""
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--force-recreate",
-                "--wait",
-                "ui-client-b",
-            ],
-            env=environment,
-        )
-        for index, (policy_id, recovery_input, receipt) in enumerate(
-            policy_receipts, start=1
-        ):
-            result = _post_json(
-                port,
-                "/api/v1/recover",
-                {
-                    "api_version": "LOCUS-client-api-v1",
-                    "operation_id": f"integrated-policy-recover-{index}",
-                    "receipt": receipt,
-                    "recovery_input": recovery_input,
-                },
-            )
-            if result.get("status") != "recovered":
-                raise RuntimeError(f"integrated policy recovery failed: {policy_id}")
-        wrong = _post_json(
-            port,
-            "/api/v1/recover",
-            {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-wrong-input",
-                "receipt": receipts[0],
-                "recovery_input": [
-                    "wrong1@example.test",
-                    "wrong2@example.test",
-                    "wrong3@example.test",
-                ],
-            },
-            expected=400,
-        )
-        if wrong.get("category") != "recovery_rejected":
-            raise RuntimeError("wrong input was not normalized")
-        successor_suites = (
-            "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
-            "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
-            "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
-            "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
-        )
-        successor_profiles = (
-            "LOCUS-paired-suite-deployment-2of3-v1",
-            "LOCUS-paired-suite-deployment-2of3-v1",
-            "LOCUS-paired-suite-deployment-3of5-v1",
-            "LOCUS-paired-suite-deployment-3of5-v1",
-        )
-        successor_receipts: list[str] = []
-        for index, receipt in enumerate(receipts):
-            result = _post_json(
-                port,
-                "/api/v1/successor",
-                {
-                    "api_version": "LOCUS-client-api-v1",
-                    "operation_id": f"integrated-successor-{index + 1}",
-                    "receipt": receipt,
-                    "recovery_input": email,
-                    "rotate_protected_key": False,
-                    "successor_deployment_profile_id": successor_profiles[index],
-                    "successor_suite_id": successor_suites[index],
-                },
-            )
-            if result.get("status") != "successor_enrolled" or result.get("epoch") != 2:
-                raise RuntimeError("integrated successor did not complete")
-            successor_receipts.append(cast(str, result["receipt"]))
-        for index, receipt in enumerate(successor_receipts, start=1):
-            result = _post_json(
-                port,
-                "/api/v1/recover",
-                {
-                    "api_version": "LOCUS-client-api-v1",
-                    "operation_id": f"integrated-successor-recover-{index}",
-                    "receipt": receipt,
-                    "recovery_input": email,
-                },
-            )
-            if result.get("status") != "recovered" or result.get("epoch") != 2:
-                raise RuntimeError("integrated successor recovery failed")
-        lifecycle_logs = run_capture(
-            [*recovery, "logs", "--no-color", "ui-client-b"], env=environment
-        )
-        crash_phases = {
-            "PRESERVE_ORIGINAL_KEY",
-            "PREPARE_PARTIES",
-            "PUBLISH_BACKUP",
-            "PUBLISH_DESCRIPTOR",
-            "VERIFY_READINESS",
-            "VERIFY_SUCCESSOR_RECOVERY",
-            "ACTIVATE_SUCCESSOR",
-            "RETIRE_PREDECESSOR",
-        }
-        if not all(f'"phase":"{phase}"' in lifecycle_logs for phase in crash_phases):
-            raise RuntimeError("successor crash-resumption matrix is incomplete")
-        stale_probe = run_capture_input(
-            [
-                *recovery,
-                "exec",
-                "--no-TTY",
-                "ui-client-b",
-                "python",
-                "-m",
-                "locus.integrated_fault_probe",
-                "stale-cas",
-                "--root",
-                "/role",
-            ],
-            json.dumps(
-                {"receipt": successor_receipts[0]},
-                sort_keys=True,
-                separators=(",", ":"),
-            ),
-            env=environment,
-        )
-        if json.loads(stale_probe) != {"status": "stale_rejected"}:
-            raise RuntimeError("stale current-pointer CAS probe failed")
-        downgrade = _post_json(
-            port,
-            "/api/v1/recover",
-            {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-downgrade-attempt",
-                "receipt": successor_receipts[0],
-                "recovery_input": email,
-                "suite_id": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
-            },
-            expected=400,
-        )
-        if downgrade.get("category") != "recovery_rejected":
-            raise RuntimeError("suite override was not rejected")
-        run([*recovery, "stop", "party1"], env=environment)
-        fallback = _post_json(
-            port,
-            "/api/v1/recover",
-            {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-one-party-unavailable",
-                "receipt": successor_receipts[3],
-                "recovery_input": email,
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": "smoke-one-authorizer-down",
+                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
+                "selected_holder_ids": [1, 2],
             },
         )
-        if fallback.get("status") != "recovered":
-            raise RuntimeError("available threshold subset was not selected")
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--wait",
-                "party1",
-            ],
-            env=environment,
-        )
-        run([*recovery, "stop", "party4", "party5"], env=environment)
-        quorum_loss = _post_json(
-            port,
-            "/api/v1/recover",
+        if with_one_down.get("status") != "recovered":
+            raise RuntimeError("4-of-5 authorization did not tolerate one outage")
+        _manager_action(manager_port, manager_csrf, "party4", "stop")
+        _wait_role(manager_port, "party4", state="exited")
+        quorum_loss = _client_post(
+            client_b_port,
+            client_b_csrf,
+            "/api/v2/recover",
             {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-authorization-quorum-loss",
-                "receipt": successor_receipts[0],
-                "recovery_input": email,
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": "smoke-auth-quorum-loss",
+                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
+                "selected_holder_ids": [1, 2],
             },
-            expected=400,
+            expected=(400,),
         )
         if quorum_loss.get("category") != "recovery_rejected":
-            raise RuntimeError("authorization quorum loss was not normalized")
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--wait",
-                "party4",
-                "party5",
-            ],
-            env=environment,
+            raise RuntimeError("authorization-quorum loss was not rejected")
+        for role in ("party4", "party5"):
+            _manager_action(manager_port, manager_csrf, role, "start")
+            _wait_role(manager_port, role, state="running", healthy=True)
+
+        _manager_action(manager_port, manager_csrf, "s3", "stop")
+        _wait_role(manager_port, "s3", state="exited")
+        provider_loss = _client_package_import(
+            client_b_port,
+            client_b_csrf,
+            cast(bytes, packages[0]["bytes"]),
+            expected=(400,),
         )
-        run([*recovery, "restart", "party5"], env=environment)
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-build",
-                "--no-deps",
-                "--wait",
-                "party5",
-            ],
-            env=environment,
+        if provider_loss.get("category") != "package_import_rejected":
+            raise RuntimeError("provider outage was not rejected")
+        _manager_action(manager_port, manager_csrf, "s3", "start")
+        _wait_role(manager_port, "s3", state="running", healthy=True, timeout=75)
+        _client_package_import(
+            client_b_port, client_b_csrf, cast(bytes, packages[0]["bytes"])
         )
-        restarted = _post_json(
-            port,
-            "/api/v1/recover",
+
+        _manager_action(manager_port, manager_csrf, "party1", "restart")
+        _wait_role(manager_port, "party1", state="running", healthy=True)
+        restarted = _client_post(
+            client_b_port,
+            client_b_csrf,
+            "/api/v2/recover",
             {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-party-restart",
-                "receipt": successor_receipts[3],
-                "recovery_input": email,
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": "smoke-party-restart",
+                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
+                "selected_holder_ids": [1, 2],
             },
         )
         if restarted.get("status") != "recovered":
             raise RuntimeError("party restart recovery failed")
-        run([*recovery, "stop", "s3"], env=environment)
-        provider_outage = _post_json(
-            port,
-            "/api/v1/recover",
-            {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-provider-outage",
-                "receipt": successor_receipts[0],
-                "recovery_input": email,
-            },
-            expected=400,
+
+        client_b_id = cast(str, client_b["id"])
+        client_logs = run_capture(
+            [require("docker"), "logs", client_b_id], env=environment
         )
-        if provider_outage.get("category") != "recovery_rejected":
-            raise RuntimeError("provider outage was not normalized")
-        run(
-            [
-                *recovery,
-                "up",
-                "--detach",
-                "--no-deps",
-                "--wait",
-                "s3",
-            ],
-            env=environment,
+        compose_logs = run_capture(
+            [*_compose(project), "logs", "--no-color"], env=environment
         )
-        provider_restored = _post_json(
-            port,
-            "/api/v1/recover",
-            {
-                "api_version": "LOCUS-client-api-v1",
-                "operation_id": "integrated-provider-restored",
-                "receipt": successor_receipts[0],
-                "recovery_input": email,
-            },
-        )
-        if provider_restored.get("status") != "recovered":
-            raise RuntimeError("provider restoration recovery failed")
-        live_membership = {
-            "admission": {"admission"},
-            "operator": {"control"},
-            "resolver": {"resolver"},
-            "s3": {"cloud"},
-            "storage-gateway": {"cloud", "storage"},
-            "party1": {"recovery"},
-            "party2": {"recovery"},
-            "party3": {"recovery"},
-            "party4": {"recovery"},
-            "party5": {"recovery"},
-            "ui-client-b": {
-                "admission",
-                "browser-edge",
-                "control",
-                "recovery",
-                "resolver",
-                "storage",
-            },
-        }
-        for service, expected_networks in live_membership.items():
-            container_id = run_capture(
-                [*recovery, "ps", "--quiet", service], env=environment
-            ).strip()
-            if not container_id:
-                raise RuntimeError(f"integrated live service is absent: {service}")
-            networks = json.loads(
-                run_capture(
-                    [
-                        require("docker"),
-                        "inspect",
-                        "--format",
-                        "{{json .NetworkSettings.Networks}}",
-                        container_id,
-                    ],
-                    env=environment,
-                )
-            )
-            observed_networks = {name.removeprefix(f"{project}_") for name in networks}
-            if observed_networks != expected_networks:
-                raise RuntimeError(
-                    f"integrated live network membership changed: {service}"
-                )
         from locus.redaction import exposed_categories
 
-        all_logs = run_capture([*recovery, "logs", "--no-color"], env=environment)
         exposures = exposed_categories(
-            all_logs,
+            client_a_logs + client_logs + compose_logs,
             {
-                "synthetic-protected-key": synthetic_key,
-                "synthetic-cue-1": email[0],
-                "synthetic-cue-2": email[1],
-                "synthetic-cue-3": email[2],
+                "original-private-key": original_key,
                 "storage-access-key": environment["LOCUS_S3_ACCESS_KEY"],
                 "storage-secret-key": environment["LOCUS_S3_SECRET_KEY"],
+                "synthetic-email": "Ada@Example.COM",
+                "synthetic-phone": "+352621000001",
             },
         )
         if exposures:
             raise RuntimeError(
-                "integrated output scan found prohibited categories: "
+                "managed output scan found prohibited categories: "
                 + ",".join(exposures)
             )
-        run([*recovery, "stop"], env=environment)
-        role_volumes = (
-            ("admission-data", "admission"),
-            ("bootstrap-data", "bootstrap"),
-            ("client-b-data", "client"),
-            ("operator-data", "operator"),
-            ("party1-data", "party"),
-            ("party2-data", "party"),
-            ("party3-data", "party"),
-            ("party4-data", "party"),
-            ("party5-data", "party"),
-            ("resolver-data", "resolver"),
-            ("s3-data", "provider"),
-            ("s3-role-data", "s3-role"),
-            ("storage-gateway-data", "storage-gateway"),
+
+        _client_post(
+            client_b_port,
+            client_b_csrf,
+            "/api/v2/self-destroy",
+            {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-destroy-b"},
+            expected=(202,),
         )
-        for volume_name, role in role_volumes:
-            audit = run_capture(
-                [
-                    require("docker"),
-                    "run",
-                    "--rm",
-                    "--network",
-                    "none",
-                    "--read-only",
-                    "--volume",
-                    f"{project}_{volume_name}:/audit:ro",
-                    environment["LOCUS_INTEGRATED_IMAGE"],
-                    "python",
-                    "-m",
-                    "locus.integrated_state_audit",
-                    "--root",
-                    "/audit",
-                    "--role",
-                    role,
-                ],
-                env=environment,
-            )
-            audit_lines = [line for line in audit.splitlines() if line.startswith("{")]
-            if not audit_lines or json.loads(audit_lines[-1]).get("status") != "clean":
-                raise RuntimeError(f"integrated role-state audit failed: {role}")
+        _wait_client_removed(manager_port, client_b_port)
+        trust_before_stop = _volume_file_digest(
+            project,
+            environment,
+            volume_name="manager-ui-data",
+            relative_path="ca.pem",
+        )
+        _stop_through_manager(
+            manager_port, manager_csrf, label="smoke-preserving-system-stop"
+        )
+        preserved_role_audits = _audit_role_volumes(project, environment)
+
+        _resumed_status, manager_csrf = _resume_project(
+            project=project, manager_port=manager_port, environment=environment
+        )
+        trust_after_restart = _volume_file_digest(
+            project,
+            environment,
+            volume_name="manager-ui-data",
+            relative_path="ca.pem",
+        )
+        if trust_after_restart != trust_before_stop:
+            raise RuntimeError("normal Manager stop changed the project trust root")
+
+        client_c = _create_client(manager_port, manager_csrf)
+        client_c_port = cast(int, client_c["port"])
+        session_c = _client_session(client_c_port)
+        client_c_csrf = cast(str, session_c["csrf_token"])
+        preserved_import = _client_package_import(
+            client_c_port,
+            client_c_csrf,
+            cast(bytes, packages[0]["bytes"]),
+        )
+        preserved_threshold = preserved_import.get("threshold")
+        preserved_holders = preserved_import.get("holder_ids")
+        if not isinstance(preserved_threshold, dict) or not isinstance(
+            preserved_holders, list
+        ):
+            raise RuntimeError("preserved package omitted authenticated topology")
+        preserved_k = preserved_threshold.get("k")
+        if not isinstance(preserved_k, int):
+            raise RuntimeError("preserved package omitted its threshold")
+        preserved_recovery = _client_post(
+            client_c_port,
+            client_c_csrf,
+            "/api/v2/recover",
+            {
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": _operation_id("smoke-preserved-recovery"),
+                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
+                "selected_holder_ids": preserved_holders[:preserved_k],
+            },
+        )
+        if preserved_recovery.get("status") != "recovered":
+            raise RuntimeError("normal stop/start did not preserve recovery state")
+        preserved_reveal = _client_post(
+            client_c_port,
+            client_c_csrf,
+            "/api/v2/key/reveal",
+            {"api_version": CLIENT_API_VERSION},
+        )
+        if preserved_reveal.get("private_key") != original_key:
+            raise RuntimeError("normal stop/start recovered the wrong key")
+        _client_post(
+            client_c_port,
+            client_c_csrf,
+            "/api/v2/self-destroy",
+            {
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": _operation_id("smoke-destroy-c"),
+            },
+            expected=(202,),
+        )
+        _wait_client_removed(manager_port, client_c_port)
+        _stop_through_manager(
+            manager_port, manager_csrf, label="smoke-before-state-reset"
+        )
+
+        integrated_stop(argparse.Namespace(project=project, reset_state=True))
+        fresh_status = _start_project(
+            project=project, manager_port=manager_port, environment=environment
+        )
+        fresh_containers = fresh_status.get("containers")
+        if not isinstance(fresh_containers, list) or len(fresh_containers) != 13:
+            raise RuntimeError("state reset did not create a fresh static system")
+        manager_csrf = _manager_session(manager_port)
+        trust_after_reset = _volume_file_digest(
+            project,
+            environment,
+            volume_name="manager-ui-data",
+            relative_path="ca.pem",
+        )
+        if trust_after_reset == trust_before_stop:
+            raise RuntimeError("destructive state reset reused the old trust root")
+
+        client_d = _create_client(manager_port, manager_csrf)
+        client_d_port = cast(int, client_d["port"])
+        session_d = _client_session(client_d_port)
+        client_d_csrf = cast(str, session_d["csrf_token"])
+        if session_c.get("client_id") == session_d.get("client_id") or session_c.get(
+            "client_identity"
+        ) == session_d.get("client_identity"):
+            raise RuntimeError("fresh system reused the prior Client identity")
+        reset_import = _client_package_import(
+            client_d_port,
+            client_d_csrf,
+            cast(bytes, packages[0]["bytes"]),
+            expected=(400,),
+        )
+        if reset_import.get("category") != "package_import_rejected":
+            raise RuntimeError("fresh system accepted a pre-reset recovery package")
+        _client_post(
+            client_d_port,
+            client_d_csrf,
+            "/api/v2/self-destroy",
+            {
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": _operation_id("smoke-destroy-d"),
+            },
+            expected=(202,),
+        )
+        _wait_client_removed(manager_port, client_d_port)
+        _stop_through_manager(manager_port, manager_csrf, label="smoke-final-stop")
+
+        role_audits = _audit_role_volumes(project, environment)
         print(
             json.dumps(
                 {
                     "arms": 4,
-                    "clean_client": True,
-                    "below_threshold_after_authorization": True,
-                    "faults": 5,
-                    "lifecycle_crash_phases": len(crash_phases),
-                    "live_network_audits": len(live_membership),
-                    "policies": 4,
+                    "clean_clients": 4,
+                    "client_process_identity_rotations": 3,
+                    "client_identity_changed": True,
+                    "live_control_isolation": "passed",
+                    "manager_actions": ["start", "stop", "restart", "kill"],
+                    "normal_stop_restart_recovery": "passed",
                     "output_scan": "passed",
-                    "role_state_audits": len(role_volumes) + 1,
-                    "subset_recoveries": subset_recoveries,
-                    "stale_cas": "rejected",
+                    "packages": 4,
+                    "policies": 4,
+                    "preserved_role_state_audits": preserved_role_audits,
+                    "reset_state_fresh_trust": "passed",
+                    "role_state_audits": role_audits,
                     "status": "passed",
-                    "successors": 4,
+                    "subset_recoveries": subset_recoveries,
                 },
                 sort_keys=True,
             )
         )
     except BaseException:
         active_error = sys.exc_info()[1]
-        safe_diagnostics: list[str] = []
-        for command, service in (
-            (enrollment, "ui-client-a"),
-            (recovery, "ui-client-b"),
-        ):
-            logs = run_capture(
-                [*command, "logs", "--no-color", service], env=environment
-            )
-            safe_diagnostics.extend(
-                line for line in logs.splitlines() if '"stage"' in line
-            )
-        if safe_diagnostics:
-            print(safe_diagnostics[-1], file=sys.stderr, flush=True)
         print(
             json.dumps(
                 {
-                    "category": "integrated_smoke_failed",
+                    "category": "managed_smoke_failed",
                     "error": type(active_error).__name__,
                     "message": str(active_error),
                 },
@@ -1063,77 +1861,34 @@ def integrated_smoke() -> None:
         )
         raise
     finally:
-        cleanup = [
-            require("docker"),
-            "compose",
-            "--project-name",
-            project,
-            "--file",
-            str(INTEGRATED_COMPOSE),
-            "--profile",
-            "enrollment",
-            "--profile",
-            "recovery",
-        ]
-        run_capture(
-            [*cleanup, "down", "--volumes", "--remove-orphans"], env=environment
-        )
-        leftovers = {
-            "containers": run_capture(
-                [
-                    require("docker"),
-                    "ps",
-                    "--all",
-                    "--filter",
-                    f"label=com.docker.compose.project={project}",
-                    "--format",
-                    "{{.ID}}",
-                ],
-                env=environment,
-            ).strip(),
-            "networks": run_capture(
-                [
-                    require("docker"),
-                    "network",
-                    "ls",
-                    "--filter",
-                    f"label=com.docker.compose.project={project}",
-                    "--format",
-                    "{{.ID}}",
-                ],
-                env=environment,
-            ).strip(),
-            "volumes": run_capture(
-                [
-                    require("docker"),
-                    "volume",
-                    "ls",
-                    "--filter",
-                    f"label=com.docker.compose.project={project}",
-                    "--format",
-                    "{{.Name}}",
-                ],
-                env=environment,
-            ).strip(),
-        }
-        if any(leftovers.values()):
-            raise RuntimeError("integrated project cleanup left Docker objects")
+        primary_error = sys.exc_info()[1]
+        try:
+            _cleanup_smoke_project(project, environment)
+        except BaseException as cleanup_error:
+            if primary_error is None:
+                raise
+            primary_error.add_note(
+                "managed cleanup also failed: "
+                f"{type(cleanup_error).__name__}: {cleanup_error}"
+            )
+            print(
+                json.dumps(
+                    {
+                        "category": "managed_cleanup_failed",
+                        "error": type(cleanup_error).__name__,
+                    },
+                    sort_keys=True,
+                ),
+                file=sys.stderr,
+                flush=True,
+            )
 
 
-def _free_loopback_port() -> int:
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as listener:
-        listener.bind(("127.0.0.1", 0))
-        return int(listener.getsockname()[1])
-
-
-def _ui_port(value: str) -> int:
-    try:
-        port = int(value)
-    except ValueError as exc:
-        raise argparse.ArgumentTypeError("UI port must be an integer") from exc
-    if not 1 <= port <= 65535:
-        raise argparse.ArgumentTypeError("UI port must be between 1 and 65535")
-    return port
+def native_build() -> None:
+    require("uv")
+    environment = os.environ.copy()
+    environment["VIRTUAL_ENV"] = sys.prefix
+    run([PYTHON, "-m", "maturin", "develop", "--uv", "--locked"], env=environment)
 
 
 def integrated_check() -> None:
@@ -1147,12 +1902,13 @@ def integrated_check() -> None:
     run([PYTHON, "-m", "ruff", "format", "--check", "tasks.py", "locus", "tests"])
     run([PYTHON, "-m", "ruff", "check", "tasks.py", "locus", "tests"])
     run([PYTHON, "-m", "mypy", "tasks.py", "locus", "tests"])
-    for manifest in (
+    cargo = require("cargo")
+    manifests = (
         "appss-core/Cargo.toml",
         "tpass-core/Cargo.toml",
         "tpass-python/Cargo.toml",
-    ):
-        cargo = require("cargo")
+    )
+    for manifest in manifests:
         run([cargo, "fmt", "--manifest-path", manifest, "--", "--check"])
         run(
             [
@@ -1169,45 +1925,37 @@ def integrated_check() -> None:
         )
     native_build()
     run([PYTHON, "-B", "-m", "unittest", "discover", "-s", "tests", "-t", "."])
-    for manifest in (
-        "appss-core/Cargo.toml",
-        "tpass-core/Cargo.toml",
-        "tpass-python/Cargo.toml",
-    ):
-        run([require("cargo"), "test", "--locked", "--manifest-path", manifest])
+    for manifest in manifests:
+        run([cargo, "test", "--locked", "--manifest-path", manifest])
 
 
 def build_integrated_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
-        description="Operate the final integrated LOCUS reference prototype."
+        description="Operate the managed integrated LOCUS reference prototype."
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
     subparsers.add_parser(
         "integrated-check", help="run focused Python and native quality checks"
     )
     subparsers.add_parser(
-        "integrated-config", help="validate the manifest and resolved graphs"
+        "integrated-config", help="validate the managed manifest and graph"
     )
     start = subparsers.add_parser(
-        "integrated-start", help="start the service plane and one client role"
+        "integrated-start", help="start the service plane and Manager UI"
     )
-    start.add_argument(
-        "--mode", choices=("enrollment", "recovery"), default="enrollment"
-    )
-    start.add_argument("--project", default="locus-integrated-final")
-    start.add_argument("--port", type=_ui_port, default=8765)
+    start.add_argument("--project", type=_project, default=DEFAULT_PROJECT)
+    start.add_argument("--port", type=_port, default=DEFAULT_MANAGER_PORT)
     stop = subparsers.add_parser(
-        "integrated-stop", help="stop or destroy one exact integrated project"
+        "integrated-stop", help="emergency cleanup of one exact project"
     )
-    stop.add_argument("--project", default="locus-integrated-final")
-    stop.add_argument("--port", type=_ui_port, default=8765)
+    stop.add_argument("--project", type=_project, default=DEFAULT_PROJECT)
     stop.add_argument(
-        "--destroy",
+        "--reset-state",
         action="store_true",
-        help="also remove exact project volumes and the local image",
+        help="also remove exact-project role volumes (irreversible local reset)",
     )
     subparsers.add_parser(
-        "integrated-smoke", help="run the disposable UI-to-services acceptance gate"
+        "integrated-smoke", help="run the disposable Manager-to-Client gate"
     )
     return parser
 
@@ -1226,7 +1974,7 @@ def main() -> int:
             integrated_stop(args)
         elif args.command == "integrated-smoke":
             integrated_smoke()
-        else:  # pragma: no cover - argparse enforces the command choices.
+        else:  # pragma: no cover
             raise AssertionError(f"Unhandled command: {args.command}")
     except subprocess.CalledProcessError as error:
         return error.returncode

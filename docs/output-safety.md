@@ -2,7 +2,27 @@
 
 Status: P1.11 enforced output and retained-profile contract, 2026-07-23;
 D023 integrated-system obligations added 2026-08-04. P7.5 implementation and
-pre-evidence output gate are complete; retained P8/P9 evidence remains pending.
+pre-evidence output gate are complete. D025/P7.7 managed-system output gate is
+also complete; retained P8/P9 evidence remains pending.
+
+D025 permits one narrow exception to ordinary public-result redaction: an
+explicitly requested synthetic private key may appear transiently inside the
+managed Client UI/browser active-client boundary. It remains forbidden from
+Manager/controller messages, status APIs, logs, browser storage, caches,
+history, crash output, retained screenshots/evidence, and
+`LOCUS-client-recovery-package-v1`. The Manager returns only sanitized service/
+client IDs, lifecycle state, health, ports, and operation categories. The
+controller never returns raw Docker inspection, environment, mount-source,
+credential, or log data to either UI. P7.7 tested these boundaries and their
+positive controls before assigning the managed profiles.
+
+Client stop/start, restart, and kill/start must clear the process-local key and
+rotate its proof identity even though the public client ID remains. Output and
+browser-state scans run after each transition. Emergency
+`integrated-stop --reset-state` may report only the exact project and that role
+volumes were removed; it must never print deleted credential, provider, party,
+or package contents. The 366/365-day CA/leaf validity is public profile
+metadata, not retained certificate identity.
 
 ## Problem statement
 

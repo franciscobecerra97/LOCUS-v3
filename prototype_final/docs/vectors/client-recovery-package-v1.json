@@ -1,0 +1,7 @@
+{
+  "bundle_hex": "4c4f43555320656e63727970746564207265636f766572792062756e646c652066697874757265207631",
+  "canonical_package_sha256": "1e4f1e398ce13b630b0533f5bae6459e85757f942633af93a14e2a62817e2047",
+  "canonical_package_utf8": "{\"bundle\":{\"format\":\"LOCUS-recovery-bundle-v1\",\"length\":42,\"sha256\":\"210ab5453063d7f38641118f1ca89146bcdcc1e661789602d91d3a1dcea4e661\",\"value\":\"TE9DVVMgZW5jcnlwdGVkIHJlY292ZXJ5IGJ1bmRsZSBmaXh0dXJlIHYx\"},\"receipt\":{\"format\":\"LOCUS-recovery-receipt-v1\",\"length\":31,\"sha256\":\"b0e2b8591c497b33d081b06d049ab109d7c2cdea90a5119fd787437cf2de7aab\",\"value\":\"TE9DVVMgcHVibGljIHJlY2VpcHQgZml4dHVyZSB2MQ\"},\"version\":\"LOCUS-client-recovery-package-v1\"}",
+  "fixture_scope": "codec-only opaque public bytes; not a signed receipt, authenticated bundle, or trust root",
+  "receipt_hex": "4c4f435553207075626c696320726563656970742066697874757265207631"
+}

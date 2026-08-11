@@ -77,18 +77,44 @@ resources.
 
 ## Current chronological priority
 
-P1--P5A, P6.1--P6.3, and P7.1--P7.6 are complete for implementation chronology. D020's
-internal recovery-suite mapping assessment is provisional; independent human
-validation remains mandatory before manuscript reliance or final reviewed
-release. D023 inserts the now-complete P7.5 system gate before P8. The next
-chronological work is P8 assurance of that exact integrated graph.
+P1--P5A, P6.1--P6.3, and P7.1--P7.7 are complete for implementation chronology.
+D020's internal recovery-suite mapping assessment is provisional; independent
+human validation remains mandatory before manuscript reliance or final
+reviewed release. D025/P7.7 replaced CLI-selected clients with a separately
+versioned Manager/controller,
+dynamic Client UI, and client-recovery-package workflow inside
+`prototype_final/` and assigned all twelve managed identifiers. P8.1 is the
+next ready step. No retained P8/P9 collection occurred during P7.7; later
+collection still requires its applicable schema, trace, result, provenance,
+path, positive-control, and output gate.
 
-The P7.5 target is one reproducible same-host system in which the loopback UI
+The completed P7.5 predecessor is one reproducible same-host system in which the loopback UI
 and client gateway call the authenticated admission, discovery, storage,
 resolver, and five-party container services. The existing P7 in-memory UI and
 the frozen `LOCUS-compose-deployment-v2` deployment remain regression controls;
 neither is silently reinterpreted as the integrated system. The integrated run
 commands and their lifecycle/fault/reproducibility gates now pass.
+
+P7.7 preserves that protocol/service path while changing the operator,
+UI/API, clean-client, package, and Docker-control boundaries. Its dedicated
+controller is the only role permitted to receive the root-equivalent Docker
+socket; Manager and Client containers never receive it. The local
+S3-compatible provider remains part of the reference path, and a downloaded
+client recovery package does not replace current-state checks or online
+threshold parties.
+
+The managed graph keeps `management` (Manager/controller) and
+`client-lifecycle` (Client/controller) internal and disjoint. `manager-edge`
+publishes only the Manager loopback path, while `browser-edge` publishes only
+dynamic Client loopback paths; neither is a container-level Manager-to-Client
+channel. Client stop/start, restart, and kill/start preserve the public client
+ID but deliberately rotate proof identity and erase volatile key/session state.
+
+The one-shot bootstrap runs as root with every Linux capability dropped except
+exactly `CHOWN` and `DAC_READ_SEARCH`, has no network or Docker socket, and exits
+before unprivileged runtime services start. Its scope is limited to approved
+synthetic credentials, public configuration, empty role roots, fixtures, and
+their owner-only files.
 
 P6.4 remains open at its infrastructure gate: the strict endpoint file and
 additive Compose overlay run all five parties locally, but actual VMs or hosts
@@ -97,12 +123,21 @@ gate. Live AWS validation remains a separately authorized optional gate.
 
 For active work, enter `prototype_final/`, install its pinned environment, and
 run `uv run --frozen python tasks.py integrated-check`. Validate its graph with
-`integrated-config`; use `integrated-start --mode enrollment` followed by
-`integrated-start --mode recovery` for the interactive Client A/Client B path,
-or `integrated-smoke` for the disposable gate. The root executor remains only
-for historical/component reproduction. These commands create no
-retained evidence, usability claim, real-provider result, or manuscript
-change.
+`integrated-config` and use `integrated-smoke` for disposable development
+verification. The normal interactive entry point is one mode-free
+`integrated-start`, followed by Manager and Client UI actions; Manager stop is
+the normal stop path and CLI cleanup is emergency-only. That implemented
+workflow passed the complete P7.7 gate. The old `--mode enrollment` and
+`--mode recovery` workflow is the D023 predecessor, not the P8 target. The root
+executor remains only for historical/component reproduction. These commands
+create no retained evidence, usability claim, real-provider result, or
+manuscript change.
+
+Emergency `integrated-stop` preserves exact-project role/provider volumes.
+`integrated-stop --reset-state` is an explicit irreversible local reset that
+also removes credentials and enrolled remote state; it is required after
+expiry or an incompatible preserved manifest because the 366-day CA and
+365-day role certificates are not renewed in place.
 
 ## Foundation and integrated-system sequence
 
@@ -129,9 +164,16 @@ P7.5 connects those components without changing their protocol meanings. It
 first freezes the deployment contract, then implements the container service
 plane, connects the frozen client API and UI through authenticated remote
 adapters, completes enrollment/clean-client recovery/successor workflows, and
-passes one pre-evidence system gate. P8 security and reliability work and P9
-performance and resilience measurements then use that complete system as their
-primary system under test; component-only runs remain supporting controls.
+passes one pre-evidence system gate. P7.7 assigned and validated the managed
+Manager/Client deployment family without changing the underlying protocol.
+Its enhanced smoke covered all four suite/topology arms, 26 subsets, four clean
+Clients, live control and lifecycle isolation, role/output audits, preserved-CA
+restart, fresh-CA destructive reset with old-package rejection, and cleanup.
+Existing successor-core behavior remains an unchanged compatibility control
+outside Client API v2 and the managed Client UI. P8.1 assurance may now begin.
+Only after the applicable future evidence gates may P8/P9 collection produce
+retained results from the managed system; component-only and D023 runs remain
+supporting controls.
 
 ## Paper and evidence workflow
 

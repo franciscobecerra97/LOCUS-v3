@@ -79,10 +79,28 @@ def paired_profile(profile_id: str) -> PairedDeploymentProfile:
         raise ValueError("unsupported paired deployment profile") from exc
 
 
+def paired_profile_for_selection(
+    selection: RecoverySuiteSelection,
+) -> PairedDeploymentProfile:
+    """Return the unique approved deployment profile for an authenticated selector."""
+
+    matches: list[PairedDeploymentProfile] = []
+    for profile in PAIRED_PROFILES.values():
+        try:
+            profile.validate_selection(selection)
+        except ValueError:
+            continue
+        matches.append(profile)
+    if len(matches) != 1:
+        raise ValueError("selection does not identify one paired deployment profile")
+    return matches[0]
+
+
 __all__ = [
     "PAIRED_DEPLOYMENT_2_OF_3",
     "PAIRED_DEPLOYMENT_3_OF_5",
     "PAIRED_PROFILES",
     "PairedDeploymentProfile",
     "paired_profile",
+    "paired_profile_for_selection",
 ]

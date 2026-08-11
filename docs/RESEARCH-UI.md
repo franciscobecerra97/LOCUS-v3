@@ -4,6 +4,21 @@ Status: P7.2--P7.4 implemented and locally verified on 2026-08-03 under D022.
 D023 preserves this UI, and P7.5 now connects it to the deployed service plane
 under a separate integrated deployment/configuration identity.
 
+D025/P7.7 assigns the implemented `LOCUS-managed-client-ui-v1` over
+`LOCUS-client-api-v2` plus the distinct `LOCUS-local-manager-ui-v1`. Those
+profiles do not reinterpret this v1 UI. The Manager UI contains only
+sanitized lifecycle controls; the managed Client UI contains enrollment and
+recovery. `management` and `client-lifecycle` are disjoint, and a managed
+Client cannot reach the Manager UI/API. Transient synthetic-key reveal and the
+client recovery-package upload/download are permitted only under the assigned
+profiles and their P7.7-tested output-safety boundary.
+
+The managed Manager and Client documents are published over separate
+`manager-edge` and `browser-edge` networks. Manager stop/start, restart, and
+kill/start controls for a Client retain its public ID but clear its volatile UI/
+API state and rotate proof identity; the Manager UI must warn that these are
+destructive resets. Destroy removes the Client and ID.
+
 ## Purpose and boundary
 
 `LOCUS-local-research-ui-v1` is a thin, synthetic-only interface over the

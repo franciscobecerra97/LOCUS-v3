@@ -29,6 +29,14 @@ privacy-safe observation, and interpretation limit into the assigned scenario
 methodology and narrow them for the exact profile. The matrix itself is not
 evidence and cannot promote a claim.
 
+D025/P7.7 assigns `LOCUS-security-matrix-v2`. Its JSON/schema pin the immutable
+matrix-v1 digest and C01--C26 IDs and add M01--M05 for
+Manager/controller, package, dynamic-client/reset, edge-network, credential-
+lifetime, and transient-key-display boundaries. Assignment followed the full
+P7.7 smoke/browser gate, not the focused matrix check alone. Matrix v1 stays
+immutable, and neither matrix nor the P7.7 acceptance output authorizes retained
+collection by itself.
+
 P2.1/P2.2 descriptor/bootstrap disclosure analyses, canonical vectors, and
 unit positive controls, plus P2.3 storage conformance tests, are design and
 implementation checks, not collected
@@ -58,26 +66,46 @@ deployment assets, lockfile, and executor from that directory. A root command,
 root test suite, copied component harness, or separately assembled graph may
 support regression analysis but cannot substitute for the D024 system result.
 
+D025 changes the active operator, UI/API, controller, package, and clean-client
+boundaries. P7.7 is complete and the managed profiles are Assigned, so that
+deployment is now the required system under test and D023 is a supporting
+predecessor. No P8/P9 evidence was collected during P7.7; collection remains
+prohibited until the applicable P8/P9 schema, trace, result, provenance, path,
+positive-control, and output-safety gates pass. An integrated result must begin
+with Manager-created dynamic Client instances
+and exercise the Manager/controller and client recovery-package boundaries
+wherever the scenario includes lifecycle, enrollment, export/import, or clean
+recovery.
+
 Primitive vectors, native tests, unit/property/fuzz tests, the P7 in-memory
 backend, P6 process profiles, the frozen Compose deployment, and
 microbenchmarks remain necessary supporting controls. They cannot substitute
 for, be pooled with, or be relabeled as integrated-system evidence. P7.5 smoke
-and acceptance output is still ordinary implementation verification; retained
-evidence begins only after P8/P9 assign the applicable trace, result,
+and P7.7 managed acceptance output are ordinary implementation verification;
+retained evidence begins only after P8/P9 assign the applicable trace, result,
 methodology, and collection profiles.
 
 Every integrated result additionally binds:
 
 - stable UI and client-API versions and the container-backed adapter version;
+- for the managed profile, Manager UI/API, controller API/profile, managed-
+  client-instance, client-recovery-package, and clean-client-isolation
+  versions;
 - integrated deployment/configuration identity and canonical manifest digest;
 - resolved and live service-graph digests;
 - immutable container image identities and runtime locks;
 - service identities, certificate/trust profile, role placement, networks,
   mounts, and published loopback endpoint;
+- bootstrap root execution with every capability dropped except exactly
+  `CHOWN` and `DAC_READ_SEARCH`, `network_mode: none`, no Docker socket, and
+  successful exit before unprivileged runtime services;
+- exact `management`, `client-lifecycle`, `manager-edge`, and `browser-edge`
+  membership plus absence of Client-to-Manager and UI-to-Docker reachability;
 - provider mode, recovery suite, holder threshold/topology, authorization
   quorum, CuePolicy, admission profile, and failure schedule; and
-- active-client A/B isolation boundary, host tier, source commit, cleanup, and
-  output-scan status.
+- dynamic active-client A/B isolation and public instance bindings, Manager/
+  controller trust boundary, exact Docker project, host tier, source commit,
+  cleanup, and output-scan status.
 
 Stable client-API latency is the primary full-system protocol measure. Any
 browser-observed latency is a separately labeled UI observation and must not be
@@ -98,6 +126,18 @@ Every security-sensitive experiment records:
 - for an integrated-system scenario, the exact UI/API/backend,
   configuration/manifest, resolved/live graph, image, service-identity,
   network, provider, and active-client-boundary bindings required above;
+- for a managed-system scenario, the exact Manager/controller action schedule,
+  client-instance identities and transitions, package profile/digest, and
+  whether the synthetic private key was exposed to the active browser;
+- for Client process actions, the preserved public ID, rotated proof identity,
+  cleared volatile-state observation, and whether the transition was stop/
+  start, restart, kill/start, or destroy/create;
+- credential CA/leaf validity, preserved-versus-reset volume mode, manifest-
+  compatibility outcome, and explicit destructive-reset status without
+  retaining raw keys or certificate subject identifiers;
+- exact `management`, `client-lifecycle`, `manager-edge`, and `browser-edge`
+  membership and observed contacts, including absence of managed-Client-to-
+  Manager reachability;
 - reconstruction threshold `k`, holder identities, and any source-paper
   threshold-notation mapping;
 - for aPPSS, the D017/P1.2 profile from `docs/APPSS-PROFILE.md`, including
@@ -172,9 +212,10 @@ present.
 ## Versioning
 
 Any change to policy semantics, recovery suite or concrete cryptographic
-profile, descriptor, topology, threshold, admission, recovery-bundle format,
-cloud backend, clean-client boundary, metric definition, or trace policy
-requires a new profile and result version.
+profile, descriptor, topology, threshold, admission, recovery-bundle or export-
+package format, cloud backend, Manager/controller API, client API/UI, clean-
+client boundary, metric definition, or trace policy requires a new profile and
+result version.
 
 Do not mix profiles, commits, hosts, policies, thresholds, or topology in one
 processed corpus unless the schema and methodology explicitly define that
