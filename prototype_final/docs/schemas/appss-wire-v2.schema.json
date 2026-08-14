@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:appss-wire:v2",
+  "title": "LOCUS aPPSS 3-of-5 wire and state objects v2",
+  "oneOf": [
+    {"$ref": "#/$defs/publicState"},
+    {"$ref": "#/$defs/partyState"},
+    {"$ref": "#/$defs/pendingPartyState"},
+    {"$ref": "#/$defs/request"},
+    {"$ref": "#/$defs/response"},
+    {"$ref": "#/$defs/install"},
+    {"$ref": "#/$defs/ready"}
+  ],
+  "$defs": {
+    "hex16": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "hex32": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "maskedShare": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["index", "value"],
+      "properties": {
+        "index": {"type": "integer", "minimum": 1, "maximum": 5},
+        "value": {"$ref": "#/$defs/hex16"}
+      }
+    },
+    "publicState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["commitment", "context_digest", "k", "masked_shares", "n", "omega_digest", "oprf_profile", "profile_id", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-public-state-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "oprf_profile": {"const": "LOCUS-APPSS-OPRF-RISTRETTO255-SHA512-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "k": {"const": 3},
+        "n": {"const": 5},
+        "masked_shares": {"type": "array", "minItems": 5, "maxItems": 5, "items": {"$ref": "#/$defs/maskedShare"}},
+        "commitment": {"$ref": "#/$defs/hex16"},
+        "omega_digest": {"$ref": "#/$defs/hex32"}
+      }
+    },
+    "pendingPartyState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_digest", "holder_id", "key_commitment", "oprf_key", "profile_id", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-pending-party-state-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 5},
+        "oprf_key": {"$ref": "#/$defs/hex32"},
+        "key_commitment": {"$ref": "#/$defs/hex32"}
+      }
+    },
+    "partyState": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_digest", "holder_id", "key_commitment", "omega_digest", "oprf_key", "profile_id", "public_state_digest", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-party-state-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 5},
+        "oprf_key": {"$ref": "#/$defs/hex32"},
+        "key_commitment": {"$ref": "#/$defs/hex32"},
+        "omega_digest": {"$ref": "#/$defs/hex32"},
+        "public_state_digest": {"$ref": "#/$defs/hex32"}
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["admission_grant_digest", "blinded_element", "client_proof_key_digest", "context_digest", "holder_id", "nonce", "omega_digest", "operation", "operation_id", "profile_id", "session_id", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-request-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "session_id": {"$ref": "#/$defs/hex32"},
+        "operation_id": {"$ref": "#/$defs/hex32"},
+        "nonce": {"$ref": "#/$defs/hex32"},
+        "admission_grant_digest": {"$ref": "#/$defs/hex32"},
+        "client_proof_key_digest": {"$ref": "#/$defs/hex32"},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 5},
+        "operation": {"enum": ["initialize", "recover"]},
+        "omega_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/hex32"}]},
+        "blinded_element": {"$ref": "#/$defs/hex32"}
+      }
+    },
+    "response": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["admission_grant_digest", "client_proof_key_digest", "context_digest", "evaluated_element", "holder_id", "key_commitment", "nonce", "omega_digest", "operation", "operation_id", "profile_id", "request_digest", "session_id", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-response-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "session_id": {"$ref": "#/$defs/hex32"},
+        "operation_id": {"$ref": "#/$defs/hex32"},
+        "nonce": {"$ref": "#/$defs/hex32"},
+        "admission_grant_digest": {"$ref": "#/$defs/hex32"},
+        "client_proof_key_digest": {"$ref": "#/$defs/hex32"},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 5},
+        "operation": {"enum": ["initialize", "recover"]},
+        "omega_digest": {"oneOf": [{"type": "null"}, {"$ref": "#/$defs/hex32"}]},
+        "request_digest": {"$ref": "#/$defs/hex32"},
+        "evaluated_element": {"$ref": "#/$defs/hex32"},
+        "key_commitment": {"$ref": "#/$defs/hex32"}
+      }
+    },
+    "install": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_digest", "holder_id", "initialization_transcript_digest", "operation_id", "profile_id", "public_state", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-state-install-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 5},
+        "operation_id": {"$ref": "#/$defs/hex32"},
+        "initialization_transcript_digest": {"$ref": "#/$defs/hex32"},
+        "public_state": {"$ref": "#/$defs/publicState"}
+      }
+    },
+    "ready": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_digest", "holder_id", "operation_id", "party_state_digest", "profile_id", "public_state_digest", "suite_id", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-APPSS-state-ready-v2"},
+        "suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"},
+        "profile_id": {"const": "LOCUS-APPSS-3of5-v1"},
+        "context_digest": {"$ref": "#/$defs/hex32"},
+        "holder_id": {"type": "integer", "minimum": 1, "maximum": 5},
+        "operation_id": {"$ref": "#/$defs/hex32"},
+        "party_state_digest": {"$ref": "#/$defs/hex32"},
+        "public_state_digest": {"$ref": "#/$defs/hex32"}
+      }
+    }
+  }
+}

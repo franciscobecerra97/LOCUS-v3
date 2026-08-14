@@ -19,6 +19,13 @@ kill/start controls for a Client retain its public ID but clear its volatile UI/
 API state and rotate proof identity; the Manager UI must warn that these are
 destructive resets. Destroy removes the Client and ID.
 
+The managed Client locks enrollment fields until the backend reports a loaded
+transient key; package recovery remains available to a clean Client without a
+preexisting key. The Manager disables mutating lifecycle controls once complete
+shutdown begins while keeping read-only refresh available. These are thin-UI
+interaction guards within the assigned API semantics, not new recovery,
+lifecycle, usability, or evidence claims.
+
 ## Purpose and boundary
 
 `LOCUS-local-research-ui-v1` is a thin, synthetic-only interface over the

@@ -19,7 +19,9 @@ session state. The 366-day CA and 365-day role certificates have no in-place
 renewal; an explicit emergency full-state reset is destructive. D023 remains
 a supporting immutable predecessor. The one-shot bootstrap runs as root with
 only `CHOWN` and `DAC_READ_SEARCH`, no network or Docker socket, and exits before
-unprivileged services. P8.1 is ready, but no retained D025 evidence exists yet.
+unprivileged services. P8.1 assurance is complete, but no retained D025
+evidence exists yet; P8.2 remains subject to its owner-approved collection
+contract.
 
 The cue-specific boundary and role-visible data are diagrammed in
 `docs/cue-data-flow.md`.

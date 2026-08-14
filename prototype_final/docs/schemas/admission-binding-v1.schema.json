@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:admission-binding-v1",
+  "additionalProperties": false,
+  "properties": {
+    "audience": {"type": "string", "minLength": 1, "maxLength": 255},
+    "backup_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "client_key_thumbprint": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "epoch": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "expires_at": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "format_id": {"const": "LOCUS-admission-binding-v1"},
+    "issued_at": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "issuer": {"type": "string", "minLength": 1, "maxLength": 255},
+    "nonce": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "object_prefix": {"type": ["string", "null"], "maxLength": 512},
+    "operation": {
+      "enum": [
+        "recovery_attempt",
+        "storage_compare_and_swap",
+        "storage_create_immutable",
+        "storage_delete_exact",
+        "storage_read_exact"
+      ]
+    },
+    "profile_id": {"const": "LOCUS-local-synthetic-admission-v1"},
+    "subject": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "required": [
+    "audience",
+    "backup_id",
+    "client_key_thumbprint",
+    "epoch",
+    "expires_at",
+    "format_id",
+    "issued_at",
+    "issuer",
+    "nonce",
+    "object_prefix",
+    "operation",
+    "profile_id",
+    "subject"
+  ],
+  "title": "LOCUS admission binding v1",
+  "type": "object"
+}

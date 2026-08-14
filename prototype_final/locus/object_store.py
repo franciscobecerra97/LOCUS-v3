@@ -369,7 +369,15 @@ class FilesystemBackupObjectStore:
 
     def _object_path(self, reference: BackupReference) -> Path:
         reference.validate()
-        return self.root / reference.bid / f"{reference.epoch}.json"
+        path = self.root / reference.bid / f"{reference.epoch}.json"
+        try:
+            if path.parent.is_symlink():
+                raise ObjectCorrupt("cloud object namespace is not a plain directory")
+        except ObjectStoreError:
+            raise
+        except OSError as exc:
+            raise ObjectStoreUnavailable("cloud object store is unavailable") from exc
+        return path
 
     @staticmethod
     def _fsync_directory(path: Path) -> None:

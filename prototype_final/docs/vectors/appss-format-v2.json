@@ -1,0 +1,41 @@
+{
+  "artifact": "LOCUS-APPSS-format-vectors-v2",
+  "public_state": {
+    "commitment": "55555555555555555555555555555555",
+    "context_digest": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+    "k": 3,
+    "masked_shares": [
+      {"index": 1, "value": "11111111111111111111111111111111"},
+      {"index": 2, "value": "22222222222222222222222222222222"},
+      {"index": 3, "value": "33333333333333333333333333333333"},
+      {"index": 4, "value": "44444444444444444444444444444444"},
+      {"index": 5, "value": "55555555555555555555555555555555"}
+    ],
+    "n": 5,
+    "omega_digest": "19f970828b167696180a4d02d301d5e497c9001a922239b0a6275b781c1afb93",
+    "oprf_profile": "LOCUS-APPSS-OPRF-RISTRETTO255-SHA512-v1",
+    "profile_id": "LOCUS-APPSS-3of5-v1",
+    "suite_id": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
+    "version": "LOCUS-APPSS-public-state-v2"
+  },
+  "selector_appss": {
+    "authorization_quorum": 4,
+    "authorizer_ids": [1, 2, 3, 4, 5],
+    "holder_ids": [1, 2, 3, 4, 5],
+    "k": 3,
+    "n": 5,
+    "profile_id": "LOCUS-APPSS-3of5-v1",
+    "suite_id": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
+    "version": "LOCUS-recovery-suite-selector-v2"
+  },
+  "selector_yi": {
+    "authorization_quorum": 4,
+    "authorizer_ids": [1, 2, 3, 4, 5],
+    "holder_ids": [1, 2, 3, 4, 5],
+    "k": 3,
+    "n": 5,
+    "profile_id": "LOCUS-TPASS-YI-3of5-v1",
+    "suite_id": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+    "version": "LOCUS-recovery-suite-selector-v2"
+  }
+}

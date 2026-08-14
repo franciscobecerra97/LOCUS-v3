@@ -90,6 +90,13 @@ publishes only dynamic Client paths. A Client cannot reach the Manager UI/API.
 This is the assigned implementation boundary for P8.1 and later work. Its P7.7
 verification is pre-evidence development output, not a retained P8/P9 result.
 
+The Manager's header contains the complete-system stop control and locks its
+other mutating controls after shutdown begins. In each Client, enrollment stays
+locked until the backend confirms a transient key is loaded; authenticated
+package recovery remains available on a clean Client without a preexisting
+key. These interaction guards do not change the assigned API or protocol
+semantics.
+
 The D023 `--mode enrollment`, `--mode recovery`, and `--destroy` options are no
 longer accepted by this executor. Their source history remains provenance only.
 

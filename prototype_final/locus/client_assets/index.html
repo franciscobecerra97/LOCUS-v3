@@ -36,7 +36,8 @@
 
     <div class="workflow-grid">
       <section class="card" aria-labelledby="backup-heading">
-        <div class="section-heading"><div><p class="step">02A</p><h2 id="backup-heading">Backup / enrollment</h2></div><span class="pill">New epoch</span></div>
+        <div class="section-heading"><div><p class="step">02A</p><h2 id="backup-heading">Backup / enrollment</h2></div><span id="enrollment-state" class="pill">New epoch</span></div>
+        <p id="enrollment-lock-note" class="help" hidden>Generate a private key in Step 01 before enrollment becomes available. Enrollment backs up the key currently held by this client, so it cannot start without one.</p>
         <form id="enrollment-form" autocomplete="off" novalidate>
           <div class="form-grid">
             <label>Recovery suite<select id="suite" required></select></label>
@@ -58,6 +59,7 @@
 
       <section class="card" aria-labelledby="recovery-heading">
         <div class="section-heading"><div><p class="step">02B</p><h2 id="recovery-heading">Recovery</h2></div><span class="pill">Authenticated import</span></div>
+        <p class="help">Recovery does not require a private key on this client — it is how a clean client obtains one.</p>
         <label class="file-button button secondary">Import encrypted package<input id="package-file" type="file" accept=".locus,application/vnd.locus.recovery-package+json" hidden></label>
         <section id="package-result" class="authenticated" hidden>
           <h3>Package and current epoch authenticated</h3>

@@ -78,6 +78,31 @@ ignored or untracked files were present.
 
 The upstream `.git` directory and upstream history were not copied.
 
+## LOCUS-v4 prototype reintegration
+
+On 2026-08-14, the owner chose to continue P8--P10 in this LOCUS-v3
+repository and authorized copying the newer active prototype back from the
+independent `LOCUS-v4-claude` continuation. The imported source state was
+commit `760f48e` on branch `claude/ui-manager-stop-control`. That repository
+had renamed its active `prototype_final/` tree to `prototype/`; this import
+mapped its 103 source-controlled files back to this repository's governed
+`prototype_final/` boundary.
+
+Only files reported by the source repository's tracked `prototype/` set were
+copied. Environments, caches, Rust targets, bytecode/native build artifacts,
+databases, credentials, logs, traces, and Docker state were excluded. Hash
+comparison after copying found zero mismatches across the 103 imported files.
+
+The imported delta supplied the starting P8.1 decoder/transition inventory and
+two admission/discovery negative tests, and updates the thin
+Manager/Client assets with interaction guards and layout changes. It changes
+no protocol bytes, API route or result meaning, deployment manifest,
+cryptographic profile, evidence identifier, retained result, or manuscript
+source. P8.1 was then completed locally with the checked inventory, active
+assurance corpus, containment fixes, and full-system schedules. LOCUS-v4
+history remains external provenance; this LOCUS-v3 history
+continues as the authoritative project history.
+
 ## Portable contents manifest
 
 `PORTABLE-CONTENTS.json` contains a sorted path/size/SHA-256 record for every

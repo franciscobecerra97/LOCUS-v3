@@ -1,0 +1,67 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:descriptor-current-pointer:v1",
+  "title": "LOCUS descriptor current pointer v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["payload", "signature", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-descriptor-current-pointer-v1"},
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "backup_id",
+        "bundle",
+        "configuration_digest",
+        "descriptor_sha256",
+        "epoch",
+        "expires_at",
+        "issued_at",
+        "issuer",
+        "subject_id"
+      ],
+      "properties": {
+        "backup_id": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+        "bundle": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["length", "locator", "profile", "sha256"],
+          "properties": {
+            "length": {"type": "integer", "minimum": 1, "maximum": 2097152},
+            "locator": {
+              "type": "string",
+              "pattern": "^[!-~]{1,1024}$"
+            },
+            "profile": {"const": "LOCUS-recovery-bundle-v1"},
+            "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+          }
+        },
+        "configuration_digest": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "descriptor_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "epoch": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+        "expires_at": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+        "issued_at": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+        "issuer": {"type": "string", "pattern": "^[!-~]{1,255}$"},
+        "subject_id": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "key_id", "value", "version"],
+      "properties": {
+        "algorithm": {"const": "Ed25519"},
+        "key_id": {"type": "string", "pattern": "^[!-~]{1,255}$"},
+        "value": {"type": "string", "pattern": "^[0-9a-f]{128}$"},
+        "version": {"const": "LOCUS-bootstrap-signature-v1"}
+      }
+    }
+  }
+}

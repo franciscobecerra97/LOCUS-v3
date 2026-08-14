@@ -9,7 +9,10 @@
 <body>
   <header>
     <div><span class="eyebrow">LOCUS integrated research system</span><h1>Environment manager</h1></div>
-    <span id="system-state" class="pill">Connecting</span>
+    <div class="header-controls">
+      <span id="system-state" class="pill">Connecting</span>
+      <button id="stop-system" class="danger header-stop" title="Stop complete system: stops clients, protocol services, Manager, and controller. Role volumes are preserved for the next start.">Stop system</button>
+    </div>
   </header>
   <main>
     <section class="intro">
@@ -21,14 +24,10 @@
       <div class="section-heading"><h2>Containers</h2><button id="refresh">Refresh</button></div>
       <div id="containers" class="grid" aria-live="polite"></div>
     </section>
-    <section class="danger-zone">
-      <div><h2>Stop complete system</h2><p>Stops clients, protocol services, Manager, and controller. Role volumes are preserved for the next start.</p></div>
-      <button id="stop-system" class="danger">Stop system</button>
-    </section>
   </main>
   <template id="container-card">
     <article class="card">
-      <div class="card-title"><div><span class="role"></span><h3 class="name"></h3></div><span class="state pill"></span></div>
+      <div class="card-title"><div class="card-heading-text"><span class="role"></span><h3 class="name"></h3></div><span class="state pill"></span></div>
       <dl><div><dt>Health</dt><dd class="health"></dd></div><div><dt>Client ID</dt><dd class="client-id"></dd></div></dl>
       <div class="actions"></div>
     </article>

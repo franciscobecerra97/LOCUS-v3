@@ -1,0 +1,137 @@
+{
+  "corpus_version": "LOCUS-cue-policy-conformance-v1",
+  "policies": [
+    {
+      "policy_id": "LOCUS-location-person-set-v1",
+      "legacy_vector_source": "cue-policy-v1.json"
+    },
+    {
+      "policy_id": "LOCUS-quantized-coordinate-set-v1",
+      "valid": [
+        {
+          "id": "synthetic-three-coordinate-set",
+          "input": [
+            {"latitude": "49.59875", "longitude": "6.13445"},
+            {"latitude": "-33.86880", "longitude": "151.20930"},
+            {"latitude": "40.71280", "longitude": "-74.00600"}
+          ],
+          "canonical_json": "{\"coordinates\":[{\"latitude_e4\":-338688,\"longitude_e4\":1512093},{\"latitude_e4\":495988,\"longitude_e4\":61344},{\"latitude_e4\":407128,\"longitude_e4\":-740060}],\"version\":\"LOCUS-quantized-coordinate-set-v1\"}",
+          "canonical_hex": "7b22636f6f7264696e61746573223a5b7b226c617469747564655f6534223a2d3333383638382c226c6f6e6769747564655f6534223a313531323039337d2c7b226c617469747564655f6534223a3439353938382c226c6f6e6769747564655f6534223a36313334347d2c7b226c617469747564655f6534223a3430373132382c226c6f6e6769747564655f6534223a2d3734303036307d5d2c2276657273696f6e223a224c4f4355532d7175616e74697a65642d636f6f7264696e6174652d7365742d7631227d",
+          "canonical_sha256": "d3ff6502bba7e5e7be8abc463b5ae8e0afc59378d7b517f98eb2fdbbe14a20f3"
+        }
+      ],
+      "invalid": [
+        {
+          "id": "coordinate-wrong-cardinality",
+          "input": [
+            {"latitude": "49.59875", "longitude": "6.13445"},
+            {"latitude": "40.71280", "longitude": "-74.00600"}
+          ],
+          "error": "exactly three coordinates are required"
+        },
+        {
+          "id": "coordinate-locale-decimal",
+          "input": [
+            {"latitude": "49,59875", "longitude": "6.13445"},
+            {"latitude": "-33.86880", "longitude": "151.20930"},
+            {"latitude": "40.71280", "longitude": "-74.00600"}
+          ],
+          "error": "invalid latitude"
+        },
+        {
+          "id": "coordinate-post-quantization-duplicate",
+          "input": [
+            {"latitude": "49.59875", "longitude": "6.13445"},
+            {"latitude": "49.59876", "longitude": "6.13445"},
+            {"latitude": "40.71280", "longitude": "-74.00600"}
+          ],
+          "error": "duplicate canonical coordinates are not allowed"
+        }
+      ]
+    },
+    {
+      "policy_id": "LOCUS-canonical-phone-set-v1",
+      "valid": [
+        {
+          "id": "synthetic-three-phone-set",
+          "input": ["+352621123456", "+33123456789", "+12025550123"],
+          "canonical_json": "{\"phones\":[\"+352621123456\",\"+12025550123\",\"+33123456789\"],\"version\":\"LOCUS-canonical-phone-set-v1\"}",
+          "canonical_hex": "7b2270686f6e6573223a5b222b333532363231313233343536222c222b3132303235353530313233222c222b3333313233343536373839225d2c2276657273696f6e223a224c4f4355532d63616e6f6e6963616c2d70686f6e652d7365742d7631227d",
+          "canonical_sha256": "fbabf3631cc54e53fc045c216c837a75fc77fccaf14ee90bcfd7e34ff7e9ebad"
+        }
+      ],
+      "invalid": [
+        {
+          "id": "phone-wrong-cardinality",
+          "input": ["+352621123456", "+33123456789"],
+          "error": "exactly three phone numbers are required"
+        },
+        {
+          "id": "phone-local-format",
+          "input": ["+352621123456", "01 23 45 67 89", "+12025550123"],
+          "error": "invalid phone"
+        },
+        {
+          "id": "phone-extension",
+          "input": ["+352621123456", "+33123456789x7", "+12025550123"],
+          "error": "invalid phone"
+        },
+        {
+          "id": "phone-duplicate",
+          "input": ["+352621123456", "+352621123456", "+12025550123"],
+          "error": "duplicate canonical phone numbers are not allowed"
+        }
+      ]
+    },
+    {
+      "policy_id": "LOCUS-canonical-email-set-v1",
+      "valid": [
+        {
+          "id": "synthetic-three-email-set",
+          "input": [
+            "Friend@Example.ORG",
+            "alpha@example.com",
+            "Research+Locus@Example.NET"
+          ],
+          "canonical_json": "{\"emails\":[\"friend@example.org\",\"research+locus@example.net\",\"alpha@example.com\"],\"version\":\"LOCUS-canonical-email-set-v1\"}",
+          "canonical_hex": "7b22656d61696c73223a5b22667269656e64406578616d706c652e6f7267222c2272657365617263682b6c6f637573406578616d706c652e6e6574222c22616c706861406578616d706c652e636f6d225d2c2276657273696f6e223a224c4f4355532d63616e6f6e6963616c2d656d61696c2d7365742d7631227d",
+          "canonical_sha256": "92340d2d3e5dccacc5f42963df3675f177c43a797a5112b99da5d2301f2303cc"
+        }
+      ],
+      "invalid": [
+        {
+          "id": "email-wrong-cardinality",
+          "input": ["friend@example.org", "alpha@example.com"],
+          "error": "exactly three email addresses are required"
+        },
+        {
+          "id": "email-unicode",
+          "input": [
+            "françois@example.org",
+            "alpha@example.com",
+            "research@example.net"
+          ],
+          "error": "invalid email"
+        },
+        {
+          "id": "email-local-too-long",
+          "input": [
+            "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa@example.org",
+            "alpha@example.com",
+            "research@example.net"
+          ],
+          "error": "invalid email"
+        },
+        {
+          "id": "email-post-lowercase-duplicate",
+          "input": [
+            "Friend@Example.ORG",
+            "friend@example.org",
+            "research@example.net"
+          ],
+          "error": "duplicate canonical email addresses are not allowed"
+        }
+      ]
+    }
+  ]
+}

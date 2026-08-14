@@ -305,6 +305,13 @@ class FilesystemDescriptorBundleStore:
             path.relative_to(self.root)
         except ValueError as exc:
             raise ObjectCorrupt("storage locator escapes root") from exc
+        current = self.root
+        for component in path.relative_to(self.root).parts[:-1]:
+            current /= component
+            if current.is_symlink():
+                raise ObjectCorrupt("storage namespace contains a symbolic link")
+            if current.exists() and not current.is_dir():
+                raise ObjectCorrupt("storage namespace is not a directory")
         return path
 
     @staticmethod
@@ -343,6 +350,7 @@ class FilesystemDescriptorBundleStore:
         temporary: Path | None = None
         try:
             path.parent.mkdir(parents=True, exist_ok=True)
+            path = self._path(locator)
             if path.parent.is_symlink() or not path.parent.is_dir():
                 raise OSError("storage namespace is not a plain directory")
             with tempfile.NamedTemporaryFile(

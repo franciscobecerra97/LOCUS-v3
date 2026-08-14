@@ -15,8 +15,9 @@ Before doing any work:
 7. For P8 or later implementation, testing, evidence, or artifact work, read
    `prototype_final/README.md` and work from `prototype_final/`; treat the root
    implementations and commands as historical/component controls. P7.7 is
-   complete. P8.1 is the next ready assurance step; retained P8/P9 collection
-   remains blocked until each applicable schema and evidence gate passes.
+   complete, and P8.1 implementation assurance is complete. P8.2 is the next
+   proposed step; retained P8/P9 collection remains blocked until each
+   applicable schema and evidence gate passes.
 8. Do not modify the external upstream checkout. Treat `paper/` here as the
    authoritative continuation manuscript, but edit it only after presenting
    the exact delta and receiving explicit owner approval.

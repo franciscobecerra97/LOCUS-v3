@@ -268,6 +268,14 @@ IDs. Managed contracts M01--M05 are governance contracts, not retained evidence
 or claim promotion. Their focused checks support assignment only together with
 the complete P7.7 smoke/browser and documentation gate.
 
+The 2026-08-14 thin-UI interaction refinements remain within the existing
+assigned Manager and managed-Client UI profiles. They move the stop control,
+prevent duplicate or post-shutdown mutations, and keep enrollment disabled
+until the backend reports a loaded transient key. They change no route,
+request/result meaning, recovery/lifecycle semantics, secret-handling boundary,
+deployment manifest, or evidence boundary. Any such semantic change would
+still require a new identifier under the rules above.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

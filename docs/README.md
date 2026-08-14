@@ -77,8 +77,9 @@ approved.
 
 D023's P7.5 integrated reference system and pre-evidence gate are complete.
 D025/P7.7's separately versioned Manager/controller, dynamic Client, and client
-recovery-package migration is implemented and Assigned. P8.1 is the next ready
-step, but no retained P8/P9 evidence exists. The current P7
+recovery-package migration is implemented and Assigned. P8.1 implementation
+assurance is complete; P8.2 is the next proposed step, but no retained P8/P9
+evidence exists. The current P7
 in-memory UI, D023 deployment, and frozen same-host Compose deployment remain
 separately identified controls; none substitutes for a future managed-system
 result. Use the executor inside `prototype_final/` for development checks. The

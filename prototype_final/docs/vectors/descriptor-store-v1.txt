@@ -1,0 +1,5 @@
+# Synthetic P2.3 exact-key profile. Values bind existing P2.1 public vectors.
+profile=LOCUS-descriptor-bundle-store-v1
+descriptor_locator=descriptors/43ee37e5233a629803d9f9ee5c52c25d1ca50b31ecebbaa35616d068510a983b.json
+bundle_locator=subjects/1111111111111111111111111111111111111111111111111111111111111111/22222222222222222222222222222222/bundles/1/b83b778fee1d148c63976c240f2072898136f4a5754c362e7606d81f5f4b3e0c.zip
+pointer_locator=current/77ae18af8847e7b7070410dbc99f6c613aaa906bfb39ee1097ecf2d7c7fe8393.json

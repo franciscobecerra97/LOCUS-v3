@@ -1,0 +1,59 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:reference-backup:v5",
+  "title": "LOCUS suite-neutral reference backup v5",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["bid", "ciphertext", "cue_policy", "digest", "epoch", "nonce", "recovery_suite", "security_policy", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-reference-backup-v5"},
+    "bid": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "epoch": {"type": "integer", "minimum": 1, "maximum": 9223372036854775807},
+    "nonce": {"type": "string", "pattern": "^[0-9a-f]{32}$"},
+    "cue_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "resolver_profile"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^[!-~]{1,255}$"},
+        "resolver_profile": {"type": "string", "pattern": "^[!-~]{1,255}$"}
+      }
+    },
+    "recovery_suite": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["context_digest", "id", "k", "n", "profile_id", "public_state", "public_state_format"],
+      "properties": {
+        "id": {"enum": ["LOCUS-TPASS-YI-ZK-RISTRETTO255-v1", "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"]},
+        "profile_id": {"enum": ["LOCUS-TPASS-YI-2of3-v1", "LOCUS-APPSS-2of3-v1"]},
+        "k": {"const": 2},
+        "n": {"const": 3},
+        "context_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "public_state_format": {"type": "string", "pattern": "^[!-~]{1,255}$"},
+        "public_state": {"type": "string", "pattern": "^(?:[0-9a-f]{2})+$", "maxLength": 524288}
+      }
+    },
+    "security_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cooldown_seconds", "max_attempts", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-security-policy-v1"},
+        "max_attempts": {"type": "integer", "minimum": 1, "maximum": 1000000},
+        "cooldown_seconds": {"type": "integer", "minimum": 0, "maximum": 31536000}
+      }
+    },
+    "ciphertext": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "ciphertext", "nonce", "version"],
+      "properties": {
+        "version": {"const": "LOCUS-AES-256-GCM-v1"},
+        "algorithm": {"const": "AES-256-GCM"},
+        "nonce": {"type": "string", "pattern": "^[0-9a-f]{24}$"},
+        "ciphertext": {"type": "string", "pattern": "^(?:[0-9a-f]{2}){17,}$", "maxLength": 2097152}
+      }
+    },
+    "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

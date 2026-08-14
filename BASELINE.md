@@ -371,8 +371,14 @@ socket, and exits before unprivileged runtime services start. The enhanced
 smoke passed all four suite/topology arms, 26 subsets, four clean Clients,
 control/lifecycle isolation, role/output audits, state-preserving restart,
 fresh-CA destructive reset with old-package rejection, and exact cleanup.
-These are P7.7 implementation facts, not baseline or retained evidence claims;
-P8.1 is the next ready assurance step.
+These are P7.7 implementation facts, not baseline or retained evidence claims.
+P8.1 completed on 2026-08-14. Its checked decoder/durable-transition inventory,
+expanded self-contained test corpus, live mTLS assurance, concurrent/stale
+Manager schedules, and path-containment fixes passed the complete
+`integrated-check`, `integrated-config`, and `integrated-smoke` gates. This is
+implementation assurance only: no P8.2/P8.3 evidence identifier, retained
+result, or claim status changed, and P8.2 collection still requires the
+owner-approved pre-collection contract.
 
 ## Excluded material
 

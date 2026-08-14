@@ -1,0 +1,144 @@
+{
+  "inventory_version": 1,
+  "scope": "prototype_final",
+  "status": "complete",
+  "retained_evidence": false,
+  "external_surfaces": [
+    {
+      "id": "rpc-envelope",
+      "source": "locus/integrated_rpc.py",
+      "decoder": "decode_rpc",
+      "routes": [],
+      "negative_tests": ["tests/test_integrated_rpc.py::test_decoder_rejects_noncanonical_duplicate_oversized_and_nonobjects"],
+      "authenticated_transport_tests": ["tests/test_integrated_rpc.py::test_live_transport_requires_client_certificate_and_exposes_peer_role"]
+    },
+    {
+      "id": "admission-role",
+      "source": "locus/integrated_services.py",
+      "decoder": "AdmissionRole.__call__",
+      "routes": ["/health", "/v1/issue"],
+      "negative_tests": ["tests/test_integrated_services.py::test_admission_issue_rejects_non_client_caller_and_malformed_binding"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "operator-role",
+      "source": "locus/integrated_services.py",
+      "decoder": "OperatorRole.__call__",
+      "routes": ["/health", "/v1/sign", "/v1/discovery/publish", "/v1/discovery/read"],
+      "negative_tests": ["tests/test_integrated_services.py::test_operator_discovery_publish_enforces_schema_and_epoch_monotonicity", "tests/test_integrated_services.py::test_operator_sign_and_resolver_decoders_reject_wrong_shape_and_caller"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "resolver-role",
+      "source": "locus/integrated_services.py",
+      "decoder": "ResolverRole.__call__",
+      "routes": ["/health", "/v1/count", "/v1/resolve"],
+      "negative_tests": ["tests/test_integrated_services.py::test_operator_sign_and_resolver_decoders_reject_wrong_shape_and_caller"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "storage-gateway-role",
+      "source": "locus/integrated_services.py",
+      "decoder": "StorageGatewayRole.__call__",
+      "routes": ["/health", "/v1/execute"],
+      "negative_tests": ["tests/test_integrated_services.py::test_storage_gateway_route_is_bounded_and_maps_backend_categories", "tests/test_provider_gateway.py::test_all_provider_roles_execute_through_admitted_exact_keys"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "party-role",
+      "source": "locus/integrated_services.py",
+      "decoder": "PartyRole.__call__",
+      "routes": ["/health", "/v1/authorize", "/v1/yi/enroll", "/v1/yi/prepare", "/v1/yi/respond", "/v1/appss/initialize", "/v1/appss/evaluate", "/v1/appss/install", "/v1/current/install", "/v1/current/retire", "/v1/current/read", "/v1/inspect"],
+      "negative_tests": ["tests/test_integrated_services.py::test_party_route_retries_sessions_and_retirement_fail_closed", "tests/test_integrated_services.py::test_party_yi_and_appss_decoders_bind_recipient_and_exact_retry", "tests/test_appss_party.py::test_wrong_recipient_suite_omega_replay_and_idempotency_fail_closed"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "manager-api",
+      "source": "locus/integrated_manager.py",
+      "decoder": "ManagerApplication.dispatch",
+      "routes": ["/", "/assets/manager.css", "/assets/manager.js", "/api/manager/v1/session", "/api/manager/v1/status", "/api/manager/v1/clients", "/api/manager/v1/container-action", "/api/manager/v1/client-destroy", "/api/manager/v1/system-stop"],
+      "negative_tests": ["tests/test_managed_control.py::test_manager_json_decoder_rejects_duplicates_constants_and_nonobjects", "tests/test_managed_control.py::test_all_manager_mutations_require_and_forward_operation_id"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "controller-api",
+      "source": "locus/integrated_controller.py",
+      "decoder": "ManagedContainerController.handle",
+      "routes": ["/health", "/v1/status", "/v1/client/create", "/v1/container/action", "/v1/client/destroy", "/v1/system/stop", "/v1/client/self-destroy"],
+      "negative_tests": ["tests/test_managed_control.py::test_controller_mutations_replay_once_and_reject_changed_reuse", "tests/test_managed_control.py::test_caller_cannot_supply_a_target_or_docker_specification", "tests/test_managed_control.py::test_client_process_actions_use_only_the_exact_managed_instance"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "client-api-v2",
+      "source": "locus/managed_client_ui.py",
+      "decoder": "ManagedClientApplication.dispatch",
+      "routes": ["/healthz", "/", "/assets/client.css", "/assets/client.js", "/api/v2/session", "/api/v2/catalog", "/api/v2/package/import", "/api/v2/preview-policy", "/api/v2/key/generate", "/api/v2/key/reveal", "/api/v2/enroll", "/api/v2/package/export", "/api/v2/recover", "/api/v2/self-destroy"],
+      "negative_tests": ["tests/test_managed_client_ui.py::test_client_json_decoder_rejects_duplicates_constants_and_nonobjects", "tests/test_managed_client_ui.py::test_exact_recovery_subset_accepts_only_sorted_unique_k_holders", "tests/test_recovery_package.py::test_noncanonical_and_oversized_encodings_are_rejected"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "versioned-wire-codecs",
+      "source": "locus/recovery_descriptor.py",
+      "decoder": "decode_descriptor/decode_current_pointer/decode_manifest/decode_bundle",
+      "routes": [],
+      "negative_tests": ["tests/test_recovery_descriptor.py::test_descriptor_rejects_noncanonical_duplicate_unknown_and_oversized", "tests/test_recovery_bootstrap.py::test_trust_configuration_is_strict_and_updates_only_by_installed_chain", "tests/test_recovery_package.py::test_noncanonical_and_oversized_encodings_are_rejected"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "suite-wire-codecs",
+      "source": "locus/appss_formats.py",
+      "decoder": "canonical_decode and validate_*",
+      "routes": [],
+      "negative_tests": ["tests/test_appss_formats.py::test_canonical_decoder_rejects_trailing_and_noncanonical_bytes", "tests/test_appss_formats_v2.py::test_independent_shape_checks_reject_topology_reinterpretation", "tests/test_native_suite_conformance.py::test_yi_and_appss_satisfy_the_same_recovery_secret_contract"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "backup-storage-codecs",
+      "source": "locus/object_store.py",
+      "decoder": "decode_backup_object/decode_versioned_backup_object",
+      "routes": [],
+      "negative_tests": ["tests/test_object_store.py::test_noncanonical_oversized_and_mismatched_references_fail", "tests/test_s3_object_store.py::test_corrupt_noncanonical_and_oversized_objects_are_rejected", "tests/test_storage_provider.py::test_nonlocal_plaintext_profile_is_rejected"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    },
+    {
+      "id": "configuration-codecs",
+      "source": "locus/managed_manifest.py",
+      "decoder": "decode_managed_manifest/decode_integrated_manifest",
+      "routes": [],
+      "negative_tests": ["tests/test_managed_manifest.py::test_unknown_duplicate_noncanonical_and_oversize_values_fail", "tests/test_integrated_manifest.py::test_duplicate_unknown_missing_and_noncanonical_json_fail", "tests/test_paired_deployment_profiles.py::test_unknown_profile_and_cross_topology_selection_fail_closed"],
+      "authenticated_transport_tests": ["tasks.py::integrated_config"]
+    },
+    {
+      "id": "cue-policy-and-suite-selection",
+      "source": "locus/cue_policy_registry.py",
+      "decoder": "CuePolicyRegistry and RecoverySuiteRegistry",
+      "routes": [],
+      "negative_tests": ["tests/test_cue_policy_conformance.py::test_invalid_corpus_has_exact_local_errors", "tests/test_recovery_suite_registry.py::test_suite_profile_pairing_is_fail_closed", "tests/test_suite_backup.py::test_wrong_input_cross_suite_and_tampering_are_generic_rejection"],
+      "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
+    }
+  ],
+  "durable_transitions": [
+    {"id": "admission-replay", "source": "locus/local_admission.py", "symbol": "AdmissionReplayStore.consume", "tests": ["tests/test_local_admission.py::test_each_authorizer_validates_and_replays_independently"]},
+    {"id": "operator-discovery", "source": "locus/integrated_services.py", "symbol": "OperatorRole.__call__:/v1/discovery/publish", "tests": ["tests/test_integrated_services.py::test_operator_discovery_publish_enforces_schema_and_epoch_monotonicity", "tasks.py::integrated_smoke"]},
+    {"id": "filesystem-backup-publication", "source": "locus/object_store.py", "symbol": "FilesystemBackupObjectStore.create/delete", "tests": ["tests/test_object_store.py::test_separated_store_round_trip_and_exact_create_retry", "tests/test_object_store.py::test_symbolic_link_namespace_is_rejected"]},
+    {"id": "s3-backup-publication", "source": "locus/s3_object_store.py", "symbol": "S3BackupObjectStore.create/delete", "tests": ["tests/test_s3_object_store.py::test_shared_backend_contract"]},
+    {"id": "descriptor-publication-cas", "source": "locus/descriptor_store.py", "symbol": "FilesystemDescriptorBundleStore and S3DescriptorBundleStore mutations", "tests": ["tests/test_descriptor_store.py::test_concurrent_pointer_cas_has_one_winner_and_one_stale_writer", "tests/test_descriptor_store.py::test_symbolic_link_ancestor_cannot_escape_store_root", "tests/test_descriptor_store.py::test_etag_cas_rejects_concurrent_replacement"]},
+    {"id": "party-authorization", "source": "locus/integrated_services.py", "symbol": "PartyRole.__call__:/v1/authorize", "tests": ["tests/test_local_admission.py::test_each_authorizer_validates_and_replays_independently", "tasks.py::integrated_smoke"]},
+    {"id": "party-yi-state", "source": "locus/integrated_services.py", "symbol": "PartyRole.__call__:/v1/yi/enroll", "tests": ["tests/test_integrated_services.py::test_party_yi_and_appss_decoders_bind_recipient_and_exact_retry", "tasks.py::integrated_smoke"]},
+    {"id": "party-appss-state", "source": "locus/appss_party.py", "symbol": "AppssPartyStore initialize/evaluate/install/retire", "tests": ["tests/test_appss_party.py::test_wrong_recipient_suite_omega_replay_and_idempotency_fail_closed", "tests/test_appss_party.py::test_http_claim_recovers_exact_in_progress_request_after_restart", "tasks.py::integrated_smoke"]},
+    {"id": "party-current-state", "source": "locus/integrated_services.py", "symbol": "PartyRole.__call__:/v1/current/install,/v1/current/retire", "tests": ["tests/test_integrated_services.py::test_party_current_retirement_is_exact_and_successor_preserving", "tests/test_integrated_services.py::test_party_route_retries_sessions_and_retirement_fail_closed", "tasks.py::integrated_smoke"]},
+    {"id": "enrollment-journal", "source": "locus/enrollment_state.py", "symbol": "EnrollmentStateMachine.transition", "tests": ["tests/test_enrollment_state.py::test_complete_ordered_enrollment_and_exact_retries", "tests/test_locus_flow.py::test_successful_recovery"]},
+    {"id": "recovery-journal", "source": "locus/recovery_state.py", "symbol": "RecoveryStateMachine.transition", "tests": ["tests/test_recovery_state.py::test_complete_ordered_recovery_and_exact_retries", "tests/test_locus_flow.py::test_successful_recovery"]},
+    {"id": "successor-publication", "source": "locus/successor_publication.py", "symbol": "SuccessorPublicationCoordinator.run", "tests": ["tests/test_successor_regression.py::test_every_successor_effect_resumes_once_after_crash", "tests/test_successor_publication.py::test_operation_binding_cannot_be_changed_on_retry", "tasks.py::integrated_smoke"]},
+    {"id": "managed-controller-lifecycle", "source": "locus/integrated_controller.py", "symbol": "ManagedContainerController._mutation/create/action/destroy/stop", "tests": ["tests/test_managed_control.py::test_controller_mutations_replay_once_and_reject_changed_reuse", "tests/test_managed_control.py::test_client_process_actions_use_only_the_exact_managed_instance", "tests/test_managed_control.py::test_smoke_concurrent_create_replays_one_exact_client", "tasks.py::_create_client_concurrently", "tasks.py::_reject_stale_lifecycle_request"]},
+    {"id": "managed-client-volatile-state", "source": "locus/managed_client_ui.py", "symbol": "ManagedClientApi key/package/operation/self-destroy state", "tests": ["tests/test_managed_client_ui.py::test_failed_import_clears_prior_authenticated_package", "tests/test_managed_client_ui.py::test_rejected_recovery_preserves_current_key", "tests/test_managed_client_ui.py::test_self_destroy_callback_failure_preserves_state_and_exact_retry_is_safe", "tasks.py::integrated_smoke"]},
+    {"id": "bootstrap-owned-state", "source": "locus/integrated_bootstrap.py", "symbol": "bootstrap_integrated_roles", "tests": ["tests/test_integrated_services.py::test_networkless_bootstrap_creates_distinct_empty_role_roots", "tests/test_integrated_services.py::test_networkless_bootstrap_rejects_symbolic_link_root", "tests/test_managed_manifest.py::test_existing_template_is_exact_and_client_peer_is_accepted"]},
+    {"id": "integrated-enrollment-recovery-successor", "source": "locus/integrated_client.py", "symbol": "IntegratedResearchClientApi.enroll/recover/create_successor", "tests": ["tasks.py::integrated_smoke", "tests/test_integrated_services.py::test_current_observations_tolerate_one_unavailable_authorizer"]}
+  ],
+  "cross_cutting_controls": [
+    {"id": "path-containment", "tests": ["tests/test_object_store.py::test_symbolic_link_namespace_is_rejected", "tests/test_descriptor_store.py::test_symbolic_link_ancestor_cannot_escape_store_root", "tests/test_integrated_services.py::test_networkless_bootstrap_rejects_symbolic_link_root"]},
+    {"id": "concurrent-and-stale-lifecycle", "tests": ["tests/test_managed_control.py::test_smoke_concurrent_create_replays_one_exact_client", "tasks.py::_create_client_concurrently", "tasks.py::_reject_stale_lifecycle_request"]},
+    {"id": "resolved-and-live-graph-mutations", "tests": ["tests/test_managed_manifest.py::test_unknown_duplicate_noncanonical_and_oversize_values_fail", "tests/test_managed_control.py::test_forged_client_inventory_fails_closed", "tasks.py::_assert_live_control_isolation"]},
+    {"id": "prohibited-output", "tests": ["tests/test_redaction.py::test_rejects_every_prohibited_secret_category", "tests/test_integrated_services.py::test_client_roots_pass_isolation_audit_and_positive_control_fails", "tasks.py::integrated_smoke"]}
+  ]
+}

@@ -137,6 +137,22 @@
 
   function clearCues(target) { target.querySelectorAll("input").forEach((input) => { input.value = ""; }); }
 
+  // Step 02A (Backup/enrollment) backs up whatever private key is currently
+  // held by this client, so it must stay locked until the client confirms a
+  // key actually exists (never merely because the user clicked something in
+  // Step 01). Step 02B (Recovery) is intentionally left unlocked: recovering
+  // a package is the protocol's own way for a clean client with no key to
+  // obtain one, so it cannot depend on Step 01 first.
+  function updateEnrollmentLock(keyLoaded) {
+    const locked = !keyLoaded;
+    const form = byId("enrollment-form");
+    form.querySelectorAll("button, input, select").forEach((control) => { control.disabled = locked; });
+    form.setAttribute("aria-disabled", String(locked));
+    byId("enrollment-lock-note").hidden = !locked;
+    byId("enrollment-state").textContent = locked ? "Locked" : "New epoch";
+    byId("enrollment-state").classList.toggle("locked", locked);
+  }
+
   function hideKey() {
     if (state.revealTimer !== null) window.clearTimeout(state.revealTimer);
     state.revealTimer = null;
@@ -154,6 +170,7 @@
     byId("key-state").textContent = "Key loaded";
     byId("reveal-key").disabled = false;
     state.keyLoaded = true;
+    updateEnrollmentLock(true);
     state.revealTimer = window.setTimeout(hideKey, 30000);
   }
 
@@ -289,6 +306,7 @@
       byId("key-state").textContent = "Recovered key loaded";
       byId("reveal-key").disabled = false;
       state.keyLoaded = true;
+      updateEnrollmentLock(true);
       byId("recovery-result").hidden = false;
       clearCues(byId("recovery-cues"));
       announce("Recovery succeeded and the client key slot was atomically replaced.");
@@ -329,7 +347,22 @@
       selectOptions(byId("profile"), state.catalog.profiles, "profile_id", "label");
       selectOptions(byId("policy"), state.catalog.policies, "policy_id", "label");
       renderCues(byId("enrollment-cues"), byId("policy").value); renderEnrollmentParties();
-      byId("generate-key").addEventListener("click", () => generateKey().catch((error) => announce(`Key generation rejected (${error.message}).`, true)));
+      // Reflect the real, server-confirmed protocol state (not just this
+      // page load's memory): a refresh after the key was already generated
+      // must unlock Step 02A immediately rather than showing the initial
+      // locked state again.
+      updateEnrollmentLock(state.keyLoaded);
+      byId("generate-key").addEventListener("click", async () => {
+        const button = byId("generate-key");
+        button.disabled = true;
+        try {
+          await generateKey();
+        } catch (error) {
+          announce(`Key generation rejected (${error.message}).`, true);
+        } finally {
+          button.disabled = false;
+        }
+      });
       byId("reveal-key").addEventListener("click", () => revealKey().catch((error) => announce(`Key reveal rejected (${error.message}).`, true)));
       byId("reveal-recovered").addEventListener("click", () => revealKey().catch((error) => announce(`Key reveal rejected (${error.message}).`, true)));
       byId("hide-key").addEventListener("click", hideKey);

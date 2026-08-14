@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:recovery-suite-selector:v2",
+  "title": "LOCUS recovery-suite selection v2",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["authorization_quorum", "authorizer_ids", "holder_ids", "k", "n", "profile_id", "suite_id", "version"],
+  "properties": {
+    "version": {"const": "LOCUS-recovery-suite-selector-v2"},
+    "suite_id": {"enum": ["LOCUS-TPASS-YI-ZK-RISTRETTO255-v1", "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"]},
+    "profile_id": {"enum": ["LOCUS-TPASS-YI-2of3-v1", "LOCUS-APPSS-2of3-v1", "LOCUS-TPASS-YI-3of5-v1", "LOCUS-APPSS-3of5-v1"]},
+    "k": {"enum": [2, 3]},
+    "n": {"enum": [3, 5]},
+    "holder_ids": {"oneOf": [{"const": [1, 2, 3]}, {"const": [1, 2, 3, 4, 5]}]},
+    "authorizer_ids": {"const": [1, 2, 3, 4, 5]},
+    "authorization_quorum": {"const": 4}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"k": {"const": 2}}},
+      "then": {"properties": {"n": {"const": 3}, "holder_ids": {"const": [1, 2, 3]}, "profile_id": {"enum": ["LOCUS-TPASS-YI-2of3-v1", "LOCUS-APPSS-2of3-v1"]}}}
+    },
+    {
+      "if": {"properties": {"k": {"const": 3}}},
+      "then": {"properties": {"n": {"const": 5}, "holder_ids": {"const": [1, 2, 3, 4, 5]}, "profile_id": {"enum": ["LOCUS-TPASS-YI-3of5-v1", "LOCUS-APPSS-3of5-v1"]}}}
+    },
+    {
+      "if": {"properties": {"suite_id": {"const": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1"}}},
+      "then": {"properties": {"profile_id": {"enum": ["LOCUS-TPASS-YI-2of3-v1", "LOCUS-TPASS-YI-3of5-v1"]}}}
+    },
+    {
+      "if": {"properties": {"suite_id": {"const": "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1"}}},
+      "then": {"properties": {"profile_id": {"enum": ["LOCUS-APPSS-2of3-v1", "LOCUS-APPSS-3of5-v1"]}}}
+    }
+  ]
+}

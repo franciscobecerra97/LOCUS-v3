@@ -595,12 +595,59 @@ class ManagerApplicationTests(unittest.TestCase):
                         **common,
                     )
 
+    def test_manager_json_decoder_rejects_duplicates_constants_and_nonobjects(
+        self,
+    ) -> None:
+        session = json.loads(
+            self.application.dispatch(
+                "GET",
+                "/api/manager/v1/session",
+                b"",
+                content_type=None,
+                csrf_token=None,
+                origin=None,
+                expected_origin="http://127.0.0.1:8765",
+            ).body
+        )
+        common: dict[str, Any] = {
+            "content_type": "application/json",
+            "csrf_token": session["csrf_token"],
+            "origin": "http://127.0.0.1:8765",
+            "expected_origin": "http://127.0.0.1:8765",
+        }
+        for body in (
+            b'{"operation_id":"one","operation_id":"two"}',
+            b'{"operation_id":NaN}',
+            b"[]",
+            b"\xff",
+        ):
+            with self.subTest(body=body):
+                with self.assertRaises(ManagerUiError):
+                    self.application.dispatch(
+                        "POST", "/api/manager/v1/clients", body, **common
+                    )
+
     def test_manager_asset_surfaces_shutdown_and_self_destroy_failures(self) -> None:
         source = Path("locus/manager_assets/manager.js").read_text(encoding="utf-8")
         self.assertIn("value.shutdown_status", source)
         self.assertIn('failed: "Shutdown failed"', source)
         self.assertIn('container.self_destroy_status === "failed"', source)
         self.assertNotIn('byId("system-state").textContent = "Ready"', source)
+
+    def test_manager_asset_locks_mutations_during_shutdown(self) -> None:
+        root = Path("locus/manager_assets")
+        html = (root / "index.html").read_text(encoding="utf-8")
+        script = (root / "manager.js").read_text(encoding="utf-8")
+        stylesheet = (root / "manager.css").read_text(encoding="utf-8")
+
+        header = html.split("</header>", 1)[0]
+        self.assertIn('id="stop-system"', header)
+        self.assertNotIn("danger-zone", html)
+        self.assertIn("let systemStopping = false", script)
+        self.assertIn("if (busy || systemStopping) return false", script)
+        self.assertIn('systemStopping = shutdownStatus === "stopping"', script)
+        self.assertIn("hasClient || systemStopping", script)
+        self.assertIn(".header-stop", stylesheet)
 
     def test_loopback_host_is_required(self) -> None:
         self.assertEqual(_loopback_origin("127.0.0.1:8765"), "http://127.0.0.1:8765")
@@ -610,6 +657,37 @@ class ManagerApplicationTests(unittest.TestCase):
 
 
 class ManagedCommandSurfaceTests(unittest.TestCase):
+    def test_smoke_concurrent_create_replays_one_exact_client(self) -> None:
+        client = {
+            "client_id": "client-0123456789abcdef",
+            "id": "a" * 64,
+            "port": 49152,
+        }
+        requests: list[dict[str, object]] = []
+
+        def post(
+            _port: int,
+            _csrf: str,
+            _path: str,
+            request: dict[str, object],
+            *,
+            expected: tuple[int, ...],
+        ) -> dict[str, object]:
+            self.assertEqual(expected, (201,))
+            requests.append(request)
+            return {"client": client, "status": "created"}
+
+        with (
+            patch("tasks._manager_post", side_effect=post),
+            patch(
+                "tasks._manager_status",
+                return_value={"containers": [client]},
+            ),
+        ):
+            self.assertEqual(tasks._create_client_concurrently(8765, "csrf"), client)
+        self.assertEqual(len(requests), 2)
+        self.assertEqual(requests[0], requests[1])
+
     def test_missing_browser_network_empty_list_is_absent(self) -> None:
         with patch("tasks.run_capture", return_value="[]\n"):
             self.assertIsNone(tasks._browser_edge_inspection(PROJECT, {}))

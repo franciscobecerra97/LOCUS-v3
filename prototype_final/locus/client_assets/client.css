@@ -36,6 +36,7 @@ p { line-height: 1.55; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 1rem; padding: clamp(1rem, 2vw, 1.5rem); box-shadow: 0 12px 36px rgba(27,45,37,.06); }
 .section-heading { display: flex; align-items: start; justify-content: space-between; gap: 1rem; margin-bottom: .8rem; }
 .pill { border-radius: 99px; background: var(--mint); color: var(--green); padding: .35rem .65rem; font-size: .72rem; font-weight: 800; white-space: nowrap; }
+.pill.locked { background: #fbeedc; color: var(--amber); }
 .actions { display: flex; flex-wrap: wrap; gap: .6rem; align-items: center; margin: 1rem 0; }
 .button { appearance: none; border: 1px solid var(--green); border-radius: .48rem; padding: .65rem .9rem; cursor: pointer; font-weight: 750; background: white; color: var(--green); }
 .button:hover:not(:disabled) { transform: translateY(-1px); }
@@ -46,6 +47,7 @@ p { line-height: 1.55; }
 .form-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .7rem; }
 label { display: grid; gap: .35rem; font-size: .8rem; font-weight: 750; }
 input, select { width: 100%; border: 1px solid var(--line); border-radius: .42rem; background: white; color: var(--ink); padding: .62rem; }
+input:disabled, select:disabled { background: #f2f1ec; color: var(--muted); cursor: not-allowed; opacity: .7; }
 fieldset { border: 0; margin: 1.1rem 0; padding: 0; }
 legend { font-weight: 800; margin-bottom: .7rem; }
 .cue-list { display: grid; gap: .6rem; }

@@ -275,6 +275,8 @@ def bootstrap_integrated_roles(
         lifecycle_roles,
     ) = _manifest_contract(manifest_path)
     managed_profile = "manager-controller" in roles
+    if target.is_symlink():
+        raise IntegratedBootstrapError("integrated role root is a symbolic link")
     if target.exists():
         entries = {item.name: item for item in target.iterdir()}
         if (

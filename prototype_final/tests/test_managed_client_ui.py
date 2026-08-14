@@ -530,6 +530,32 @@ class ManagedClientApplicationTests(unittest.TestCase):
     def _operation(self, name: str) -> dict[str, str]:
         return {"api_version": MANAGED_CLIENT_API_VERSION, "operation_id": name}
 
+    def test_client_json_decoder_rejects_duplicates_constants_and_nonobjects(
+        self,
+    ) -> None:
+        session = json.loads(self.application.dispatch("GET", "/api/v2/session").body)
+        for body in (
+            b'{"api_version":"LOCUS-client-api-v2","operation_id":"one",'
+            b'"operation_id":"two"}',
+            b'{"api_version":"LOCUS-client-api-v2","operation_id":NaN}',
+            b"[]",
+            b"\xff",
+        ):
+            with self.subTest(body=body):
+                response = self.application.dispatch(
+                    "POST",
+                    "/api/v2/key/generate",
+                    body,
+                    content_type="application/json",
+                    csrf_token=session["csrf_token"],
+                    origin=self.origin,
+                    expected_origin=self.origin,
+                )
+                self.assertEqual(response.status, 400)
+                self.assertEqual(
+                    json.loads(response.body)["category"], "input_rejected"
+                )
+
     def test_loopback_host_validation_rejects_dns_rebinding_names(self) -> None:
         self.assertEqual(_loopback_origin("127.0.0.1:49152"), "http://127.0.0.1:49152")
         self.assertEqual(_loopback_origin("[::1]:49152"), "http://[::1]:49152")
@@ -605,6 +631,18 @@ class ManagedClientApplicationTests(unittest.TestCase):
             with self.subTest(prohibited=prohibited):
                 self.assertNotIn(prohibited, source)
         self.assertIn("window.confirm", source)
+
+    def test_ui_locks_enrollment_until_backend_reports_a_key(self) -> None:
+        html = (ASSET_ROOT / "index.html").read_text(encoding="utf-8")
+        script = (ASSET_ROOT / "client.js").read_text(encoding="utf-8")
+
+        self.assertIn('id="enrollment-lock-note"', html)
+        self.assertIn("Recovery does not require a private key", html)
+        self.assertIn("function updateEnrollmentLock(keyLoaded)", script)
+        self.assertIn('byId("enrollment-form")', script)
+        self.assertIn("updateEnrollmentLock(state.keyLoaded)", script)
+        self.assertGreaterEqual(script.count("updateEnrollmentLock(true)"), 2)
+        self.assertNotIn('byId("recovery-form").setAttribute("aria-disabled"', script)
 
 
 if __name__ == "__main__":

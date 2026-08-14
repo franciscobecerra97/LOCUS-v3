@@ -2,8 +2,8 @@
 
 Status: D023 implementation and pre-evidence gate complete; D024 isolated it
 under `prototype_final/`. D025/P7.7 Manager-controlled deployment and assignment
-gate complete. P8.1 is the next ready assurance step; no retained P8/P9 evidence
-has been collected.
+gate complete. P8.1 assurance is complete; no retained P8/P9 evidence has
+been collected.
 
 ## Purpose
 
@@ -162,6 +162,13 @@ containers. The Manager creates a dynamic Client and is the normal whole-system
 stop path. The Client UI handles enrollment/export and package-import recovery;
 the Manager UI never handles protocol material.
 
+The current thin-UI interaction guards do not change those API or protocol
+semantics. The Client keeps enrollment controls locked until its backend
+confirms that a transient key is loaded, while clean-client package recovery
+remains available without a preexisting key. The Manager places the complete-
+system stop control in its header and locks further mutating controls after
+shutdown begins; read-only status refresh remains available.
+
 Client process controls are intentionally destructive to volatile state.
 `stop` and `kill` make the UI unavailable but retain its container and public
 client ID. A later `start`, and every `restart`, rotates the proof identity and
@@ -257,11 +264,12 @@ These are implementation gates, not retained P8/P9 evidence or paper results.
 
 ## Assurance and evaluation dependency
 
-P7.7 is complete, so P8.1 is ready. The assigned
+P7.7 and P8.1 are complete, so P8.2 is the next proposed gate. The assigned
 `prototype_final/docs/security-matrix-v2.json`/schema pin v1 and C01--C26 and
-add managed contracts M01--M05. P8 instantiates those contracts
-against the exact managed manifest. Component fuzzing and unit/property tests
-remain necessary, while system-facing state, network, crash, replay, lifecycle-
+add managed contracts M01--M05. P8.1 instantiated their implementation-
+assurance controls against the exact managed manifest. Component fuzzing and
+unit/property tests remain necessary controls, while retained system-facing
+state, network, crash, replay, lifecycle-
 control, package, and output conclusions must be observed on the Manager-
 created Client deployment. This D023 profile remains a supporting predecessor.
 

@@ -22,7 +22,8 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 is the next ready step. Architecture decisions listed in
+predecessor. P8.1 is complete; P8.2 is the next proposed step but remains
+subject to its pre-collection owner gate. Architecture decisions listed in
 `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -2643,10 +2644,25 @@ P7.5 normalization rather than evidence for the D025 profile.
 
 ### P8.1 Add decoder and state-machine assurance
 
-Status: `Proposed`
+Status: `Complete`
 
 Readiness: P7.7's implementation and assignment gate is satisfied. P8.1 is the
 next ready step; it must not collect retained evidence assigned to P8.2/P8.3.
+
+Execution order:
+
+1. Complete and machine-check the coverage inventory for every externally
+   reachable decoder and durable mutating transition. Each row records the
+   authenticated transport, persistent effect, existing unit/integrated
+   coverage, missing negative cases, and closure status.
+2. Close decoder gaps with bounded deterministic property/malformed-input
+   tests, including duplicate, unknown, noncanonical, oversized, member-order,
+   cross-session, cross-epoch, path, and symlink cases.
+3. Close transition gaps with deterministic replay, idempotency, concurrency,
+   crash/restart, stale-operation, and simultaneous-operation schedules.
+4. Demonstrate authenticated integrated reachability, resolved/live graph
+   mutation rejection, prohibited-output positive controls, and the complete
+   `integrated-check`, `integrated-config`, and `integrated-smoke` gate.
 
 Add:
 
@@ -2675,6 +2691,39 @@ Acceptance:
 - Every external decoder and mutating state transition has negative coverage,
   and the integrated system reaches each externally reachable transition
   through its authenticated transport rather than a test-only direct call.
+
+Completion record (2026-08-14):
+
+- The completed human and JSON inventories now live at
+  `prototype_final/docs/p8.1-decoder-transition-inventory.{md,json}` with a
+  bounded schema and a checker that extracts every active service, Manager,
+  controller, and Client route, requires exact route-set equality, validates
+  every cited source/test symbol, and requires negative plus authenticated-
+  transport coverage for every surface.
+- The dependency-complete active test corpus now lives under
+  `prototype_final/tests/`; it has no runtime or test dependency on the legacy
+  root `prototype/` tree. Decoder, replay, idempotency, crash/restart,
+  concurrency, cross-binding, output, storage, descriptor, package, policy,
+  suite, and lifecycle checks are all included in the five-command workspace.
+- The path-containment audit closed symlink traversal through a backup
+  namespace and nested descriptor ancestors, and made bootstrap reject a
+  symlinked role root. Positive controls cover each boundary and skip only when
+  the host OS itself denies test-symlink creation.
+- The live smoke now submits simultaneous exact Manager create requests and
+  requires one identical result and one Client inventory entry. It also sends
+  a stale container action through the public Manager API and requires a
+  fail-closed response before continuing.
+- `integrated-check` passed 259 Python tests (three host symlink capability
+  skips), formatting, lint, mypy, native binding build, eight aPPSS tests plus
+  its fixed vector, and seventeen Yi tests plus its fixed vector.
+  `integrated-config` validated the exact managed graph. `integrated-smoke`
+  passed the new concurrency/stale schedules plus all four suite/topology arms,
+  26 threshold-subset recoveries, four clean Clients, output scans, state
+  audits, preserved restart, destructive reset, and exact cleanup.
+- These are P8.1 implementation-assurance results only. No P8.2/P8.3 evidence
+  identifier, retained path, result, or manuscript claim was created. P8.2
+  collection remains prohibited until its exact contracts are presented to
+  and approved by the owner.
 
 ### P8.2 Add state-boundary evidence
 
@@ -3000,13 +3049,12 @@ the honest same-host managed integrated profile.
 
 The next sequence is:
 
-1. P8.1 — create the checked decoder/state-machine inventory and close its
-   assurance gaps in `prototype_final/`;
-2. P8.2--P8.4 — assign the required security/trace schemas, assure the exact
-   integrated system, and preserve the attempt-control boundary;
-3. P9 — collect new suite/topology-specific performance/resilience results
+1. P8.2--P8.4 — after presenting and obtaining approval for each required
+   security/trace contract, assign the schemas, assure the exact integrated
+   system, and preserve the attempt-control boundary;
+2. P9 — collect new suite/topology-specific performance/resilience results
    from that system; and
-4. P10 — complete independent review, integrated artifact reproduction, claim
+3. P10 — complete independent review, integrated artifact reproduction, claim
    closure, and separately owner-approved manuscript changes.
 
 Do not collect retained P8/P9 evidence, promote a system result, or propose a

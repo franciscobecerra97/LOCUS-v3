@@ -17,6 +17,7 @@ import time
 import urllib.error
 import urllib.request
 from collections.abc import Sequence
+from concurrent.futures import ThreadPoolExecutor
 from itertools import combinations
 from pathlib import Path
 from typing import Any, cast
@@ -870,6 +871,65 @@ def _create_client(manager_port: int, manager_csrf: str) -> dict[str, object]:
     return cast(dict[str, object], client)
 
 
+def _create_client_concurrently(
+    manager_port: int, manager_csrf: str
+) -> dict[str, object]:
+    """Prove that simultaneous exact retries create one managed Client."""
+
+    operation_id = _operation_id("smoke-concurrent-create-client")
+
+    def create() -> dict[str, object]:
+        return _manager_post(
+            manager_port,
+            manager_csrf,
+            "/api/manager/v1/clients",
+            {"operation_id": operation_id},
+            expected=(201,),
+        )
+
+    with ThreadPoolExecutor(max_workers=2) as executor:
+        results = list(executor.map(lambda _index: create(), range(2)))
+    if results[0] != results[1]:
+        raise RuntimeError("simultaneous client creation changed its exact outcome")
+    client = results[0].get("client")
+    if (
+        results[0].get("status") != "created"
+        or not isinstance(client, dict)
+        or not isinstance(client.get("port"), int)
+        or not isinstance(client.get("client_id"), str)
+        or not isinstance(client.get("id"), str)
+    ):
+        raise RuntimeError("simultaneous client creation returned an invalid result")
+    status = _manager_status(manager_port)
+    containers = status.get("containers")
+    if not isinstance(containers, list):
+        raise RuntimeError("Manager omitted its inventory after simultaneous creation")
+    matching = [
+        item
+        for item in containers
+        if isinstance(item, dict) and item.get("client_id") == client["client_id"]
+    ]
+    if len(matching) != 1 or matching[0].get("id") != client["id"]:
+        raise RuntimeError("simultaneous client creation produced ambiguous inventory")
+    return cast(dict[str, object], client)
+
+
+def _reject_stale_lifecycle_request(manager_port: int, manager_csrf: str) -> None:
+    result = _manager_post(
+        manager_port,
+        manager_csrf,
+        "/api/manager/v1/container-action",
+        {
+            "action": "restart",
+            "container_id": "0" * 64,
+            "operation_id": _operation_id("smoke-stale-container"),
+        },
+        expected=(400,),
+    )
+    if result != {"category": "operation_rejected", "status": "rejected"}:
+        raise RuntimeError("stale lifecycle request did not fail closed")
+
+
 def _client_session(client_port: int, *, retries: int = 80) -> dict[str, object]:
     result = _json_request(client_port, "/api/v2/session", retries=retries)
     if (
@@ -1283,7 +1343,8 @@ def integrated_smoke() -> None:
         manager_csrf = _manager_session(manager_port)
         _exercise_manager_actions(manager_port, manager_csrf)
 
-        client_a = _create_client(manager_port, manager_csrf)
+        client_a = _create_client_concurrently(manager_port, manager_csrf)
+        _reject_stale_lifecycle_request(manager_port, manager_csrf)
         client_a_port = cast(int, client_a["port"])
         session_a = _client_session(client_a_port)
         _assert_ui_assets(
@@ -1830,6 +1891,7 @@ def integrated_smoke() -> None:
                     "clean_clients": 4,
                     "client_process_identity_rotations": 3,
                     "client_identity_changed": True,
+                    "concurrent_client_create": "passed",
                     "live_control_isolation": "passed",
                     "manager_actions": ["start", "stop", "restart", "kill"],
                     "normal_stop_restart_recovery": "passed",
@@ -1840,6 +1902,7 @@ def integrated_smoke() -> None:
                     "reset_state_fresh_trust": "passed",
                     "role_state_audits": role_audits,
                     "status": "passed",
+                    "stale_lifecycle_rejection": "passed",
                     "subset_recoveries": subset_recoveries,
                 },
                 sort_keys=True,
