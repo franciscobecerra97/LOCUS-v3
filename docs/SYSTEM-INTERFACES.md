@@ -404,8 +404,9 @@ P1.3 changes no manuscript source or retained evidence. It creates no new
 paper claim. Frozen v2 results remain evidence only for the exact inherited Yi
 profile, not for the new interface architecture. D023 likewise authorizes
 planning and implementation only. P7.5 and D025/P7.7 are closed implementation
-gates, but no retained D025 P8/P9 result exists. Future results must traverse
-and bind the exact managed manifest, Manager/controller,
+gates. D026/P8.2 now supplies the separately versioned 42-report aggregate
+state corpus for the exact D025 system. Future P8.3/P9 results must traverse
+and bind that same managed manifest, Manager/controller,
 client-recovery-package, and dynamic-client boundaries; D023, same-process,
 unit, native, P6, and frozen Compose checks remain supporting controls. Later
 implementation and evidence profiles require their own identifiers, schemas,

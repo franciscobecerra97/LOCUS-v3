@@ -302,6 +302,11 @@ per-candidate results, shares, keys, credentials, certificates, databases,
 logs, traces, screenshots, absolute paths, and developer identity. D026 does
 not assign P8.3 trace or P9 performance/resilience result identifiers.
 
+The first and only v1 publication was collected from clean source commit
+`6e304560222b8059292ae291586ee792cc39ed3d`. Its 42 reports and closing corpus
+manifest have `records_sha256`
+`e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only
@@ -471,7 +476,7 @@ separate suite/topology evidence paths before collection.
 | Clean-client isolation | Assigned process/persistent-surface isolation v1 and D025 dynamic managed-client isolation v2 | V2 binds exact allowed inputs/state, fresh-instance proof, inherited-state positive control, and explicit non-erasure limitation; later changes require a new version |
 | Security contract | Assigned governance-only security matrix v1 over C01--C26 and additive D025 matrix v2 with M01--M05 | Matrix v2 preserves all v1 row meanings and adds Manager/controller, package, dynamic-client/key-display, network/reset, and credential contracts; it is not evidence |
 | Trace | Frozen retained trace-policy identifier | P8.3 must assign a new trace profile including Manager/controller, both lifecycle networks, dynamic Clients, package transport, and service contacts before collection |
-| Result | Frozen retained attack/performance/evidence families | P8.2 must first assign new managed security/state schemas before collection; P9.2 later assigns performance/resilience schemas; all keep D023/D025, Yi/aPPSS, and topology results disjoint |
+| Result | Frozen retained attack/performance/evidence families plus D026's Assigned managed-state result family | P8.2 assigned and collected the separate 42-report managed security/state corpus; P9.2 later assigns performance/resilience schemas; all keep D023/D025, Yi/aPPSS, topology, and metric families disjoint |
 | Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | After P7.7/P8/P9, P10.3 assigns a later portable-artifact identifier with a managed-system manifest and allowlist |
 
 ### Upgrade and compatibility rules

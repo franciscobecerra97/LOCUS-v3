@@ -278,7 +278,7 @@
         "D025",
         "D026"
       ],
-      "required_gate": "D026 assigns the P8.2 security/state profile, fixed 42-report scenario manifest, aggregate fields, provenance, positive controls, schemas, and exclusive path. Collection requires its committed clean-source implementation; P9.2 later repeats a separate gate for performance and resilience results.",
+      "required_gate": "D026 assigned the P8.2 security/state profile, fixed 42-report scenario manifest, aggregate fields, provenance, positive controls, schemas, and exclusive path; P8.2 collected it from clean source commit 6e304560222b8059292ae291586ee792cc39ed3d. P9.2 later repeats a separate gate for performance and resilience results.",
       "compatibility_rule": "Security/state and performance/resilience results remain distinct; D025 managed, D023 predecessor, suite, and topology results use separate bindings, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
     },
     {

@@ -380,12 +380,14 @@ implementation assurance only: no P8.2/P8.3 evidence identifier, retained
 result, or claim status changed, and P8.2 collection still requires the
 owner-approved pre-collection contract.
 
-D026 supplied that approval on 2026-08-17. The six P8.2 managed-state
-identifiers, fixed 42-report manifest, strict aggregate schemas, collector,
-positive-control rules, clean-commit provenance, and exclusive retained path
-are now assigned and under implementation. No retained P8.2 corpus or claim
-promotion exists until the separately committed clean-source collection gate
-passes.
+D026 supplied that approval on 2026-08-17. P8.2 is complete: the six
+managed-state identifiers, fixed 42-report manifest, strict aggregate schemas,
+collector, positive-control rules, clean-commit provenance, and exclusive
+retained path were assigned and implemented before collection. The retained
+corpus contains 18 Yi, 18 aPPSS, and six common reports bound to clean source
+commit `6e304560222b8059292ae291586ee792cc39ed3d`, with corpus digest
+`e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+This changes no manuscript claim and leaves P8.3 trace evidence pending.
 
 ## Excluded material
 

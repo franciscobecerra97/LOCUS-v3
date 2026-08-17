@@ -22,9 +22,9 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 is complete; P8.2 is the next proposed step but remains
-subject to its pre-collection owner gate. Architecture decisions listed in
-`DECISIONS.md` remain owner gates.
+predecessor. P8.1 and P8.2 are complete; P8.3 is the next proposed step and
+remains subject to its own pre-collection owner gate. Architecture decisions
+listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
 
@@ -2727,7 +2727,7 @@ Completion record (2026-08-14):
 
 ### P8.2 Add state-boundary evidence
 
-Status: `In progress`
+Status: `Complete`
 
 D026 approval record (2026-08-17): the owner approved the exact proposed
 aggregate-only contract. It assigns six managed-state identifiers, a fixed
@@ -2736,7 +2736,32 @@ common), suite/topology-separated paths, four fixed snapshot points, strict
 positive controls, clean-commit provenance, and all-or-nothing exclusive
 publication under `prototype_final/evidence/retained/managed-state-v1/`.
 Contract implementation must be committed before the first retained run; this
-status remains in progress until that corpus is collected and hash-validated.
+condition was satisfied by the completion record below.
+
+Completion record (2026-08-17):
+
+- Commit `6e304560222b8059292ae291586ee792cc39ed3d` froze the D026
+  profile, scenario manifest, three result families, corpus manifest, strict
+  schemas, collector, fail-closed publication validator, tests, registry, and
+  six-command `prototype_final/` executor before collection.
+- The full pre-collection gate passed 265 Python tests (three host symlink
+  capability skips), formatting, linting, typing, native builds, eight aPPSS
+  tests plus its fixed vector, seventeen Yi tests plus its fixed vector, and
+  the exact managed Compose graph. A non-retaining live rehearsal passed and
+  left no evidence path or Docker resource.
+- The clean-commit `integrated-state-evidence --retain` run completed in 445
+  seconds across the four matched arms, 26 exact-threshold recoveries, four
+  Client identities, fixed fault/lifecycle/reset schedules, output scans, and
+  four complete 15-role aggregate snapshot sets. Exact cleanup left zero
+  containers, networks, volumes, or images for the disposable project.
+- `prototype_final/evidence/retained/managed-state-v1/` now contains exactly
+  42 canonical reports plus its hash-closing manifest: 18 Yi, 18 aPPSS, and
+  six common across SB01--SB14. Every report binds source commit `6e30456`, and
+  the corpus `records_sha256` is
+  `e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+- This is same-host single-operator implementation evidence only. It does not
+  authorize a manuscript change, satisfy D019 independent review, establish a
+  cryptographic proof, cover P8.3 network flow, or allocate a P9 result family.
 
 Before collection, freeze and register the exact aggregate-only security/state
 result families, schemas, versioned paths, positive controls, scenario

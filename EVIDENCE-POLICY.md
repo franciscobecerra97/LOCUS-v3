@@ -286,6 +286,12 @@ credentials, certificates, databases, logs, traces, screenshots, absolute
 paths, or developer identity. This implementation evidence does not prove an
 inherited cryptographic result and does not satisfy D019 independent review.
 
+The v1 corpus was collected once from clean source commit
+`6e304560222b8059292ae291586ee792cc39ed3d`. Its exact 42 records close to
+`records_sha256=e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+This completes P8.2 only; P8.3 trace and P9 performance/resilience collection
+remain separately gated.
+
 ## External services
 
 External provider experiments are benign functional/performance operations

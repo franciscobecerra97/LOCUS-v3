@@ -43,7 +43,9 @@ an immutable supporting predecessor. The managed one-shot bootstrap runs as
 root with every capability dropped except exactly `CHOWN` and
 `DAC_READ_SEARCH`, uses `network_mode: none`, receives no Docker socket, and
 exits before unprivileged services. P7.7's managed graph, smoke, browser, and
-cleanup gate passed, but no retained P8/P9 evidence was collected.
+cleanup gate passed. D026/P8.2 subsequently retained the exact aggregate-only
+42-report managed-state corpus from the clean managed source profile. P8.3
+network-flow and P9 evidence remain pending.
 
 The performance runner builds its reference image under the fixed
 `locus-performance-image-v1` Compose identity before a block and reuses the

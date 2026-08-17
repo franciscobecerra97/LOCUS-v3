@@ -4,8 +4,9 @@ Status: owner-approved target design for D001, D003--D005,
 D008--D010, D014--D018, D023, and D025. D015 supersedes D002/D006;
 D018 supersedes D007/D016. D023's fully connected same-host reference system is
 implemented. D025/P7.7's separately versioned Manager/controller and dynamic-
-Client deployment is implemented and Assigned; P8.1 assurance is complete and
-P8.2 is the next proposed step, but retained P8/P9 evidence remains gated. It
+Client deployment is implemented and Assigned; P8.1 assurance and D026/P8.2's
+42-report managed-state corpus are complete. P8.3 network-flow and P9 evidence
+remain gated. It
 does not change any completed
 component or frozen deployment profile. This document does not
 supersede the implemented baseline architecture or current manuscript until the affected

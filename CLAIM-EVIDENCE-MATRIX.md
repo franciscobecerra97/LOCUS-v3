@@ -34,6 +34,13 @@ D025 profile may support a new central system claim. The assigned security-
 matrix-v2 artifact pins v1/C01--C26 and adds managed contracts M01--M05; it is a
 governance profile, not an evidence result.
 
+D026/P8.2 now supplies the first separately versioned D025 managed-state
+corpus: exactly 42 aggregate-only SB01--SB14 reports (18 Yi, 18 aPPSS, six
+common) bound to clean commit `6e30456`. This adds exact-profile implementation
+evidence but changes no manuscript claim status: D019 independent review,
+P8.3 network-flow evidence, P9 evaluation, artifact reproduction, and a
+separate manuscript delta remain open.
+
 Status values include `Supported for exact baseline`, `Partial for exact
 baseline`, `Unsupported in improvement profile`, `In progress`, `Disproved`,
 and `Explicit non-claim`.
@@ -42,10 +49,10 @@ and `Explicit non-claim`.
 | --- | --- | --- | --- |
 | C01 | Existing v1 CuePolicy remains byte-compatible | Supported by the frozen cue-policy vectors | P1.3/P5.1 pin the frozen CuePolicy and Yi vector digests and preserve exact bytes/errors through the active adapters; P8 keeps this as a regression control rather than new retained evidence |
 | C02 | Common CuePolicy interface supports materially different policies | Unsupported | P5.3/P5.4 implement the three atomic policies, shared corpus, exact registry, `NoResolver`, independent consumer, and cross-policy rejection; P7.5 exercises all four policies, while any promoted system claim still requires P8 evidence |
-| C03 | Cloud state lacks a local cue verifier | Supported for the exact v2 cloud snapshot boundary | P2.1--P2.4 implement the changed descriptor/bundle/current-pointer/gateway disclosure checks as development regressions; P8.2 must collect the exact integrated cloud/gateway/provider state view under a new schema |
-| C04 | Fewer-than-threshold party state lacks a local cue verifier | Supported for the exact v2 one-party Yi snapshot boundary | P5A.6 supplies a non-retained 2-of-3 development comparator; P8.2 must cover every relevant below-threshold Yi/aPPSS coalition for both topologies, and aPPSS manuscript reliance also requires D019 human validation |
-| C05 | Matching cloud plus below-threshold parties lacks a local verifier | Supported for the exact v2 matching Yi combined snapshot | P5A.6 checks fixed matching 2-of-3 development views; P8.2 must collect exact integrated suite/topology-bound unions with positive controls and no mixed snapshots |
-| C06 | RecoveryDescriptor and recovery bundle do not add an offline predicate | Not part of baseline | P2.1--P2.4 implement strict formats, disclosure analysis, networkless development checks, and positive controls; P8.2 must collect the exact integrated disclosure view under a new result schema |
+| C03 | Cloud state lacks a local cue verifier | Supported for the exact v2 cloud snapshot boundary | D026/P8.2 adds schema-bound aggregate cloud/gateway/provider observations for all four managed arms; interpretation remains implementation-scoped pending P8.3, D019, and artifact reproduction |
+| C04 | Fewer-than-threshold party state lacks a local cue verifier | Supported for the exact v2 one-party Yi snapshot boundary | D026/P8.2 retains separate Yi/aPPSS 2-of-3 and 3-of-5 coalition reports with fixed positive controls; aPPSS manuscript reliance still requires D019 human validation and the result is not a proof |
+| C05 | Matching cloud plus below-threshold parties lacks a local verifier | Supported for the exact v2 matching Yi combined snapshot | D026/P8.2 retains exact suite/topology-bound aggregate union reports without pooling or raw state; P8.3 and D019 remain open |
+| C06 | RecoveryDescriptor and recovery bundle do not add an offline predicate | Not part of baseline | D026/P8.2 retains the exact managed disclosure/state view under newly assigned result schemas; endpoint-memory, traffic, and real-provider surfaces remain outside this result |
 | C07 | Clean client authenticates descriptor, bundle, and current epoch | Not part of baseline | P7.5 drives distinct Client B through admitted discovery, signed pointer/bundle/descriptor validation, gateway retrieval, and party-current quorum; P8 must retain substitution, stale-state, rollback-boundary, and positive-control observations |
 | C08 | Clean client recovers exact original key | Baseline proves a fresh process, not a clean device | P7.5 isolates ephemeral Client A/Client B roots and recovers the exact key through the full graph; P8/P9 must bind retained byte-equality/fingerprint observations to the exact manifest |
 | C09 | Enrollment uses authenticated confidential remote transport | Baseline uses trusted provisioner/direct volume writes | P7.5 performs authenticated suite initialization and recipient-local delivery across the integrated graph; P8 must retain endpoint, replay, output, and role-state observations under the exact profile |

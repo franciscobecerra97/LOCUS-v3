@@ -2,8 +2,8 @@
 
 Status: D023 implementation and pre-evidence gate complete; D024 isolated it
 under `prototype_final/`. D025/P7.7 Manager-controlled deployment and assignment
-gate complete. P8.1 assurance is complete; no retained P8/P9 evidence has
-been collected.
+gate complete. P8.1 assurance and P8.2 retained managed-state evidence are
+complete; P8.3 network-flow and P9 evidence remain uncollected.
 
 ## Purpose
 
@@ -264,9 +264,8 @@ These are implementation gates, not retained P8/P9 evidence or paper results.
 
 ## Assurance and evaluation dependency
 
-P7.7 and P8.1 are complete. D026 approved P8.2's exact aggregate-only contract,
-and its schema/collector implementation is in progress before the first
-retained run. The assigned
+P7.7, P8.1, and P8.2 are complete. D026 approved P8.2's exact aggregate-only
+contract before collection. The assigned
 `prototype_final/docs/security-matrix-v2.json`/schema pin v1 and C01--C26 and
 add managed contracts M01--M05. P8.1 instantiated their implementation-
 assurance controls against the exact managed manifest. Component fuzzing and
@@ -275,8 +274,10 @@ state, network, crash, replay, lifecycle-
 control, package, and output conclusions must be observed on the Manager-
 created Client deployment. P8.2 fixes 42 SB01--SB14 reports across the matched
 Yi/aPPSS arms, with exclusive clean-commit publication under
-`prototype_final/evidence/retained/managed-state-v1/`. This D023 profile
-remains a supporting predecessor.
+`prototype_final/evidence/retained/managed-state-v1/`. The collected 18 Yi, 18
+aPPSS, and six common reports bind clean source commit `6e30456` and close to
+corpus digest `e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+This D023 profile remains a supporting predecessor.
 
 P9 freezes methodology and schemas only after P8 defines safe collection.
 Central performance and resilience results use the managed integrated

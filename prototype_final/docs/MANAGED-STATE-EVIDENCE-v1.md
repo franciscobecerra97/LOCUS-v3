@@ -1,8 +1,8 @@
 # Managed State Evidence Profile v1
 
-Status: Assigned by owner-approved D026 on 2026-08-17. Collection is allowed
-only after this profile, its schemas, collector, tests, and command surface are
-committed and the complete source tree is clean.
+Status: Assigned by owner-approved D026 and collected on 2026-08-17 from clean
+source commit `6e304560222b8059292ae291586ee792cc39ed3d` after this profile,
+its schemas, collector, tests, and command surface were committed.
 
 This profile assigns `LOCUS-managed-state-evidence-profile-v1`, the fixed
 scenario manifest `LOCUS-managed-state-scenario-manifest-v1`, suite-separated
@@ -46,3 +46,10 @@ The corpus is exact D025 same-host, single-operator implementation evidence.
 It is not a cryptographic proof, independent-administration, multi-host,
 real-provider, production-security, usability, forensic-erasure, or global
 rollback-resistant attempt-control result. It authorizes no manuscript edit.
+
+The exclusive retained directory contains exactly 42 canonical reports plus
+`corpus-manifest.json`. Its 18 Yi, 18 aPPSS, and six common records cover all
+14 fixed scenarios and close to
+`records_sha256=e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+The retained run passed output scans and left zero disposable containers,
+networks, volumes, or images.

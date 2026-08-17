@@ -157,6 +157,11 @@ After committing and validating a clean collector source state, the explicit
 `evidence/retained/managed-state-v1/`. It fails if the worktree is dirty or the
 exclusive target already exists.
 
+P8.2's retained run completed on 2026-08-17 from clean source commit
+`6e304560222b8059292ae291586ee792cc39ed3d`. The checked-in corpus contains 18
+Yi, 18 aPPSS, and six common reports and closes to
+`e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
+
 ## Directory layout
 
 | Path | Purpose |
