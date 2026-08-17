@@ -1,5 +1,11 @@
 # LOCUS Performance Methodology
 
+> This document remains the frozen historical P7/v2 methodology. D028/P9.1
+> assigns the separate, non-collecting D025 managed-system methodology at
+> `prototype_final/docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md`. The two profiles
+> cannot be pooled or reinterpreted; P9.2 remains required before new
+> collection.
+
 Status: the frozen minimum P7.1-P7.3 methodology is unchanged. The original v1
 collection is archived; corrected v2 collection is required for the
 `LOCUS-reference-backup-v4` / `LOCUS-compose-deployment-v2` cutover.

@@ -101,7 +101,9 @@ authenticated current-state path, fixed paired holder profiles, distinct 4-of-
 complete and all twelve managed identifiers are Assigned. The profile is the
 P8/P9 system under test; P8.2 aggregate-state and P8.3 managed-flow corpora are
 retained, and P8.4 preserves the attempt-control non-claim. P9 results do not
-yet exist.
+yet exist. D028/P9.1 now freezes the exact four-arm managed performance and
+resilience methodology before collection; it assigns no result identifier or
+retained path, so P9.2 remains the next owner gate.
 
 The managed control plane uses internal `management` (Manager/controller) and
 `client-lifecycle` (Client/controller) networks plus separate `manager-edge`

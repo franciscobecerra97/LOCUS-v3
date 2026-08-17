@@ -104,6 +104,7 @@
     "LOCUS-location-person-set-v1",
     "LOCUS-managed-client-instance-v1",
     "LOCUS-managed-client-ui-v1",
+    "LOCUS-managed-performance-methodology-v1",
     "LOCUS-managed-state-corpus-manifest-v1",
     "LOCUS-managed-state-evidence-profile-v1",
     "LOCUS-managed-state-result-appss-v1",
@@ -247,6 +248,15 @@
       ],
       "required_gate": "P7.5 assigned the D023 reference family. P7.7 assigned all twelve D025 managed profiles after strict schemas, vectors, compatibility rules, negative tests, exact internal/edge-network membership, volatile Client reset and credential/reset checks, focused validation, and the complete managed smoke passed.",
       "compatibility_rule": "The D025 managed identifiers are Assigned, not Frozen. They cannot reinterpret the D023 reference family, Compose v2, P6 profiles, client API/UI v1, clean-client v1, protocol formats, or retained evidence. Assignment creates no P8/P9 result; any later semantic or measurement-boundary change requires another distinct profile."
+    },
+    {
+      "family": "measurement-methodology",
+      "allocation_phase": "P9.1",
+      "decisions": [
+        "D028"
+      ],
+      "required_gate": "D028 assigned the exact managed same-host four-arm block design, sample schedule, failure schedule, metric meanings, statistics, exclusions, and interpretation limits before collection.",
+      "compatibility_rule": "Any changed deployment, arm, policy/resolver pairing, provider, sample count, seed, warm-up, failure schedule, metric, statistic, exclusion, or interpretation boundary requires a new methodology identifier; v1 assigns no result identifier or retained path."
     },
     {
       "family": "policy-and-resolver",

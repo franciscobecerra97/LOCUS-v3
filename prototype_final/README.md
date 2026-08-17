@@ -15,6 +15,10 @@ recovery-package import. All twelve D025 managed profiles are Assigned, not
 Frozen. Their implementation and acceptance output are not retained P8/P9
 evidence; collection still requires the applicable later PLAN gates.
 
+D028/P9.1 is also complete. It freezes the exact managed performance and
+resilience methodology but intentionally provides no collector, result
+identifier, or retained path. P9.2 remains the next approval gate.
+
 ## Scope
 
 The managed implementation provides one same-host Docker system with:
@@ -189,6 +193,13 @@ The sole v1 `--retain` run completed on 2026-08-17 from clean source commit
 `1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
 The exclusive target cannot be replaced by another v1 run.
 
+The checked P9.1 methodology is documented in
+`docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` and encoded canonically in
+`docs/managed-performance-methodology-v1.json`. Its validator is exercised by
+`integrated-check`. It cannot collect or retain measurements; do not add or
+run a P9 collector before the separately approved P9.2 identifier/schema/
+control gate.
+
 ## Directory layout
 
 | Path | Purpose |
@@ -202,6 +213,7 @@ The exclusive target cannot be replaced by another v1 run.
 | `tests/` | Focused manifest, bootstrap, isolation, and service-boundary tests |
 | `docs/security-matrix-v2.json` | Assigned additive managed-system security contract; not retained evidence |
 | `docs/ATTEMPT-CONTROL-BOUNDARY.md` | Frozen negative model and local signed-certificate boundary |
+| `docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` | D028/P9.1 non-collecting managed evaluation design |
 | `docs/schemas/` | Integrated configuration, package, and assigned security-matrix schemas |
 
 ## Evidence boundary

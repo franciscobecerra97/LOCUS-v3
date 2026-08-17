@@ -416,6 +416,16 @@ records are diagnostic and do not provide a global or rollback-resistant
 limit. These are bounded supporting controls, not a runtime rollback result,
 global/lifetime bound, D012 witness, P9 metric, or manuscript authorization.
 
+D028 completed P9.1 on 2026-08-17 without collecting evidence. The assigned
+`LOCUS-managed-performance-methodology-v1` contract freezes the exact D025
+same-host/local-provider four-arm block design, seeds, warm-up, n=30/n=10 and
+successor/concurrency/lifecycle schedules, party failure/restart schedules,
+metric meanings, Type-7/bootstrap summaries, no-outlier policy, invalid-run
+handling, and interpretation limits. It assigns no P9 result identifier or
+retained path. P9.2 remains a separate owner-approved schema/control gate
+before any P9.3 measurement; P9.4 external/multi-host work and all manuscript
+wording remain separately gated.
+
 ## Excluded material
 
 The portable copy excludes:

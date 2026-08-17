@@ -42,6 +42,12 @@ contract, clean-commit provenance, and exclusive publication rule. Assignment
 authorizes collection but does not itself create retained evidence or promote
 a manuscript claim.
 
+D028 assigns `LOCUS-managed-performance-methodology-v1` after its exact
+four-arm D025 system boundary, block/sample schedule, seeds, warm-up, failure
+schedule, metric meanings, statistics, exclusions, and limitations were
+approved and implemented as a canonical checked contract. It assigns no P9
+result identifier or retained path; those remain a separate P9.2 owner gate.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
@@ -333,6 +339,17 @@ The first and only v1 publication was collected from clean source commit
 manifest have `corpus_sha256`
 `1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
 
+### D028/P9.1 assigned managed-performance methodology
+
+| Assigned identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-managed-performance-methodology-v1` | Exact D025 same-host/local-provider four-arm design, ten seeded fresh-project blocks, fixed warm-up/sample/failure/successor/concurrency/lifecycle schedules, metric/statistical meanings, exclusions, and limitations | Any changed graph, arm, policy/resolver pairing, provider, seed, block/sample plan, warm-up, schedule, metric, statistic, invalid-run rule, or interpretation boundary requires a new methodology |
+
+The canonical contract and validator live under `prototype_final/docs/` and
+`prototype_final/locus/`. P9.1 is non-collecting: the contract contains empty
+result-identifier and retained-path lists and requires P9.2. No performance or
+resilience result family is assigned by D028.
+
 P8.4 assigns no new identifier and does not reinterpret the frozen attempt
 family. `prototype_final/` preserves the historical attempt-model source,
 signed-certificate implementation, and strict report schema under normalized
@@ -508,6 +525,7 @@ separate suite/topology evidence paths before collection.
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
 | Deployment | Frozen same-host Yi profile plus P6.3 matched same-host process profiles for Yi/aPPSS 2-of-3 and 3-of-5 | P6.4 host separation is a distinct profile; independent administration requires actual operators and separate approval |
 | Integrated reference deployment | Assigned D023 reference deployment/config v1 predecessor; Assigned D025 Manager deployment/config/API/UI, controller API/profile, Client API/UI, managed-instance, package, clean-client-v2, and security-matrix-v2 profiles | P7.7 passed strict schemas/profiles, vectors, compatibility rules, negative tests, complete managed smoke, and documentation; D023 v1 remains immutable |
+| Measurement methodology | Assigned D028 managed-performance methodology v1; no result identifier or retained path | P9.2 separately approves performance/resilience schemas, controls, processors, and paths before collection; semantic methodology changes require a new identifier |
 | Client and UI | Assigned client API v1/local research UI v1 and D025 client API v2, managed Client UI v1, Manager API/UI, controller API/profile, and managed-instance profiles | P7.7 preserved thin-UI separation, exact route semantics, output safety, and old-profile immutability; further semantic changes require distinct versions |
 | Clean-client isolation | Assigned process/persistent-surface isolation v1 and D025 dynamic managed-client isolation v2 | V2 binds exact allowed inputs/state, fresh-instance proof, inherited-state positive control, and explicit non-erasure limitation; later changes require a new version |
 | Security contract | Assigned governance-only security matrix v1 over C01--C26 and additive D025 matrix v2 with M01--M05 | Matrix v2 preserves all v1 row meanings and adds Manager/controller, package, dynamic-client/key-display, network/reset, and credential contracts; it is not evidence |

@@ -37,6 +37,13 @@ six common) from clean commit `6e30456`. They add exact D025 implementation
 evidence without changing any row's paper-facing state; D019, P8.3, P9,
 artifact reproduction, and a separate manuscript delta remain required.
 
+D027/P8.3 and P8.4 are complete under their separately scoped flow and
+attempt-control boundaries. D028/P9.1 now assigns only the exact non-collecting
+managed performance/resilience methodology. It freezes the D025 four-arm
+block, sample, failure, metric, and statistical boundary but adds no result,
+retained path, claim support, or manuscript authorization. CLM-18 remains
+`Partial` pending P9.2/P9.3 and later artifact reproduction.
+
 ## Claim Matrix
 
 | ID | Paper claim and location | Exact property and adversary | Provenance | State | Current evidence | Required evidence or paper action | Residual risk / limitation |

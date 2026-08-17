@@ -31,6 +31,9 @@ gates before their affected implementation work.
 | D023 | Primary integrated reference system and evidence target | One separately versioned, same-host Docker reference system connects the loopback UI/client gateway to every authenticated LOCUS service and becomes the mandatory P8/P9 system-under-test; component and historical profiles remain supporting controls only | Approved |
 | D024 | Final prototype source and command boundary | Create a self-contained `prototype_final/` workspace containing only the D023 integrated implementation, focused tests, native dependencies, deployment assets, documentation, and `integrated-*` executor commands; direct all P8+ implementation and evidence work to it while preserving existing paths as historical/component controls | Approved |
 | D025 | Manager-controlled integrated deployment and transient client workflow | Replace the D023 enrollment/recovery startup profiles in the active D024 workspace with a newly versioned loopback Manager UI, an internal narrow Docker lifecycle controller, and dynamically created transient Client UI containers; preserve the approved protocol profiles and local provider path while adding a client recovery-package export/import transport | Approved |
+| D026 | Managed aggregate-only state-evidence contract | Assign the exact 42-report P8.2 managed-state contract and exclusive retained path | Approved |
+| D027 | Managed privacy-safe flow-evidence contract | Assign the exact 30-report P8.3 payload-free application-flow contract and exclusive retained path | Approved |
+| D028 | Managed performance and resilience methodology | Freeze the exact four-arm D025 same-host blocked design, sample/failure schedules, metric meanings, statistics, and interpretation limits before P9 collection | Approved |
 
 ## Approved architecture records
 
@@ -1314,6 +1317,77 @@ edit is authorized.
 Manuscript implication: None authorized. The result remains same-host single-
 operator implementation evidence subject to D019, P9, artifact reproduction,
 claim closure, and a separately approved exact manuscript delta.
+
+### D028 — Managed performance and resilience methodology
+
+Decision ID: D028
+
+Date: 2026-08-17
+
+Status: Approved
+
+Chosen option: Assign `LOCUS-managed-performance-methodology-v1` exactly as
+presented to and approved by the owner. It measures only the exact D025
+same-host, single-operator Manager-created Client graph with the local
+S3-compatible provider. The four matched arms are Yi and aPPSS at 2-of-3 with
+canonical-email/NoResolver, and Yi and aPPSS at 3-of-5 with the frozen
+location-person policy/deterministic resolver; all retain the separate 4-of-5
+authorization quorum.
+
+Experiment design: Use ten fresh disposable project blocks per arm with seeds
+`2026081701` through `2026081710`, deterministic arm ordering, matched
+synthetic key/input classes within topology blocks, one unmeasured complete
+warm-up per arm/block, and no outlier removal. Central operations receive 30
+observations per arm (three/block); structural/restart/storage observations
+receive ten per arm (one/block); each same-/cross-suite successor direction
+receives ten at each topology. Concurrency levels are 1, 2, and 4 with ten
+batches per arm/level. Manager/system startup and each Client lifecycle action
+receive ten suite-neutral observations.
+
+Failure and metric boundary: At 2-of-3 stop party 1 and recover with parties 2
+and 3; at 3-of-5 recover with parties 2, 3, and 4; below-threshold uses exactly
+`k-1`; party restart awaits authenticated health and then uses party 1. Measure
+client-monotonic end-to-end and non-overlapping phase latency, application-body
+and aggregate persisted bytes, Manager/Client lifecycle, separately labeled
+host-loopback UI HTTP latency excluding rendering, and concurrency completion/
+throughput. One Client's serialization is explicit and is not scalability.
+
+Statistics and invalid runs: For n=30 report count, median, Type-7 quartiles,
+p5/p95, range, and a deterministic 10,000-resample 95% bootstrap interval for
+the median. For n=10 report count, median, Type-7 quartiles, and range. Means
+are secondary. Slow valid operations and expected failures remain. An
+infrastructure-invalid observation is retained as invalid under the future
+P9.2 schema, never silently retried or overwritten, excluded from valid
+statistics with its count disclosed, and linked to any explicit replacement.
+
+New trust assumptions: None beyond D025. The study trusts the one measurement
+host, operator, monotonic client clock, synthetic fixtures, and local provider
+for this exact implementation experiment; it does not establish independent
+administration or real-provider behavior.
+
+Privacy implications: P9.1 collects and retains nothing. P9.2 must separately
+approve bounded aggregate fields, positive controls, output scanning,
+provenance, invalid-run representation, identifiers, schemas, and paths before
+P9.3 can collect. P8 corpora and historical v2 results stay disjoint.
+
+Compatibility/version impact: The methodology identifier is Assigned. A
+changed graph, arm, policy/resolver pairing, provider, block/seed/sample plan,
+warm-up, failure schedule, metric, statistic, exclusion, or interpretation
+boundary requires a new methodology. D028 assigns no performance/resilience
+result identifier and no retained path.
+
+Required evidence: Later P9.3 collection must follow the canonical checked
+methodology and the separately approved P9.2 contracts. P9.4 multi-host, WAN,
+or external-provider measurements need separate authorization and identities.
+
+Files or components authorized: The canonical methodology JSON, strict
+validator/schema/tests, technical methodology documentation, and governance/
+registry/status updates. No collector, result processor, retained output,
+external service, runtime protocol change, or paper edit is authorized.
+
+Manuscript implication: None authorized. No CPU, energy, WAN, real-provider,
+production-capacity, scalability, independent-administration, usability, or
+comparative-advantage claim follows from P9.1.
 
 ## Decision record template
 

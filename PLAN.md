@@ -22,8 +22,9 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 through P8.4 are complete; P9.1 is the next proposed step.
-Architecture decisions listed in `DECISIONS.md` remain owner gates.
+predecessor. P8.1 through P8.4 and P9.1 are complete; P9.2 is the next proposed
+step and remains an owner gate. Architecture decisions listed in
+`DECISIONS.md` remain owner gates.
 
 ## Status model
 
@@ -2901,11 +2902,11 @@ substitute for or be pooled with end-to-end results.
 
 ### P9.1 Define revised methodology before collection
 
-Status: `Proposed`
+Status: `Complete`
 
-Readiness: P8.1--P8.4 are complete for the exact managed same-host profile.
-P9.1 is the next ready step, but no P9 collection may begin before its frozen
-methodology and the P9.2 result-schema gate are separately approved.
+Readiness: D028 approved the exact methodology. P8.1--P8.4 are complete for
+the exact managed same-host profile. No P9 collection may begin before the
+P9.2 result-schema gate is separately proposed and approved.
 
 Measure:
 
@@ -2943,9 +2944,34 @@ Acceptance:
   synthetic protected key/input class, policy, admission, storage, failure
   schedule, warm-up, sample count, and metric definitions.
 
+Completion record:
+
+- D028 assigns `LOCUS-managed-performance-methodology-v1` and a canonical
+  fail-closed contract under `prototype_final/docs/`; its validator accepts
+  only the exact approved object. The profile assigns no result identifier or
+  retained path and collects no evidence.
+- Four exact arms bind Yi/aPPSS 2-of-3 to canonical-email/NoResolver and
+  Yi/aPPSS 3-of-5 to location-person/deterministic resolution on the D025
+  same-host, single-operator graph with local S3-compatible storage and the
+  distinct 4-of-5 authorization quorum.
+- Ten fresh-project blocks use seeds `2026081701`--`2026081710`, deterministic
+  ordering, matched topology fixtures, one unmeasured warm-up per arm/block,
+  fixed n=30 and n=10 schedules, all four successor directions, concurrency
+  levels 1/2/4, fixed party failure/restart schedules, and no outlier removal.
+- Metric meanings, Type-7 summaries, deterministic 10,000-resample median
+  interval, invalid-infrastructure handling, browser-rendering exclusion, and
+  interpretation limits are frozen. No CPU, energy, WAN, real-provider,
+  scalability, production-capacity, independent-administration, usability, or
+  manuscript claim is authorized.
+
 ### P9.2 Implement new evidence schemas
 
 Status: `Proposed`
+
+Readiness: P9.1 is complete. Before implementation, the owner must approve the
+exact result identifiers, schemas, privacy/provenance fields, positive
+controls, invalid-run representation, processors, and append-only paths. P9.2
+must not collect measurements.
 
 Implement only the performance and resilience result families needed by the
 P9.1 methodology, including end-to-end integrated performance, failure and

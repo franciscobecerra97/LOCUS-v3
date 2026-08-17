@@ -19,9 +19,10 @@ with the inherited corpora.
 
 P1.4 records protected identifiers and reserved evidence families in
 `docs/version-registry-v1.json`. Reservation is not evidence authorization.
-D027 now assigns only P8.3's exact managed-flow trace/result family; P9.2
-performance/resilience identifiers remain unassigned until their exact privacy
-boundary, schema, positive controls, metrics, and provenance are approved.
+D027 assigns only P8.3's exact managed-flow trace/result family. D028 assigns
+the non-collecting P9.1 methodology; P9.2 performance/resilience result
+identifiers remain unassigned until their exact privacy boundary, schema,
+positive controls, metrics, and provenance are approved.
 
 P1.5's `docs/security-matrix-v1.json` supplies the minimum security contract
 for every C01--C26 row. Before implementing or collecting a scenario, copy its
@@ -323,6 +324,17 @@ temporary public output only and retains no result. It is a bounded negative
 regression and local implementation control, not evidence of a global,
 lifetime, or rollback-resistant attempt bound. D012 and all P9 collection
 remain separately gated.
+
+D028 assigns only `LOCUS-managed-performance-methodology-v1`. Its canonical
+P9.1 contract freezes the exact D025 four-arm same-host/local-provider block,
+sample, warm-up, failure/restart, successor, concurrency, lifecycle, metric,
+statistical, exclusion, and interpretation rules before collection. P9.1
+retains nothing and allocates no result identifier or path. P9.2 must
+separately approve strict performance/resilience schemas, positive controls,
+privacy-safe fields, provenance/hash closure, invalid-run representation,
+processors, and exclusive append-only paths before P9.3. No P8 or historical
+v2 corpus may be pooled or relabeled. P9.4 external-provider, WAN, and
+multi-host collection remains separately authorized.
 
 ## External services
 

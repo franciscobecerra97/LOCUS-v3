@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://locus.invalid/schemas/managed-performance-methodology-v1.schema.json",
+  "title": "LOCUS managed performance methodology v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "arms",
+    "blocking_and_randomization",
+    "decision_id",
+    "deployment",
+    "failure_schedules",
+    "format_id",
+    "limitations",
+    "metrics",
+    "retention_gate",
+    "sample_plan",
+    "statistics",
+    "status"
+  ],
+  "properties": {
+    "arms": {"type": "array", "minItems": 4, "maxItems": 4},
+    "blocking_and_randomization": {"type": "object"},
+    "decision_id": {"const": "D028"},
+    "deployment": {"type": "object"},
+    "failure_schedules": {"type": "object"},
+    "format_id": {"const": "LOCUS-managed-performance-methodology-v1"},
+    "limitations": {"type": "array", "minItems": 7, "maxItems": 7},
+    "metrics": {"type": "object"},
+    "retention_gate": {"type": "object"},
+    "sample_plan": {"type": "object"},
+    "statistics": {"type": "object"},
+    "status": {"const": "approved-no-collection"}
+  }
+}
