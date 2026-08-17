@@ -1,7 +1,7 @@
 # Managed Flow Evidence Profile v1
 
-Status: Assigned by owner-approved D027; collector implementation is complete,
-and retained collection remains pending the clean-source gate.
+Status: Complete. Assigned by owner-approved D027 and collected once from a
+clean committed source state.
 
 The seven identifiers assigned by D027 are the managed-flow evidence profile,
 trace policy, fixed scenario manifest, Yi/aPPSS/common result families, and
@@ -46,6 +46,12 @@ Exploratory execution writes no retained output. `--retain` requires a clean
 source commit, rebuilds and validates the exact D025 graph, and atomically
 publishes all 30 canonical reports or none at
 `evidence/retained/managed-flow-v1/`. An existing target is never overwritten.
+
+The sole v1 retained run completed on 2026-08-17 from source commit
+`cd5aaaf762a9b18bef681f496f704f772fe6e9be`. It published exactly 12 Yi,
+12 aPPSS, and six common reports. The canonical corpus manifest closes them
+with `corpus_sha256`
+`1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
 
 This is same-host, single-operator application-boundary implementation
 evidence. It is not packet-level evidence, a timing/performance corpus,

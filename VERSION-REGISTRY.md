@@ -328,6 +328,11 @@ cleanup, safety, and limitations only. D027 allocates no P9 timing,
 performance, throughput, or resilience metric and authorizes no manuscript
 wording.
 
+The first and only v1 publication was collected from clean source commit
+`cd5aaaf762a9b18bef681f496f704f772fe6e9be`. Its 30 reports and closing corpus
+manifest have `corpus_sha256`
+`1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only
@@ -496,8 +501,8 @@ separate suite/topology evidence paths before collection.
 | Client and UI | Assigned client API v1/local research UI v1 and D025 client API v2, managed Client UI v1, Manager API/UI, controller API/profile, and managed-instance profiles | P7.7 preserved thin-UI separation, exact route semantics, output safety, and old-profile immutability; further semantic changes require distinct versions |
 | Clean-client isolation | Assigned process/persistent-surface isolation v1 and D025 dynamic managed-client isolation v2 | V2 binds exact allowed inputs/state, fresh-instance proof, inherited-state positive control, and explicit non-erasure limitation; later changes require a new version |
 | Security contract | Assigned governance-only security matrix v1 over C01--C26 and additive D025 matrix v2 with M01--M05 | Matrix v2 preserves all v1 row meanings and adds Manager/controller, package, dynamic-client/key-display, network/reset, and credential contracts; it is not evidence |
-| Trace | Frozen retained trace-policy identifier | P8.3 must assign a new trace profile including Manager/controller, both lifecycle networks, dynamic Clients, package transport, and service contacts before collection |
-| Result | Frozen retained attack/performance/evidence families plus D026's Assigned managed-state result family | P8.2 assigned and collected the separate 42-report managed security/state corpus; P9.2 later assigns performance/resilience schemas; all keep D023/D025, Yi/aPPSS, topology, and metric families disjoint |
+| Trace | Frozen retained trace-policy identifier plus D027's Assigned managed-flow trace policy | P8.3 assigned and collected the separate payload-free 30-report application-boundary corpus; changed graph/category/observation semantics require a new profile |
+| Result | Frozen retained attack/performance/evidence families plus D026 managed-state and D027 managed-flow result families | P8.2/P8.3 collected disjoint 42-report state and 30-report flow corpora; P9.2 later assigns performance/resilience schemas and must keep all metric families disjoint |
 | Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | After P7.7/P8/P9, P10.3 assigns a later portable-artifact identifier with a managed-system manifest and allowlist |
 
 ### Upgrade and compatibility rules

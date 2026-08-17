@@ -390,8 +390,11 @@ commit `6e304560222b8059292ae291586ee792cc39ed3d`, with corpus digest
 This changes no manuscript claim. D027 subsequently assigned P8.3's seven
 managed-flow identifiers, exact 30-report manifest, payload-free adapter
 instrumentation, strict reconciliation/output gates, clean-commit provenance,
-and exclusive retained path. The collector and schemas are implemented in
-`prototype_final/`; retained collection remains pending its clean-commit run.
+and exclusive retained path. P8.3 is complete: its sole retained run published
+12 Yi, 12 aPPSS, and six common reports from clean source commit
+`cd5aaaf762a9b18bef681f496f704f772fe6e9be`, with `corpus_sha256`
+`1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
+The result is same-host, single-operator application-boundary evidence only.
 No P9 metric or manuscript wording is authorized.
 
 The P8.3 exploratory gate exposed a managed-client routing defect: the active

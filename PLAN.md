@@ -22,9 +22,8 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 and P8.2 are complete; P8.3 is the next proposed step and
-remains subject to its own pre-collection owner gate. Architecture decisions
-listed in `DECISIONS.md` remain owner gates.
+predecessor. P8.1 through P8.3 are complete; P8.4 is the next proposed step.
+Architecture decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
 
@@ -2802,7 +2801,7 @@ Acceptance:
 
 ### P8.3 Add privacy-safe network-flow evidence
 
-Status: `In progress — D027 collector ready; retained collection pending`
+Status: `Complete`
 
 Before collection, assign the exact trace-policy identifier, aggregate trace
 schema, permitted categories, positive controls, unexpected-contact rule,
@@ -2842,8 +2841,8 @@ only evidence-mode observations to existing route, authenticated-RPC,
 logical-provider, and constrained-Docker adapters; it adds no graph role or
 route. Exactly 12 Yi, 12 aPPSS, and six common reports are required. Raw
 structured events and service logs are scanned and discarded. Retained
-collection remains prohibited until the contract, collector, schemas, and
-tests are committed and the clean-source gate passes.
+collection was prohibited until the contract, collector, schemas, and tests
+were committed and the clean-source gate passed.
 
 The exploratory D027 gate also found and corrected an implementation-to-
 registry mismatch: the managed client had compared the registered
@@ -2853,9 +2852,23 @@ that both 3-of-5 location-person arms contact the authenticated resolver while
 both 2-of-3 canonical-email arms remain NoResolver. This is a correction to
 the already assigned v1 policy routing, not a new policy or resolver format.
 
+Completion record (2026-08-17): the sole v1 retained run used clean source
+commit `cd5aaaf762a9b18bef681f496f704f772fe6e9be` and published exactly 12 Yi,
+12 aPPSS, and six common reports. All reports passed schema, reconciliation,
+positive-control, unexpected-contact, output-safety, provenance, and cleanup
+checks. The closing `corpus_sha256` is
+`1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
+This completes same-host, single-operator application-boundary evidence only;
+it creates no packet-level, timing, performance, cryptographic-proof,
+multi-host, independent-administration, real-provider, or manuscript claim.
+
 ### P8.4 Preserve attempt control as a boundary
 
 Status: `Proposed`
+
+Readiness: P8.3's retained managed-flow gate is satisfied. P8.4 is the next
+ready step and remains limited to the already documented attempt-control
+boundary.
 
 - Keep the rollback counterexample reproducible.
 - Keep signed local auditing isolated from recovery-suite correctness claims.

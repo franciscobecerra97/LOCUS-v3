@@ -169,10 +169,12 @@ no retained output:
 uv run --frozen python tasks.py integrated-flow-evidence
 ```
 
-After the collector contract is committed and the source tree is clean, the
-explicit `--retain` form may atomically publish exactly 30 reports under
-`evidence/retained/managed-flow-v1/`. Until that clean gate passes, retained
-collection is prohibited.
+The sole v1 `--retain` run completed on 2026-08-17 from clean source commit
+`cd5aaaf762a9b18bef681f496f704f772fe6e9be`. It atomically published 12 Yi,
+12 aPPSS, and six common reports under
+`evidence/retained/managed-flow-v1/`, closing to
+`1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
+The exclusive target cannot be replaced by another v1 run.
 
 ## Directory layout
 
@@ -196,9 +198,9 @@ produce ordinary development output only. D026's
 explicit `integrated-state-evidence --retain` is the sole P8.2 retained path;
 it uses the assigned schema, identifiers, positive controls, provenance,
 output-safety policy, and versioned result path. D027's separate
-`integrated-flow-evidence --retain` is the sole P8.3 retained path after its
-clean collector gate; it cannot emit P9 metrics. P9 collection remains
-prohibited until its own gate is approved.
+`integrated-flow-evidence --retain` is the sole P8.3 retained path; its v1
+target is now complete and immutable. It cannot emit P9 metrics. P9 collection
+remains prohibited until its own gate is approved.
 
 Use generated keys, fictional cues, generated credentials, and disposable
 local services only. Never supply real private keys, credentials, accounts, or

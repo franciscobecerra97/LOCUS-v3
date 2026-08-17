@@ -311,6 +311,11 @@ clean committed collector and may publish only by exclusive atomic rename into
 canonical records or none and never replaces an existing corpus. D027 assigns
 no P9 metric and authorizes no manuscript change.
 
+The v1 corpus was collected once from clean source commit
+`cd5aaaf762a9b18bef681f496f704f772fe6e9be`. Its exact 30 reports close to
+`corpus_sha256=1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
+This completes P8.3 only; P8.4 and P9 remain separately scoped and gated.
+
 ## External services
 
 External provider experiments are benign functional/performance operations
