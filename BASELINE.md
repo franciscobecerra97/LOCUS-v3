@@ -387,7 +387,20 @@ retained path were assigned and implemented before collection. The retained
 corpus contains 18 Yi, 18 aPPSS, and six common reports bound to clean source
 commit `6e304560222b8059292ae291586ee792cc39ed3d`, with corpus digest
 `e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
-This changes no manuscript claim and leaves P8.3 trace evidence pending.
+This changes no manuscript claim. D027 subsequently assigned P8.3's seven
+managed-flow identifiers, exact 30-report manifest, payload-free adapter
+instrumentation, strict reconciliation/output gates, clean-commit provenance,
+and exclusive retained path. The collector and schemas are implemented in
+`prototype_final/`; retained collection remains pending its clean-commit run.
+No P9 metric or manuscript wording is authorized.
+
+The P8.3 exploratory gate exposed a managed-client routing defect: the active
+location-person policy declares `LOCUS-deterministic-directory-v1`, but the
+remote resolver branch compared against a v2 literal. The active
+`prototype_final/` client now follows the registered v1 profile. Focused and
+live checks show resolver contact for the paired 3-of-5 location-person arms
+and no resolver contact for paired 2-of-3 canonical-email arms. No identifier,
+policy algorithm, resolver format, or historical P8.2 result was changed.
 
 ## Excluded material
 

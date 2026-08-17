@@ -1242,6 +1242,79 @@ implementation evidence subject to D019 independent review, later P8/P9 and
 artifact gates, claim closure, and a separately presented exact manuscript
 delta.
 
+### D027 — Managed privacy-safe flow-evidence contract
+
+Decision ID: D027
+
+Date: 2026-08-17
+
+Status: Approved
+
+Chosen option: Assign the exact P8.3 contract presented to and approved
+verbatim by the owner on 2026-08-17. The assigned identifiers are
+`LOCUS-managed-flow-evidence-profile-v1`,
+`LOCUS-managed-flow-trace-policy-v1`,
+`LOCUS-managed-flow-scenario-manifest-v1`,
+`LOCUS-managed-flow-result-common-v1`,
+`LOCUS-managed-flow-result-yi-v1`,
+`LOCUS-managed-flow-result-appss-v1`, and
+`LOCUS-managed-flow-corpus-manifest-v1`. The immutable corpus contains exactly
+30 reports: 12 Yi, 12 aPPSS, and six suite-neutral common reports over
+NF01--NF12. The four suite/topology/policy arms remain exactly matched to
+D026/P8.2.
+
+Instrumentation boundary: Fixed payload-free observation is attached only to
+the synthetic browser driver and Manager/Client route adapters, authenticated
+RPC callers and servers, the storage-gateway logical provider adapter, and the
+constrained Docker Engine adapter. It creates no service, network, volume,
+socket, mount, endpoint, or protocol route. Authenticated HTTP observations
+reconcile sender and receiver; browser, S3, and Docker boundaries use their
+fixed available observation point. Packet capture is prohibited.
+
+Retained fields: Sender/receiver role, registered message category, request
+count, request/response application-body byte totals, bounded success/rejection
+counts, reconciliation status, fixed expected-absence/positive-control status,
+public configuration/provenance digests, pseudonymous project/host/client/
+package-set bindings, output scan, cleanup, and fixed limitations only. No
+timing field is a P8.3 metric.
+
+Unexpected-contact rule: An unknown role, edge, or category; a scenario-
+forbidden category; Client-to-Manager, Manager-to-Client-container, UI-to-
+Docker, Client-to-S3, or browser-to-service contact; resolver contact under a
+NoResolver policy; missing/mismatched paired observation; malformed event
+sequence; prohibited output; incomplete cleanup; or incomplete corpus fails
+the entire run without publication.
+
+Positive controls: Every scenario must observe its required allowed edge.
+Tests and the live run detect unknown edges/categories, sequence gaps, byte-
+bound violations, sender/receiver mismatches, fabricated resolver contact,
+and fictional prohibited markers. Allowed Manager/controller and Client/
+controller contacts succeed while prohibited network/socket probes remain
+blocked. Raw structured events and service logs are scanned and discarded.
+
+Compatibility/version impact: The seven identifiers are Assigned with strict
+schemas, fixed category/edge/scenario manifests, tests, and first
+implementation. The exclusive retained path is
+`prototype_final/evidence/retained/managed-flow-v1/`. Publication is clean-
+commit-bound, append-only, all-or-nothing, and atomic. Any changed role, edge,
+category, scenario, byte meaning, instrumentation point, deployment/provider/
+admission/UI/API boundary, topology, policy, suite, retained field, or
+publication rule requires a new version. Frozen trace-policy v1, D023, P7.7,
+and P8.2 outputs retain their meanings and cannot be pooled or reinterpreted.
+
+Files or components authorized: `prototype_final/` flow instrumentation,
+policy/scenario manifests, schemas, collector, tests, an additive
+`integrated-flow-evidence` command, append-only retained corpus, and the
+governance/registry/status documentation needed for P8.3. Two P8.3 commits are
+required: the clean contract/collector commit first, then retained corpus and
+completion documentation. No P9 metric/result family, packet capture, external
+provider, real data, new runtime role, protocol/API expansion, or manuscript
+edit is authorized.
+
+Manuscript implication: None authorized. The result remains same-host single-
+operator implementation evidence subject to D019, P9, artifact reproduction,
+claim closure, and a separately approved exact manuscript delta.
+
 ## Decision record template
 
 When the owner decides an item, append:

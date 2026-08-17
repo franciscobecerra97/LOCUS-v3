@@ -162,11 +162,23 @@ P8.2's retained run completed on 2026-08-17 from clean source commit
 Yi, 18 aPPSS, and six common reports and closes to
 `e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
 
+D027 assigns the payload-free P8.3 flow collector. Its exploratory form writes
+no retained output:
+
+```console
+uv run --frozen python tasks.py integrated-flow-evidence
+```
+
+After the collector contract is committed and the source tree is clean, the
+explicit `--retain` form may atomically publish exactly 30 reports under
+`evidence/retained/managed-flow-v1/`. Until that clean gate passes, retained
+collection is prohibited.
+
 ## Directory layout
 
 | Path | Purpose |
 | --- | --- |
-| `tasks.py` | Only supported executor; exposes six `integrated-*` commands |
+| `tasks.py` | Only supported executor; exposes seven `integrated-*` commands |
 | `locus/` | Dependency-complete integrated Python implementation and UI assets |
 | `appss-core/` | Native aPPSS core and public vector |
 | `tpass-core/` | Frozen native Yi core and vector |
@@ -179,10 +191,13 @@ Yi, 18 aPPSS, and six common reports and closes to
 ## Evidence boundary
 
 `integrated-check`, `integrated-config`, `integrated-smoke`, and exploratory
-`integrated-state-evidence` produce ordinary development output only. D026's
+`integrated-state-evidence`, and exploratory `integrated-flow-evidence`
+produce ordinary development output only. D026's
 explicit `integrated-state-evidence --retain` is the sole P8.2 retained path;
 it uses the assigned schema, identifiers, positive controls, provenance,
-output-safety policy, and versioned result path. P8.3/P9 collection remains
+output-safety policy, and versioned result path. D027's separate
+`integrated-flow-evidence --retain` is the sole P8.3 retained path after its
+clean collector gate; it cannot emit P9 metrics. P9 collection remains
 prohibited until its own gate is approved.
 
 Use generated keys, fictional cues, generated credentials, and disposable

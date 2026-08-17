@@ -20,6 +20,8 @@ from .appss_formats import canonical_decode, validate_request
 from .appss_party import AppssPartyBinding, AppssPartyService, AppssPartyStore
 from .codec import encode
 from .contracts import AdmissionCapability, GatewayRequest, StorageOperation
+from .flow_audit import configure_role, current_context
+from .flow_audit import emit as emit_flow
 from .integrated_rpc import serve_rpc
 from .local_admission import (
     AdmissionReplayStore,
@@ -298,6 +300,25 @@ class StorageGatewayRole:
         gateway = LocalAdmissionStorageGateway(
             verifier=self.verifier, backend=backend, audience=STORAGE_AUDIENCE
         )
+        provider_category = {
+            StorageOperation.CREATE_IMMUTABLE: "object-create",
+            StorageOperation.READ_EXACT: "object-read",
+            StorageOperation.COMPARE_AND_SWAP: "object-cas",
+            StorageOperation.DELETE_EXACT: "object-delete",
+        }[gateway_request.operation]
+
+        def observe_provider(result: str, response_bytes: int = 0) -> None:
+            if current_context():
+                emit_flow(
+                    sender="storage-gateway",
+                    receiver="provider",
+                    category=provider_category,
+                    request_bytes=0 if payload is None else len(payload),
+                    response_bytes=response_bytes,
+                    result=result,
+                    observation="sender",
+                )
+
         try:
             result = gateway.execute(
                 gateway_request,
@@ -307,15 +328,23 @@ class StorageGatewayRole:
                 now=int(request["now"]),
             )
         except ObjectNotFound:
+            observe_provider("rejected")
             return 404, {"category": "object_not_found", "status": "error"}
         except ObjectConflict:
+            observe_provider("rejected")
             return 409, {"category": "object_conflict", "status": "error"}
         except ObjectStale:
+            observe_provider("rejected")
             return 409, {"category": "object_stale", "status": "error"}
         except ObjectCorrupt:
+            observe_provider("rejected")
             return 400, {"category": "object_rejected", "status": "error"}
         except ObjectStoreUnavailable:
+            observe_provider("unavailable")
             return 503, {"category": "provider_unavailable", "status": "error"}
+        observe_provider(
+            "success", 0 if result.payload is None else len(result.payload)
+        )
         return 200, {
             "payload_hex": None if result.payload is None else result.payload.hex(),
             "reference": result.reference.to_dict(),
@@ -736,6 +765,7 @@ def main() -> None:
         if args.holder_id not in range(1, 6):
             raise SystemExit("party requires --holder-id 1..5")
         handler = PartyRole(args.root, args.holder_id)
+    configure_role(f"party{args.holder_id}" if args.role == "party" else args.role)
     serve_rpc(host=args.host, port=args.port, role_root=args.root, handler=handler)
 
 

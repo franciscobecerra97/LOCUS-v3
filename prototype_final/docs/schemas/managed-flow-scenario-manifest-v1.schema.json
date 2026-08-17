@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-flow-scenario-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["arms", "evidence_profile_id", "format_id", "report_count", "reports", "scenario_contracts", "status", "trace_policy_id"],
+  "properties": {
+    "arms": {"type": "object"},
+    "evidence_profile_id": {"const": "LOCUS-managed-flow-evidence-profile-v1"},
+    "format_id": {"const": "LOCUS-managed-flow-scenario-manifest-v1"},
+    "report_count": {"const": 30},
+    "reports": {"type": "array", "minItems": 30, "maxItems": 30, "uniqueItems": true},
+    "scenario_contracts": {"type": "object"},
+    "status": {"const": "assigned"},
+    "trace_policy_id": {"const": "LOCUS-managed-flow-trace-policy-v1"}
+  }
+}

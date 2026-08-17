@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-flow-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["arm", "arm_id", "bindings", "cleanup", "contacts", "evidence_profile_id", "expected_absences", "format_id", "limitations", "metrics", "output_safety", "positive_controls", "scenario_contracts", "scenario_id", "scenario_manifest_sha256", "status", "trace_policy_id"],
+  "properties": {
+    "arm": {"type": ["object", "null"]},
+    "arm_id": {"type": "string"},
+    "bindings": {"type": "object"},
+    "cleanup": {"const": {"complete": true, "raw_observations_discarded": true}},
+    "contacts": {"type": "array", "minItems": 1, "items": {"type": "object", "additionalProperties": false, "required": ["category", "receiver_role", "reconciliation", "rejected_count", "request_body_bytes", "request_count", "response_body_bytes", "sender_role", "success_count", "unavailable_count"], "properties": {"category": {"type": "string"}, "receiver_role": {"type": "string"}, "reconciliation": {"enum": ["matched", "fixed-available"]}, "rejected_count": {"type": "integer", "minimum": 0}, "request_body_bytes": {"type": "integer", "minimum": 0}, "request_count": {"type": "integer", "minimum": 1}, "response_body_bytes": {"type": "integer", "minimum": 0}, "sender_role": {"type": "string"}, "success_count": {"type": "integer", "minimum": 0}, "unavailable_count": {"type": "integer", "minimum": 0}}}},
+    "evidence_profile_id": {"const": "LOCUS-managed-flow-evidence-profile-v1"},
+    "expected_absences": {"type": "object"},
+    "format_id": {"enum": ["LOCUS-managed-flow-result-common-v1", "LOCUS-managed-flow-result-yi-v1", "LOCUS-managed-flow-result-appss-v1"]},
+    "limitations": {"type": "array", "minItems": 5, "maxItems": 5},
+    "metrics": {"type": "object"},
+    "output_safety": {"const": {"prohibited_findings": 0, "scan": "passed"}},
+    "positive_controls": {"type": "object"},
+    "scenario_contracts": {"type": "array"},
+    "scenario_id": {"pattern": "^NF(?:0[1-9]|1[0-2])$"},
+    "scenario_manifest_sha256": {"pattern": "^[0-9a-f]{64}$"},
+    "status": {"const": "passed"},
+    "trace_policy_id": {"const": "LOCUS-managed-flow-trace-policy-v1"}
+  }
+}

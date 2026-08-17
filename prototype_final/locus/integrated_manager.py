@@ -13,6 +13,21 @@ from pathlib import Path
 from typing import Any
 from urllib.parse import urlsplit
 
+from .flow_audit import (
+    FLOW_HEADER,
+    configure_role,
+    flow_context,
+    http_category,
+)
+from .flow_audit import (
+    emit as emit_flow,
+)
+from .flow_audit import (
+    enabled as flow_enabled,
+)
+from .flow_audit import (
+    outcome as flow_outcome,
+)
 from .integrated_rpc import rpc_request
 
 MANAGER_UI_PROFILE = "LOCUS-local-manager-ui-v1"
@@ -248,21 +263,34 @@ class _ManagerHandler(BaseHTTPRequestHandler):
                 return
             body = self.rfile.read(length)
             content_type = self.headers.get("Content-Type")
-        try:
-            expected_origin = _loopback_origin(self.headers.get("Host", ""))
-            response = self.server.application.dispatch(
-                method,
-                self.path,
-                body,
-                content_type=content_type,
-                csrf_token=self.headers.get("X-LOCUS-CSRF"),
-                origin=self.headers.get("Origin"),
-                expected_origin=expected_origin,
-            )
-        except Exception:
-            response = _json(
-                {"category": "operation_rejected", "status": "rejected"}, status=400
-            )
+        context = self.headers.get(FLOW_HEADER) if flow_enabled() else None
+        category = http_category("manager-ui", self.path) if context else ""
+        with flow_context(context):
+            try:
+                expected_origin = _loopback_origin(self.headers.get("Host", ""))
+                response = self.server.application.dispatch(
+                    method,
+                    self.path,
+                    body,
+                    content_type=content_type,
+                    csrf_token=self.headers.get("X-LOCUS-CSRF"),
+                    origin=self.headers.get("Origin"),
+                    expected_origin=expected_origin,
+                )
+            except Exception:
+                response = _json(
+                    {"category": "operation_rejected", "status": "rejected"}, status=400
+                )
+            if category:
+                emit_flow(
+                    sender="browser",
+                    receiver="manager-ui",
+                    category=category,
+                    request_bytes=len(body),
+                    response_bytes=len(response.body),
+                    result=flow_outcome(response.status),
+                    observation="receiver",
+                )
         self._send(response)
 
     def _send(self, response: ManagerResponse) -> None:
@@ -283,6 +311,7 @@ def main() -> None:
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8080)
     args = parser.parse_args()
+    configure_role("manager-ui")
     application = ManagerApplication(role_root=args.root)
     with _ManagerServer((args.host, args.port), application) as server:
         print(

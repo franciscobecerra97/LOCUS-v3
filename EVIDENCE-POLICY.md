@@ -18,9 +18,10 @@ rerun. Changed profiles use new identifiers and paths and must never be mixed
 with the inherited corpora.
 
 P1.4 records protected identifiers and reserved evidence families in
-`docs/version-registry-v1.json`. Reservation is not evidence authorization:
-trace and result identifiers remain unassigned until P8.3/P9.2 approve the
-exact privacy boundary, schema, positive controls, metrics, and provenance.
+`docs/version-registry-v1.json`. Reservation is not evidence authorization.
+D027 now assigns only P8.3's exact managed-flow trace/result family; P9.2
+performance/resilience identifiers remain unassigned until their exact privacy
+boundary, schema, positive controls, metrics, and provenance are approved.
 
 P1.5's `docs/security-matrix-v1.json` supplies the minimum security contract
 for every C01--C26 row. Before implementing or collecting a scenario, copy its
@@ -291,6 +292,24 @@ The v1 corpus was collected once from clean source commit
 `records_sha256=e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
 This completes P8.2 only; P8.3 trace and P9 performance/resilience collection
 remain separately gated.
+
+D027 assigns P8.3's seven managed-flow identifiers and its exact 30-report
+NF01--NF12 manifest: 12 Yi, 12 aPPSS, and six common reports. Instrumentation
+is limited to existing synthetic-browser, Manager/Client route, authenticated
+RPC, logical provider, and constrained Docker adapters under explicit evidence
+contexts. Health traffic is excluded. Packet capture, payloads, routes,
+addresses, headers, timing, per-event timestamps, raw logs, and event ordering
+are not retainable. Sender/receiver observations must reconcile where both are
+available; provider and Docker retain only their fixed logical boundary.
+
+Any unknown/prohibited contact, NoResolver violation, observation mismatch,
+sequence or byte-bound failure, output finding, missing positive control,
+incomplete scenario, or cleanup failure rejects the whole run. Raw structured
+events and service logs are scanned and discarded. A retained run requires a
+clean committed collector and may publish only by exclusive atomic rename into
+`prototype_final/evidence/retained/managed-flow-v1/`; it publishes all 30
+canonical records or none and never replaces an existing corpus. D027 assigns
+no P9 metric and authorizes no manuscript change.
 
 ## External services
 

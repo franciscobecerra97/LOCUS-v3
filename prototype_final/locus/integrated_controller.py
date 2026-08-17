@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import contextvars
 import copy
 import hashlib
 import hmac
@@ -19,6 +20,7 @@ from typing import Any
 
 from .codec import encode
 from .docker_engine import DockerEngine, DockerEngineError
+from .flow_audit import configure_role
 from .integrated_rpc import serve_rpc
 
 CONTROLLER_PROFILE = "LOCUS-local-container-controller-v1"
@@ -333,6 +335,15 @@ class ManagedContainerController:
         token: str,
         first_network: str,
     ) -> dict[str, Any]:
+        environment = [
+            f"LOCUS_BROWSER_EDGE_GATEWAY={browser_gateway}",
+            f"LOCUS_CLIENT_INSTANCE_ID={client_id}",
+            f"LOCUS_CLIENT_SELF_DESTRUCT_TOKEN={token}",
+            "LOCUS_MANAGER_CONTROL_ENDPOINT=https://manager-controller:8443",
+            "LOCUS_OPERATOR_DIAGNOSTICS=1",
+        ]
+        if os.environ.get("LOCUS_FLOW_AUDIT") == "1":
+            environment.append("LOCUS_FLOW_AUDIT=1")
         return {
             "AttachStderr": True,
             "AttachStdout": True,
@@ -345,13 +356,7 @@ class ManagedContainerController:
                 "--port",
                 "8080",
             ],
-            "Env": [
-                f"LOCUS_BROWSER_EDGE_GATEWAY={browser_gateway}",
-                f"LOCUS_CLIENT_INSTANCE_ID={client_id}",
-                f"LOCUS_CLIENT_SELF_DESTRUCT_TOKEN={token}",
-                "LOCUS_MANAGER_CONTROL_ENDPOINT=https://manager-controller:8443",
-                "LOCUS_OPERATOR_DIAGNOSTICS=1",
-            ],
+            "Env": environment,
             "ExposedPorts": {"8080/tcp": {}},
             "Healthcheck": {
                 "Interval": 2_000_000_000,
@@ -589,6 +594,8 @@ class ManagedContainerController:
             ),
             "LOCUS_OPERATOR_DIAGNOSTICS": "LOCUS_OPERATOR_DIAGNOSTICS=1",
         }
+        if os.environ.get("LOCUS_FLOW_AUDIT") == "1":
+            expected_environment["LOCUS_FLOW_AUDIT"] = "LOCUS_FLOW_AUDIT=1"
         if locus_environment != expected_environment:
             raise ControllerError("managed client environment changed")
         role_mounts = [
@@ -749,7 +756,12 @@ class ManagedContainerController:
             self._self_destroy_status[client_id] = "destroying"
 
         def destroy() -> None:
-            time.sleep(SELF_DESTROY_INITIAL_DELAY_SECONDS)
+            observation_drain = (
+                3.0
+                if os.environ.get("LOCUS_FLOW_AUDIT") == "1"
+                else SELF_DESTROY_INITIAL_DELAY_SECONDS
+            )
+            time.sleep(observation_drain)
             for attempt in range(SELF_DESTROY_ATTEMPTS):
                 try:
                     self.engine.remove_container(container_id, force=True)
@@ -772,7 +784,8 @@ class ManagedContainerController:
                     self._self_destroy_status[client_id] = "destroyed"
                 return
 
-        threading.Thread(target=destroy, daemon=True).start()
+        context = contextvars.copy_context()
+        threading.Thread(target=context.run, args=(destroy,), daemon=True).start()
         return {
             "client_id": client_id,
             "self_destroy_status": "destroying",
@@ -841,7 +854,8 @@ class ManagedContainerController:
                 with self.lock:
                     self.shutdown_status = "failed"
 
-        threading.Thread(target=stop, daemon=True).start()
+        context = contextvars.copy_context()
+        threading.Thread(target=context.run, args=(stop,), daemon=True).start()
         return {"shutdown_status": "stopping", "status": "stopping"}
 
     def handle(
@@ -943,6 +957,7 @@ def main() -> None:
     parser.add_argument("--host", default="0.0.0.0")
     parser.add_argument("--port", type=int, default=8443)
     args = parser.parse_args()
+    configure_role("manager-controller")
     project = os.environ["LOCUS_DOCKER_PROJECT"]
     controller = ManagedContainerController(
         engine=DockerEngine(),

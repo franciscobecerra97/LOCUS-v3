@@ -307,6 +307,27 @@ The first and only v1 publication was collected from clean source commit
 manifest have `records_sha256`
 `e31b215c936ed6693ac84e2bcf2d497a986e6e7cfaf0445637a749836aab83d5`.
 
+### D027/P8.3 assigned managed-flow evidence family
+
+| Assigned identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-managed-flow-evidence-profile-v1` | Payload-free NF01--NF12 application-boundary flow assurance over the exact D025 Manager-created Client graph and four matched arms | A changed graph, adapter boundary, scenario, category, observation, retained field, or publication rule requires a new profile |
+| `LOCUS-managed-flow-trace-policy-v1` | Evidence-only contexts, fixed role/category vocabulary, bounded body-byte observations, reconciliation, output scan, and discard policy | Payloads, routes, addresses, headers, packet capture, timing, or ordering are outside v1 |
+| `LOCUS-managed-flow-scenario-manifest-v1` | Canonical membership of exactly 30 reports: 12 Yi, 12 aPPSS, and six common | Membership, arm/policy pairing, order, counts, or scenario semantics are immutable |
+| `LOCUS-managed-flow-result-common-v1` | Suite-neutral Manager/controller/Docker, managed lifecycle, reset, and isolation contacts | It cannot substitute for a suite-specific enrollment/recovery contact result |
+| `LOCUS-managed-flow-result-yi-v1` | Yi-specific aggregate contacts under one exact matched arm | Yi observations remain separate from aPPSS, P8.2 state, and P9 metrics |
+| `LOCUS-managed-flow-result-appss-v1` | aPPSS-specific aggregate contacts under one exact matched arm | aPPSS observations remain separate from Yi and do not establish the inherited theorem |
+| `LOCUS-managed-flow-corpus-manifest-v1` | Hash-closing manifest over exactly 30 canonical reports | Publication is append-only, atomic, exclusive, all-or-none, and clean-commit-bound |
+
+The exclusive path is
+`prototype_final/evidence/retained/managed-flow-v1/`. The trace stream is
+temporary and contains no payload; it is scanned and discarded. Retained
+records contain aggregate role/category/count/body-byte/result/reconciliation
+fields, fixed controls and absences, public provenance digests, pseudonyms,
+cleanup, safety, and limitations only. D027 allocates no P9 timing,
+performance, throughput, or resilience metric and authorizes no manuscript
+wording.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

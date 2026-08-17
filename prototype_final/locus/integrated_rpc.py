@@ -13,6 +13,22 @@ from typing import Any, cast
 from urllib.parse import urlsplit
 
 from .codec import encode
+from .flow_audit import (
+    FLOW_HEADER,
+    configured_role,
+    current_context,
+    flow_context,
+    rpc_category,
+)
+from .flow_audit import (
+    emit as emit_flow,
+)
+from .flow_audit import (
+    enabled as flow_enabled,
+)
+from .flow_audit import (
+    outcome as flow_outcome,
+)
 
 MAX_RPC_BYTES = 2 * 1024 * 1024
 RpcHandler = Callable[[str, dict[str, Any], str], tuple[int, dict[str, Any]]]
@@ -94,18 +110,45 @@ class _RequestHandler(BaseHTTPRequestHandler):
             self._reply(503, {"category": "unavailable", "status": "error"})
 
     def do_POST(self) -> None:  # noqa: N802
+        length = -1
+        peer = ""
+        category = ""
+        response_status = 503
+        response_value: dict[str, Any] = {
+            "category": "unavailable",
+            "status": "error",
+        }
         try:
             length = int(self.headers.get("Content-Length", "-1"))
             if length < 1 or length > MAX_RPC_BYTES:
                 raise IntegratedRpcError("invalid RPC length")
             request = decode_rpc(self.rfile.read(length))
             peer = _peer_role(self)
-            status, value = self.server.rpc_handler(self.path, request, peer)
-            self._reply(status, value)
+            context = self.headers.get(FLOW_HEADER) if flow_enabled() else None
+            category = rpc_category(configured_role(), self.path) if context else ""
+            with flow_context(context):
+                response_status, response_value = self.server.rpc_handler(
+                    self.path, request, peer
+                )
         except IntegratedRpcError:
-            self._reply(400, {"category": "input_rejected", "status": "error"})
+            response_status = 400
+            response_value = {"category": "input_rejected", "status": "error"}
         except Exception:
-            self._reply(503, {"category": "unavailable", "status": "error"})
+            response_status = 503
+            response_value = {"category": "unavailable", "status": "error"}
+        encoded = encode(response_value)
+        if category and peer:
+            with flow_context(self.headers.get(FLOW_HEADER)):
+                emit_flow(
+                    sender=peer,
+                    receiver=configured_role(),
+                    category=category,
+                    request_bytes=max(length, 0),
+                    response_bytes=len(encoded),
+                    result=flow_outcome(response_status),
+                    observation="receiver",
+                )
+        self._reply(response_status, response_value)
 
 
 def serve_rpc(
@@ -143,12 +186,22 @@ def rpc_request(
         parsed.hostname, parsed.port, context=context, timeout=timeout
     )
     body = encode(value)
+    receiver = parsed.hostname
+    if receiver == "party":
+        raise IntegratedRpcError("ambiguous RPC endpoint")
+    current = "" if path == "/health" else current_context()
+    flow_category = rpc_category(receiver, path) if current else ""
+    headers = {"Content-Type": "application/json"}
+    if current:
+        headers[FLOW_HEADER] = current
+    response_status = 503
+    response_bytes = 0
     try:
-        connection.request(
-            "POST", path, body=body, headers={"Content-Type": "application/json"}
-        )
+        connection.request("POST", path, body=body, headers=headers)
         response = connection.getresponse()
+        response_status = response.status
         encoded = response.read(MAX_RPC_BYTES + 1)
+        response_bytes = len(encoded)
         decoded = decode_rpc(encoded)
         if response.status != 200:
             raise IntegratedRpcError(str(decoded.get("category", "request_rejected")))
@@ -157,6 +210,16 @@ def rpc_request(
         raise IntegratedRpcError("service unavailable") from exc
     finally:
         connection.close()
+        if flow_category:
+            emit_flow(
+                sender=configured_role(),
+                receiver=receiver,
+                category=flow_category,
+                request_bytes=len(body),
+                response_bytes=response_bytes,
+                result=flow_outcome(response_status),
+                observation="sender",
+            )
 
 
 class RpcServerThread:

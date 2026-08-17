@@ -1,4 +1,4 @@
-"""Five-command executor for the managed integrated LOCUS prototype."""
+"""Seven-command executor for the managed integrated LOCUS prototype."""
 
 from __future__ import annotations
 
@@ -19,6 +19,7 @@ import urllib.error
 import urllib.request
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 from itertools import combinations
 from pathlib import Path
 from typing import Any, cast
@@ -27,12 +28,18 @@ ROOT = Path(__file__).resolve().parent
 PYTHON = sys.executable
 MANAGED_COMPOSE = ROOT / "deploy" / "compose.managed.yaml"
 MANAGED_MANIFEST = ROOT / "deploy" / "managed-manifest.json"
+FLOW_COMPOSE = ROOT / "deploy" / "compose.flow-evidence.yaml"
 DEFAULT_PROJECT = "locus-managed-final"
 DEFAULT_MANAGER_PORT = 8765
 CLIENT_API_VERSION = "LOCUS-client-api-v2"
 PACKAGE_MEDIA_TYPE = "application/vnd.locus.recovery-package+json"
 IMAGE_ID_PATTERN = re.compile(r"sha256:[0-9a-f]{64}\Z")
 PROJECT_PATTERN = re.compile(r"[a-z0-9][a-z0-9-]{0,47}\Z")
+_FLOW_EVIDENCE_ACTIVE = False
+_FLOW_CONTEXT = ""
+_FLOW_HOST_EVENTS: list[dict[str, object]] = []
+_FLOW_HOST_SEQUENCE = 0
+_FLOW_HOST_BOOT = secrets.token_hex(8)
 
 
 def _operation_id(prefix: str) -> str:
@@ -51,6 +58,7 @@ def run_capture(
     *,
     env: dict[str, str] | None = None,
     check: bool = True,
+    include_stderr: bool = False,
 ) -> str:
     """Run one command while retaining bounded diagnostic output in memory."""
 
@@ -67,7 +75,7 @@ def run_capture(
     )
     if check and result.returncode != 0:
         raise subprocess.CalledProcessError(result.returncode, list(command))
-    return result.stdout
+    return result.stdout + (result.stderr if include_stderr else "")
 
 
 def require(executable: str) -> str:
@@ -122,7 +130,7 @@ def _environment(project: str, manager_port: int) -> dict[str, str]:
 
 
 def _compose(project: str) -> list[str]:
-    return [
+    command = [
         require("docker"),
         "compose",
         "--project-name",
@@ -130,6 +138,20 @@ def _compose(project: str) -> list[str]:
         "--file",
         str(MANAGED_COMPOSE),
     ]
+    if _FLOW_EVIDENCE_ACTIVE:
+        command.extend(["--file", str(FLOW_COMPOSE)])
+    return command
+
+
+@contextmanager
+def _flow_context(value: str) -> Any:
+    global _FLOW_CONTEXT
+    previous = _FLOW_CONTEXT
+    _FLOW_CONTEXT = value if _FLOW_EVIDENCE_ACTIVE else ""
+    try:
+        yield
+    finally:
+        _FLOW_CONTEXT = previous
 
 
 def _networks(raw: object, label: str) -> set[str]:
@@ -540,6 +562,10 @@ def _raw_request(
     retries: int = 1,
 ) -> tuple[bytes, Any]:
     headers = {"Accept": "application/json"}
+    if _FLOW_CONTEXT:
+        from locus.flow_audit import FLOW_HEADER
+
+        headers[FLOW_HEADER] = _FLOW_CONTEXT
     if body is not None:
         if content_type is None:
             raise RuntimeError("HTTP body requires an exact content type")
@@ -575,6 +601,31 @@ def _raw_request(
             continue
         if status not in expected:
             raise RuntimeError(f"managed UI returned HTTP {status} for {path}")
+        if _FLOW_CONTEXT:
+            global _FLOW_HOST_SEQUENCE
+            from locus.flow_audit import TRACE_POLICY_ID, http_category
+
+            receiver = (
+                "manager-ui" if path.startswith("/api/manager/") else "managed-client"
+            )
+            _FLOW_HOST_SEQUENCE += 1
+            _FLOW_HOST_EVENTS.append(
+                {
+                    "boot": _FLOW_HOST_BOOT,
+                    "category": http_category(receiver, path),
+                    "context": _FLOW_CONTEXT,
+                    "observation": "sender",
+                    "receiver": receiver,
+                    "request_bytes": 0 if body is None else len(body),
+                    "response_bytes": len(encoded),
+                    "result": "success"
+                    if 200 <= status < 300
+                    else ("unavailable" if status >= 500 else "rejected"),
+                    "sender": "browser",
+                    "sequence": _FLOW_HOST_SEQUENCE,
+                    "trace_policy_id": TRACE_POLICY_ID,
+                }
+            )
         return encoded, response_headers
     assert last_error is not None
     raise last_error
@@ -662,15 +713,16 @@ def _stop_through_manager(port: int, csrf: str, *, label: str) -> None:
     )
     if result.get("shutdown_status") != "stopping":
         raise RuntimeError("Manager did not acknowledge the system stop")
-    deadline = time.monotonic() + 75
-    while time.monotonic() < deadline:
-        try:
-            status = _manager_status(port)
-        except (urllib.error.URLError, ConnectionError, TimeoutError):
-            return
-        if status.get("shutdown_status") == "failed":
-            raise RuntimeError("Manager reported a failed system stop")
-        time.sleep(0.25)
+    with _flow_context(""):
+        deadline = time.monotonic() + 75
+        while time.monotonic() < deadline:
+            try:
+                status = _manager_status(port)
+            except (urllib.error.URLError, ConnectionError, TimeoutError):
+                return
+            if status.get("shutdown_status") == "failed":
+                raise RuntimeError("Manager reported a failed system stop")
+            time.sleep(0.25)
     raise RuntimeError("Manager stop did not make the system unavailable")
 
 
@@ -1346,8 +1398,105 @@ def _cleanup_smoke_project(project: str, environment: dict[str, str]) -> None:
         raise RuntimeError(f"managed smoke cleanup failed: {detail}")
 
 
-def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
+def _managed_flow_positive_controls(
+    contacts: dict[str, list[dict[str, object]]],
+) -> dict[str, bool]:
+    from locus.flow_audit import (
+        FLOW_PREFIX,
+        TRACE_POLICY_ID,
+        FlowAuditError,
+        aggregate_events,
+        parse_events,
+        validate_event,
+    )
+    from locus.redaction import exposed_categories
+
+    base: dict[str, object] = {
+        "boot": "11" * 8,
+        "category": "admission-issue",
+        "context": "NF01:yi-2of3",
+        "observation": "sender",
+        "receiver": "admission",
+        "request_bytes": 1,
+        "response_bytes": 1,
+        "result": "success",
+        "sender": "managed-client",
+        "sequence": 1,
+        "trace_policy_id": TRACE_POLICY_ID,
+    }
+
+    def rejected(**changes: object) -> bool:
+        candidate = dict(base)
+        candidate.update(changes)
+        try:
+            validate_event(candidate)
+        except FlowAuditError:
+            return True
+        return False
+
+    mismatch_sender = cast(dict[str, Any], dict(base))
+    mismatch_receiver = cast(dict[str, Any], dict(base))
+    mismatch_receiver.update(
+        {"boot": "22" * 8, "observation": "receiver", "response_bytes": 2}
+    )
+    try:
+        aggregate_events([mismatch_sender, mismatch_receiver])
+        mismatch_detected = False
+    except FlowAuditError:
+        mismatch_detected = True
+    gap = dict(base)
+    gap["sequence"] = 2
+    try:
+        parse_events([FLOW_PREFIX + json.dumps(gap)])
+        sequence_gap_detected = False
+    except FlowAuditError:
+        sequence_gap_detected = True
+    flattened = [contact for values in contacts.values() for contact in values]
+    return {
+        "allowed_edge_observed": bool(flattened),
+        "blocked_isolation_probes": True,
+        "byte_bound_detected": rejected(request_bytes=4 * 1024 * 1024 + 1),
+        "client_controller_success": any(
+            item["sender_role"] == "managed-client"
+            and item["receiver_role"] == "manager-controller"
+            and cast(int, item["success_count"]) > 0
+            for item in flattened
+        ),
+        "fabricated_noresolver_detected": rejected(
+            receiver="resolver", category="resolver-resolve"
+        ),
+        "fictional_marker_detected": exposed_categories(
+            "fictional-flow-marker",
+            {"fictional-marker": "fictional-flow-marker"},
+        )
+        == ["fictional-marker"],
+        "manager_controller_success": any(
+            item["sender_role"] == "manager-ui"
+            and item["receiver_role"] == "manager-controller"
+            and cast(int, item["success_count"]) > 0
+            for item in flattened
+        ),
+        "mismatch_detected": mismatch_detected,
+        "raw_events_discarded": True,
+        "sequence_gap_detected": sequence_gap_detected,
+        "service_logs_discarded": True,
+        "unknown_category_detected": rejected(category="unknown"),
+        "unknown_role_detected": rejected(receiver="unknown"),
+    }
+
+
+def integrated_smoke(
+    *, state_evidence: bool = False, flow_evidence: bool = False
+) -> dict[str, object]:
+    global _FLOW_EVIDENCE_ACTIVE, _FLOW_HOST_BOOT, _FLOW_HOST_EVENTS
+    global _FLOW_HOST_SEQUENCE
+    if state_evidence and flow_evidence:
+        raise RuntimeError("state and flow evidence modes are disjoint")
     integrated_config()
+    _FLOW_EVIDENCE_ACTIVE = flow_evidence
+    _FLOW_HOST_EVENTS = []
+    _FLOW_HOST_SEQUENCE = 0
+    _FLOW_HOST_BOOT = secrets.token_hex(8)
     project = f"locus-managed-smoke-{secrets.token_hex(4)}"
     manager_port = _free_loopback_port()
     environment = _environment(project, manager_port)
@@ -1359,6 +1508,7 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
     subset_recoveries = 0
     summary: dict[str, object] | None = None
     state_snapshots: dict[str, list[dict[str, object]]] = {}
+    flow_logs: list[str] = []
     resolved_graph = json.loads(
         run_capture([*_compose(project), "config", "--format", "json"], env=environment)
     )
@@ -1376,10 +1526,12 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         live_graph_sha256 = hashlib.sha256(
             json.dumps(containers, sort_keys=True, separators=(",", ":")).encode()
         ).hexdigest()
-        manager_csrf = _manager_session(manager_port)
-        _exercise_manager_actions(manager_port, manager_csrf)
+        with _flow_context("NF12:managed-common"):
+            manager_csrf = _manager_session(manager_port)
+            _exercise_manager_actions(manager_port, manager_csrf)
 
-        client_a = _create_client_concurrently(manager_port, manager_csrf)
+        with _flow_context("NF07:managed-common"):
+            client_a = _create_client_concurrently(manager_port, manager_csrf)
         _reject_stale_lifecycle_request(manager_port, manager_csrf)
         client_a_port = cast(int, client_a["port"])
         session_a = _client_session(client_a_port)
@@ -1389,9 +1541,11 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             script_path="/assets/client.js",
             style_path="/assets/client.css",
         )
-        _assert_live_control_isolation(
-            project=project, client=client_a, environment=environment
-        )
+        with _flow_context("NF12:managed-common"):
+            _client_session(client_a_port)
+            _assert_live_control_isolation(
+                project=project, client=client_a, environment=environment
+            )
         client_a_csrf = cast(str, session_a["csrf_token"])
         generated = _client_post(
             client_a_port,
@@ -1414,7 +1568,7 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
                 "LOCUS-paired-suite-deployment-2of3-v1",
                 "LOCUS-canonical-email-set-v1"
-                if state_evidence
+                if state_evidence or flow_evidence
                 else "LOCUS-canonical-phone-set-v1",
             ),
             (
@@ -1426,7 +1580,7 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
                 "LOCUS-paired-suite-deployment-3of5-v1",
                 "LOCUS-location-person-set-v1"
-                if state_evidence
+                if state_evidence or flow_evidence
                 else "LOCUS-quantized-coordinate-set-v1",
             ),
         )
@@ -1453,19 +1607,36 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             ): "LOCUS-TPASS-YI-3of5-v1",
         }
         for index, (suite_id, profile_id, policy_id) in enumerate(arms, start=1):
-            result = _client_post(
-                client_a_port,
-                client_a_csrf,
-                "/api/v2/enroll",
-                {
-                    "api_version": CLIENT_API_VERSION,
-                    "deployment_profile_id": profile_id,
-                    "operation_id": f"smoke-enroll-{index}",
-                    "policy_id": policy_id,
-                    "recovery_input": original_cues[policy_id],
-                    "suite_id": suite_id,
-                },
-            )
+            family = "yi" if suite_id.startswith("LOCUS-TPASS-YI") else "appss"
+            topology = "2of3" if profile_id.endswith("2of3-v1") else "3of5"
+            arm_id = f"{family}-{topology}"
+            with _flow_context(f"NF05:{arm_id}"):
+                preview = _client_post(
+                    client_a_port,
+                    client_a_csrf,
+                    "/api/v2/preview-policy",
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "policy_id": policy_id,
+                        "recovery_input": original_cues[policy_id],
+                    },
+                )
+                if preview.get("status") != "input_validated":
+                    raise RuntimeError("managed policy preview failed")
+            with _flow_context(f"NF01:{arm_id}"):
+                result = _client_post(
+                    client_a_port,
+                    client_a_csrf,
+                    "/api/v2/enroll",
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "deployment_profile_id": profile_id,
+                        "operation_id": f"smoke-enroll-{index}",
+                        "policy_id": policy_id,
+                        "recovery_input": original_cues[policy_id],
+                        "suite_id": suite_id,
+                    },
+                )
             download_id = result.get("download_id")
             if result.get("status") != "enrolled" or not isinstance(download_id, str):
                 raise RuntimeError("managed enrollment did not complete")
@@ -1478,7 +1649,10 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 raise RuntimeError(
                     "managed enrollment confused deployment and suite profiles"
                 )
-            package = _client_package_export(client_a_port, client_a_csrf, download_id)
+            with _flow_context(f"NF03:{arm_id}"):
+                package = _client_package_export(
+                    client_a_port, client_a_csrf, download_id
+                )
             prohibited_package_values = (
                 original_key,
                 "Ada@Example.COM",
@@ -1490,6 +1664,7 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             packages.append(
                 {
                     "bytes": package,
+                    "arm_id": arm_id,
                     "deployment_profile_id": profile_id,
                     "policy_id": policy_id,
                     "suite_profile_id": suite_profile_id,
@@ -1503,30 +1678,42 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 project, environment
             )
 
-        resumed_a, client_a_port = _exercise_client_process_actions(
-            manager_port,
-            manager_csrf,
-            client_a_port,
-            session_a,
-            client_a_csrf,
-            cast(str, download_id),
-        )
+        with _flow_context("NF08:managed-common"):
+            resumed_a, client_a_port = _exercise_client_process_actions(
+                manager_port,
+                manager_csrf,
+                client_a_port,
+                session_a,
+                client_a_csrf,
+                cast(str, download_id),
+            )
         client_a_csrf = cast(str, resumed_a["csrf_token"])
 
         client_a_logs = run_capture(
             [require("docker"), "logs", cast(str, client_a["id"])],
             env=environment,
+            include_stderr=True,
         )
-        _client_post(
-            client_a_port,
-            client_a_csrf,
-            "/api/v2/self-destroy",
-            {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-destroy-a"},
-            expected=(202,),
+        flow_logs.append(client_a_logs)
+        with _flow_context("NF09:managed-common"):
+            _client_post(
+                client_a_port,
+                client_a_csrf,
+                "/api/v2/self-destroy",
+                {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-destroy-a"},
+                expected=(202,),
+            )
+        flow_logs.append(
+            run_capture(
+                [require("docker"), "logs", cast(str, client_a["id"])],
+                env=environment,
+                include_stderr=True,
+            )
         )
         _wait_client_removed(manager_port, client_a_port)
 
-        client_b = _create_client(manager_port, manager_csrf)
+        with _flow_context("NF07:managed-common"):
+            client_b = _create_client(manager_port, manager_csrf)
         client_b_port = cast(int, client_b["port"])
         session_b = _client_session(client_b_port)
         _assert_ui_assets(
@@ -1556,20 +1743,23 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             raise RuntimeError("Client B temporary key was not fresh")
 
         corrupted = b"[" + cast(bytes, packages[0]["bytes"])[1:]
-        rejected_package = _client_package_import(
-            client_b_port,
-            client_b_csrf,
-            corrupted,
-            expected=(400,),
-        )
+        with _flow_context("NF04:appss-2of3"):
+            rejected_package = _client_package_import(
+                client_b_port,
+                client_b_csrf,
+                corrupted,
+                expected=(400,),
+            )
         if rejected_package.get("category") != "package_import_rejected":
             raise RuntimeError("corrupt package was not rejected")
 
         first_success_operation = ""
         for package_index, record in enumerate(packages, start=1):
-            imported = _client_package_import(
-                client_b_port, client_b_csrf, cast(bytes, record["bytes"])
-            )
+            arm_id = cast(str, record["arm_id"])
+            with _flow_context(f"NF03:{arm_id}"):
+                imported = _client_package_import(
+                    client_b_port, client_b_csrf, cast(bytes, record["bytes"])
+                )
             if (
                 imported.get("status") != "package_authenticated"
                 or imported.get("suite_id") != record["suite_id"]
@@ -1600,22 +1790,23 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 raise RuntimeError("authenticated package changed fixed party topology")
 
             if package_index == 1:
-                wrong = _client_post(
-                    client_b_port,
-                    client_b_csrf,
-                    "/api/v2/recover",
-                    {
-                        "api_version": CLIENT_API_VERSION,
-                        "operation_id": "smoke-wrong-input",
-                        "recovery_input": [
-                            "wrong1@example.test",
-                            "wrong2@example.test",
-                            "wrong3@example.test",
-                        ],
-                        "selected_holder_ids": holders[:k],
-                    },
-                    expected=(400,),
-                )
+                with _flow_context(f"NF04:{arm_id}"):
+                    wrong = _client_post(
+                        client_b_port,
+                        client_b_csrf,
+                        "/api/v2/recover",
+                        {
+                            "api_version": CLIENT_API_VERSION,
+                            "operation_id": "smoke-wrong-input",
+                            "recovery_input": [
+                                "wrong1@example.test",
+                                "wrong2@example.test",
+                                "wrong3@example.test",
+                            ],
+                            "selected_holder_ids": holders[:k],
+                        },
+                        expected=(400,),
+                    )
                 if wrong.get("category") != "recovery_rejected":
                     raise RuntimeError("wrong recovery input was not normalized")
                 still_temporary = _client_post(
@@ -1626,49 +1817,76 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 )
                 if still_temporary.get("private_key") != temporary_key:
                     raise RuntimeError("failed recovery replaced the current key")
-                override = _client_post(
-                    client_b_port,
-                    client_b_csrf,
-                    "/api/v2/recover",
-                    {
-                        "api_version": CLIENT_API_VERSION,
-                        "operation_id": "smoke-suite-override",
-                        "recovery_input": original_cues[cast(str, record["policy_id"])],
-                        "selected_holder_ids": holders[:k],
-                        "suite_id": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
-                    },
-                    expected=(400,),
-                )
+                with _flow_context(f"NF04:{arm_id}"):
+                    override = _client_post(
+                        client_b_port,
+                        client_b_csrf,
+                        "/api/v2/recover",
+                        {
+                            "api_version": CLIENT_API_VERSION,
+                            "operation_id": "smoke-suite-override",
+                            "recovery_input": original_cues[
+                                cast(str, record["policy_id"])
+                            ],
+                            "selected_holder_ids": holders[:k],
+                            "suite_id": "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
+                        },
+                        expected=(400,),
+                    )
                 if override.get("category") != "recovery_rejected":
                     raise RuntimeError("recovery-time suite override was not rejected")
-                invalid_subset = _client_post(
-                    client_b_port,
-                    client_b_csrf,
-                    "/api/v2/recover",
-                    {
-                        "api_version": CLIENT_API_VERSION,
-                        "operation_id": "smoke-invalid-subset",
-                        "recovery_input": original_cues[cast(str, record["policy_id"])],
-                        "selected_holder_ids": holders[: max(0, k - 1)],
-                    },
-                    expected=(400,),
-                )
+                with _flow_context(f"NF04:{arm_id}"):
+                    invalid_subset = _client_post(
+                        client_b_port,
+                        client_b_csrf,
+                        "/api/v2/recover",
+                        {
+                            "api_version": CLIENT_API_VERSION,
+                            "operation_id": "smoke-invalid-subset",
+                            "recovery_input": original_cues[
+                                cast(str, record["policy_id"])
+                            ],
+                            "selected_holder_ids": holders[: max(0, k - 1)],
+                        },
+                        expected=(400,),
+                    )
+                if invalid_subset.get("category") != "recovery_rejected":
+                    raise RuntimeError("invalid holder subset was not rejected")
+            else:
+                with _flow_context(f"NF04:{arm_id}"):
+                    invalid_subset = _client_post(
+                        client_b_port,
+                        client_b_csrf,
+                        "/api/v2/recover",
+                        {
+                            "api_version": CLIENT_API_VERSION,
+                            "operation_id": f"smoke-invalid-subset-{package_index}",
+                            "recovery_input": original_cues[
+                                cast(str, record["policy_id"])
+                            ],
+                            "selected_holder_ids": holders[: max(0, k - 1)],
+                        },
+                        expected=(400,),
+                    )
                 if invalid_subset.get("category") != "recovery_rejected":
                     raise RuntimeError("invalid holder subset was not rejected")
 
             for subset_index, subset in enumerate(combinations(holders, k), start=1):
                 operation_id = f"smoke-recover-{package_index}-{subset_index}"
-                result = _client_post(
-                    client_b_port,
-                    client_b_csrf,
-                    "/api/v2/recover",
-                    {
-                        "api_version": CLIENT_API_VERSION,
-                        "operation_id": operation_id,
-                        "recovery_input": original_cues[cast(str, record["policy_id"])],
-                        "selected_holder_ids": list(subset),
-                    },
-                )
+                with _flow_context(f"NF02:{arm_id}"):
+                    result = _client_post(
+                        client_b_port,
+                        client_b_csrf,
+                        "/api/v2/recover",
+                        {
+                            "api_version": CLIENT_API_VERSION,
+                            "operation_id": operation_id,
+                            "recovery_input": original_cues[
+                                cast(str, record["policy_id"])
+                            ],
+                            "selected_holder_ids": list(subset),
+                        },
+                    )
                 if (
                     result.get("status") != "recovered"
                     or result.get("key_identity_verified") is not True
@@ -1692,69 +1910,83 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 project, environment
             )
 
-        replay = _client_post(
-            client_b_port,
-            client_b_csrf,
-            "/api/v2/recover",
-            {
-                "api_version": CLIENT_API_VERSION,
-                "operation_id": first_success_operation,
-                "recovery_input": original_cues[cast(str, packages[-1]["policy_id"])],
-                "selected_holder_ids": [1, 2, 3],
-            },
-            expected=(409,),
-        )
+        with _flow_context(f"NF04:{packages[-1]['arm_id']}"):
+            replay = _client_post(
+                client_b_port,
+                client_b_csrf,
+                "/api/v2/recover",
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "operation_id": first_success_operation,
+                    "recovery_input": original_cues[
+                        cast(str, packages[-1]["policy_id"])
+                    ],
+                    "selected_holder_ids": [1, 2, 3],
+                },
+                expected=(409,),
+            )
         if replay.get("category") != "operation_conflict":
             raise RuntimeError("completed recovery replay was not rejected")
 
-        _manager_action(manager_port, manager_csrf, "party5", "stop")
+        with _flow_context("NF06:appss-2of3"):
+            _manager_action(manager_port, manager_csrf, "party5", "stop")
         _wait_role(manager_port, "party5", state="exited")
-        _client_package_import(
-            client_b_port, client_b_csrf, cast(bytes, packages[0]["bytes"])
-        )
-        with_one_down = _client_post(
-            client_b_port,
-            client_b_csrf,
-            "/api/v2/recover",
-            {
-                "api_version": CLIENT_API_VERSION,
-                "operation_id": "smoke-one-authorizer-down",
-                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
-                "selected_holder_ids": [1, 2],
-            },
-        )
+        with _flow_context("NF06:appss-2of3"):
+            _client_package_import(
+                client_b_port, client_b_csrf, cast(bytes, packages[0]["bytes"])
+            )
+            with_one_down = _client_post(
+                client_b_port,
+                client_b_csrf,
+                "/api/v2/recover",
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "operation_id": "smoke-one-authorizer-down",
+                    "recovery_input": original_cues[
+                        cast(str, packages[0]["policy_id"])
+                    ],
+                    "selected_holder_ids": [1, 2],
+                },
+            )
         if with_one_down.get("status") != "recovered":
             raise RuntimeError("4-of-5 authorization did not tolerate one outage")
-        _manager_action(manager_port, manager_csrf, "party4", "stop")
+        with _flow_context("NF06:appss-2of3"):
+            _manager_action(manager_port, manager_csrf, "party4", "stop")
         _wait_role(manager_port, "party4", state="exited")
-        quorum_loss = _client_post(
-            client_b_port,
-            client_b_csrf,
-            "/api/v2/recover",
-            {
-                "api_version": CLIENT_API_VERSION,
-                "operation_id": "smoke-auth-quorum-loss",
-                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
-                "selected_holder_ids": [1, 2],
-            },
-            expected=(400,),
-        )
+        with _flow_context("NF06:appss-2of3"):
+            quorum_loss = _client_post(
+                client_b_port,
+                client_b_csrf,
+                "/api/v2/recover",
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "operation_id": "smoke-auth-quorum-loss",
+                    "recovery_input": original_cues[
+                        cast(str, packages[0]["policy_id"])
+                    ],
+                    "selected_holder_ids": [1, 2],
+                },
+                expected=(400,),
+            )
         if quorum_loss.get("category") != "recovery_rejected":
             raise RuntimeError("authorization-quorum loss was not rejected")
         for role in ("party4", "party5"):
             _manager_action(manager_port, manager_csrf, role, "start")
             _wait_role(manager_port, role, state="running", healthy=True)
 
-        _manager_action(manager_port, manager_csrf, "s3", "stop")
+        with _flow_context("NF06:appss-2of3"):
+            _manager_action(manager_port, manager_csrf, "s3", "stop")
         _wait_role(manager_port, "s3", state="exited")
-        provider_loss = _client_package_import(
-            client_b_port,
-            client_b_csrf,
-            cast(bytes, packages[0]["bytes"]),
-            expected=(400,),
-        )
-        if provider_loss.get("category") != "package_import_rejected":
-            raise RuntimeError("provider outage was not rejected")
+        for record in packages:
+            with _flow_context(f"NF06:{record['arm_id']}"):
+                provider_loss = _client_package_import(
+                    client_b_port,
+                    client_b_csrf,
+                    cast(bytes, record["bytes"]),
+                    expected=(400,),
+                )
+            if provider_loss.get("category") != "package_import_rejected":
+                raise RuntimeError("provider outage was not rejected")
         _manager_action(manager_port, manager_csrf, "s3", "start")
         _wait_role(manager_port, "s3", state="running", healthy=True, timeout=75)
         _client_package_import(
@@ -1779,11 +2011,16 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
 
         client_b_id = cast(str, client_b["id"])
         client_logs = run_capture(
-            [require("docker"), "logs", client_b_id], env=environment
+            [require("docker"), "logs", client_b_id],
+            env=environment,
+            include_stderr=True,
         )
         compose_logs = run_capture(
-            [*_compose(project), "logs", "--no-color"], env=environment
+            [*_compose(project), "logs", "--no-color"],
+            env=environment,
+            include_stderr=True,
         )
+        flow_logs.extend([client_logs, compose_logs])
         from locus.redaction import exposed_categories
 
         exposures = exposed_categories(
@@ -1802,12 +2039,20 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 + ",".join(exposures)
             )
 
-        _client_post(
-            client_b_port,
-            client_b_csrf,
-            "/api/v2/self-destroy",
-            {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-destroy-b"},
-            expected=(202,),
+        with _flow_context("NF09:managed-common"):
+            _client_post(
+                client_b_port,
+                client_b_csrf,
+                "/api/v2/self-destroy",
+                {"api_version": CLIENT_API_VERSION, "operation_id": "smoke-destroy-b"},
+                expected=(202,),
+            )
+        flow_logs.append(
+            run_capture(
+                [require("docker"), "logs", client_b_id],
+                env=environment,
+                include_stderr=True,
+            )
         )
         _wait_client_removed(manager_port, client_b_port)
         trust_before_stop = _volume_file_digest(
@@ -1816,8 +2061,16 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             volume_name="manager-ui-data",
             relative_path="ca.pem",
         )
-        _stop_through_manager(
-            manager_port, manager_csrf, label="smoke-preserving-system-stop"
+        with _flow_context("NF10:managed-common"):
+            _stop_through_manager(
+                manager_port, manager_csrf, label="smoke-preserving-system-stop"
+            )
+        flow_logs.append(
+            run_capture(
+                [*_compose(project), "logs", "--no-color"],
+                env=environment,
+                include_stderr=True,
+            )
         )
         preserved_observations = _observe_role_volumes(project, environment)
         preserved_role_audits = len(preserved_observations)
@@ -1836,15 +2089,17 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         if trust_after_restart != trust_before_stop:
             raise RuntimeError("normal Manager stop changed the project trust root")
 
-        client_c = _create_client(manager_port, manager_csrf)
+        with _flow_context("NF10:managed-common"):
+            client_c = _create_client(manager_port, manager_csrf)
         client_c_port = cast(int, client_c["port"])
         session_c = _client_session(client_c_port)
         client_c_csrf = cast(str, session_c["csrf_token"])
-        preserved_import = _client_package_import(
-            client_c_port,
-            client_c_csrf,
-            cast(bytes, packages[0]["bytes"]),
-        )
+        with _flow_context("NF10:managed-common"):
+            preserved_import = _client_package_import(
+                client_c_port,
+                client_c_csrf,
+                cast(bytes, packages[0]["bytes"]),
+            )
         preserved_threshold = preserved_import.get("threshold")
         preserved_holders = preserved_import.get("holder_ids")
         if not isinstance(preserved_threshold, dict) or not isinstance(
@@ -1854,17 +2109,20 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         preserved_k = preserved_threshold.get("k")
         if not isinstance(preserved_k, int):
             raise RuntimeError("preserved package omitted its threshold")
-        preserved_recovery = _client_post(
-            client_c_port,
-            client_c_csrf,
-            "/api/v2/recover",
-            {
-                "api_version": CLIENT_API_VERSION,
-                "operation_id": _operation_id("smoke-preserved-recovery"),
-                "recovery_input": original_cues[cast(str, packages[0]["policy_id"])],
-                "selected_holder_ids": preserved_holders[:preserved_k],
-            },
-        )
+        with _flow_context("NF10:managed-common"):
+            preserved_recovery = _client_post(
+                client_c_port,
+                client_c_csrf,
+                "/api/v2/recover",
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "operation_id": _operation_id("smoke-preserved-recovery"),
+                    "recovery_input": original_cues[
+                        cast(str, packages[0]["policy_id"])
+                    ],
+                    "selected_holder_ids": preserved_holders[:preserved_k],
+                },
+            )
         if preserved_recovery.get("status") != "recovered":
             raise RuntimeError("normal stop/start did not preserve recovery state")
         preserved_reveal = _client_post(
@@ -1875,19 +2133,42 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         )
         if preserved_reveal.get("private_key") != original_key:
             raise RuntimeError("normal stop/start recovered the wrong key")
-        _client_post(
-            client_c_port,
-            client_c_csrf,
-            "/api/v2/self-destroy",
-            {
-                "api_version": CLIENT_API_VERSION,
-                "operation_id": _operation_id("smoke-destroy-c"),
-            },
-            expected=(202,),
+        flow_logs.append(
+            run_capture(
+                [require("docker"), "logs", cast(str, client_c["id"])],
+                env=environment,
+                include_stderr=True,
+            )
+        )
+        with _flow_context("NF09:managed-common"):
+            _client_post(
+                client_c_port,
+                client_c_csrf,
+                "/api/v2/self-destroy",
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "operation_id": _operation_id("smoke-destroy-c"),
+                },
+                expected=(202,),
+            )
+        flow_logs.append(
+            run_capture(
+                [require("docker"), "logs", cast(str, client_c["id"])],
+                env=environment,
+                include_stderr=True,
+            )
         )
         _wait_client_removed(manager_port, client_c_port)
-        _stop_through_manager(
-            manager_port, manager_csrf, label="smoke-before-state-reset"
+        with _flow_context("NF11:managed-common"):
+            _stop_through_manager(
+                manager_port, manager_csrf, label="smoke-before-state-reset"
+            )
+        flow_logs.append(
+            run_capture(
+                [*_compose(project), "logs", "--no-color"],
+                env=environment,
+                include_stderr=True,
+            )
         )
 
         integrated_stop(argparse.Namespace(project=project, reset_state=True))
@@ -1897,7 +2178,8 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         fresh_containers = fresh_status.get("containers")
         if not isinstance(fresh_containers, list) or len(fresh_containers) != 13:
             raise RuntimeError("state reset did not create a fresh static system")
-        manager_csrf = _manager_session(manager_port)
+        with _flow_context("NF11:managed-common"):
+            manager_csrf = _manager_session(manager_port)
         trust_after_reset = _volume_file_digest(
             project,
             environment,
@@ -1907,7 +2189,8 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         if trust_after_reset == trust_before_stop:
             raise RuntimeError("destructive state reset reused the old trust root")
 
-        client_d = _create_client(manager_port, manager_csrf)
+        with _flow_context("NF11:managed-common"):
+            client_d = _create_client(manager_port, manager_csrf)
         client_d_port = cast(int, client_d["port"])
         session_d = _client_session(client_d_port)
         client_d_csrf = cast(str, session_d["csrf_token"])
@@ -1915,31 +2198,94 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             "client_identity"
         ) == session_d.get("client_identity"):
             raise RuntimeError("fresh system reused the prior Client identity")
-        reset_import = _client_package_import(
-            client_d_port,
-            client_d_csrf,
-            cast(bytes, packages[0]["bytes"]),
-            expected=(400,),
-        )
+        with _flow_context("NF11:managed-common"):
+            reset_import = _client_package_import(
+                client_d_port,
+                client_d_csrf,
+                cast(bytes, packages[0]["bytes"]),
+                expected=(400,),
+            )
         if reset_import.get("category") != "package_import_rejected":
             raise RuntimeError("fresh system accepted a pre-reset recovery package")
-        _client_post(
-            client_d_port,
-            client_d_csrf,
-            "/api/v2/self-destroy",
-            {
-                "api_version": CLIENT_API_VERSION,
-                "operation_id": _operation_id("smoke-destroy-d"),
-            },
-            expected=(202,),
+        flow_logs.append(
+            run_capture(
+                [require("docker"), "logs", cast(str, client_d["id"])],
+                env=environment,
+                include_stderr=True,
+            )
+        )
+        with _flow_context("NF09:managed-common"):
+            _client_post(
+                client_d_port,
+                client_d_csrf,
+                "/api/v2/self-destroy",
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "operation_id": _operation_id("smoke-destroy-d"),
+                },
+                expected=(202,),
+            )
+        flow_logs.append(
+            run_capture(
+                [require("docker"), "logs", cast(str, client_d["id"])],
+                env=environment,
+                include_stderr=True,
+            )
         )
         _wait_client_removed(manager_port, client_d_port)
-        _stop_through_manager(manager_port, manager_csrf, label="smoke-final-stop")
+        with _flow_context("NF11:managed-common"):
+            _stop_through_manager(manager_port, manager_csrf, label="smoke-final-stop")
+        flow_logs.append(
+            run_capture(
+                [*_compose(project), "logs", "--no-color"],
+                env=environment,
+                include_stderr=True,
+            )
+        )
 
         role_observations = _observe_role_volumes(project, environment)
         role_audits = len(role_observations)
         if state_evidence:
             state_snapshots["fresh_reset"] = role_observations
+        flow_contacts: dict[str, list[dict[str, object]]] = {}
+        flow_controls: dict[str, bool] = {}
+        if flow_evidence:
+            from locus.flow_audit import aggregate_events, parse_events
+            from locus.managed_flow_evidence import scenario_manifest
+
+            all_flow_output = "".join(flow_logs)
+            later_exposures = exposed_categories(
+                all_flow_output,
+                {
+                    "original-private-key": original_key,
+                    "storage-access-key": environment["LOCUS_S3_ACCESS_KEY"],
+                    "storage-secret-key": environment["LOCUS_S3_SECRET_KEY"],
+                    "synthetic-email": "Ada@Example.COM",
+                    "synthetic-phone": "+352621000001",
+                },
+            )
+            if later_exposures:
+                raise RuntimeError(
+                    "managed flow output scan found prohibited categories: "
+                    + ",".join(later_exposures)
+                )
+            flow_contacts = cast(
+                dict[str, list[dict[str, object]]],
+                aggregate_events(
+                    parse_events(flow_logs, extra_events=cast(Any, _FLOW_HOST_EVENTS))
+                ),
+            )
+            expected_contexts = {
+                f"{item['scenario_id']}:{item['arm_id']}"
+                for item in cast(list[dict[str, str]], scenario_manifest()["reports"])
+            }
+            if set(flow_contacts) != expected_contexts:
+                missing = sorted(expected_contexts - set(flow_contacts))
+                extra = sorted(set(flow_contacts) - expected_contexts)
+                raise RuntimeError(
+                    f"managed flow contexts changed (missing={missing}, extra={extra})"
+                )
+            flow_controls = _managed_flow_positive_controls(flow_contacts)
         summary = {
             "arms": 4,
             "clean_clients": 4,
@@ -1951,7 +2297,7 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
             "normal_stop_restart_recovery": "passed",
             "output_scan": "passed",
             "packages": 4,
-            "policies": 2 if state_evidence else 4,
+            "policies": 2 if state_evidence or flow_evidence else 4,
             "preserved_role_state_audits": preserved_role_audits,
             "reset_state_fresh_trust": "passed",
             "resolved_graph_sha256": resolved_graph_sha256,
@@ -1965,7 +2311,39 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
         if state_evidence:
             summary["state_snapshots"] = state_snapshots
             summary["paired_policy_conditions"] = True
-        print(json.dumps(summary, sort_keys=True))
+        if flow_evidence:
+            summary["flow_contacts"] = flow_contacts
+            summary["positive_controls"] = flow_controls
+            summary["paired_policy_conditions"] = True
+            client_set = "\n".join(
+                sorted(
+                    cast(str, session["client_id"])
+                    for session in (session_a, session_b, session_c, session_d)
+                )
+            )
+            package_set = "\n".join(
+                sorted(
+                    hashlib.sha256(cast(bytes, item["bytes"])).hexdigest()
+                    for item in packages
+                )
+            )
+            summary["pseudonymous_project_id"] = (
+                "project-" + hashlib.sha256(project.encode()).hexdigest()[:16]
+            )
+            summary["pseudonymous_client_set_id"] = (
+                "clients-" + hashlib.sha256(client_set.encode()).hexdigest()[:16]
+            )
+            summary["pseudonymous_package_set_id"] = (
+                "packages-" + hashlib.sha256(package_set.encode()).hexdigest()[:16]
+            )
+        printable_summary = dict(summary)
+        if flow_evidence:
+            printable_summary.pop("flow_contacts", None)
+            printable_summary["flow_contexts"] = len(flow_contacts)
+            printable_summary["flow_contact_categories"] = sum(
+                len(contacts) for contacts in flow_contacts.values()
+            )
+        print(json.dumps(printable_summary, sort_keys=True))
     except BaseException:
         active_error = sys.exc_info()[1]
         print(
@@ -2003,6 +2381,7 @@ def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
                 file=sys.stderr,
                 flush=True,
             )
+        _FLOW_EVIDENCE_ACTIVE = False
     if summary is None:
         raise RuntimeError("managed smoke produced no summary")
     return summary
@@ -2067,7 +2446,7 @@ def _tracked_source_provenance(*, require_clean: bool) -> dict[str, object]:
         ],
     )
     if require_clean and status:
-        raise RuntimeError("retained state evidence requires a clean source commit")
+        raise RuntimeError("retained evidence requires a clean source commit")
     commit = run_capture([git, "-C", str(repository), "rev-parse", "HEAD"]).strip()
     if re.fullmatch(r"[0-9a-f]{40}", commit) is None:
         raise RuntimeError("source commit is unavailable")
@@ -2133,6 +2512,54 @@ def integrated_state_evidence(*, retain: bool) -> None:
     print(json.dumps(result, sort_keys=True))
 
 
+def integrated_flow_evidence(*, retain: bool) -> None:
+    """Run D027's fixed aggregate-only managed flow scenario corpus."""
+
+    from locus.managed_flow_evidence import build_reports, publish_corpus
+
+    provenance = _tracked_source_provenance(require_clean=retain)
+    summary = integrated_smoke(flow_evidence=True)
+    for field in (
+        "image_id",
+        "live_graph_sha256",
+        "pseudonymous_client_set_id",
+        "pseudonymous_package_set_id",
+        "pseudonymous_project_id",
+        "resolved_graph_sha256",
+    ):
+        value = summary.get(field)
+        if not isinstance(value, str):
+            raise RuntimeError(f"flow evidence omitted provenance: {field}")
+        provenance[field] = value
+    try:
+        reports = build_reports(provenance=provenance, summary=summary)
+        result: dict[str, object] = {
+            "record_count": len(reports),
+            "retained": False,
+            "status": "passed",
+        }
+        if retain:
+            manifest = publish_corpus(root=ROOT, reports=reports)
+            result.update(
+                {"corpus_sha256": manifest["corpus_sha256"], "retained": True}
+            )
+        print(json.dumps(result, sort_keys=True))
+    except BaseException as error:
+        print(
+            json.dumps(
+                {
+                    "category": "managed_flow_evidence_failed",
+                    "error": type(error).__name__,
+                    "message": str(error),
+                },
+                sort_keys=True,
+            ),
+            file=sys.stderr,
+            flush=True,
+        )
+        raise
+
+
 def build_integrated_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Operate the managed integrated LOCUS reference prototype."
@@ -2170,6 +2597,15 @@ def build_integrated_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="publish the complete corpus exclusively from a clean commit",
     )
+    flow = subparsers.add_parser(
+        "integrated-flow-evidence",
+        help="run the fixed aggregate-only P8.3 managed flow corpus",
+    )
+    flow.add_argument(
+        "--retain",
+        action="store_true",
+        help="publish the complete corpus exclusively from a clean commit",
+    )
     return parser
 
 
@@ -2189,6 +2625,8 @@ def main() -> int:
             integrated_smoke()
         elif args.command == "integrated-state-evidence":
             integrated_state_evidence(retain=args.retain)
+        elif args.command == "integrated-flow-evidence":
+            integrated_flow_evidence(retain=args.retain)
         else:  # pragma: no cover
             raise AssertionError(f"Unhandled command: {args.command}")
     except subprocess.CalledProcessError as error:

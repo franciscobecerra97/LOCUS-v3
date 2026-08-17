@@ -14,6 +14,9 @@ from pathlib import Path
 from typing import Any, cast
 from urllib.parse import quote, urlencode
 
+from .flow_audit import current_context, docker_category, outcome
+from .flow_audit import emit as emit_flow
+
 MAX_DOCKER_RESPONSE_BYTES = 4 * 1024 * 1024
 MINIMUM_API_VERSION = (1, 41)
 MAXIMUM_API_VERSION = (1, 47)
@@ -81,15 +84,29 @@ class DockerEngine:
         if payload is not None:
             body = json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
             headers = {"Content-Type": "application/json"}
+        category = docker_category(method, path) if current_context() else ""
+        response_status = 503
+        encoded = b""
         connection = _UnixConnection(self.socket_path, timeout=self.timeout)
         try:
             connection.request(method, path, body=body, headers=headers)
             response = connection.getresponse()
+            response_status = response.status
             encoded = response.read(MAX_DOCKER_RESPONSE_BYTES + 1)
         except (OSError, http.client.HTTPException) as exc:
             raise DockerEngineError("Docker Engine is unavailable") from exc
         finally:
             connection.close()
+            if category:
+                emit_flow(
+                    sender="manager-controller",
+                    receiver="docker-engine",
+                    category=category,
+                    request_bytes=0 if body is None else len(body),
+                    response_bytes=len(encoded),
+                    result=outcome(response_status),
+                    observation="sender",
+                )
         if len(encoded) > MAX_DOCKER_RESPONSE_BYTES:
             raise DockerEngineError("Docker Engine response is too large")
         if response.status not in expected:

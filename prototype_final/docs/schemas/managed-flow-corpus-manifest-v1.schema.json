@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-flow-corpus-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["corpus_sha256", "entries", "evidence_profile_id", "format_id", "record_count", "scenario_manifest_sha256", "status", "trace_policy_id"],
+  "properties": {
+    "corpus_sha256": {"pattern": "^[0-9a-f]{64}$"},
+    "entries": {"type": "array", "minItems": 30, "maxItems": 30},
+    "evidence_profile_id": {"const": "LOCUS-managed-flow-evidence-profile-v1"},
+    "format_id": {"const": "LOCUS-managed-flow-corpus-manifest-v1"},
+    "record_count": {"const": 30},
+    "scenario_manifest_sha256": {"pattern": "^[0-9a-f]{64}$"},
+    "status": {"const": "complete"},
+    "trace_policy_id": {"const": "LOCUS-managed-flow-trace-policy-v1"}
+  }
+}

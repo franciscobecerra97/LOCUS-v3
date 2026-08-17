@@ -162,6 +162,41 @@ class IntegratedServiceTests(unittest.TestCase):
             observations = client._current_observations(reference)
         self.assertEqual([item.authorizer_id for item in observations], [2, 3, 4, 5])
 
+    def test_integrated_policy_routing_matches_registered_resolver_profile(
+        self,
+    ) -> None:
+        client = object.__new__(IntegratedResearchClientApi)
+        location_person = [
+            {
+                "location": {"latitude": "48.8566", "longitude": "2.3522"},
+                "person": {"type": "email", "value": "ada@example.test"},
+            },
+            {
+                "location": {"latitude": "51.5074", "longitude": "-0.1278"},
+                "person": {"type": "email", "value": "linus@example.test"},
+            },
+            {
+                "location": {"latitude": "40.7128", "longitude": "-74.0060"},
+                "person": {"type": "email", "value": "grace@example.test"},
+            },
+        ]
+        with patch.object(
+            client,
+            "_rpc",
+            return_value={"canonical_hex": b'{"resolved":true}'.hex()},
+        ) as remote:
+            self.assertEqual(
+                client._canonical("LOCUS-location-person-set-v1", location_person),
+                b'{"resolved":true}',
+            )
+        remote.assert_called_once()
+        with patch.object(client, "_rpc") as no_remote:
+            client._canonical(
+                "LOCUS-canonical-email-set-v1",
+                ["Ada@Example.COM", "grace@example.test", "linus@example.test"],
+            )
+        no_remote.assert_not_called()
+
     def test_party_current_retirement_is_exact_and_successor_preserving(self) -> None:
         party = PartyRole(self.root / "party1", 1)
         self.addCleanup(party.database.close)

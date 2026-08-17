@@ -1,0 +1,12 @@
+services:
+  admission: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  operator: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  resolver: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  storage-gateway: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  party1: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  party2: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  party3: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  party4: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  party5: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  manager-controller: {environment: {LOCUS_FLOW_AUDIT: "1"}}
+  manager-ui: {environment: {LOCUS_FLOW_AUDIT: "1"}}

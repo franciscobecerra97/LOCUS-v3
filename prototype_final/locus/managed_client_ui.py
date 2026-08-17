@@ -26,6 +26,21 @@ from .admission import client_key_thumbprint
 from .client_api import CLIENT_API_VERSION, ClientApiError
 from .codec import encode
 from .crypto import random_bytes
+from .flow_audit import (
+    FLOW_HEADER,
+    configure_role,
+    flow_context,
+    http_category,
+)
+from .flow_audit import (
+    emit as emit_flow,
+)
+from .flow_audit import (
+    enabled as flow_enabled,
+)
+from .flow_audit import (
+    outcome as flow_outcome,
+)
 from .integrated_client import (
     AuthenticatedRecoveryPackage,
     IntegratedResearchClientApi,
@@ -714,30 +729,43 @@ class ManagedClientRequestHandler(BaseHTTPRequestHandler):
                 return
             body = self.rfile.read(length)
             content_type = self.headers.get("Content-Type")
-        try:
-            path = urlsplit(self.path).path
-            if method == "GET" and path == "/healthz":
-                response = self.server.application.dispatch(method, self.path)
-            else:
-                expected_origin = _loopback_origin(self.headers.get("Host", ""))
-                response = self.server.application.dispatch(
-                    method,
-                    self.path,
-                    body,
-                    content_type=content_type,
-                    csrf_token=self.headers.get("X-LOCUS-CSRF"),
-                    origin=self.headers.get("Origin"),
-                    expected_origin=expected_origin,
+        context = self.headers.get(FLOW_HEADER) if flow_enabled() else None
+        path = urlsplit(self.path).path
+        category = http_category("managed-client", self.path) if context else ""
+        with flow_context(context):
+            try:
+                if method == "GET" and path == "/healthz":
+                    response = self.server.application.dispatch(method, self.path)
+                else:
+                    expected_origin = _loopback_origin(self.headers.get("Host", ""))
+                    response = self.server.application.dispatch(
+                        method,
+                        self.path,
+                        body,
+                        content_type=content_type,
+                        csrf_token=self.headers.get("X-LOCUS-CSRF"),
+                        origin=self.headers.get("Origin"),
+                        expected_origin=expected_origin,
+                    )
+            except Exception:
+                response = _json_response(
+                    {
+                        "api_version": MANAGED_CLIENT_API_VERSION,
+                        "category": "request_authentication_rejected",
+                        "status": "rejected",
+                    },
+                    status=HTTPStatus.BAD_REQUEST,
                 )
-        except Exception:
-            response = _json_response(
-                {
-                    "api_version": MANAGED_CLIENT_API_VERSION,
-                    "category": "request_authentication_rejected",
-                    "status": "rejected",
-                },
-                status=HTTPStatus.BAD_REQUEST,
-            )
+            if category:
+                emit_flow(
+                    sender="browser",
+                    receiver="managed-client",
+                    category=category,
+                    request_bytes=len(body),
+                    response_bytes=len(response.body),
+                    result=flow_outcome(response.status),
+                    observation="receiver",
+                )
         self._send(response)
 
     def _send(self, response: ClientResponse) -> None:
@@ -834,6 +862,7 @@ def main() -> None:
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument("--port", type=int, default=8080)
     args = parser.parse_args()
+    configure_role("managed-client")
     client_id = os.environ["LOCUS_CLIENT_INSTANCE_ID"]
     lifecycle_token = os.environ["LOCUS_CLIENT_SELF_DESTRUCT_TOKEN"]
     controller = os.environ["LOCUS_MANAGER_CONTROL_ENDPOINT"]

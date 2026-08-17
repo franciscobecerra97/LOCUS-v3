@@ -2802,7 +2802,7 @@ Acceptance:
 
 ### P8.3 Add privacy-safe network-flow evidence
 
-Status: `Proposed`
+Status: `In progress — D027 collector ready; retained collection pending`
 
 Before collection, assign the exact trace-policy identifier, aggregate trace
 schema, permitted categories, positive controls, unexpected-contact rule,
@@ -2832,6 +2832,26 @@ Acceptance:
   configuration and observed integrated-system contacts.
 - Collection cannot begin until the P8.3 trace profile/schema and prohibited-
   output checks are registered and tested.
+
+D027 assigns the seven `LOCUS-managed-flow-*-v1` identifiers registered in
+`VERSION-REGISTRY.md`, the fixed 30-report NF01--NF12 manifest, the exclusive
+`prototype_final/evidence/retained/managed-flow-v1/` path, and the payload-free
+instrumentation/retention boundary in
+`prototype_final/docs/MANAGED-FLOW-EVIDENCE-v1.md`. The implementation adds
+only evidence-mode observations to existing route, authenticated-RPC,
+logical-provider, and constrained-Docker adapters; it adds no graph role or
+route. Exactly 12 Yi, 12 aPPSS, and six common reports are required. Raw
+structured events and service logs are scanned and discarded. Retained
+collection remains prohibited until the contract, collector, schemas, and
+tests are committed and the clean-source gate passes.
+
+The exploratory D027 gate also found and corrected an implementation-to-
+registry mismatch: the managed client had compared the registered
+`LOCUS-deterministic-directory-v1` location-person resolver profile against a
+v2 literal, bypassing the remote resolver. A focused regression now proves
+that both 3-of-5 location-person arms contact the authenticated resolver while
+both 2-of-3 canonical-email arms remain NoResolver. This is a correction to
+the already assigned v1 policy routing, not a new policy or resolver format.
 
 ### P8.4 Preserve attempt control as a boundary
 

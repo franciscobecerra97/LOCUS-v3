@@ -507,7 +507,7 @@ class IntegratedResearchClientApi:
 
     def _canonical(self, policy_id: object, recovery_input: object) -> bytes:
         policy = DEFAULT_CUE_POLICY_REGISTRY.require(str(policy_id))
-        if policy.metadata.resolver_profile_id == "LOCUS-deterministic-directory-v2":
+        if policy.metadata.resolver_profile_id == "LOCUS-deterministic-directory-v1":
             resolved = self._rpc(
                 "resolver",
                 "/v1/resolve",
