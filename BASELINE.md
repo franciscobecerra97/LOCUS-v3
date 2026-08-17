@@ -405,6 +405,17 @@ live checks show resolver contact for the paired 3-of-5 location-person arms
 and no resolver contact for paired 2-of-3 canonical-email arms. No identifier,
 policy algorithm, resolver format, or historical P8.2 result was changed.
 
+P8.4 completed on 2026-08-17 without adding retained evidence. The active
+`prototype_final/` source now contains byte-for-byte preserved copies of the
+frozen bounded attempt model, strict report schema, and signed-certificate
+implementation, guarded by their historical SHA-256 digests. The
+`integrated-attempt-boundary` command validates the exact D025 five-authorizer/
+4-of-5 manifest and absence of a monotonic-witness role before reproducing all
+seven expected scenarios. Client UI wording explicitly says that local attempt
+records are diagnostic and do not provide a global or rollback-resistant
+limit. These are bounded supporting controls, not a runtime rollback result,
+global/lifetime bound, D012 witness, P9 metric, or manuscript authorization.
+
 ## Excluded material
 
 The portable copy excludes:

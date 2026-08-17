@@ -1,4 +1,4 @@
-"""Seven-command executor for the managed integrated LOCUS prototype."""
+"""Eight-command executor for the managed integrated LOCUS prototype."""
 
 from __future__ import annotations
 
@@ -2560,6 +2560,20 @@ def integrated_flow_evidence(*, retain: bool) -> None:
         raise
 
 
+def integrated_attempt_boundary() -> None:
+    """Run P8.4's frozen rollback counterexample under the D025 binding."""
+
+    from locus.attempt_boundary import build_integrated_attempt_boundary_report
+
+    print(
+        json.dumps(
+            build_integrated_attempt_boundary_report(ROOT),
+            separators=(",", ":"),
+            sort_keys=True,
+        )
+    )
+
+
 def build_integrated_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Operate the managed integrated LOCUS reference prototype."
@@ -2587,6 +2601,10 @@ def build_integrated_parser() -> argparse.ArgumentParser:
     )
     subparsers.add_parser(
         "integrated-smoke", help="run the disposable Manager-to-Client gate"
+    )
+    subparsers.add_parser(
+        "integrated-attempt-boundary",
+        help="reproduce the frozen local-audit rollback boundary",
     )
     state = subparsers.add_parser(
         "integrated-state-evidence",
@@ -2623,6 +2641,8 @@ def main() -> int:
             integrated_stop(args)
         elif args.command == "integrated-smoke":
             integrated_smoke()
+        elif args.command == "integrated-attempt-boundary":
+            integrated_attempt_boundary()
         elif args.command == "integrated-state-evidence":
             integrated_state_evidence(retain=args.retain)
         elif args.command == "integrated-flow-evidence":

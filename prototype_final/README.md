@@ -145,6 +145,19 @@ stop/restart recovery with the same CA, destructive reset with a fresh CA and
 old-package rejection, and exact cleanup. These observations close the
 implementation gate only; they were not retained as P8/P9 evidence.
 
+Reproduce the P8.4 attempt-control boundary:
+
+```console
+uv run --frozen python tasks.py integrated-attempt-boundary
+```
+
+This command verifies the unchanged frozen model, signed-certificate control,
+strict schema, exact D025 five-authorizer/4-of-5 binding, and absence of a
+monotonic-witness role before reproducing all seven bounded scenarios. Its
+quorum-only rollback counterexamples are negative regression controls, not a
+global, lifetime, or rollback-resistant attempt bound. The command retains no
+output and does not exercise a live-container rollback attack.
+
 D026 assigns the aggregate-only P8.2 collector. An exploratory run writes no
 retained output:
 
@@ -180,7 +193,7 @@ The exclusive target cannot be replaced by another v1 run.
 
 | Path | Purpose |
 | --- | --- |
-| `tasks.py` | Only supported executor; exposes seven `integrated-*` commands |
+| `tasks.py` | Only supported executor; exposes eight `integrated-*` commands |
 | `locus/` | Dependency-complete integrated Python implementation and UI assets |
 | `appss-core/` | Native aPPSS core and public vector |
 | `tpass-core/` | Frozen native Yi core and vector |
@@ -188,13 +201,15 @@ The exclusive target cannot be replaced by another v1 run.
 | `deploy/` | Integrated Dockerfile, Compose graph, and canonical manifest |
 | `tests/` | Focused manifest, bootstrap, isolation, and service-boundary tests |
 | `docs/security-matrix-v2.json` | Assigned additive managed-system security contract; not retained evidence |
+| `docs/ATTEMPT-CONTROL-BOUNDARY.md` | Frozen negative model and local signed-certificate boundary |
 | `docs/schemas/` | Integrated configuration, package, and assigned security-matrix schemas |
 
 ## Evidence boundary
 
-`integrated-check`, `integrated-config`, `integrated-smoke`, and exploratory
-`integrated-state-evidence`, and exploratory `integrated-flow-evidence`
-produce ordinary development output only. D026's
+`integrated-check`, `integrated-config`, `integrated-smoke`,
+`integrated-attempt-boundary`, exploratory `integrated-state-evidence`, and
+exploratory `integrated-flow-evidence` produce ordinary development output
+only. D026's
 explicit `integrated-state-evidence --retain` is the sole P8.2 retained path;
 it uses the assigned schema, identifiers, positive controls, provenance,
 output-safety policy, and versioned result path. D027's separate

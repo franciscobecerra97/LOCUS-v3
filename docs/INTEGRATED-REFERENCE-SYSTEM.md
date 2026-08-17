@@ -2,8 +2,9 @@
 
 Status: D023 implementation and pre-evidence gate complete; D024 isolated it
 under `prototype_final/`. D025/P7.7 Manager-controlled deployment and assignment
-gate complete. P8.1 assurance and P8.2 retained managed-state evidence are
-complete; P8.3 network-flow and P9 evidence remain uncollected.
+gate complete. P8.1 assurance, P8.2 retained managed-state evidence, P8.3
+retained managed-flow evidence, and P8.4 attempt-boundary preservation are
+complete; P9 evidence remains uncollected.
 
 ## Purpose
 

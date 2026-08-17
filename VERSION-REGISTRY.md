@@ -333,6 +333,16 @@ The first and only v1 publication was collected from clean source commit
 manifest have `corpus_sha256`
 `1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
 
+P8.4 assigns no new identifier and does not reinterpret the frozen attempt
+family. `prototype_final/` preserves the historical attempt-model source,
+signed-certificate implementation, and strict report schema under normalized
+SHA-256 digests `4f118eaf019abf6c02779b891146fa6a2bcafe6175927e1c2587632195955b2c`,
+`b280e14b331850041bdd61643fda369116b6e12af6331df00b5207563754f402`,
+and `80f0e87bb523dcd2a282313f9161a1866fadbd2d148063045714765b70fdc428`.
+The active wrapper only binds those frozen controls to the exact D025 4-of-5
+manifest and absence of a D012 monotonic-witness role. Its output is not a new
+result family or retained evidence.
+
 ### P2.4 assigned development scenario contract
 
 `LOCUS-descriptor-security-scenarios-v1` is the strict aggregate-only

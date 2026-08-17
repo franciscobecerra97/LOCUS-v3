@@ -289,9 +289,10 @@
         "D008",
         "D009",
         "D023",
-        "D025"
+        "D025",
+        "D027"
       ],
-      "required_gate": "P7.7 is complete, but P8.3 must still approve the privacy-safe D025 collection boundary, including Manager/controller, management/client-lifecycle networks, client instances, package transport, synthetic topology, retained aggregate fields, exclusions, and trace schema before collection.",
+      "required_gate": "D027 assigned the privacy-safe D025 managed-flow profile, fixed 30-report scenario manifest, payload-free adapter observations, exclusions, reconciliation, schemas, and exclusive path; P8.3 collected it from clean source commit cd5aaaf762a9b18bef681f496f704f772fe6e9be with corpus digest 1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c.",
       "compatibility_rule": "A changed collection boundary, topology, Manager/controller or client role view, package view, network membership, or retained field set requires a new trace and evidence profile; D023 traces cannot substitute."
     }
   ]

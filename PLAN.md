@@ -22,7 +22,7 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 through P8.3 are complete; P8.4 is the next proposed step.
+predecessor. P8.1 through P8.4 are complete; P9.1 is the next proposed step.
 Architecture decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -2864,11 +2864,7 @@ multi-host, independent-administration, real-provider, or manuscript claim.
 
 ### P8.4 Preserve attempt control as a boundary
 
-Status: `Proposed`
-
-Readiness: P8.3's retained managed-flow gate is satisfied. P8.4 is the next
-ready step and remains limited to the already documented attempt-control
-boundary.
+Status: `Complete`
 
 - Keep the rollback counterexample reproducible.
 - Keep signed local auditing isolated from recovery-suite correctness claims.
@@ -2880,6 +2876,19 @@ Acceptance:
   rollback-resistant.
 - The integrated deployment reproduces the rollback counterexample or its
   exact boundary without presenting container durability as a global bound.
+
+Completion record (2026-08-17): `prototype_final/` now preserves the frozen
+`LOCUS-attempt-model-report-v1` model, its strict schema, and the signed local
+certificate implementation unchanged from their historical controls. The new
+`integrated-attempt-boundary` command first binds them to the exact D025
+five-authorizer/4-of-5 manifest, verifies their frozen digests, and fails if a
+monotonic-witness role appears; it then reproduces all seven expected bounded
+scenarios. Three quorum-only scenarios retain their rollback counterexamples,
+while three ideal-anchor comparisons find no counterexample within their
+frozen bounds. Signature/quorum/configuration negatives and explicit Client UI
+non-claim wording are checked. This is implementation assurance only: no
+retained evidence, new identifier, global/lifetime bound, runtime rollback-
+resistance result, D012 witness, P9 metric, or manuscript change was created.
 
 ---
 
@@ -2893,6 +2902,10 @@ substitute for or be pooled with end-to-end results.
 ### P9.1 Define revised methodology before collection
 
 Status: `Proposed`
+
+Readiness: P8.1--P8.4 are complete for the exact managed same-host profile.
+P9.1 is the next ready step, but no P9 collection may begin before its frozen
+methodology and the P9.2 result-schema gate are separately approved.
 
 Measure:
 
@@ -3116,12 +3129,10 @@ the honest same-host managed integrated profile.
 
 The next sequence is:
 
-1. P8.2--P8.4 — after presenting and obtaining approval for each required
-   security/trace contract, assign the schemas, assure the exact integrated
-   system, and preserve the attempt-control boundary;
-2. P9 — collect new suite/topology-specific performance/resilience results
+1. P9 — first freeze the revised methodology and result schemas, then collect
+   new suite/topology-specific performance/resilience results
    from that system; and
-3. P10 — complete independent review, integrated artifact reproduction, claim
+2. P10 — complete independent review, integrated artifact reproduction, claim
    closure, and separately owner-approved manuscript changes.
 
 Do not collect retained P8/P9 evidence, promote a system result, or propose a

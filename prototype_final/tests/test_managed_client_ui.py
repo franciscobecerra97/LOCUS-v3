@@ -638,6 +638,8 @@ class ManagedClientApplicationTests(unittest.TestCase):
 
         self.assertIn('id="enrollment-lock-note"', html)
         self.assertIn("Recovery does not require a private key", html)
+        self.assertIn("Local attempt records are diagnostic only", html)
+        self.assertIn("no global or rollback-resistant attempt limit", html)
         self.assertIn("function updateEnrollmentLock(keyLoaded)", script)
         self.assertIn('byId("enrollment-form")', script)
         self.assertIn("updateEnrollmentLock(state.keyLoaded)", script)

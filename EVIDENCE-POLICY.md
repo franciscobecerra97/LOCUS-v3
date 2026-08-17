@@ -314,7 +314,15 @@ no P9 metric and authorizes no manuscript change.
 The v1 corpus was collected once from clean source commit
 `cd5aaaf762a9b18bef681f496f704f772fe6e9be`. Its exact 30 reports close to
 `corpus_sha256=1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
-This completes P8.3 only; P8.4 and P9 remain separately scoped and gated.
+This completes P8.3 only; P9 remains separately scoped and gated.
+
+P8.4 preserves the frozen `LOCUS-attempt-model-report-v1` counterexample,
+schema, and signed-certificate controls inside `prototype_final/` and binds
+their execution to the exact D025 4-of-5 managed manifest. The command emits
+temporary public output only and retains no result. It is a bounded negative
+regression and local implementation control, not evidence of a global,
+lifetime, or rollback-resistant attempt bound. D012 and all P9 collection
+remain separately gated.
 
 ## External services
 

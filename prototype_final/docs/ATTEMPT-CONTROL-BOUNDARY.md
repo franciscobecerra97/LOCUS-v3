@@ -1,15 +1,10 @@
 # LOCUS Bounded Attempt-Control Model
 
-Status: P5.13 executable counterexample model, 2026-07-22. The model and its
-strict report pass their frozen expectations. It is a bounded design-analysis
-artifact, not a proof and not runtime rollback-resistance evidence.
-
-P8.4 preserves the exact model, schema, and signed-certificate control inside
-`prototype_final/`. The active self-contained command is
-`uv run --frozen python tasks.py integrated-attempt-boundary` from that
-directory; it additionally validates the exact D025 4-of-5 manifest binding
-and absence of a monotonic-witness role. The historical command below remains
-the component-control entry point and has not been reinterpreted.
+Status: P8.4 self-contained preservation of the P5.13 executable
+counterexample. The model source, signed-certificate implementation, and strict
+schema are byte-for-byte unchanged from their frozen historical controls. They
+are bounded supporting controls, not a proof or runtime rollback-resistance
+evidence.
 
 ## Problem Statement
 
@@ -29,7 +24,7 @@ P5.13 therefore asks two narrow questions:
 
 ## Threat Assumptions And Abstraction
 
-`prototype/locus/attempt_model.py` performs deterministic breadth-first search
+`locus/attempt_model.py` performs deterministic breadth-first search
 with honest-party symmetry reduction. The frozen model contains:
 
 - compact `(n_a=5, f_a=2, q_a=4)` authorization;
@@ -75,12 +70,23 @@ limit fails the report rather than being interpreted as safety.
 Run:
 
 ```console
-uv run --frozen python tasks.py attempt-model
+uv run --frozen python tasks.py integrated-attempt-boundary
 ```
 
 The command emits one canonical `LOCUS-attempt-model-report-v1` object validated
 by `docs/schemas/attempt-model-report-v1.schema.json` and the stricter in-code
 registry contract.
+
+Before running the unchanged model, the P8.4 wrapper validates the exact D025
+managed manifest, its five authorizers and distinct 4-of-5 authorization
+quorum, the frozen model/certificate/schema digests, and the absence of a
+monotonic-witness role. A changed quorum, frozen source, schema, or witness
+boundary fails closed. The signed-certificate unit control verifies strict
+4-of-5 signatures, quorum intersection, canonical decoding, and configuration/
+entry binding. It remains isolated supporting behavior and is not wired into
+recovery-suite correctness. This binds the negative model to the current
+deployment assumptions; it is not a claim that the abstract trace was executed
+against live containers.
 
 | Scenario | Reconciliation | Bound explored | Result |
 | --- | --- | --- | --- |

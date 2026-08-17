@@ -99,8 +99,9 @@ access is root-equivalent trusted operator infrastructure. The local provider,
 authenticated current-state path, fixed paired holder profiles, distinct 4-of-
 5 authorization, and online threshold-party requirement remain. P7.7 is
 complete and all twelve managed identifiers are Assigned. The profile is the
-P8/P9 system under test; P8.2's aggregate state corpus is retained, while P8.3
-network-flow and P9 results do not yet exist.
+P8/P9 system under test; P8.2 aggregate-state and P8.3 managed-flow corpora are
+retained, and P8.4 preserves the attempt-control non-claim. P9 results do not
+yet exist.
 
 The managed control plane uses internal `management` (Manager/controller) and
 `client-lifecycle` (Client/controller) networks plus separate `manager-edge`
