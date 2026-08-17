@@ -104,6 +104,12 @@
     "LOCUS-location-person-set-v1",
     "LOCUS-managed-client-instance-v1",
     "LOCUS-managed-client-ui-v1",
+    "LOCUS-managed-state-corpus-manifest-v1",
+    "LOCUS-managed-state-evidence-profile-v1",
+    "LOCUS-managed-state-result-appss-v1",
+    "LOCUS-managed-state-result-common-v1",
+    "LOCUS-managed-state-result-yi-v1",
+    "LOCUS-managed-state-scenario-manifest-v1",
     "LOCUS-manager-api-v1",
     "LOCUS-no-resolver-v1",
     "LOCUS-paired-suite-deployment-2of3-v1",
@@ -269,9 +275,10 @@
         "D017",
         "D018",
         "D023",
-        "D025"
+        "D025",
+        "D026"
       ],
-      "required_gate": "P7.7 assigned the complete D025 managed family without collecting evidence. P8.2 must first approve security and state scenarios, aggregate fields, provenance, positive controls, and result schemas before collection; P9.2 later repeats the gate for performance and resilience results.",
+      "required_gate": "D026 assigns the P8.2 security/state profile, fixed 42-report scenario manifest, aggregate fields, provenance, positive controls, schemas, and exclusive path. Collection requires its committed clean-source implementation; P9.2 later repeats a separate gate for performance and resilience results.",
       "compatibility_rule": "Security/state and performance/resilience results remain distinct; D025 managed, D023 predecessor, suite, and topology results use separate bindings, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
     },
     {

@@ -2727,7 +2727,16 @@ Completion record (2026-08-14):
 
 ### P8.2 Add state-boundary evidence
 
-Status: `Proposed`
+Status: `In progress`
+
+D026 approval record (2026-08-17): the owner approved the exact proposed
+aggregate-only contract. It assigns six managed-state identifiers, a fixed
+SB01--SB14 scenario manifest with exactly 42 reports (18 Yi, 18 aPPSS, and six
+common), suite/topology-separated paths, four fixed snapshot points, strict
+positive controls, clean-commit provenance, and all-or-nothing exclusive
+publication under `prototype_final/evidence/retained/managed-state-v1/`.
+Contract implementation must be committed before the first retained run; this
+status remains in progress until that corpus is collected and hash-validated.
 
 Before collection, freeze and register the exact aggregate-only security/state
 result families, schemas, versioned paths, positive controls, scenario

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-state-scenario-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["arms", "evidence_profile_id", "format_id", "report_count", "reports", "scenario_contracts", "status"],
+  "properties": {
+    "arms": {"type": "object", "minProperties": 4, "maxProperties": 4},
+    "evidence_profile_id": {"const": "LOCUS-managed-state-evidence-profile-v1"},
+    "format_id": {"const": "LOCUS-managed-state-scenario-manifest-v1"},
+    "report_count": {"const": 42},
+    "reports": {"type": "array", "minItems": 42, "maxItems": 42, "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["arm_id", "result_id", "scenario_id"], "properties": {"arm_id": {"type": "string", "pattern": "^[a-z0-9-]+$"}, "result_id": {"enum": ["LOCUS-managed-state-result-common-v1", "LOCUS-managed-state-result-yi-v1", "LOCUS-managed-state-result-appss-v1"]}, "scenario_id": {"pattern": "^SB(0[1-9]|1[0-4])$"}}}},
+    "scenario_contracts": {"type": "object", "minProperties": 14, "maxProperties": 14},
+    "status": {"const": "assigned"}
+  }
+}

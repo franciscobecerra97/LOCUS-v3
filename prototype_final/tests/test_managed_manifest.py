@@ -222,9 +222,27 @@ class ManagedBootstrapTests(unittest.TestCase):
         audit_managed_client_template_root(self.root / "managed-client")
         self.assertEqual(
             audit_role_root(self.root / "manager-controller", "manager-controller"),
-            5,
+            (
+                5,
+                sum(
+                    path.stat().st_size
+                    for path in (self.root / "manager-controller").iterdir()
+                    if path.is_file()
+                ),
+            ),
         )
-        self.assertEqual(audit_role_root(self.root / "manager-ui", "manager-ui"), 4)
+        manager_ui = self.root / "manager-ui"
+        self.assertEqual(
+            audit_role_root(manager_ui, "manager-ui"),
+            (
+                4,
+                sum(
+                    path.stat().st_size
+                    for path in manager_ui.iterdir()
+                    if path.is_file()
+                ),
+            ),
+        )
 
     def test_existing_template_is_exact_and_client_peer_is_accepted(self) -> None:
         bootstrap_integrated_roles(

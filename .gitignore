@@ -30,6 +30,10 @@ experiments/raw/**/*.json
 !experiments/raw/performance-v1/**/*.json
 !experiments/raw/performance-v2/**/*.json
 
+# P8.2 publishes only by renaming a complete validated staging directory.
+# Interrupted staging trees are never evidence and must not be committed.
+prototype_final/evidence/retained/.managed-state-v1-staging-*/
+
 # Rust generated files
 target/
 **/target/

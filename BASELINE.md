@@ -380,6 +380,13 @@ implementation assurance only: no P8.2/P8.3 evidence identifier, retained
 result, or claim status changed, and P8.2 collection still requires the
 owner-approved pre-collection contract.
 
+D026 supplied that approval on 2026-08-17. The six P8.2 managed-state
+identifiers, fixed 42-report manifest, strict aggregate schemas, collector,
+positive-control rules, clean-commit provenance, and exclusive retained path
+are now assigned and under implementation. No retained P8.2 corpus or claim
+promotion exists until the separately committed clean-source collection gate
+passes.
+
 ## Excluded material
 
 The portable copy excludes:

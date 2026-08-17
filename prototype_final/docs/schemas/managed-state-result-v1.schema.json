@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-state-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["arm", "arm_id", "bindings", "cleanup", "evidence_profile_id", "format_id", "limitations", "metrics", "output_safety", "scenario_contracts", "scenario_id", "scenario_manifest_sha256", "snapshot_set", "status"],
+  "properties": {
+    "arm": {"type": ["object", "null"]},
+    "arm_id": {"type": "string", "pattern": "^[a-z0-9-]+$"},
+    "bindings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["admission_profile_id", "client_api_id", "client_instance_profile_id", "collected_at_utc", "compose_sha256", "configuration_id", "controller_api_id", "deployment_id", "host_tier", "image_id", "live_graph_sha256", "lockfile_sha256", "managed_manifest_sha256", "manager_api_id", "package_profile_id", "provider_id", "pseudonymous_host_id", "resolved_graph_sha256", "source_commit", "source_tree_sha256"],
+      "properties": {
+        "admission_profile_id": {"const": "LOCUS-local-synthetic-admission-v1"},
+        "client_api_id": {"const": "LOCUS-client-api-v2"},
+        "client_instance_profile_id": {"const": "LOCUS-managed-client-instance-v1"},
+        "collected_at_utc": {"type": "string", "format": "date-time"},
+        "compose_sha256": {"pattern": "^[0-9a-f]{64}$"},
+        "configuration_id": {"const": "LOCUS-integrated-manager-config-v1"},
+        "controller_api_id": {"const": "LOCUS-container-controller-api-v1"},
+        "deployment_id": {"const": "LOCUS-integrated-manager-deployment-v1"},
+        "host_tier": {"const": "same-host-single-operator"},
+        "image_id": {"pattern": "^sha256:[0-9a-f]{64}$"},
+        "live_graph_sha256": {"pattern": "^[0-9a-f]{64}$"},
+        "lockfile_sha256": {"pattern": "^[0-9a-f]{64}$"},
+        "managed_manifest_sha256": {"pattern": "^[0-9a-f]{64}$"},
+        "manager_api_id": {"const": "LOCUS-manager-api-v1"},
+        "package_profile_id": {"const": "LOCUS-client-recovery-package-v1"},
+        "provider_id": {"const": "LOCUS-storage-provider-s3-compatible-v1"},
+        "pseudonymous_host_id": {"pattern": "^host-[0-9a-f]{16}$"},
+        "resolved_graph_sha256": {"pattern": "^[0-9a-f]{64}$"},
+        "source_commit": {"pattern": "^[0-9a-f]{40}$"},
+        "source_tree_sha256": {"pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "cleanup": {"type": "object", "additionalProperties": false, "required": ["containers_remaining", "images_remaining", "networks_remaining", "status", "volumes_remaining"], "properties": {"containers_remaining": {"const": 0}, "images_remaining": {"const": 0}, "networks_remaining": {"const": 0}, "status": {"const": "passed"}, "volumes_remaining": {"const": 0}}},
+    "evidence_profile_id": {"const": "LOCUS-managed-state-evidence-profile-v1"},
+    "format_id": {"enum": ["LOCUS-managed-state-result-common-v1", "LOCUS-managed-state-result-yi-v1", "LOCUS-managed-state-result-appss-v1"]},
+    "limitations": {"type": "array", "minItems": 5, "maxItems": 5, "uniqueItems": true, "items": {"type": "string"}},
+    "metrics": {"type": "object", "additionalProperties": false, "required": ["ordinary_checks", "ordinary_violations", "positive_control_checks", "positive_control_detections"], "properties": {"ordinary_checks": {"type": "integer", "minimum": 1}, "ordinary_violations": {"const": 0}, "positive_control_checks": {"type": "integer", "minimum": 1}, "positive_control_detections": {"type": "integer", "minimum": 1}}},
+    "output_safety": {"type": "object", "additionalProperties": false, "required": ["forbidden_retained_fields", "logs_retained", "output_scan", "packet_captures_retained", "snapshots_retained"], "properties": {"forbidden_retained_fields": {"const": 0}, "logs_retained": {"const": false}, "output_scan": {"const": "passed"}, "packet_captures_retained": {"const": false}, "snapshots_retained": {"const": false}}},
+    "scenario_contracts": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"pattern": "^[CM][0-9]{2}$"}},
+    "scenario_id": {"pattern": "^SB(0[1-9]|1[0-4])$"},
+    "scenario_manifest_sha256": {"pattern": "^[0-9a-f]{64}$"},
+    "snapshot_set": {"type": "object", "additionalProperties": false, "required": ["aggregate_sha256", "label", "roles"], "properties": {"aggregate_sha256": {"pattern": "^[0-9a-f]{64}$"}, "label": {"enum": ["post_enrollment", "post_recovery", "preserved_restart", "fresh_reset"]}, "roles": {"type": "array", "minItems": 15, "maxItems": 15}}},
+    "status": {"const": "passed"}
+  }
+}

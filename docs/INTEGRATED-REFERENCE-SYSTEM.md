@@ -264,14 +264,19 @@ These are implementation gates, not retained P8/P9 evidence or paper results.
 
 ## Assurance and evaluation dependency
 
-P7.7 and P8.1 are complete, so P8.2 is the next proposed gate. The assigned
+P7.7 and P8.1 are complete. D026 approved P8.2's exact aggregate-only contract,
+and its schema/collector implementation is in progress before the first
+retained run. The assigned
 `prototype_final/docs/security-matrix-v2.json`/schema pin v1 and C01--C26 and
 add managed contracts M01--M05. P8.1 instantiated their implementation-
 assurance controls against the exact managed manifest. Component fuzzing and
 unit/property tests remain necessary controls, while retained system-facing
 state, network, crash, replay, lifecycle-
 control, package, and output conclusions must be observed on the Manager-
-created Client deployment. This D023 profile remains a supporting predecessor.
+created Client deployment. P8.2 fixes 42 SB01--SB14 reports across the matched
+Yi/aPPSS arms, with exclusive clean-commit publication under
+`prototype_final/evidence/retained/managed-state-v1/`. This D023 profile
+remains a supporting predecessor.
 
 P9 freezes methodology and schemas only after P8 defines safe collection.
 Central performance and resilience results use the managed integrated

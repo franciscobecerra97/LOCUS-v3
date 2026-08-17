@@ -59,13 +59,15 @@ def audit_managed_client_template_root(root: Path) -> None:
         raise ValueError("managed-client template contains a symbolic link")
 
 
-def audit_role_root(root: Path, role: str) -> int:
+def audit_role_root(root: Path, role: str) -> tuple[int, int]:
     if role == "client":
         audit_client_root(root)
-        return len(ALLOWED_CLIENT_FILES)
+        paths = [root / name for name in ALLOWED_CLIENT_FILES]
+        return len(paths), sum(path.stat().st_size for path in paths)
     if role == "managed-client-template":
         audit_managed_client_template_root(root)
-        return len(ALLOWED_MANAGED_CLIENT_TEMPLATE_FILES)
+        paths = [root / name for name in ALLOWED_MANAGED_CLIENT_TEMPLATE_FILES]
+        return len(paths), sum(path.stat().st_size for path in paths)
     paths = [path for path in root.rglob("*") if path.is_file()]
     if any(path.is_symlink() for path in root.rglob("*")):
         raise ValueError("role root contains a symbolic link")
@@ -73,7 +75,7 @@ def audit_role_root(root: Path, role: str) -> int:
     if role == "provider":
         if not observed:
             raise ValueError("provider root is unexpectedly empty")
-        return len(observed)
+        return len(observed), sum(path.stat().st_size for path in paths)
     if role == "bootstrap":
         required = {"ca.pem", "manifest.json"}
     else:
@@ -129,7 +131,7 @@ def audit_role_root(root: Path, role: str) -> int:
     prohibited = ("cue", "password", "protected", "recovery-secret")
     if any(any(token in name.lower() for token in prohibited) for name in observed):
         raise ValueError("role root exposes a prohibited filename")
-    return len(observed)
+    return len(observed), sum(path.stat().st_size for path in paths)
 
 
 def main() -> None:
@@ -154,10 +156,16 @@ def main() -> None:
         default="client",
     )
     args = parser.parse_args()
-    files = audit_role_root(args.root, args.role)
+    files, total_bytes = audit_role_root(args.root, args.role)
     print(
         json.dumps(
-            {"files": files, "role": args.role, "status": "clean"}, sort_keys=True
+            {
+                "files": files,
+                "role": args.role,
+                "status": "clean",
+                "total_bytes": total_bytes,
+            },
+            sort_keys=True,
         )
     )
 

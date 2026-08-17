@@ -1170,6 +1170,78 @@ results may be described in the manuscript only through a later exact owner-
 approved delta after independent validation, P8/P9 evidence, artifact
 reproduction, and claim closure.
 
+### D026 — Managed aggregate-only state-evidence contract
+
+Decision ID: D026
+
+Date: 2026-08-17
+
+Status: Approved
+
+Chosen option: Assign the exact P8.2 managed state-evidence family proposed to
+the owner on 2026-08-14 and approved verbatim on 2026-08-17. The profile uses
+the identifiers `LOCUS-managed-state-evidence-profile-v1`,
+`LOCUS-managed-state-scenario-manifest-v1`,
+`LOCUS-managed-state-result-common-v1`,
+`LOCUS-managed-state-result-yi-v1`,
+`LOCUS-managed-state-result-appss-v1`, and
+`LOCUS-managed-state-corpus-manifest-v1`. Its immutable manifest contains
+exactly 42 reports: 18 Yi, 18 aPPSS, and six suite-neutral managed-system
+reports over SB01--SB14. Paired 2-of-3 suites use the canonical-email policy;
+paired 3-of-5 suites use the location-person policy under otherwise matched
+synthetic conditions. Retained publication is aggregate-only, exclusive,
+all-or-nothing, clean-commit-bound, and append-only.
+
+Alternatives considered: Reusing frozen v1/v2 evidence; pooling Yi and aPPSS;
+using the P7.7 smoke output as retained evidence without a schema; retaining
+raw snapshots, databases, logs, packet captures, candidates, or secret-state
+digests; collecting before a clean contract commit; or waiting for P9.2 and
+mixing state/security with performance schemas.
+
+New trust assumptions: The evidence profile trusts the exact D025 same-host
+single-operator Docker/Manager/controller boundary, clean source commit,
+networkless read-only audit containers, local synthetic issuer, and local
+S3-compatible provider. It adds no independent-administration, multi-host,
+real-provider, production-PKI, endpoint-compromise, or monotonic-witness
+assumption.
+
+Privacy implications: Retained fields are limited to approved identifiers,
+counts, Booleans, bounded categories, public/configuration digests,
+pseudonymous provenance, exact role membership, file counts/byte totals, and
+positive-control/output/cleanup status. Raw/canonical cues, candidates and
+per-candidate results, suite secrets, shares, keys, credentials, certificates,
+databases, snapshots, logs, traces, screenshots, absolute paths, developer
+identity, free-form diagnostics, and content digests of secret-bearing state
+are prohibited.
+
+Compatibility/version impact: The six identifiers are Assigned with their
+schemas, compatibility rules, fixed scenario manifest, tests, and first
+implementation. Yi, aPPSS, and common reports remain separate. The retained
+path is `prototype_final/evidence/retained/managed-state-v1/`; an existing path
+is never overwritten. Any changed scenario membership, retained field,
+deployment/provider/admission/UI/API boundary, topology, policy, suite, or
+publication rule requires a new version. Frozen v1/v2 and D023/P7.7 outputs are
+not reinterpreted.
+
+Required evidence: The committed collector must run the exact Manager-created
+Client graph with all four matched arms, validate 15 role volumes at the fixed
+snapshot points, pass every ordinary and positive-control observation, retain
+exactly 42 schema-valid reports plus a hash-closing corpus manifest, scan and
+discard logs, and prove exact-project cleanup. Retained collection may occur
+only from the clean contract implementation commit.
+
+Files or components authorized: `prototype_final/` evidence profile, fixed
+scenario manifest, schemas, state-audit aggregation, collector, tests, the new
+`integrated-state-evidence` command, append-only retained corpus, and the
+project governance/registry/status documentation needed for P8.2. No P8.3
+trace collection, P9 metric schema, external provider, real data, general
+replacement, monotonic witness, or manuscript edit is authorized.
+
+Manuscript implication: None authorized. The P8.2 corpus remains
+implementation evidence subject to D019 independent review, later P8/P9 and
+artifact gates, claim closure, and a separately presented exact manuscript
+delta.
+
 ## Decision record template
 
 When the owner decides an item, append:

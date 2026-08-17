@@ -36,6 +36,12 @@ vector, negative tests, and first implementation together and assigned all
 twelve managed identifiers. They are `Assigned`, not `Frozen`. Assignment does
 not allocate a P8/P9 trace or result identifier and is not retained evidence.
 
+D026 assigns the six P8.2 managed-state evidence identifiers below with their
+strict schemas, fixed 42-report scenario manifest, collector, positive-control
+contract, clean-commit provenance, and exclusive publication rule. Assignment
+authorizes collection but does not itself create retained evidence or promote
+a manuscript claim.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
@@ -275,6 +281,26 @@ until the backend reports a loaded transient key. They change no route,
 request/result meaning, recovery/lifecycle semantics, secret-handling boundary,
 deployment manifest, or evidence boundary. Any such semantic change would
 still require a new identifier under the rules above.
+
+### D026/P8.2 assigned managed-state evidence family
+
+| Assigned identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-managed-state-evidence-profile-v1` | Aggregate-only SB01--SB14 assurance over the exact D025 Manager-created Client graph and four matched suite/topology arms | Any changed deployment, provider, admission, role, policy, suite/topology, snapshot, scenario, retained-field, or publication boundary requires a new profile |
+| `LOCUS-managed-state-scenario-manifest-v1` | Canonical immutable membership of exactly 42 reports: 18 Yi, 18 aPPSS, and six common | Membership, arm ordering, contracts, counts, or common-condition semantics are immutable |
+| `LOCUS-managed-state-result-common-v1` | Suite-neutral Manager/controller, lifecycle, cleanup, and paired-topology observations | It cannot contain or substitute for a Yi- or aPPSS-specific state conclusion |
+| `LOCUS-managed-state-result-yi-v1` | Yi-specific aggregate state-boundary observation under one exact registered arm | Yi results remain separate from aPPSS and historical retained-v2 results |
+| `LOCUS-managed-state-result-appss-v1` | aPPSS-specific aggregate state-boundary observation under one exact registered arm | aPPSS results remain separate from Yi and do not establish the inherited theorem |
+| `LOCUS-managed-state-corpus-manifest-v1` | Hash-closing manifest over exactly 42 canonical report files | Publication is append-only, all-or-nothing, exclusive, and never overwrites an existing corpus |
+
+The exclusive retained path is
+`prototype_final/evidence/retained/managed-state-v1/`. Permitted records contain
+only identifiers, counts, Booleans, bounded categories, public/configuration
+digests, pseudonymous provenance, and aggregate role file/byte totals. They
+exclude raw state, content digests of secret-bearing state, cues, candidates,
+per-candidate results, shares, keys, credentials, certificates, databases,
+logs, traces, screenshots, absolute paths, and developer identity. D026 does
+not assign P8.3 trace or P9 performance/resilience result identifiers.
 
 ### P2.4 assigned development scenario contract
 

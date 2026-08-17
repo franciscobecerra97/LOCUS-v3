@@ -272,6 +272,20 @@ arguments and writes no output. Its schema and in-memory report do not allocate
 the P9 result family, authorize collection, or promote either inherited
 cryptographic statement to supported evidence.
 
+D026 assigns `LOCUS-managed-state-evidence-profile-v1` for P8.2. Its canonical
+scenario manifest contains exactly 42 SB01--SB14 records, split into 18 Yi, 18
+aPPSS, and six suite-neutral common reports. Retention is permitted only from a
+clean committed collector after all four matched arms, the fixed role snapshot
+sets, positive controls, output scan, and cleanup pass. Publication is one
+exclusive directory rename into
+`prototype_final/evidence/retained/managed-state-v1/`; partial or replacement
+publication is prohibited. The records may retain only approved aggregate and
+public provenance fields and must never retain raw state, secret-state content
+digests, cues, candidate/per-candidate data, suite secrets, shares, keys,
+credentials, certificates, databases, logs, traces, screenshots, absolute
+paths, or developer identity. This implementation evidence does not prove an
+inherited cryptographic result and does not satisfy D019 independent review.
+
 ## External services
 
 External provider experiments are benign functional/performance operations

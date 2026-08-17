@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-state-corpus-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["entries", "format_id", "record_count", "records_sha256", "scenario_manifest_sha256", "status"],
+  "properties": {
+    "entries": {"type": "array", "minItems": 42, "maxItems": 42, "uniqueItems": true, "items": {"type": "object", "additionalProperties": false, "required": ["path", "sha256", "size"], "properties": {"path": {"pattern": "^(common|yi|appss)/[a-z0-9-]+/SB[0-9]{2}\\.json$"}, "sha256": {"pattern": "^[0-9a-f]{64}$"}, "size": {"type": "integer", "minimum": 1}}}},
+    "format_id": {"const": "LOCUS-managed-state-corpus-manifest-v1"},
+    "record_count": {"const": 42},
+    "records_sha256": {"pattern": "^[0-9a-f]{64}$"},
+    "scenario_manifest_sha256": {"pattern": "^[0-9a-f]{64}$"},
+    "status": {"const": "complete"}
+  }
+}

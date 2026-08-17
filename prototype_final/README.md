@@ -145,11 +145,23 @@ stop/restart recovery with the same CA, destructive reset with a fresh CA and
 old-package rejection, and exact cleanup. These observations close the
 implementation gate only; they were not retained as P8/P9 evidence.
 
+D026 assigns the aggregate-only P8.2 collector. An exploratory run writes no
+retained output:
+
+```console
+uv run --frozen python tasks.py integrated-state-evidence
+```
+
+After committing and validating a clean collector source state, the explicit
+`--retain` form publishes exactly one complete 42-report corpus under
+`evidence/retained/managed-state-v1/`. It fails if the worktree is dirty or the
+exclusive target already exists.
+
 ## Directory layout
 
 | Path | Purpose |
 | --- | --- |
-| `tasks.py` | Only supported executor; exposes five `integrated-*` commands |
+| `tasks.py` | Only supported executor; exposes six `integrated-*` commands |
 | `locus/` | Dependency-complete integrated Python implementation and UI assets |
 | `appss-core/` | Native aPPSS core and public vector |
 | `tpass-core/` | Frozen native Yi core and vector |
@@ -161,10 +173,12 @@ implementation gate only; they were not retained as P8/P9 evidence.
 
 ## Evidence boundary
 
-`integrated-check`, `integrated-config`, and `integrated-smoke` produce ordinary
-development output only. They do not create retained P8/P9 evidence. Future
-collection must first assign the applicable schema, identifier, positive
-controls, provenance, output-safety policy, and versioned result path.
+`integrated-check`, `integrated-config`, `integrated-smoke`, and exploratory
+`integrated-state-evidence` produce ordinary development output only. D026's
+explicit `integrated-state-evidence --retain` is the sole P8.2 retained path;
+it uses the assigned schema, identifiers, positive controls, provenance,
+output-safety policy, and versioned result path. P8.3/P9 collection remains
+prohibited until its own gate is approved.
 
 Use generated keys, fictional cues, generated credentials, and disposable
 local services only. Never supply real private keys, credentials, accounts, or

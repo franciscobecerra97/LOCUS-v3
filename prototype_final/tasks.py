@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import ast
+import datetime as dt
 import hashlib
 import json
 import os
@@ -1142,7 +1143,9 @@ def _exercise_client_process_actions(
     return latest, current_port
 
 
-def _audit_role_volumes(project: str, environment: dict[str, str]) -> int:
+def _observe_role_volumes(
+    project: str, environment: dict[str, str]
+) -> list[dict[str, object]]:
     roles = (
         ("admission-data", "admission"),
         ("bootstrap-data", "bootstrap"),
@@ -1160,6 +1163,7 @@ def _audit_role_volumes(project: str, environment: dict[str, str]) -> int:
         ("s3-role-data", "s3-role"),
         ("storage-gateway-data", "storage-gateway"),
     )
+    observations: list[dict[str, object]] = []
     for volume_name, role in roles:
         output = run_capture(
             [
@@ -1183,9 +1187,29 @@ def _audit_role_volumes(project: str, environment: dict[str, str]) -> int:
             env=environment,
         )
         lines = [line for line in output.splitlines() if line.startswith("{")]
-        if not lines or json.loads(lines[-1]).get("status") != "clean":
+        if not lines:
             raise RuntimeError(f"managed role-state audit failed: {role}")
-    return len(roles)
+        observed = json.loads(lines[-1])
+        if (
+            not isinstance(observed, dict)
+            or observed.get("status") != "clean"
+            or not isinstance(observed.get("files"), int)
+            or not isinstance(observed.get("total_bytes"), int)
+        ):
+            raise RuntimeError(f"managed role-state audit failed: {role}")
+        observations.append(
+            {
+                "files": observed["files"],
+                "role": role,
+                "total_bytes": observed["total_bytes"],
+                "volume_role": volume_name,
+            }
+        )
+    return observations
+
+
+def _audit_role_volumes(project: str, environment: dict[str, str]) -> int:
+    return len(_observe_role_volumes(project, environment))
 
 
 def _volume_file_digest(
@@ -1322,7 +1346,7 @@ def _cleanup_smoke_project(project: str, environment: dict[str, str]) -> None:
         raise RuntimeError(f"managed smoke cleanup failed: {detail}")
 
 
-def integrated_smoke() -> None:
+def integrated_smoke(*, state_evidence: bool = False) -> dict[str, object]:
     integrated_config()
     project = f"locus-managed-smoke-{secrets.token_hex(4)}"
     manager_port = _free_loopback_port()
@@ -1333,6 +1357,15 @@ def integrated_smoke() -> None:
     original_cues = _policy_inputs()
     packages: list[dict[str, object]] = []
     subset_recoveries = 0
+    summary: dict[str, object] | None = None
+    state_snapshots: dict[str, list[dict[str, object]]] = {}
+    resolved_graph = json.loads(
+        run_capture([*_compose(project), "config", "--format", "json"], env=environment)
+    )
+    resolved_graph_sha256 = hashlib.sha256(
+        json.dumps(resolved_graph, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    live_graph_sha256 = ""
     try:
         status = _start_project(
             project=project, manager_port=manager_port, environment=environment
@@ -1340,6 +1373,9 @@ def integrated_smoke() -> None:
         containers = status.get("containers")
         if not isinstance(containers, list) or len(containers) != 13:
             raise RuntimeError("managed static inventory is incomplete")
+        live_graph_sha256 = hashlib.sha256(
+            json.dumps(containers, sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
         manager_csrf = _manager_session(manager_port)
         _exercise_manager_actions(manager_port, manager_csrf)
 
@@ -1377,7 +1413,9 @@ def integrated_smoke() -> None:
             (
                 "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
                 "LOCUS-paired-suite-deployment-2of3-v1",
-                "LOCUS-canonical-phone-set-v1",
+                "LOCUS-canonical-email-set-v1"
+                if state_evidence
+                else "LOCUS-canonical-phone-set-v1",
             ),
             (
                 "LOCUS-APPSS-2HASHDH-RISTRETTO255-SHA512-GF128-v1",
@@ -1387,7 +1425,9 @@ def integrated_smoke() -> None:
             (
                 "LOCUS-TPASS-YI-ZK-RISTRETTO255-v1",
                 "LOCUS-paired-suite-deployment-3of5-v1",
-                "LOCUS-quantized-coordinate-set-v1",
+                "LOCUS-location-person-set-v1"
+                if state_evidence
+                else "LOCUS-quantized-coordinate-set-v1",
             ),
         )
         expected_thresholds = {
@@ -1456,6 +1496,11 @@ def integrated_smoke() -> None:
                     "suite_id": suite_id,
                     "threshold": expected_thresholds[profile_id],
                 }
+            )
+
+        if state_evidence:
+            state_snapshots["post_enrollment"] = _observe_role_volumes(
+                project, environment
             )
 
         resumed_a, client_a_port = _exercise_client_process_actions(
@@ -1642,6 +1687,11 @@ def integrated_smoke() -> None:
             if revealed.get("private_key") != original_key:
                 raise RuntimeError("recovered key did not match Client A's key")
 
+        if state_evidence:
+            state_snapshots["post_recovery"] = _observe_role_volumes(
+                project, environment
+            )
+
         replay = _client_post(
             client_b_port,
             client_b_csrf,
@@ -1769,7 +1819,10 @@ def integrated_smoke() -> None:
         _stop_through_manager(
             manager_port, manager_csrf, label="smoke-preserving-system-stop"
         )
-        preserved_role_audits = _audit_role_volumes(project, environment)
+        preserved_observations = _observe_role_volumes(project, environment)
+        preserved_role_audits = len(preserved_observations)
+        if state_evidence:
+            state_snapshots["preserved_restart"] = preserved_observations
 
         _resumed_status, manager_csrf = _resume_project(
             project=project, manager_port=manager_port, environment=environment
@@ -1883,31 +1936,36 @@ def integrated_smoke() -> None:
         _wait_client_removed(manager_port, client_d_port)
         _stop_through_manager(manager_port, manager_csrf, label="smoke-final-stop")
 
-        role_audits = _audit_role_volumes(project, environment)
-        print(
-            json.dumps(
-                {
-                    "arms": 4,
-                    "clean_clients": 4,
-                    "client_process_identity_rotations": 3,
-                    "client_identity_changed": True,
-                    "concurrent_client_create": "passed",
-                    "live_control_isolation": "passed",
-                    "manager_actions": ["start", "stop", "restart", "kill"],
-                    "normal_stop_restart_recovery": "passed",
-                    "output_scan": "passed",
-                    "packages": 4,
-                    "policies": 4,
-                    "preserved_role_state_audits": preserved_role_audits,
-                    "reset_state_fresh_trust": "passed",
-                    "role_state_audits": role_audits,
-                    "status": "passed",
-                    "stale_lifecycle_rejection": "passed",
-                    "subset_recoveries": subset_recoveries,
-                },
-                sort_keys=True,
-            )
-        )
+        role_observations = _observe_role_volumes(project, environment)
+        role_audits = len(role_observations)
+        if state_evidence:
+            state_snapshots["fresh_reset"] = role_observations
+        summary = {
+            "arms": 4,
+            "clean_clients": 4,
+            "client_process_identity_rotations": 3,
+            "client_identity_changed": True,
+            "concurrent_client_create": "passed",
+            "live_control_isolation": "passed",
+            "manager_actions": ["start", "stop", "restart", "kill"],
+            "normal_stop_restart_recovery": "passed",
+            "output_scan": "passed",
+            "packages": 4,
+            "policies": 2 if state_evidence else 4,
+            "preserved_role_state_audits": preserved_role_audits,
+            "reset_state_fresh_trust": "passed",
+            "resolved_graph_sha256": resolved_graph_sha256,
+            "role_state_audits": role_audits,
+            "status": "passed",
+            "stale_lifecycle_rejection": "passed",
+            "subset_recoveries": subset_recoveries,
+            "live_graph_sha256": live_graph_sha256,
+            "image_id": environment["LOCUS_INTEGRATED_IMAGE_ID"],
+        }
+        if state_evidence:
+            summary["state_snapshots"] = state_snapshots
+            summary["paired_policy_conditions"] = True
+        print(json.dumps(summary, sort_keys=True))
     except BaseException:
         active_error = sys.exc_info()[1]
         print(
@@ -1945,6 +2003,9 @@ def integrated_smoke() -> None:
                 file=sys.stderr,
                 flush=True,
             )
+    if summary is None:
+        raise RuntimeError("managed smoke produced no summary")
+    return summary
 
 
 def native_build() -> None:
@@ -1992,6 +2053,86 @@ def integrated_check() -> None:
         run([cargo, "test", "--locked", "--manifest-path", manifest])
 
 
+def _tracked_source_provenance(*, require_clean: bool) -> dict[str, object]:
+    git = require("git")
+    repository = ROOT.parent
+    status = run_capture(
+        [
+            git,
+            "-C",
+            str(repository),
+            "status",
+            "--porcelain=v1",
+            "--untracked-files=all",
+        ],
+    )
+    if require_clean and status:
+        raise RuntimeError("retained state evidence requires a clean source commit")
+    commit = run_capture([git, "-C", str(repository), "rev-parse", "HEAD"]).strip()
+    if re.fullmatch(r"[0-9a-f]{40}", commit) is None:
+        raise RuntimeError("source commit is unavailable")
+    tracked = [
+        line
+        for line in run_capture(
+            [git, "-C", str(repository), "ls-files", "--", "prototype_final"],
+        ).splitlines()
+        if line
+    ]
+    source_hash = hashlib.sha256()
+    for relative in sorted(tracked):
+        path = repository / relative
+        if not path.is_file():
+            raise RuntimeError("tracked source file is unavailable")
+        encoded_path = relative.replace("\\", "/").encode("utf-8")
+        source_hash.update(len(encoded_path).to_bytes(4, "big"))
+        source_hash.update(encoded_path)
+        source_hash.update(hashlib.sha256(path.read_bytes()).digest())
+    host_digest = hashlib.sha256(
+        ("LOCUS-pseudonymous-host-v1:" + socket.gethostname()).encode("utf-8")
+    ).hexdigest()
+    return {
+        "collected_at_utc": dt.datetime.now(dt.UTC).replace(microsecond=0).isoformat(),
+        "compose_sha256": hashlib.sha256(MANAGED_COMPOSE.read_bytes()).hexdigest(),
+        "host_tier": "same-host-single-operator",
+        "lockfile_sha256": hashlib.sha256((ROOT / "uv.lock").read_bytes()).hexdigest(),
+        "managed_manifest_sha256": hashlib.sha256(
+            MANAGED_MANIFEST.read_bytes()
+        ).hexdigest(),
+        "pseudonymous_host_id": f"host-{host_digest[:16]}",
+        "source_commit": commit,
+        "source_tree_sha256": source_hash.hexdigest(),
+    }
+
+
+def integrated_state_evidence(*, retain: bool) -> None:
+    """Run D026's fixed aggregate-only state scenario corpus."""
+
+    from locus.managed_state_evidence import build_reports, publish_corpus
+
+    provenance = _tracked_source_provenance(require_clean=retain)
+    summary = integrated_smoke(state_evidence=True)
+    for field in ("image_id", "live_graph_sha256", "resolved_graph_sha256"):
+        value = summary.get(field)
+        if not isinstance(value, str):
+            raise RuntimeError(f"state evidence omitted provenance: {field}")
+        provenance[field] = value
+    reports = build_reports(provenance=provenance, summary=summary)
+    result: dict[str, object] = {
+        "record_count": len(reports),
+        "retained": False,
+        "status": "passed",
+    }
+    if retain:
+        manifest = publish_corpus(root=ROOT, reports=reports)
+        result.update(
+            {
+                "records_sha256": manifest["records_sha256"],
+                "retained": True,
+            }
+        )
+    print(json.dumps(result, sort_keys=True))
+
+
 def build_integrated_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         description="Operate the managed integrated LOCUS reference prototype."
@@ -2020,6 +2161,15 @@ def build_integrated_parser() -> argparse.ArgumentParser:
     subparsers.add_parser(
         "integrated-smoke", help="run the disposable Manager-to-Client gate"
     )
+    state = subparsers.add_parser(
+        "integrated-state-evidence",
+        help="run the fixed aggregate-only P8.2 state boundary corpus",
+    )
+    state.add_argument(
+        "--retain",
+        action="store_true",
+        help="publish the complete corpus exclusively from a clean commit",
+    )
     return parser
 
 
@@ -2037,6 +2187,8 @@ def main() -> int:
             integrated_stop(args)
         elif args.command == "integrated-smoke":
             integrated_smoke()
+        elif args.command == "integrated-state-evidence":
+            integrated_state_evidence(retain=args.retain)
         else:  # pragma: no cover
             raise AssertionError(f"Unhandled command: {args.command}")
     except subprocess.CalledProcessError as error:
