@@ -74,6 +74,22 @@ class PerformanceCollectionTests(unittest.TestCase):
         self.assertFalse(exploratory.retain)
         self.assertTrue(retained.retain)
 
+    def test_command_result_uses_processor_summary_field_names(self) -> None:
+        result = tasks._performance_command_result(
+            summary={
+                "infrastructure_invalid_count": 2,
+                "measured_slot_count": 1180,
+                "raw_attempt_count": 1222,
+                "scheduled_slot_count": 1220,
+            },
+            comparison={"format_id": "comparison"},
+            raw_record_count=1222,
+        )
+        self.assertEqual(result["infrastructure_invalid_count"], 2)
+        self.assertEqual(result["measured_slot_count"], 1180)
+        self.assertEqual(result["raw_attempt_count"], 1222)
+        self.assertEqual(result["raw_record_count"], 1222)
+
     def test_project_stop_waits_for_asynchronous_controller_shutdown(self) -> None:
         with (
             patch("tasks.run_capture", side_effect=["controller-id\n", ""]),

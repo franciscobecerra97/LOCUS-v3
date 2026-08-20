@@ -3934,6 +3934,27 @@ def _collect_performance_observations(
         _PERFORMANCE_EVIDENCE_ACTIVE = False
 
 
+def _performance_command_result(
+    *,
+    summary: dict[str, object],
+    comparison: dict[str, object],
+    raw_record_count: int,
+) -> dict[str, object]:
+    return {
+        "comparison_sha256": hashlib.sha256(
+            json.dumps(comparison, sort_keys=True, separators=(",", ":")).encode()
+            + b"\n"
+        ).hexdigest(),
+        "infrastructure_invalid_count": summary["infrastructure_invalid_count"],
+        "measured_slot_count": summary["measured_slot_count"],
+        "raw_attempt_count": summary["raw_attempt_count"],
+        "raw_record_count": raw_record_count,
+        "retained": False,
+        "scheduled_slot_count": summary["scheduled_slot_count"],
+        "status": "passed",
+    }
+
+
 def integrated_performance_evidence(*, retain: bool) -> None:
     """Execute P9.3 and optionally publish its one append-only corpus."""
 
@@ -3950,18 +3971,11 @@ def integrated_performance_evidence(*, retain: bool) -> None:
     observations = _collect_performance_observations(provenance=provenance)
     summary = process_observations(observations)
     comparison = build_comparison(summary)
-    result: dict[str, object] = {
-        "comparison_sha256": hashlib.sha256(
-            json.dumps(comparison, sort_keys=True, separators=(",", ":")).encode()
-            + b"\n"
-        ).hexdigest(),
-        "invalid_attempt_count": summary["invalid_attempt_count"],
-        "measured_observation_count": summary["measured_observation_count"],
-        "raw_record_count": len(observations),
-        "retained": False,
-        "scheduled_slot_count": summary["scheduled_slot_count"],
-        "status": "passed",
-    }
+    result = _performance_command_result(
+        summary=summary,
+        comparison=comparison,
+        raw_record_count=len(observations),
+    )
     if retain:
         manifest = publish_corpus(workspace=ROOT, observations=observations)
         result.update(
