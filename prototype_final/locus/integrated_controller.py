@@ -344,6 +344,11 @@ class ManagedContainerController:
         ]
         if os.environ.get("LOCUS_FLOW_AUDIT") == "1":
             environment.append("LOCUS_FLOW_AUDIT=1")
+        if os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") == "1":
+            environment.append("LOCUS_PERFORMANCE_EVIDENCE=1")
+            fixture_id = os.environ.get("LOCUS_PERFORMANCE_FIXTURE_ID")
+            if fixture_id:
+                environment.append(f"LOCUS_PERFORMANCE_FIXTURE_ID={fixture_id}")
         return {
             "AttachStderr": True,
             "AttachStdout": True,

@@ -347,6 +347,10 @@ silent retries, outlier removal, mismatched provenance, historical/P8 inputs,
 pooling, and unsealed output. P9.2 creates no retained directory. P9.3 alone
 may exclusive-create append-only raw attempts, summary, comparison, and closing
 manifest under `prototype_final/evidence/retained/managed-performance-v1/`.
+The owner opened P9.3 on 2026-08-20. Its collector must first be committed and
+validated cleanly, then pass a complete exploratory non-retaining run before
+the one retained publication. Output-scan, cleanup, startup, or binding failure
+aborts publication; P9.4 inputs remain rejected.
 
 ## External services
 

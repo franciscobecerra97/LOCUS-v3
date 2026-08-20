@@ -1,0 +1,5 @@
+services:
+  manager-controller:
+    environment:
+      LOCUS_PERFORMANCE_EVIDENCE: "1"
+      LOCUS_PERFORMANCE_FIXTURE_ID: "${LOCUS_PERFORMANCE_FIXTURE_ID:?performance fixture ID required}"

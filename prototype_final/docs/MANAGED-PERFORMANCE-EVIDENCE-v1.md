@@ -1,9 +1,10 @@
 # Managed Performance Evidence v1
 
-D029 assigns the non-collecting P9.2 contracts for the exact D028 methodology.
+D029 assigns the P9.2 contracts for the exact D028 methodology.
 The evidence profile, instrumentation, scenario manifest, processor, three raw
 result families, summary, matched comparison, and closing corpus manifest are
-Assigned. No P9 measurement has been collected.
+Assigned. P9.3's collector is implemented, but no P9 measurement has yet been
+retained.
 
 ## Immutable schedule
 
@@ -79,6 +80,21 @@ matched to Yi.
 
 ## Retention gate
 
+P9.3 adds `integrated-performance-evidence`. Its default exploratory form
+executes the complete schedule and publishes nothing. It creates a fresh
+disposable project for each arm/block, uses one deterministic synthetic-key
+fixture class for the matched Yi/aPPSS topology block, scans then discards
+ephemeral logs, and proves exact-project cleanup before accepting the block.
+The measurement overlay is not part of normal Manager/Client operation.
+
+Client instrumentation is memory-only and enabled solely in the measurement
+overlay. It exposes aggregate monotonic phase values and application-body byte
+counts to the loopback collector, never payloads. A zero role-byte value means
+that no body bytes crossed that selected application observation boundary; it
+does not establish absence of lower-layer traffic. Persisted bytes are an
+aggregate point-in-time role snapshot. Browser rendering, CPU, energy, packet,
+and WAN measurements remain excluded.
+
 P9.3 alone may create:
 
 ```text
@@ -89,10 +105,12 @@ evidence/retained/managed-performance-v1/
   corpus-manifest.json
 ```
 
-Every file is exclusive-create and immutable. Until the final manifest exists
+Every file is exclusive-create and immutable. `--retain` first requires a
+clean collector commit and a nonexistent target. Until the final manifest exists
 and closes all raw/processed/derived digests, the directory is unsealed and
-cannot support a result. P9.2 provides no collector or collection command, and
-tests assert that the retained root is absent.
+cannot support a result. The collector permits only bounded linked retries
+after an operation-level infrastructure failure; output-scan, cleanup, build,
+startup, or graph-binding failure aborts without publication.
 
 This is same-host, single-operator, local-provider systems methodology. It is
 not evidence of CPU/energy/WAN/real-provider behavior, production capacity,

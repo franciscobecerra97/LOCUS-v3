@@ -9,6 +9,8 @@ import os
 import secrets
 import sys
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -463,6 +465,82 @@ class IntegratedResearchClientApi:
         self.operations: set[str] = set()
         self.holder_schedule_index = 0
         self._stage = "idle"
+        self._performance_started_ns: int | None = None
+        self._performance_body_bytes: dict[str, int] = {}
+        self._performance_phases: dict[str, int] = {}
+        self._performance_last: dict[str, object] | None = None
+
+    def begin_performance_observation(self) -> None:
+        """Start one in-memory D029 observation when the evidence mode is enabled."""
+
+        if os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") != "1":
+            return
+        if getattr(self, "_performance_started_ns", None) is not None:
+            raise RuntimeError("performance observation is already active")
+        self._performance_started_ns = time.perf_counter_ns()
+        self._performance_body_bytes = {}
+        self._performance_phases = {}
+        self._performance_last = None
+
+    def finish_performance_observation(self) -> None:
+        """Close the active observation without retaining a request or response."""
+
+        started = getattr(self, "_performance_started_ns", None)
+        if started is None:
+            return
+        elapsed = time.perf_counter_ns() - started
+        self._performance_started_ns = None
+        self._performance_last = {
+            "clock": "client-monotonic-nanoseconds",
+            "end_to_end_ns": elapsed,
+            "application_body_bytes_by_role": {
+                key: self._performance_body_bytes[key]
+                for key in sorted(self._performance_body_bytes)
+            },
+            "phase_latency_ns": {
+                key: self._performance_phases[key]
+                for key in sorted(self._performance_phases)
+            },
+        }
+        self._performance_body_bytes = {}
+        self._performance_phases = {}
+
+    def add_performance_phase(self, phase: str, elapsed_ns: int) -> None:
+        """Add one caller-observed non-overlapping phase to the active record."""
+
+        if getattr(self, "_performance_started_ns", None) is None:
+            return
+        if not isinstance(elapsed_ns, int) or elapsed_ns < 0:
+            raise RuntimeError("invalid performance phase duration")
+        self._performance_phases[phase] = (
+            self._performance_phases.get(phase, 0) + elapsed_ns
+        )
+
+    def consume_performance_observation(self) -> dict[str, object]:
+        """Return and clear the latest aggregate-only observation."""
+
+        if os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") != "1":
+            raise RuntimeError("performance evidence mode is disabled")
+        value = getattr(self, "_performance_last", None)
+        self._performance_last = None
+        if value is None:
+            raise RuntimeError("performance observation is unavailable")
+        return value
+
+    @contextmanager
+    def _performance_phase(self, phase: str) -> Iterator[None]:
+        started = (
+            time.perf_counter_ns()
+            if getattr(self, "_performance_started_ns", None) is not None
+            else None
+        )
+        try:
+            yield
+        finally:
+            if started is not None:
+                self._performance_phases[phase] = self._performance_phases.get(
+                    phase, 0
+                ) + (time.perf_counter_ns() - started)
 
     def _mark(self, stage: str) -> None:
         self._stage = stage
@@ -490,12 +568,24 @@ class IntegratedResearchClientApi:
             )
 
     def _rpc(self, service: str, path: str, value: dict[str, Any]) -> dict[str, Any]:
-        return rpc_request(
+        result = rpc_request(
             endpoint=f"https://{service}:8443",
             path=path,
             role_root=self.root,
             value=value,
         )
+        if getattr(self, "_performance_started_ns", None) is not None:
+            count = len(encode(value)) + len(encode(result))
+            role = (
+                f"party-{service.removeprefix('party')}"
+                if service.startswith("party")
+                else service
+            )
+            for observed_role in ("managed-client", role):
+                self._performance_body_bytes[observed_role] = (
+                    self._performance_body_bytes.get(observed_role, 0) + count
+                )
+        return result
 
     def _party(
         self, holder_id: int, path: str, value: dict[str, Any]
@@ -506,15 +596,18 @@ class IntegratedResearchClientApi:
         return LocalResearchClientApi().catalog()
 
     def _canonical(self, policy_id: object, recovery_input: object) -> bytes:
-        policy = DEFAULT_CUE_POLICY_REGISTRY.require(str(policy_id))
+        with self._performance_phase("policy"):
+            policy = DEFAULT_CUE_POLICY_REGISTRY.require(str(policy_id))
         if policy.metadata.resolver_profile_id == "LOCUS-deterministic-directory-v1":
-            resolved = self._rpc(
-                "resolver",
-                "/v1/resolve",
-                {"policy_id": policy.policy_id, "values": recovery_input},
-            )
+            with self._performance_phase("resolver"):
+                resolved = self._rpc(
+                    "resolver",
+                    "/v1/resolve",
+                    {"policy_id": policy.policy_id, "values": recovery_input},
+                )
             return bytes.fromhex(resolved["canonical_hex"])
-        return policy.process(recovery_input).canonical_bytes
+        with self._performance_phase("policy"):
+            return policy.process(recovery_input).canonical_bytes
 
     def preview_policy(self, request: object) -> dict[str, object]:
         if (
@@ -778,88 +871,95 @@ class IntegratedResearchClientApi:
             )
         ).digest()
         holders = self._holders(selection)
-        suite_context = (
-            context_digest(
-                backup_id=backup_id,
-                epoch=epoch,
-                policy_id=policy_id,
-                holders=holders,
-                k=selection.threshold.k,
-                n=selection.threshold.n,
-                configuration_digest=public_configuration,
+        with self._performance_phase("suite-initialization"):
+            suite_context = (
+                context_digest(
+                    backup_id=backup_id,
+                    epoch=epoch,
+                    policy_id=policy_id,
+                    holders=holders,
+                    k=selection.threshold.k,
+                    n=selection.threshold.n,
+                    configuration_digest=public_configuration,
+                )
+                if selection.suite_id == APPSS_SUITE_ID
+                else public_configuration
             )
-            if selection.suite_id == APPSS_SUITE_ID
-            else public_configuration
-        )
-        context = RecoveryContext(
-            selection.suite_id,
-            handle,
-            backup_id.hex(),
-            epoch,
-            policy_id,
-            public_configuration.hex(),
-            f"integrated:{backup_id.hex()}:{epoch}",
-            suite_context.hex(),
-        )
-        password = self._password(
-            suite_id=selection.suite_id,
-            context=context,
-            canonical=canonical,
-            nonce=nonce,
-        )
+            context = RecoveryContext(
+                selection.suite_id,
+                handle,
+                backup_id.hex(),
+                epoch,
+                policy_id,
+                public_configuration.hex(),
+                f"integrated:{backup_id.hex()}:{epoch}",
+                suite_context.hex(),
+            )
+            password = self._password(
+                suite_id=selection.suite_id,
+                context=context,
+                canonical=canonical,
+                nonce=nonce,
+            )
         self._mark("suite-initialization")
         if selection.suite_id == APPSS_SUITE_ID:
             endpoints = {
                 holder.index: _RemoteAppssEndpoint(self, holder) for holder in holders
             }
-            initialized = initialize_with_parties(
-                context=context,
-                password_input=password,
-                holders=holders,
-                endpoints=endpoints,
-                admission_grant_digest="00" * 32,
-                client_proof_key_digest=hashlib.sha256(
-                    _raw_public(self.proof_key)
-                ).hexdigest(),
-                operation_id=secrets.token_hex(32),
-                threshold=selection.threshold,
-            )
+            with self._performance_phase("appss-per-server-initialization"):
+                initialized = initialize_with_parties(
+                    context=context,
+                    password_input=password,
+                    holders=holders,
+                    endpoints=endpoints,
+                    admission_grant_digest="00" * 32,
+                    client_proof_key_digest=hashlib.sha256(
+                        _raw_public(self.proof_key)
+                    ).hexdigest(),
+                    operation_id=secrets.token_hex(32),
+                    threshold=selection.threshold,
+                )
             public_state = initialized.public_state
             recovery_secret = initialized.recovery_secret
         else:
-            initialized = adapter.initialize(
-                context=context, password_input=password, threshold=selection.threshold
-            )
+            with self._performance_phase("suite-initialization"):
+                initialized = adapter.initialize(
+                    context=context,
+                    password_input=password,
+                    threshold=selection.threshold,
+                )
             public_state = initialized.public_state
             recovery_secret = initialized.recovery_secret
-            for state in initialized.party_states:
-                self._party(
-                    state.holder_id,
-                    "/v1/yi/enroll",
-                    {
-                        "backup_id": backup_id.hex(),
-                        "context": _context_dict(context),
-                        "epoch": epoch,
-                        "party_state_hex": state.payload.hex(),
-                        "public_state_hex": public_state.payload.hex(),
-                    },
-                )
+            with self._performance_phase("party-provisioning"):
+                for state in initialized.party_states:
+                    self._party(
+                        state.holder_id,
+                        "/v1/yi/enroll",
+                        {
+                            "backup_id": backup_id.hex(),
+                            "context": _context_dict(context),
+                            "epoch": epoch,
+                            "party_state_hex": state.payload.hex(),
+                            "public_state_hex": public_state.payload.hex(),
+                        },
+                    )
         self._mark("backup-sealing")
-        backup = seal_backup_v6(
-            protected_key=protected_key,
-            context=context,
-            cue_policy_id=policy_id,
-            resolver_profile=resolver_profile_id,
-            suite_id=selection.suite_id,
-            public_state_format=public_state.format_id,
-            public_state_payload=public_state.payload,
-            recovery_secret=recovery_secret,
-            profile_id=selection.profile_id,
-            threshold=selection.threshold,
-            bid=backup_id,
-            nonce=nonce,
-        )
-        backup_bytes = encode(backup)
+        with self._performance_phase("encryption-and-upload"):
+            backup = seal_backup_v6(
+                protected_key=protected_key,
+                context=context,
+                cue_policy_id=policy_id,
+                resolver_profile=resolver_profile_id,
+                suite_id=selection.suite_id,
+                public_state_format=public_state.format_id,
+                public_state_payload=public_state.payload,
+                recovery_secret=recovery_secret,
+                profile_id=selection.profile_id,
+                threshold=selection.threshold,
+                bid=backup_id,
+                nonce=nonce,
+            )
+            backup_bytes = encode(backup)
         descriptor_payload: dict[str, Any] = {
             "authorization": {
                 "admission_profile": "LOCUS-local-synthetic-admission-v1",
@@ -913,13 +1013,14 @@ class IntegratedResearchClientApi:
             descriptor_payload
         )
         self._mark("descriptor-signing")
-        descriptor = self._sign("descriptor", descriptor_payload)
-        bundle = create_bundle(
-            backup_bytes=backup_bytes,
-            descriptor_bytes=descriptor,
-            backup_format="LOCUS-reference-backup-v6",
-        )
-        bundle_digest = hashlib.sha256(bundle).hexdigest()
+        with self._performance_phase("descriptor-publication-and-retrieval"):
+            descriptor = self._sign("descriptor", descriptor_payload)
+            bundle = create_bundle(
+                backup_bytes=backup_bytes,
+                descriptor_bytes=descriptor,
+                backup_format="LOCUS-reference-backup-v6",
+            )
+            bundle_digest = hashlib.sha256(bundle).hexdigest()
         pointer_payload = {
             "backup_id": backup_id.hex(),
             "bundle": {
@@ -938,27 +1039,28 @@ class IntegratedResearchClientApi:
             "issuer": OPERATOR_ISSUER,
             "subject_id": SUBJECT_ID,
         }
-        pointer = self._sign("pointer", pointer_payload)
-        receipt = self._sign(
-            "receipt",
-            {
-                "discovery_endpoint": DISCOVERY_ENDPOINT,
-                "discovery_profile": BOOTSTRAP_PROFILE,
-                "initial": {
-                    "backup_id": backup_id.hex(),
-                    "configuration_digest": descriptor_payload["lifecycle"][
-                        "configuration_digest"
-                    ],
-                    "descriptor_sha256": hashlib.sha256(descriptor).hexdigest(),
-                    "epoch": epoch,
+        with self._performance_phase("descriptor-publication-and-retrieval"):
+            pointer = self._sign("pointer", pointer_payload)
+            receipt = self._sign(
+                "receipt",
+                {
+                    "discovery_endpoint": DISCOVERY_ENDPOINT,
+                    "discovery_profile": BOOTSTRAP_PROFILE,
+                    "initial": {
+                        "backup_id": backup_id.hex(),
+                        "configuration_digest": descriptor_payload["lifecycle"][
+                            "configuration_digest"
+                        ],
+                        "descriptor_sha256": hashlib.sha256(descriptor).hexdigest(),
+                        "epoch": epoch,
+                    },
+                    "issued_at": now,
+                    "issuer": OPERATOR_ISSUER,
+                    "operator_key_id": OPERATOR_KEY_ID,
+                    "recovery_handle": handle,
+                    "subject_id": SUBJECT_ID,
                 },
-                "issued_at": now,
-                "issuer": OPERATOR_ISSUER,
-                "operator_key_id": OPERATOR_KEY_ID,
-                "recovery_handle": handle,
-                "subject_id": SUBJECT_ID,
-            },
-        )
+            )
         reference = BackupReference.from_backup(backup)
         return _PreparedIntegratedEpoch(
             selection=selection,
@@ -1171,11 +1273,15 @@ class IntegratedResearchClientApi:
             predecessor_digest=predecessor_digest,
             expected_pointer=expected_pointer,
         )
-        self._publish_prepared_backup(prepared)
-        self._publish_prepared_descriptor(prepared)
-        self._install_prepared_current(prepared)
-        self._publish_prepared_pointer(prepared)
-        self._publish_prepared_discovery(prepared)
+        with self._performance_phase("encryption-and-upload"):
+            self._publish_prepared_backup(prepared)
+        with self._performance_phase("descriptor-publication-and-retrieval"):
+            self._publish_prepared_descriptor(prepared)
+        with self._performance_phase("party-provisioning"):
+            self._install_prepared_current(prepared)
+        with self._performance_phase("descriptor-publication-and-retrieval"):
+            self._publish_prepared_pointer(prepared)
+            self._publish_prepared_discovery(prepared)
         return prepared.result()
 
     def _load(self, receipt_value: object) -> _RemoteEpoch:
@@ -1329,7 +1435,8 @@ class IntegratedResearchClientApi:
         try:
             package = decode_recovery_package(encoded)
             receipt = _encode_receipt(package.receipt_bytes)
-            epoch = self._load(receipt)
+            with self._performance_phase("descriptor-publication-and-retrieval"):
+                epoch = self._load(receipt)
             if not secrets.compare_digest(
                 package.bundle_bytes, epoch.bundle.bundle_bytes
             ):
@@ -1565,22 +1672,24 @@ class IntegratedResearchClientApi:
                 nonce=bytes.fromhex(epoch.backup["nonce"]),
             )
             self._mark("authorization")
-            grant = self._authorize(epoch, operation_id)
+            with self._performance_phase("authorization"):
+                grant = self._authorize(epoch, operation_id)
             self._mark("suite-recovery")
-            secret = self._recover_secret(
-                epoch,
-                password,
-                grant,
-                operation_id,
-                selected_holder_ids=selected_holder_ids,
-            )
-            protected = open_backup_v6_with_secret(
-                backup=epoch.backup, recovery_secret=secret
-            )
-            fingerprint = _fingerprint(protected)
-            expected = epoch.public_fingerprint
-            if fingerprint != expected:
-                raise ClientApiError("recovery_rejected")
+            with self._performance_phase("recovery"):
+                secret = self._recover_secret(
+                    epoch,
+                    password,
+                    grant,
+                    operation_id,
+                    selected_holder_ids=selected_holder_ids,
+                )
+                protected = open_backup_v6_with_secret(
+                    backup=epoch.backup, recovery_secret=secret
+                )
+                fingerprint = _fingerprint(protected)
+                expected = epoch.public_fingerprint
+                if fingerprint != expected:
+                    raise ClientApiError("recovery_rejected")
             self.operations.add(operation_id)
             return RecoveryResult(
                 operation_id,

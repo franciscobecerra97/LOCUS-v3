@@ -104,7 +104,10 @@ retained, and P8.4 preserves the attempt-control non-claim. P9 results do not
 yet exist. D028/P9.1 freezes the exact four-arm managed performance and
 resilience methodology. D029/P9.2 assigns its non-collecting schemas,
 instrumentation, processor, invalid-attempt rules, controls, and reserved path,
-but no retained measurement exists; P9.3 remains the next owner gate.
+but no retained measurement exists. The owner opened P9.3 on 2026-08-20; its
+collector is confined to the exact same-host/local-provider profile and must
+pass the clean-source, exploratory, output-safety, and exclusive-publication
+gates before any result exists.
 
 The managed control plane uses internal `management` (Manager/controller) and
 `client-lifecycle` (Client/controller) networks plus separate `manager-edge`

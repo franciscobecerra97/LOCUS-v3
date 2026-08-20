@@ -72,7 +72,7 @@
       "id": "client-api-v2",
       "source": "locus/managed_client_ui.py",
       "decoder": "ManagedClientApplication.dispatch",
-      "routes": ["/healthz", "/", "/assets/client.css", "/assets/client.js", "/api/v2/session", "/api/v2/catalog", "/api/v2/package/import", "/api/v2/preview-policy", "/api/v2/key/generate", "/api/v2/key/reveal", "/api/v2/enroll", "/api/v2/package/export", "/api/v2/recover", "/api/v2/self-destroy"],
+      "routes": ["/healthz", "/", "/assets/client.css", "/assets/client.js", "/api/v2/session", "/api/v2/catalog", "/api/v2/package/import", "/api/v2/preview-policy", "/api/v2/key/generate", "/api/v2/key/reveal", "/api/v2/enroll", "/api/v2/performance-observation", "/api/v2/package/export", "/api/v2/recover", "/api/v2/successor", "/api/v2/self-destroy"],
       "negative_tests": ["tests/test_managed_client_ui.py::test_client_json_decoder_rejects_duplicates_constants_and_nonobjects", "tests/test_managed_client_ui.py::test_exact_recovery_subset_accepts_only_sorted_unique_k_holders", "tests/test_recovery_package.py::test_noncanonical_and_oversized_encodings_are_rejected"],
       "authenticated_transport_tests": ["tasks.py::integrated_smoke"]
     },

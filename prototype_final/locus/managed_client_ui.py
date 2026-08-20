@@ -11,7 +11,9 @@ import re
 import secrets
 import socket
 import threading
-from collections.abc import Callable
+import time
+from collections.abc import Callable, Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from http import HTTPStatus
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
@@ -56,6 +58,7 @@ from .redaction import validate_public_output
 MANAGED_CLIENT_API_VERSION = "LOCUS-client-api-v2"
 MANAGED_CLIENT_UI_PROFILE = "LOCUS-managed-client-ui-v1"
 MANAGED_CLIENT_INSTANCE_PROFILE = "LOCUS-managed-client-instance-v1"
+PERFORMANCE_INSTRUMENTATION_ID = "LOCUS-managed-performance-instrumentation-v1"
 MAX_JSON_REQUEST_BYTES = 128 * 1024
 MAX_ASSET_BYTES = 512 * 1024
 MAX_CLIENT_OPERATIONS = 1024
@@ -222,6 +225,41 @@ class ManagedClientApi:
             for index in range(len(prior)):
                 prior[index] = 0
 
+    @contextmanager
+    def _performance_observation(self) -> Iterator[None]:
+        begin = getattr(self.protocol, "begin_performance_observation", None)
+        finish = getattr(self.protocol, "finish_performance_observation", None)
+        active = callable(begin) and callable(finish)
+        if active:
+            cast(Callable[[], object], begin)()
+        try:
+            yield
+        finally:
+            if active:
+                cast(Callable[[], object], finish)()
+
+    def performance_observation(self, request: object) -> dict[str, object]:
+        parsed = _exact(
+            request,
+            {"api_version", "instrumentation_id"},
+            "input_rejected",
+        )
+        if (
+            parsed["api_version"] != MANAGED_CLIENT_API_VERSION
+            or parsed["instrumentation_id"] != PERFORMANCE_INSTRUMENTATION_ID
+            or os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") != "1"
+        ):
+            raise ManagedClientError("input_rejected")
+        value = self.protocol.consume_performance_observation()
+        result = {
+            "api_version": MANAGED_CLIENT_API_VERSION,
+            "instrumentation_id": PERFORMANCE_INSTRUMENTATION_ID,
+            "observation": value,
+            "status": "observed",
+        }
+        validate_public_output(result)
+        return result
+
     def clear(self) -> None:
         with self._lock:
             self._replace_key(None)
@@ -296,13 +334,14 @@ class ManagedClientApi:
         )
         if parsed["api_version"] != MANAGED_CLIENT_API_VERSION:
             raise ManagedClientError("input_rejected")
-        result = self.protocol.preview_policy(
-            {
-                "api_version": CLIENT_API_VERSION,
-                "policy_id": parsed["policy_id"],
-                "recovery_input": parsed["recovery_input"],
-            }
-        )
+        with self._performance_observation():
+            result = self.protocol.preview_policy(
+                {
+                    "api_version": CLIENT_API_VERSION,
+                    "policy_id": parsed["policy_id"],
+                    "recovery_input": parsed["recovery_input"],
+                }
+            )
         return {
             "api_version": MANAGED_CLIENT_API_VERSION,
             "normalized_preview": result["normalized_preview"],
@@ -316,7 +355,16 @@ class ManagedClientApi:
             raise ManagedClientError("input_rejected")
         with self._lock:
             self._use_operation(parsed["operation_id"])
-            self._replace_key(random_bytes(32))
+            fixture_id = os.environ.get("LOCUS_PERFORMANCE_FIXTURE_ID")
+            if os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") == "1" and fixture_id:
+                self._replace_key(
+                    hashlib.sha256(
+                        b"LOCUS/managed-performance-synthetic-key/v1\x00"
+                        + fixture_id.encode("ascii")
+                    ).digest()
+                )
+            else:
+                self._replace_key(random_bytes(32))
             assert self._key is not None
             return {
                 "api_version": MANAGED_CLIENT_API_VERSION,
@@ -362,26 +410,27 @@ class ManagedClientApi:
             if len(self._exports) >= MAX_RECOVERY_EXPORTS:
                 raise ManagedClientError("package_export_limit_reached")
             operation = self._use_operation(parsed["operation_id"])
-            result = self.protocol.enroll(
-                {
-                    "api_version": CLIENT_API_VERSION,
-                    "deployment_profile_id": parsed["deployment_profile_id"],
-                    "operation_id": operation,
-                    "policy_id": parsed["policy_id"],
-                    "protected_key": {
-                        "hex": bytes(self._key).hex(),
-                        "mode": "import-synthetic",
-                    },
-                    "recovery_input": parsed["recovery_input"],
-                    "suite_id": parsed["suite_id"],
-                }
-            )
-            public = result.public_value()
-            if not secrets.compare_digest(
-                result.public_fingerprint, _fingerprint(bytes(self._key))
-            ):
-                raise ManagedClientError("enrollment_rejected")
-            package = self.protocol.export_recovery_package(public["receipt"])
+            with self._performance_observation():
+                result = self.protocol.enroll(
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "deployment_profile_id": parsed["deployment_profile_id"],
+                        "operation_id": operation,
+                        "policy_id": parsed["policy_id"],
+                        "protected_key": {
+                            "hex": bytes(self._key).hex(),
+                            "mode": "import-synthetic",
+                        },
+                        "recovery_input": parsed["recovery_input"],
+                        "suite_id": parsed["suite_id"],
+                    }
+                )
+                public = result.public_value()
+                if not secrets.compare_digest(
+                    result.public_fingerprint, _fingerprint(bytes(self._key))
+                ):
+                    raise ManagedClientError("enrollment_rejected")
+                package = self.protocol.export_recovery_package(public["receipt"])
             download_id = secrets.token_urlsafe(24)
             self._exports[download_id] = package
             value: dict[str, object] = {
@@ -411,18 +460,20 @@ class ManagedClientApi:
         ):
             raise ManagedClientError("package_export_rejected")
         with self._lock:
-            package = self._exports.get(parsed["download_id"])
-            if package is None:
-                raise ManagedClientError("package_export_rejected")
-            return package
+            with self._performance_observation():
+                package = self._exports.get(parsed["download_id"])
+                if package is None:
+                    raise ManagedClientError("package_export_rejected")
+                return package
 
     def import_package(self, encoded: bytes) -> dict[str, object]:
         with self._lock:
             self._imported = None
-            try:
-                imported = self.protocol.authenticate_recovery_package(encoded)
-            except Exception:
-                raise ManagedClientError("package_import_rejected") from None
+            with self._performance_observation():
+                try:
+                    imported = self.protocol.authenticate_recovery_package(encoded)
+                except Exception:
+                    raise ManagedClientError("package_import_rejected") from None
             self._imported = imported
             bootstrap = imported.bootstrap
             value: dict[str, object] = {
@@ -471,9 +522,14 @@ class ManagedClientApi:
                 raise ManagedClientError("recovery_rejected")
             selected = tuple(selected_raw)
             expected_k = imported.bootstrap.threshold_k
+            holder_count_valid = (
+                1 <= len(selected) <= expected_k
+                if os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") == "1"
+                else len(selected) == expected_k
+            )
             if (
                 list(selected) != sorted(set(selected))
-                or len(selected) != expected_k
+                or not holder_count_valid
                 or not set(selected) <= set(imported.holder_ids)
             ):
                 raise ManagedClientError("recovery_rejected")
@@ -481,15 +537,16 @@ class ManagedClientApi:
             prior_fingerprint = (
                 None if self._key is None else _fingerprint(bytes(self._key))
             )
-            result = self.protocol.recover(
-                {
-                    "api_version": CLIENT_API_VERSION,
-                    "operation_id": operation,
-                    "receipt": imported.receipt,
-                    "recovery_input": parsed["recovery_input"],
-                },
-                selected_holder_ids=selected,
-            )
+            with self._performance_observation():
+                result = self.protocol.recover(
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "operation_id": operation,
+                        "receipt": imported.receipt,
+                        "recovery_input": parsed["recovery_input"],
+                    },
+                    selected_holder_ids=selected,
+                )
             try:
                 recovered_fingerprint = _fingerprint(result.protected_key)
             except (TypeError, ValueError):
@@ -511,6 +568,70 @@ class ManagedClientApi:
                 "status": "recovered",
                 "suite_id": result.suite_id,
             }
+            validate_public_output(value)
+            return value
+
+    def create_successor(self, request: object) -> dict[str, object]:
+        parsed = _exact(
+            request,
+            {
+                "api_version",
+                "operation_id",
+                "recovery_input",
+                "rotate_protected_key",
+                "successor_deployment_profile_id",
+                "successor_suite_id",
+            },
+            "successor_rejected",
+        )
+        if (
+            parsed["api_version"] != MANAGED_CLIENT_API_VERSION
+            or parsed["rotate_protected_key"] is not False
+            or os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") != "1"
+        ):
+            raise ManagedClientError("successor_rejected")
+        with self._lock:
+            imported = self._imported
+            if imported is None:
+                raise ManagedClientError("package_required")
+            if len(self._exports) >= MAX_RECOVERY_EXPORTS:
+                raise ManagedClientError("package_export_limit_reached")
+            operation = self._use_operation(parsed["operation_id"])
+            with self._performance_observation():
+                started = time.perf_counter_ns()
+                result = self.protocol.create_successor(
+                    {
+                        "api_version": CLIENT_API_VERSION,
+                        "operation_id": operation,
+                        "receipt": imported.receipt,
+                        "recovery_input": parsed["recovery_input"],
+                        "rotate_protected_key": False,
+                        "successor_deployment_profile_id": parsed[
+                            "successor_deployment_profile_id"
+                        ],
+                        "successor_suite_id": parsed["successor_suite_id"],
+                    }
+                )
+                public = result.enrollment.public_value()
+                package = self.protocol.export_recovery_package(public["receipt"])
+                successor_import = self.protocol.authenticate_recovery_package(package)
+                self.protocol.add_performance_phase(
+                    "successor", time.perf_counter_ns() - started
+                )
+            self._replace_key(result.recovery.protected_key)
+            self._imported = successor_import
+            download_id = secrets.token_urlsafe(24)
+            self._exports[download_id] = package
+            value = result.public_value()
+            value.update(
+                {
+                    "api_version": MANAGED_CLIENT_API_VERSION,
+                    "deployment_profile_id": successor_import.deployment_profile_id,
+                    "download_id": download_id,
+                    "package_format": RECOVERY_PACKAGE_VERSION,
+                    "suite_profile_id": successor_import.bootstrap.profile_id,
+                }
+            )
             validate_public_output(value)
             return value
 
@@ -624,6 +745,8 @@ class ManagedClientApplication:
                 return _json_response(self.api.reveal_key(request), transient=True)
             if path == "/api/v2/enroll":
                 return _json_response(self.api.enroll(request))
+            if path == "/api/v2/performance-observation":
+                return _json_response(self.api.performance_observation(request))
             if path == "/api/v2/package/export":
                 package = self.api.exported_package(request)
                 return ClientResponse(
@@ -636,6 +759,8 @@ class ManagedClientApplication:
                 )
             if path == "/api/v2/recover":
                 return _json_response(self.api.recover(request))
+            if path == "/api/v2/successor":
+                return _json_response(self.api.create_successor(request))
             if path == "/api/v2/self-destroy":
                 return _json_response(
                     self.api.self_destroy(request), status=HTTPStatus.ACCEPTED

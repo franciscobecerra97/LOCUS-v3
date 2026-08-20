@@ -1,12 +1,15 @@
-"""Strict, non-collecting P9.2 managed-performance evidence contracts."""
+"""Strict P9.2 contracts and P9.3 managed-performance publication helpers."""
 
 from __future__ import annotations
 
 import hashlib
 import json
 import math
+import os
 import random
 import re
+import secrets
+import shutil
 from collections import defaultdict
 from pathlib import Path
 from typing import Any, cast
@@ -1247,3 +1250,99 @@ def assert_retained_target_absent(workspace: Path) -> None:
     target = workspace / RETAINED_ROOT
     if target.exists():
         raise PerformanceEvidenceError("managed-performance-v1 target already exists")
+
+
+def _raw_relative_path(observation: dict[str, object]) -> str:
+    slot = cast(dict[str, object], observation["slot"])
+    return (
+        "raw/"
+        + cast(str, slot["slot_id"]).replace(":", "/")
+        + f"/attempt-{cast(int, observation['attempt_index']):02d}.json"
+    )
+
+
+def _exclusive_write(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    encoded = canonical_json(value)
+    with path.open("xb") as handle:
+        handle.write(encoded)
+        handle.flush()
+        os.fsync(handle.fileno())
+
+
+def publish_corpus(
+    *, workspace: Path, observations: list[dict[str, object]]
+) -> dict[str, object]:
+    """Atomically publish the one D029 corpus from a complete validated run."""
+
+    assert_retained_target_absent(workspace)
+    retained_parent = workspace / RETAINED_ROOT.parent
+    retained_parent.mkdir(parents=True, exist_ok=True)
+    target = workspace / RETAINED_ROOT
+    staging = retained_parent / f".{RETAINED_ROOT.name}.staging-{secrets.token_hex(8)}"
+    try:
+        summary = process_observations(observations)
+        comparison = build_comparison(summary)
+        manifest = build_corpus_manifest(observations, summary, comparison)
+        for observation in observations:
+            validate_observation(observation)
+            _exclusive_write(staging / _raw_relative_path(observation), observation)
+        _exclusive_write(staging / "processed" / "summary.json", summary)
+        _exclusive_write(staging / "derived" / "comparison.json", comparison)
+        _exclusive_write(staging / "corpus-manifest.json", manifest)
+        validate_corpus_path(staging)
+        os.rename(staging, target)
+        return manifest
+    except BaseException as error:
+        resolved = staging.resolve()
+        if resolved.parent != retained_parent.resolve() or not resolved.name.startswith(
+            f".{RETAINED_ROOT.name}.staging-"
+        ):
+            raise PerformanceEvidenceError("unsafe performance staging path") from error
+        shutil.rmtree(resolved, ignore_errors=True)
+        raise
+
+
+def validate_corpus_path(target: Path) -> dict[str, object]:
+    """Validate every raw and derived byte in a sealed retained corpus."""
+
+    manifest_path = target / "corpus-manifest.json"
+    summary_path = target / "processed" / "summary.json"
+    comparison_path = target / "derived" / "comparison.json"
+    if not all(
+        path.is_file() for path in (manifest_path, summary_path, comparison_path)
+    ):
+        raise PerformanceEvidenceError("retained performance corpus is unsealed")
+    try:
+        manifest = json.loads(manifest_path.read_bytes())
+        summary = json.loads(summary_path.read_bytes())
+        comparison = json.loads(comparison_path.read_bytes())
+        raw_paths = sorted((target / "raw").rglob("attempt-*.json"))
+        observations = [json.loads(path.read_bytes()) for path in raw_paths]
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise PerformanceEvidenceError(
+            "retained performance corpus is malformed"
+        ) from exc
+    if any(
+        canonical_json(value) != path.read_bytes()
+        for value, path in zip(observations, raw_paths, strict=True)
+    ):
+        raise PerformanceEvidenceError("raw performance record is not canonical")
+    if (
+        canonical_json(summary) != summary_path.read_bytes()
+        or canonical_json(comparison) != comparison_path.read_bytes()
+    ):
+        raise PerformanceEvidenceError("derived performance output is not canonical")
+    expected_summary = process_observations(observations)
+    expected_comparison = build_comparison(expected_summary)
+    expected_manifest = build_corpus_manifest(
+        observations, expected_summary, expected_comparison
+    )
+    if summary != expected_summary or comparison != expected_comparison:
+        raise PerformanceEvidenceError("derived performance output changed")
+    if (
+        manifest != expected_manifest
+        or canonical_json(manifest) != manifest_path.read_bytes()
+    ):
+        raise PerformanceEvidenceError("performance corpus manifest changed")
+    return manifest

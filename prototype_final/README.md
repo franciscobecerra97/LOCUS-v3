@@ -19,11 +19,12 @@ D028/P9.1 is also complete. It freezes the exact managed performance and
 resilience methodology but intentionally provides no collector, result
 identifier, or retained path. D029 subsequently closes the separate P9.2 gate.
 
-D029/P9.2 is complete and non-collecting. Ten managed-performance identifiers,
+D029/P9.2 is complete. Ten managed-performance identifiers,
 the 1,220-slot scenario expansion, strict observation/invalid-attempt schemas,
 deterministic processor, matched comparison, closing manifest, and synthetic
-positive controls are checked by `integrated-check`. No collection command or
-retained performance directory exists; P9.3 remains separately gated.
+positive controls are checked by `integrated-check`. The owner has now opened
+P9.3, and its separately gated collector is implemented for clean-source
+exploratory validation. No retained performance directory exists yet.
 
 ## Scope
 
@@ -42,8 +43,8 @@ The managed implementation provides one same-host Docker system with:
 - a separate 4-of-5 authorization quorum;
 - all four registered CuePolicies;
 - clean-client recovery; and
-- unchanged same-suite and cross-suite successor-core behavior retained as a
-  compatibility control outside Client API v2 and the managed Client UI.
+- unchanged same-suite and cross-suite successor behavior, with a narrowly
+  gated measurement-only Client API route and no new user-facing UI control.
 
 This remains a one-host, one-Docker-engine, one-operator research profile. It
 does not establish host separation, independent administration, real-provider
@@ -202,15 +203,25 @@ The exclusive target cannot be replaced by another v1 run.
 The checked P9.1 methodology is documented in
 `docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` and encoded canonically in
 `docs/managed-performance-methodology-v1.json`. Its validator is exercised by
-`integrated-check`. It cannot collect or retain measurements; do not add or
-run a P9 collector before the separately approved P9.2 identifier/schema/
-control gate.
+`integrated-check`. P9.3's exploratory collector executes all 40 fresh
+arm/block projects and writes no retained output:
+
+```console
+uv run --frozen python tasks.py integrated-performance-evidence
+```
+
+Only after the collector source is committed and clean may the one explicit
+`--retain` run exclusively publish
+`evidence/retained/managed-performance-v1/`. The target must not already
+exist. The command uses only synthetic fixtures and the exact local-provider,
+same-host D025 graph; it does not authorize P9.4 external-provider or
+multi-host work.
 
 ## Directory layout
 
 | Path | Purpose |
 | --- | --- |
-| `tasks.py` | Only supported executor; exposes eight `integrated-*` commands |
+| `tasks.py` | Only supported executor; exposes nine `integrated-*` commands |
 | `locus/` | Dependency-complete integrated Python implementation and UI assets |
 | `appss-core/` | Native aPPSS core and public vector |
 | `tpass-core/` | Frozen native Yi core and vector |
@@ -220,7 +231,7 @@ control gate.
 | `docs/security-matrix-v2.json` | Assigned additive managed-system security contract; not retained evidence |
 | `docs/ATTEMPT-CONTROL-BOUNDARY.md` | Frozen negative model and local signed-certificate boundary |
 | `docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` | D028/P9.1 non-collecting managed evaluation design |
-| `docs/MANAGED-PERFORMANCE-EVIDENCE-v1.md` | D029/P9.2 non-collecting schemas, processor, and retention gate |
+| `docs/MANAGED-PERFORMANCE-EVIDENCE-v1.md` | D029 schemas, P9.3 collector boundary, processor, and retention gate |
 | `docs/schemas/` | Integrated configuration, package, and assigned security-matrix schemas |
 
 ## Evidence boundary
@@ -228,13 +239,15 @@ control gate.
 `integrated-check`, `integrated-config`, `integrated-smoke`,
 `integrated-attempt-boundary`, exploratory `integrated-state-evidence`, and
 exploratory `integrated-flow-evidence` produce ordinary development output
-only. D026's
+only. Exploratory `integrated-performance-evidence` is likewise non-retaining.
+D026's
 explicit `integrated-state-evidence --retain` is the sole P8.2 retained path;
 it uses the assigned schema, identifiers, positive controls, provenance,
 output-safety policy, and versioned result path. D027's separate
 `integrated-flow-evidence --retain` is the sole P8.3 retained path; its v1
-target is now complete and immutable. It cannot emit P9 metrics. P9 collection
-remains prohibited until its own gate is approved.
+target is now complete and immutable. It cannot emit P9 metrics. P9.3 alone
+may use `integrated-performance-evidence --retain` from its clean collector
+commit; P9.4 remains prohibited.
 
 Use generated keys, fictional cues, generated credentials, and disposable
 local services only. Never supply real private keys, credentials, accounts, or

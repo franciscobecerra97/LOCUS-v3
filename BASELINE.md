@@ -433,8 +433,11 @@ invalid attempts, seven strict schemas, 70 deterministic summary groups, 28
 matched non-pooled comparisons, positive controls, and a closing corpus
 manifest. Synthetic tests exercise the complete schedule but the reserved
 `prototype_final/evidence/retained/managed-performance-v1/` directory does not
-exist. No collector, measured result, runtime behavior, external provider, or
-manuscript wording is added; P9.3 remains separately gated.
+exist. The owner opened P9.3 on 2026-08-20, and the isolated
+`prototype_final/` collector now implements the exact D028/D029 schedule,
+memory-only aggregate instrumentation, output scans, linked invalid retries,
+and exact-project cleanup. It has not yet produced a measured result. No
+external provider, multi-host profile, or manuscript wording is added.
 
 ## Excluded material
 

@@ -22,8 +22,9 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 through P8.4 and P9.1--P9.2 are complete; P9.3 is the next
-proposed step and remains an owner and clean-collector gate. Architecture
+predecessor. P8.1 through P8.4 and P9.1--P9.2 are complete. The owner opened
+P9.3 on 2026-08-20; its clean-collector implementation and validation are in
+progress. Architecture
 decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -3127,7 +3128,14 @@ Completion record:
 
 ### P9.3 Collect the same-host integrated baseline
 
-Status: `Proposed`
+Status: `In progress`
+
+The collector is implemented only in `prototype_final/` behind
+`integrated-performance-evidence`. Its default form is exploratory and
+non-retaining. The retained form requires a clean source commit, the exact
+D028/D029 1,220-slot schedule, a nonexistent exclusive target, successful
+ephemeral-output scans, and exact cleanup of every fresh arm/block project.
+P9.4 profiles are not accepted by this command.
 
 Acceptance:
 
@@ -3283,11 +3291,10 @@ the honest same-host managed integrated profile.
 
 The next sequence is:
 
-1. P9.2 — approve D029, then implement and verify the non-collecting result
-   schemas, invalid-run contract, processors, controls, and exclusive path;
-2. P9.3 — implement the separately gated collector, validate it exploratorily,
-   and collect new suite/topology-specific same-host performance/resilience
-   results only from a clean committed source state;
+1. P9.3 — finish validation of the separately gated collector, commit its
+   clean source state, validate it exploratorily, and collect one new suite/
+   topology-specific same-host performance/resilience corpus;
+2. stop for owner review before any separately gated P9.4 work;
 3. P9.4 — optionally evaluate separately authorized multi-host or external-
    provider profiles under new identities; and
 4. P10 — complete independent review, integrated artifact reproduction, claim

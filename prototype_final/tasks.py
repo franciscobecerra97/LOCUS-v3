@@ -1,4 +1,4 @@
-"""Eight-command executor for the managed integrated LOCUS prototype."""
+"""Managed integrated LOCUS prototype command executor."""
 
 from __future__ import annotations
 
@@ -20,6 +20,8 @@ import urllib.request
 from collections.abc import Sequence
 from concurrent.futures import ThreadPoolExecutor
 from contextlib import contextmanager
+from dataclasses import dataclass
+from dataclasses import field as dataclass_field
 from itertools import combinations
 from pathlib import Path
 from typing import Any, cast
@@ -29,6 +31,7 @@ PYTHON = sys.executable
 MANAGED_COMPOSE = ROOT / "deploy" / "compose.managed.yaml"
 MANAGED_MANIFEST = ROOT / "deploy" / "managed-manifest.json"
 FLOW_COMPOSE = ROOT / "deploy" / "compose.flow-evidence.yaml"
+PERFORMANCE_COMPOSE = ROOT / "deploy" / "compose.performance-evidence.yaml"
 DEFAULT_PROJECT = "locus-managed-final"
 DEFAULT_MANAGER_PORT = 8765
 CLIENT_API_VERSION = "LOCUS-client-api-v2"
@@ -36,10 +39,27 @@ PACKAGE_MEDIA_TYPE = "application/vnd.locus.recovery-package+json"
 IMAGE_ID_PATTERN = re.compile(r"sha256:[0-9a-f]{64}\Z")
 PROJECT_PATTERN = re.compile(r"[a-z0-9][a-z0-9-]{0,47}\Z")
 _FLOW_EVIDENCE_ACTIVE = False
+_PERFORMANCE_EVIDENCE_ACTIVE = False
 _FLOW_CONTEXT = ""
 _FLOW_HOST_EVENTS: list[dict[str, object]] = []
 _FLOW_HOST_SEQUENCE = 0
 _FLOW_HOST_BOOT = secrets.token_hex(8)
+
+
+@dataclass
+class _PerformanceRuntime:
+    project: str
+    manager_port: int
+    manager_csrf: str
+    environment: dict[str, str]
+    base_bindings: dict[str, object]
+    host_id: str
+    client: dict[str, object] | None = None
+    client_port: int | None = None
+    client_session: dict[str, object] | None = None
+    client_csrf: str | None = None
+    base_package: bytes | None = None
+    secret_markers: list[str] = dataclass_field(default_factory=list)
 
 
 def _operation_id(prefix: str) -> str:
@@ -59,10 +79,12 @@ def run_capture(
     env: dict[str, str] | None = None,
     check: bool = True,
     include_stderr: bool = False,
+    visible: bool = True,
 ) -> str:
     """Run one command while retaining bounded diagnostic output in memory."""
 
-    print("+", subprocess.list2cmdline(list(command)), flush=True)
+    if visible:
+        print("+", subprocess.list2cmdline(list(command)), flush=True)
     result = subprocess.run(
         list(command),
         cwd=ROOT,
@@ -138,7 +160,9 @@ def _compose(project: str) -> list[str]:
         "--file",
         str(MANAGED_COMPOSE),
     ]
-    if _FLOW_EVIDENCE_ACTIVE:
+    if _PERFORMANCE_EVIDENCE_ACTIVE:
+        command.extend(["--file", str(PERFORMANCE_COMPOSE)])
+    elif _FLOW_EVIDENCE_ACTIVE:
         command.extend(["--file", str(FLOW_COMPOSE)])
     return command
 
@@ -147,7 +171,9 @@ def _compose(project: str) -> list[str]:
 def _flow_context(value: str) -> Any:
     global _FLOW_CONTEXT
     previous = _FLOW_CONTEXT
-    _FLOW_CONTEXT = value if _FLOW_EVIDENCE_ACTIVE else ""
+    _FLOW_CONTEXT = (
+        value if (_FLOW_EVIDENCE_ACTIVE or _PERFORMANCE_EVIDENCE_ACTIVE) else ""
+    )
     try:
         yield
     finally:
@@ -777,7 +803,11 @@ def _manager_action(port: int, csrf: str, role: str, action: str) -> dict[str, o
 
 
 def _start_project(
-    *, project: str, manager_port: int, environment: dict[str, str]
+    *,
+    project: str,
+    manager_port: int,
+    environment: dict[str, str],
+    startup_timing: list[int] | None = None,
 ) -> dict[str, object]:
     if _dynamic_client_ids(project, environment):
         raise RuntimeError(
@@ -797,6 +827,7 @@ def _start_project(
         env=environment,
     )
     environment["LOCUS_INTEGRATED_IMAGE_ID"] = _image_id(environment)
+    startup_started = time.perf_counter_ns()
     _ensure_browser_edge_network(project, environment)
     run(
         [
@@ -823,6 +854,8 @@ def _start_project(
         isinstance(item, dict) and item.get("role") == "client" for item in containers
     ):
         raise RuntimeError("managed startup created an unexpected client")
+    if startup_timing is not None:
+        startup_timing.append(time.perf_counter_ns() - startup_started)
     return status
 
 
@@ -1707,6 +1740,7 @@ def integrated_smoke(
             run_capture(
                 [require("docker"), "logs", cast(str, client_a["id"])],
                 env=environment,
+                check=False,
                 include_stderr=True,
             )
         )
@@ -2051,6 +2085,7 @@ def integrated_smoke(
             run_capture(
                 [require("docker"), "logs", client_b_id],
                 env=environment,
+                check=False,
                 include_stderr=True,
             )
         )
@@ -2137,6 +2172,7 @@ def integrated_smoke(
             run_capture(
                 [require("docker"), "logs", cast(str, client_c["id"])],
                 env=environment,
+                check=False,
                 include_stderr=True,
             )
         )
@@ -2155,6 +2191,7 @@ def integrated_smoke(
             run_capture(
                 [require("docker"), "logs", cast(str, client_c["id"])],
                 env=environment,
+                check=False,
                 include_stderr=True,
             )
         )
@@ -2211,6 +2248,7 @@ def integrated_smoke(
             run_capture(
                 [require("docker"), "logs", cast(str, client_d["id"])],
                 env=environment,
+                check=False,
                 include_stderr=True,
             )
         )
@@ -2229,6 +2267,7 @@ def integrated_smoke(
             run_capture(
                 [require("docker"), "logs", cast(str, client_d["id"])],
                 env=environment,
+                check=False,
                 include_stderr=True,
             )
         )
@@ -2483,6 +2522,1433 @@ def _tracked_source_provenance(*, require_clean: bool) -> dict[str, object]:
     }
 
 
+def _performance_client_observation(port: int, csrf: str) -> dict[str, object]:
+    result = _client_post(
+        port,
+        csrf,
+        "/api/v2/performance-observation",
+        {
+            "api_version": CLIENT_API_VERSION,
+            "instrumentation_id": "LOCUS-managed-performance-instrumentation-v1",
+        },
+    )
+    observation = result.get("observation")
+    if result.get("status") != "observed" or not isinstance(observation, dict):
+        raise RuntimeError("managed Client omitted its performance observation")
+    return cast(dict[str, object], observation)
+
+
+def _performance_client_json(
+    port: int,
+    csrf: str,
+    path: str,
+    value: dict[str, object],
+    *,
+    expected: tuple[int, ...] = (200,),
+) -> tuple[dict[str, object], int, dict[str, int], dict[str, int]]:
+    body = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    started = time.perf_counter_ns()
+    encoded, _headers = _raw_request(
+        port,
+        path,
+        method="POST",
+        body=body,
+        content_type="application/json",
+        csrf=csrf,
+        expected=expected,
+    )
+    elapsed = time.perf_counter_ns() - started
+    result = json.loads(encoded)
+    if not isinstance(result, dict):
+        raise RuntimeError("managed Client returned a non-object")
+    measured = _performance_client_observation(port, csrf)
+    phases = measured.get("phase_latency_ns")
+    internal_body = measured.get("application_body_bytes_by_role")
+    if not isinstance(phases, dict) or not isinstance(internal_body, dict):
+        raise RuntimeError("managed Client returned invalid performance metrics")
+    bodies = {
+        str(role): count
+        for role, count in internal_body.items()
+        if isinstance(count, int) and count >= 0
+    }
+    browser_count = len(body) + len(encoded)
+    bodies["browser"] = bodies.get("browser", 0) + browser_count
+    bodies["managed-client"] = bodies.get("managed-client", 0) + browser_count
+    return (
+        cast(dict[str, object], result),
+        elapsed,
+        {
+            str(phase): count
+            for phase, count in phases.items()
+            if isinstance(count, int) and count >= 0
+        },
+        bodies,
+    )
+
+
+def _performance_client_export(
+    port: int, csrf: str, download_id: str
+) -> tuple[bytes, int, dict[str, int]]:
+    body = json.dumps(
+        {"api_version": CLIENT_API_VERSION, "download_id": download_id},
+        sort_keys=True,
+        separators=(",", ":"),
+    ).encode()
+    started = time.perf_counter_ns()
+    package, headers = _raw_request(
+        port,
+        "/api/v2/package/export",
+        method="POST",
+        body=body,
+        content_type="application/json",
+        csrf=csrf,
+    )
+    elapsed = time.perf_counter_ns() - started
+    if headers.get_content_type() != PACKAGE_MEDIA_TYPE:
+        raise RuntimeError("Client exported the wrong package media type")
+    measured = _performance_client_observation(port, csrf)
+    internal = measured.get("application_body_bytes_by_role")
+    if not isinstance(internal, dict):
+        raise RuntimeError("package export omitted its byte observation")
+    bodies = {
+        str(role): count
+        for role, count in internal.items()
+        if isinstance(count, int) and count >= 0
+    }
+    browser_count = len(body) + len(package)
+    bodies["browser"] = bodies.get("browser", 0) + browser_count
+    bodies["managed-client"] = bodies.get("managed-client", 0) + browser_count
+    return package, elapsed, bodies
+
+
+def _performance_client_import(
+    port: int, csrf: str, package: bytes
+) -> tuple[dict[str, object], int, dict[str, int], dict[str, int]]:
+    started = time.perf_counter_ns()
+    encoded, _headers = _raw_request(
+        port,
+        "/api/v2/package/import",
+        method="POST",
+        body=package,
+        content_type=PACKAGE_MEDIA_TYPE,
+        csrf=csrf,
+    )
+    elapsed = time.perf_counter_ns() - started
+    result = json.loads(encoded)
+    if not isinstance(result, dict):
+        raise RuntimeError("package import returned a non-object")
+    measured = _performance_client_observation(port, csrf)
+    phases = measured.get("phase_latency_ns")
+    internal = measured.get("application_body_bytes_by_role")
+    if not isinstance(phases, dict) or not isinstance(internal, dict):
+        raise RuntimeError("package import omitted its performance metrics")
+    bodies = {
+        str(role): count
+        for role, count in internal.items()
+        if isinstance(count, int) and count >= 0
+    }
+    browser_count = len(package) + len(encoded)
+    bodies["browser"] = bodies.get("browser", 0) + browser_count
+    bodies["managed-client"] = bodies.get("managed-client", 0) + browser_count
+    return (
+        cast(dict[str, object], result),
+        elapsed,
+        {
+            str(phase): count
+            for phase, count in phases.items()
+            if isinstance(count, int) and count >= 0
+        },
+        bodies,
+    )
+
+
+def _sum_role_bytes(*values: dict[str, int]) -> dict[str, int]:
+    result: dict[str, int] = {}
+    for value in values:
+        for role, count in value.items():
+            result[role] = result.get(role, 0) + count
+    return result
+
+
+def _performance_persisted_bytes(
+    project: str,
+    environment: dict[str, str],
+    client: dict[str, object] | None,
+) -> dict[str, int]:
+    mounts = {
+        "admission": "admission-data",
+        "bootstrap": "bootstrap-data",
+        "managed-client-template": "managed-client-data",
+        "manager-controller": "manager-controller-data",
+        "manager-ui": "manager-ui-data",
+        "operator": "operator-data",
+        "party-1": "party1-data",
+        "party-2": "party2-data",
+        "party-3": "party3-data",
+        "party-4": "party4-data",
+        "party-5": "party5-data",
+        "resolver": "resolver-data",
+        "provider": "s3-data",
+        "s3-role": "s3-role-data",
+        "storage-gateway": "storage-gateway-data",
+    }
+    command = [require("docker"), "run", "--rm", "--network", "none", "--read-only"]
+    for role, volume in mounts.items():
+        command.extend(["--volume", f"{project}_{volume}:/audit/{role}:ro"])
+    script = (
+        "from pathlib import Path\n"
+        "import json\n"
+        f"roles={list(mounts)!r}\n"
+        "def size(root):\n"
+        " total=0\n"
+        " for path in root.rglob('*'):\n"
+        "  if path.is_file() and not path.is_symlink(): total += path.stat().st_size\n"
+        " return total\n"
+        "print(json.dumps({role:size(Path('/audit')/role) for role in roles},sort_keys=True))\n"
+    )
+    command.extend([environment["LOCUS_INTEGRATED_IMAGE"], "python", "-c", script])
+    output = run_capture(command, env=environment, visible=False)
+    lines = [line for line in output.splitlines() if line.startswith("{")]
+    if not lines:
+        raise RuntimeError("persisted-byte observation failed")
+    parsed = json.loads(lines[-1])
+    if not isinstance(parsed, dict) or set(parsed) != set(mounts):
+        raise RuntimeError("persisted-byte role set changed")
+    result = {role: int(parsed[role]) for role in mounts}
+    result["managed-client-instance"] = 0
+    if client is not None and isinstance(client.get("id"), str):
+        inspected = json.loads(
+            run_capture(
+                [require("docker"), "inspect", "--size", cast(str, client["id"])],
+                env=environment,
+                visible=False,
+            )
+        )
+        if not isinstance(inspected, list) or len(inspected) != 1:
+            raise RuntimeError("managed Client persisted-byte observation failed")
+        size = inspected[0].get("SizeRw")
+        if not isinstance(size, int) or size < 0:
+            raise RuntimeError("managed Client writable-layer size is unavailable")
+        result["managed-client-instance"] = size
+    return result
+
+
+def _performance_redact_graph_value(
+    value: object, *, project: str, environment: dict[str, str]
+) -> object:
+    if isinstance(value, dict):
+        return {
+            key: _performance_redact_graph_value(
+                child, project=project, environment=environment
+            )
+            for key, child in sorted(value.items())
+        }
+    if isinstance(value, list):
+        return [
+            _performance_redact_graph_value(
+                child, project=project, environment=environment
+            )
+            for child in value
+        ]
+    if isinstance(value, str):
+        result = value.replace(project, "<project>")
+        replacements = {
+            environment["LOCUS_INTEGRATED_IMAGE"]: "<managed-image>",
+            environment["LOCUS_S3_ACCESS_KEY"]: "<synthetic-access-key>",
+            environment["LOCUS_S3_BUCKET"]: "<synthetic-bucket>",
+            environment["LOCUS_S3_SECRET_KEY"]: "<synthetic-secret-key>",
+            environment["LOCUS_MANAGER_PORT"]: "<manager-port>",
+            environment.get("LOCUS_PERFORMANCE_FIXTURE_ID", ""): "<fixture-id>",
+        }
+        for original, replacement in replacements.items():
+            if original:
+                result = result.replace(original, replacement)
+        return result
+    return value
+
+
+def _performance_base_bindings(
+    *,
+    project: str,
+    environment: dict[str, str],
+    status: dict[str, object],
+    provenance: dict[str, object],
+) -> dict[str, object]:
+    from locus.performance_evidence import digest
+
+    configured = json.loads(
+        run_capture(
+            [*_compose(project), "config", "--format", "json"],
+            env=environment,
+            visible=False,
+        )
+    )
+    if not isinstance(configured, dict):
+        raise RuntimeError("performance Compose graph is invalid")
+    _validate_managed_compose(cast(dict[str, object], configured))
+    normalized = _performance_redact_graph_value(
+        configured, project=project, environment=environment
+    )
+    manifest = json.loads(MANAGED_MANIFEST.read_bytes())
+    services = manifest.get("services") if isinstance(manifest, dict) else None
+    networks = manifest.get("networks") if isinstance(manifest, dict) else None
+    containers = status.get("containers")
+    if not isinstance(services, list) or not isinstance(networks, list):
+        raise RuntimeError("managed manifest graph is unavailable")
+    if not isinstance(containers, list) or len(containers) != 13:
+        raise RuntimeError("live performance graph is incomplete")
+    live_roles = sorted(
+        {
+            str(item.get("role"))
+            for item in containers
+            if isinstance(item, dict) and isinstance(item.get("role"), str)
+        }
+    )
+    expected_roles = sorted(
+        str(item["name"])
+        for item in services
+        if isinstance(item, dict) and item.get("name") != "bootstrap"
+    )
+    expected_roles.append("bootstrap")
+    expected_roles.sort()
+    if live_roles != expected_roles:
+        raise RuntimeError("live performance role set changed")
+    image_id = environment.get("LOCUS_INTEGRATED_IMAGE_ID")
+    if not isinstance(image_id, str) or IMAGE_ID_PATTERN.fullmatch(image_id) is None:
+        raise RuntimeError("performance image identity is unavailable")
+    result = {
+        "admission_profile_id": "LOCUS-local-synthetic-admission-v1",
+        "backup_format_id": "LOCUS-reference-backup-v6",
+        "client_api_id": CLIENT_API_VERSION,
+        "client_instance_profile_id": "LOCUS-managed-client-instance-v1",
+        "compose_sha256": hashlib.sha256(MANAGED_COMPOSE.read_bytes()).hexdigest(),
+        "configuration_id": "LOCUS-integrated-manager-config-v1",
+        "controller_api_id": "LOCUS-container-controller-api-v1",
+        "deployment_id": "LOCUS-integrated-manager-deployment-v1",
+        "descriptor_id": "LOCUS-recovery-descriptor-v1",
+        "host_tier": "same-host-single-operator",
+        "image_id": image_id,
+        "live_graph_sha256": digest(
+            {
+                "dynamic_client": "LOCUS-managed-client-instance-v1",
+                "roles": live_roles,
+                "status": "validated",
+            }
+        ),
+        "lockfile_sha256": provenance["lockfile_sha256"],
+        "managed_manifest_sha256": provenance["managed_manifest_sha256"],
+        "manager_api_id": "LOCUS-manager-api-v1",
+        "network_topology_sha256": digest(
+            {
+                "networks": networks,
+                "service_networks": [
+                    {
+                        "name": item["name"],
+                        "networks": item["networks"],
+                    }
+                    for item in services
+                    if isinstance(item, dict)
+                ],
+            }
+        ),
+        "package_profile_id": "LOCUS-client-recovery-package-v1",
+        "provider_id": "LOCUS-storage-provider-s3-compatible-v1",
+        "resolved_graph_sha256": digest(normalized),
+        "service_identity_set_sha256": digest(
+            [
+                {"identity": item["identity"], "name": item["name"]}
+                for item in services
+                if isinstance(item, dict)
+            ]
+        ),
+        "source_commit": provenance["source_commit"],
+        "source_tree_sha256": provenance["source_tree_sha256"],
+    }
+    return result
+
+
+def _performance_pseudonym(prefix: str, value: str) -> str:
+    return f"{prefix}-{hashlib.sha256(value.encode('utf-8')).hexdigest()[:16]}"
+
+
+def _performance_bindings(
+    *,
+    base: dict[str, object],
+    project: str,
+    host_id: str,
+    client_session: dict[str, object] | None,
+    packages: Sequence[bytes],
+) -> dict[str, object]:
+    identity = (
+        "no-active-client"
+        if client_session is None
+        else str(client_session.get("client_identity", "invalid-client"))
+    )
+    package_set = hashlib.sha256()
+    for package in sorted(hashlib.sha256(item).digest() for item in packages):
+        package_set.update(package)
+    result = dict(base)
+    result.update(
+        {
+            "collected_at_utc": dt.datetime.now(dt.UTC)
+            .replace(microsecond=0)
+            .isoformat(),
+            "pseudonymous_client_id": _performance_pseudonym("client", identity),
+            "pseudonymous_host_id": host_id,
+            "pseudonymous_package_set_id": f"packages-{package_set.hexdigest()[:16]}",
+            "pseudonymous_project_id": _performance_pseudonym("project", project),
+        }
+    )
+    return result
+
+
+def _performance_create_client(
+    manager_port: int, manager_csrf: str
+) -> tuple[dict[str, object], int, dict[str, object]]:
+    client = _create_client(manager_port, manager_csrf)
+    port = cast(int, client["port"])
+    session = _client_session(port)
+    return client, port, session
+
+
+def _performance_destroy_client(
+    manager_port: int,
+    manager_csrf: str,
+    client: dict[str, object],
+    client_port: int,
+) -> None:
+    identifier = client.get("id")
+    if not isinstance(identifier, str):
+        raise RuntimeError("managed Client identity is unavailable")
+    result = _manager_post(
+        manager_port,
+        manager_csrf,
+        "/api/manager/v1/client-destroy",
+        {
+            "container_id": identifier,
+            "operation_id": _operation_id("performance-destroy-client"),
+        },
+    )
+    if result.get("status") != "destroyed":
+        raise RuntimeError("Manager did not destroy the performance Client")
+    _wait_client_removed(manager_port, client_port)
+
+
+def _performance_generate_key(client_port: int, csrf: str) -> str:
+    generated = _client_post(
+        client_port,
+        csrf,
+        "/api/v2/key/generate",
+        {
+            "api_version": CLIENT_API_VERSION,
+            "operation_id": _operation_id("performance-generate-key"),
+        },
+    )
+    key = generated.get("private_key")
+    if not isinstance(key, str) or len(key) != 64:
+        raise RuntimeError("performance Client did not generate a synthetic key")
+    return key
+
+
+def _performance_manager_post(
+    port: int,
+    csrf: str,
+    path: str,
+    value: dict[str, object],
+    *,
+    expected: tuple[int, ...] = (200,),
+) -> tuple[dict[str, object], int, dict[str, int]]:
+    body = json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+    started = time.perf_counter_ns()
+    encoded, _headers = _raw_request(
+        port,
+        path,
+        method="POST",
+        body=body,
+        content_type="application/json",
+        csrf=csrf,
+        expected=expected,
+    )
+    elapsed = time.perf_counter_ns() - started
+    result = json.loads(encoded)
+    if not isinstance(result, dict):
+        raise RuntimeError("Manager returned a non-object")
+    count = len(body) + len(encoded)
+    return (
+        cast(dict[str, object], result),
+        elapsed,
+        {"browser": count, "manager-ui": count},
+    )
+
+
+def _performance_manager_action(
+    port: int, csrf: str, role: str, action: str
+) -> tuple[dict[str, object], int, dict[str, int]]:
+    status_started = time.perf_counter_ns()
+    encoded_status, _headers = _raw_request(port, "/api/manager/v1/status")
+    status_elapsed = time.perf_counter_ns() - status_started
+    status = json.loads(encoded_status)
+    containers = status.get("containers") if isinstance(status, dict) else None
+    matches = [
+        item
+        for item in containers or []
+        if isinstance(item, dict) and item.get("role") == role
+    ]
+    if len(matches) != 1 or not isinstance(matches[0].get("id"), str):
+        raise RuntimeError(f"Manager role inventory is ambiguous: {role}")
+    result, action_elapsed, bodies = _performance_manager_post(
+        port,
+        csrf,
+        "/api/manager/v1/container-action",
+        {
+            "action": action,
+            "container_id": cast(str, matches[0]["id"]),
+            "operation_id": _operation_id(f"performance-{role}-{action}"),
+        },
+    )
+    status_count = len(encoded_status)
+    bodies["browser"] = bodies.get("browser", 0) + status_count
+    bodies["manager-ui"] = bodies.get("manager-ui", 0) + status_count
+    return result, status_elapsed + action_elapsed, bodies
+
+
+def _performance_clear_client(runtime: _PerformanceRuntime) -> None:
+    runtime.client = None
+    runtime.client_port = None
+    runtime.client_session = None
+    runtime.client_csrf = None
+
+
+def _performance_destroy_active(runtime: _PerformanceRuntime) -> None:
+    if runtime.client is None:
+        return
+    assert runtime.client_port is not None
+    _performance_destroy_client(
+        runtime.manager_port,
+        runtime.manager_csrf,
+        runtime.client,
+        runtime.client_port,
+    )
+    _performance_clear_client(runtime)
+
+
+def _performance_new_active(
+    runtime: _PerformanceRuntime,
+    *,
+    generate_key: bool = False,
+    imported_package: bytes | None = None,
+) -> None:
+    _performance_destroy_active(runtime)
+    client, port, session = _performance_create_client(
+        runtime.manager_port, runtime.manager_csrf
+    )
+    runtime.client = client
+    runtime.client_port = port
+    runtime.client_session = session
+    runtime.client_csrf = cast(str, session["csrf_token"])
+    if generate_key:
+        runtime.secret_markers.append(
+            _performance_generate_key(port, runtime.client_csrf)
+        )
+    if imported_package is not None:
+        imported = _client_package_import(port, runtime.client_csrf, imported_package)
+        if imported.get("status") != "package_authenticated":
+            raise RuntimeError("performance Client did not authenticate its package")
+
+
+def _performance_record(
+    *,
+    runtime: _PerformanceRuntime,
+    slot: dict[str, object],
+    elapsed_ns: int,
+    phases: dict[str, int],
+    bodies: dict[str, int],
+    status: str,
+    packages: Sequence[bytes],
+    persisted: dict[str, int] | None = None,
+    concurrency: dict[str, int] | None = None,
+) -> dict[str, object]:
+    from locus.performance_collection import build_metrics, build_observation
+
+    scenario_id = cast(str, slot["scenario_id"])
+    if persisted is None:
+        persisted = _performance_persisted_bytes(
+            runtime.project, runtime.environment, runtime.client
+        )
+    ui_required = scenario_id in {
+        "MP01",
+        "MP02",
+        "MP03",
+        "MP04",
+        "MP05",
+        "MP06",
+        "MP14",
+        "MP15",
+        "MP16",
+        "MP17",
+        "MP18",
+        "MP19",
+    }
+    lifecycle = cast(str, slot["category"]) == "lifecycle"
+    metrics = build_metrics(
+        slot=slot,
+        end_to_end_ns=elapsed_ns,
+        phase_latency_ns=phases,
+        application_body_bytes_by_role=bodies,
+        persisted_bytes_by_role=persisted,
+        ui_http_round_trip_ns=elapsed_ns if ui_required else None,
+        lifecycle_ns=elapsed_ns if lifecycle else None,
+        concurrency=concurrency,
+    )
+    bindings = _performance_bindings(
+        base=runtime.base_bindings,
+        project=runtime.project,
+        host_id=runtime.host_id,
+        client_session=runtime.client_session,
+        packages=packages,
+    )
+    return build_observation(
+        slot=slot,
+        bindings=bindings,
+        metrics=metrics,
+        status=status,
+    )
+
+
+def _performance_enroll_request(
+    arm: dict[str, object], operation_id: str
+) -> dict[str, object]:
+    return {
+        "api_version": CLIENT_API_VERSION,
+        "deployment_profile_id": arm["topology_id"],
+        "operation_id": operation_id,
+        "policy_id": arm["policy_id"],
+        "recovery_input": _policy_inputs()[cast(str, arm["policy_id"])],
+        "suite_id": arm["suite_id"],
+    }
+
+
+def _performance_warmup(
+    runtime: _PerformanceRuntime, slot: dict[str, object]
+) -> dict[str, object]:
+    from locus.performance_collection import build_observation
+
+    arm = cast(dict[str, object], slot["arm"])
+    _performance_new_active(runtime, generate_key=True)
+    assert runtime.client_port is not None and runtime.client_csrf is not None
+    enrolled = _client_post(
+        runtime.client_port,
+        runtime.client_csrf,
+        "/api/v2/enroll",
+        _performance_enroll_request(
+            arm, _operation_id(f"performance-warmup-{slot['arm_id']}")
+        ),
+    )
+    download_id = enrolled.get("download_id")
+    if enrolled.get("status") != "enrolled" or not isinstance(download_id, str):
+        raise RuntimeError("performance warm-up enrollment failed")
+    package = _client_package_export(
+        runtime.client_port, runtime.client_csrf, download_id
+    )
+    _performance_new_active(runtime, imported_package=package)
+    assert runtime.client_port is not None and runtime.client_csrf is not None
+    selected = cast(list[int], arm["holders"])[: cast(int, arm["k"])]
+    recovered = _client_post(
+        runtime.client_port,
+        runtime.client_csrf,
+        "/api/v2/recover",
+        {
+            "api_version": CLIENT_API_VERSION,
+            "operation_id": _operation_id("performance-warmup-recover"),
+            "recovery_input": _policy_inputs()[cast(str, arm["policy_id"])],
+            "selected_holder_ids": selected,
+        },
+    )
+    if recovered.get("status") != "recovered":
+        raise RuntimeError("performance warm-up recovery failed")
+    runtime.base_package = package
+    _performance_destroy_active(runtime)
+    bindings = _performance_bindings(
+        base=runtime.base_bindings,
+        project=runtime.project,
+        host_id=runtime.host_id,
+        client_session=None,
+        packages=[package],
+    )
+    return build_observation(
+        slot=slot,
+        bindings=bindings,
+        metrics=None,
+        status="warmup-passed",
+    )
+
+
+def _performance_wrong_input(policy_id: str) -> object:
+    value = json.loads(json.dumps(_policy_inputs()[policy_id]))
+    if policy_id == "LOCUS-canonical-email-set-v1":
+        value[0] = "wrong@example.invalid"
+    elif policy_id == "LOCUS-location-person-set-v1":
+        value[0]["person"]["value"] = "wrong@example.invalid"
+    else:  # pragma: no cover - D028 has exactly the two paired policies
+        raise RuntimeError("unsupported performance policy")
+    return value
+
+
+def _performance_recovery_request(
+    *,
+    arm: dict[str, object],
+    operation: str,
+    selected: Sequence[int],
+    wrong_input: bool = False,
+) -> dict[str, object]:
+    policy_id = cast(str, arm["policy_id"])
+    return {
+        "api_version": CLIENT_API_VERSION,
+        "operation_id": _operation_id(operation),
+        "recovery_input": (
+            _performance_wrong_input(policy_id)
+            if wrong_input
+            else _policy_inputs()[policy_id]
+        ),
+        "selected_holder_ids": list(selected),
+    }
+
+
+def _performance_measure_arm_slot(
+    runtime: _PerformanceRuntime, slot: dict[str, object]
+) -> dict[str, object]:
+    scenario = cast(str, slot["scenario_id"])
+    arm = cast(dict[str, object], slot["arm"])
+    base_package = runtime.base_package
+    if base_package is None:
+        raise RuntimeError("performance arm lacks its warm-up package")
+    policy_id = cast(str, arm["policy_id"])
+    holders = cast(list[int], arm["holders"])
+    threshold = cast(int, arm["k"])
+    selected = holders[:threshold]
+    packages: list[bytes] = [base_package]
+    phases: dict[str, int] = {}
+    bodies: dict[str, int] = {}
+    elapsed = 0
+    status = "valid-success"
+    concurrency: dict[str, int] | None = None
+    persisted: dict[str, int] | None = None
+
+    if scenario == "MP01":
+        _performance_new_active(runtime, generate_key=True)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        result, elapsed, phases, bodies = _performance_client_json(
+            runtime.client_port,
+            runtime.client_csrf,
+            "/api/v2/enroll",
+            _performance_enroll_request(
+                arm, _operation_id(f"performance-enroll-{slot['slot_id']}")
+            ),
+        )
+        download_id = result.get("download_id")
+        if result.get("status") != "enrolled" or not isinstance(download_id, str):
+            raise RuntimeError("measured enrollment failed")
+        package = _client_package_export(
+            runtime.client_port, runtime.client_csrf, download_id
+        )
+        packages.append(package)
+    elif scenario == "MP02":
+        _performance_new_active(runtime, generate_key=True)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        enrolled = _client_post(
+            runtime.client_port,
+            runtime.client_csrf,
+            "/api/v2/enroll",
+            _performance_enroll_request(
+                arm, _operation_id(f"performance-package-fixture-{slot['slot_id']}")
+            ),
+        )
+        download_id = enrolled.get("download_id")
+        if not isinstance(download_id, str):
+            raise RuntimeError("package measurement fixture failed")
+        package, export_ns, export_body = _performance_client_export(
+            runtime.client_port, runtime.client_csrf, download_id
+        )
+        _performance_new_active(runtime)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        imported, import_ns, _import_phases, import_body = _performance_client_import(
+            runtime.client_port, runtime.client_csrf, package
+        )
+        if imported.get("status") != "package_authenticated":
+            raise RuntimeError("measured package import failed")
+        elapsed = export_ns + import_ns
+        bodies = _sum_role_bytes(export_body, import_body)
+        packages.append(package)
+    elif scenario == "MP03":
+        _performance_new_active(runtime)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        imported, elapsed, phases, bodies = _performance_client_import(
+            runtime.client_port, runtime.client_csrf, base_package
+        )
+        if imported.get("status") != "package_authenticated":
+            raise RuntimeError("measured clean bootstrap failed")
+    elif scenario in {"MP04", "MP05", "MP06", "MP07", "MP08"}:
+        _performance_new_active(runtime, imported_package=base_package)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        recovery_selected = selected
+        wrong = scenario == "MP05"
+        expected = (400,) if scenario in {"MP05", "MP07"} else (200,)
+        if scenario == "MP06":
+            _manager_action(
+                runtime.manager_port, runtime.manager_csrf, "party1", "stop"
+            )
+            _wait_role(runtime.manager_port, "party1", state="exited")
+            recovery_selected = holders[1 : threshold + 1]
+        elif scenario == "MP07":
+            recovery_selected = holders[: threshold - 1]
+        restart_ns = 0
+        restart_body: dict[str, int] = {}
+        if scenario == "MP08":
+            _result, restart_ns, restart_body = _performance_manager_action(
+                runtime.manager_port, runtime.manager_csrf, "party1", "restart"
+            )
+            _wait_role(runtime.manager_port, "party1", state="running", healthy=True)
+            recovery_selected = [1, *[item for item in holders if item != 1]][
+                :threshold
+            ]
+        result, recovery_ns, phases, recovery_body = _performance_client_json(
+            runtime.client_port,
+            runtime.client_csrf,
+            "/api/v2/recover",
+            _performance_recovery_request(
+                arm=arm,
+                operation=f"performance-recover-{slot['slot_id']}",
+                selected=recovery_selected,
+                wrong_input=wrong,
+            ),
+            expected=expected,
+        )
+        elapsed = restart_ns + recovery_ns
+        bodies = _sum_role_bytes(restart_body, recovery_body)
+        if scenario in {"MP05", "MP07"}:
+            if result.get("category") != "recovery_rejected":
+                raise RuntimeError("expected recovery rejection did not occur")
+            status = "valid-expected-rejection"
+        elif result.get("status") != "recovered":
+            raise RuntimeError("measured recovery failed")
+        if scenario == "MP06":
+            _manager_action(
+                runtime.manager_port, runtime.manager_csrf, "party1", "start"
+            )
+            _wait_role(runtime.manager_port, "party1", state="running", healthy=True)
+    elif scenario == "MP09":
+        _performance_new_active(runtime, imported_package=base_package)
+        assert runtime.client_port is not None
+        started = time.perf_counter_ns()
+        _manager_action(runtime.manager_port, runtime.manager_csrf, "client", "restart")
+        item = _wait_role(runtime.manager_port, "client", state="running", healthy=True)
+        port = item.get("port")
+        if not isinstance(port, int):
+            raise RuntimeError("restarted Client lost its loopback port")
+        runtime.client_port = port
+        runtime.client_session = _client_session(port)
+        runtime.client_csrf = cast(str, runtime.client_session["csrf_token"])
+        imported, import_ns, _import_phases, import_body = _performance_client_import(
+            port, runtime.client_csrf, base_package
+        )
+        if imported.get("status") != "package_authenticated":
+            raise RuntimeError("restarted Client rejected its package")
+        recovered, recover_ns, phases, recover_body = _performance_client_json(
+            port,
+            runtime.client_csrf,
+            "/api/v2/recover",
+            _performance_recovery_request(
+                arm=arm,
+                operation=f"performance-client-restart-{slot['slot_id']}",
+                selected=selected,
+            ),
+        )
+        if recovered.get("status") != "recovered":
+            raise RuntimeError("restarted Client recovery failed")
+        elapsed = time.perf_counter_ns() - started
+        if elapsed < import_ns + recover_ns:
+            raise RuntimeError("client restart timing is inconsistent")
+        bodies = _sum_role_bytes(import_body, recover_body)
+    elif scenario == "MP10":
+        _performance_destroy_active(runtime)
+        started = time.perf_counter_ns()
+        _stop_through_manager(
+            runtime.manager_port,
+            runtime.manager_csrf,
+            label="performance-preserved-system-stop",
+        )
+        _performance_clear_client(runtime)
+        _status, runtime.manager_csrf = _resume_project(
+            project=runtime.project,
+            manager_port=runtime.manager_port,
+            environment=runtime.environment,
+        )
+        _performance_new_active(runtime)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        imported, _import_ns, _import_phases, import_body = _performance_client_import(
+            runtime.client_port, runtime.client_csrf, base_package
+        )
+        if imported.get("status") != "package_authenticated":
+            raise RuntimeError("preserved system rejected its package")
+        recovered, _recover_ns, phases, recover_body = _performance_client_json(
+            runtime.client_port,
+            runtime.client_csrf,
+            "/api/v2/recover",
+            _performance_recovery_request(
+                arm=arm,
+                operation=f"performance-system-restart-{slot['slot_id']}",
+                selected=selected,
+            ),
+        )
+        if recovered.get("status") != "recovered":
+            raise RuntimeError("preserved system recovery failed")
+        elapsed = time.perf_counter_ns() - started
+        bodies = _sum_role_bytes(import_body, recover_body)
+    elif scenario == "MP11":
+        started = time.perf_counter_ns()
+        persisted = _performance_persisted_bytes(
+            runtime.project, runtime.environment, runtime.client
+        )
+        elapsed = time.perf_counter_ns() - started
+    elif scenario == "MP12":
+        _performance_new_active(runtime, generate_key=True)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        predecessor = _client_post(
+            runtime.client_port,
+            runtime.client_csrf,
+            "/api/v2/enroll",
+            _performance_enroll_request(
+                arm, _operation_id(f"performance-successor-fixture-{slot['slot_id']}")
+            ),
+        )
+        predecessor_download = predecessor.get("download_id")
+        if not isinstance(predecessor_download, str):
+            raise RuntimeError("successor fixture enrollment failed")
+        successor_package = _client_package_export(
+            runtime.client_port, runtime.client_csrf, predecessor_download
+        )
+        packages.append(successor_package)
+        _performance_new_active(runtime, imported_package=successor_package)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        target = cast(dict[str, object], slot["target_arm"])
+        result, elapsed, phases, bodies = _performance_client_json(
+            runtime.client_port,
+            runtime.client_csrf,
+            "/api/v2/successor",
+            {
+                "api_version": CLIENT_API_VERSION,
+                "operation_id": _operation_id(
+                    f"performance-successor-{slot['slot_id']}"
+                ),
+                "recovery_input": _policy_inputs()[policy_id],
+                "rotate_protected_key": False,
+                "successor_deployment_profile_id": target["topology_id"],
+                "successor_suite_id": target["suite_id"],
+            },
+        )
+        if result.get("status") != "successor_enrolled":
+            raise RuntimeError("measured successor transition failed")
+    elif scenario == "MP13":
+        _performance_new_active(runtime, imported_package=base_package)
+        assert runtime.client_port is not None and runtime.client_csrf is not None
+        concurrent_port = runtime.client_port
+        concurrent_csrf = runtime.client_csrf
+        level = cast(int, slot["concurrency_level"])
+        requests = [
+            _performance_recovery_request(
+                arm=arm,
+                operation=f"performance-concurrent-{slot['slot_id']}-{index}",
+                selected=selected,
+            )
+            for index in range(level)
+        ]
+        encoded_requests = [
+            json.dumps(value, sort_keys=True, separators=(",", ":")).encode()
+            for value in requests
+        ]
+        started = time.perf_counter_ns()
+        with ThreadPoolExecutor(max_workers=level) as executor:
+            results = list(
+                executor.map(
+                    lambda request: _client_post(
+                        concurrent_port,
+                        concurrent_csrf,
+                        "/api/v2/recover",
+                        request,
+                    ),
+                    requests,
+                )
+            )
+        elapsed = time.perf_counter_ns() - started
+        if any(result.get("status") != "recovered" for result in results):
+            raise RuntimeError("concurrent recovery batch failed")
+        response_bytes = sum(
+            len(json.dumps(item, sort_keys=True, separators=(",", ":")).encode())
+            for item in results
+        )
+        body_count = sum(len(item) for item in encoded_requests) + response_bytes
+        bodies = {"browser": body_count, "managed-client": body_count}
+        concurrency = {
+            "batch_completion_ns": elapsed,
+            "completed_operations": level,
+            "level": level,
+            "operations_per_second_milli": max(1, level * 10**12 // elapsed),
+        }
+    else:  # pragma: no cover - the fixed arm schedule is exhaustive
+        raise RuntimeError(f"unsupported performance scenario: {scenario}")
+
+    return _performance_record(
+        runtime=runtime,
+        slot=slot,
+        elapsed_ns=elapsed,
+        phases=phases,
+        bodies=bodies,
+        status=status,
+        packages=packages,
+        persisted=persisted,
+        concurrency=concurrency,
+    )
+
+
+def _performance_lifecycle_block(
+    runtime: _PerformanceRuntime,
+    slots: Sequence[dict[str, object]],
+    startup_ns: int,
+) -> list[dict[str, object]]:
+    by_scenario = {cast(str, slot["scenario_id"]): slot for slot in slots}
+    if set(by_scenario) != {"MP14", "MP15", "MP16", "MP17", "MP18", "MP19"}:
+        raise RuntimeError("lifecycle schedule changed")
+    observations = [
+        _performance_record(
+            runtime=runtime,
+            slot=by_scenario["MP14"],
+            elapsed_ns=startup_ns,
+            phases={},
+            bodies={},
+            status="valid-success",
+            packages=[],
+        )
+    ]
+    created, create_ns, create_body = _performance_manager_post(
+        runtime.manager_port,
+        runtime.manager_csrf,
+        "/api/manager/v1/clients",
+        {"operation_id": _operation_id("performance-lifecycle-create")},
+        expected=(201,),
+    )
+    client = created.get("client")
+    if not isinstance(client, dict) or not isinstance(client.get("port"), int):
+        raise RuntimeError("lifecycle Client creation failed")
+    runtime.client = cast(dict[str, object], client)
+    runtime.client_port = cast(int, client["port"])
+    runtime.client_session = _client_session(runtime.client_port)
+    runtime.client_csrf = cast(str, runtime.client_session["csrf_token"])
+    observations.append(
+        _performance_record(
+            runtime=runtime,
+            slot=by_scenario["MP15"],
+            elapsed_ns=create_ns,
+            phases={},
+            bodies=create_body,
+            status="valid-success",
+            packages=[],
+        )
+    )
+    _result, stop_ns, stop_body = _performance_manager_action(
+        runtime.manager_port, runtime.manager_csrf, "client", "stop"
+    )
+    _wait_role(runtime.manager_port, "client", state="exited")
+    observations.append(
+        _performance_record(
+            runtime=runtime,
+            slot=by_scenario["MP16"],
+            elapsed_ns=stop_ns,
+            phases={},
+            bodies=stop_body,
+            status="valid-success",
+            packages=[],
+        )
+    )
+    _result, start_ns, start_body = _performance_manager_action(
+        runtime.manager_port, runtime.manager_csrf, "client", "start"
+    )
+    item = _wait_role(runtime.manager_port, "client", state="running", healthy=True)
+    if not isinstance(item.get("port"), int):
+        raise RuntimeError("lifecycle Client start lost its port")
+    runtime.client_port = cast(int, item["port"])
+    runtime.client_session = _client_session(runtime.client_port)
+    runtime.client_csrf = cast(str, runtime.client_session["csrf_token"])
+    observations.append(
+        _performance_record(
+            runtime=runtime,
+            slot=by_scenario["MP17"],
+            elapsed_ns=start_ns,
+            phases={},
+            bodies=start_body,
+            status="valid-success",
+            packages=[],
+        )
+    )
+    prior_identity = runtime.client_session.get("client_identity")
+    _result, restart_ns, restart_body = _performance_manager_action(
+        runtime.manager_port, runtime.manager_csrf, "client", "restart"
+    )
+    item = _wait_role(runtime.manager_port, "client", state="running", healthy=True)
+    if not isinstance(item.get("port"), int):
+        raise RuntimeError("lifecycle Client restart lost its port")
+    runtime.client_port = cast(int, item["port"])
+    runtime.client_session = _client_session(runtime.client_port)
+    runtime.client_csrf = cast(str, runtime.client_session["csrf_token"])
+    if runtime.client_session.get("client_identity") == prior_identity:
+        raise RuntimeError("lifecycle Client restart did not rotate identity")
+    observations.append(
+        _performance_record(
+            runtime=runtime,
+            slot=by_scenario["MP18"],
+            elapsed_ns=restart_ns,
+            phases={},
+            bodies=restart_body,
+            status="valid-success",
+            packages=[],
+        )
+    )
+    assert runtime.client is not None and runtime.client_port is not None
+    identifier = runtime.client.get("id")
+    if not isinstance(identifier, str):
+        raise RuntimeError("lifecycle Client identity is unavailable")
+    destroyed, destroy_ns, destroy_body = _performance_manager_post(
+        runtime.manager_port,
+        runtime.manager_csrf,
+        "/api/manager/v1/client-destroy",
+        {
+            "container_id": identifier,
+            "operation_id": _operation_id("performance-lifecycle-destroy"),
+        },
+    )
+    if destroyed.get("status") != "destroyed":
+        raise RuntimeError("lifecycle Client destruction failed")
+    _wait_client_removed(runtime.manager_port, runtime.client_port)
+    _performance_clear_client(runtime)
+    observations.append(
+        _performance_record(
+            runtime=runtime,
+            slot=by_scenario["MP19"],
+            elapsed_ns=destroy_ns,
+            phases={},
+            bodies=destroy_body,
+            status="valid-success",
+            packages=[],
+        )
+    )
+    return observations
+
+
+def _performance_output_scan(runtime: _PerformanceRuntime) -> None:
+    """Scan bounded ephemeral output, retaining only the pass/fail observation."""
+
+    from locus.redaction import exposed_categories
+
+    outputs = [
+        run_capture(
+            [*_compose(runtime.project), "logs", "--no-color"],
+            env=runtime.environment,
+            check=False,
+            include_stderr=True,
+            visible=False,
+        )
+    ]
+    for identifier in _dynamic_client_ids(runtime.project, runtime.environment):
+        outputs.append(
+            run_capture(
+                [require("docker"), "logs", identifier],
+                env=runtime.environment,
+                check=False,
+                include_stderr=True,
+                visible=False,
+            )
+        )
+    markers = {
+        "storage-access-key": runtime.environment["LOCUS_S3_ACCESS_KEY"],
+        "storage-secret-key": runtime.environment["LOCUS_S3_SECRET_KEY"],
+        "synthetic-email": "Ada@Example.COM",
+        "synthetic-phone": "+352621000002",
+        "synthetic-location": "49.6116",
+        **{
+            f"synthetic-private-key-{index}": value
+            for index, value in enumerate(runtime.secret_markers, start=1)
+        },
+    }
+    findings = exposed_categories("".join(outputs), markers)
+    if findings:
+        raise RuntimeError(
+            "performance output scan found prohibited categories: " + ",".join(findings)
+        )
+
+
+def _performance_chain_observation(
+    observation: dict[str, object],
+    prior: dict[str, object] | None,
+) -> dict[str, object]:
+    from locus.performance_evidence import digest, validate_observation
+
+    result = dict(observation)
+    attempt_index = 1 if prior is None else cast(int, prior["attempt_index"]) + 1
+    slot = cast(dict[str, object], result["slot"])
+    result["attempt_id"] = f"{slot['slot_id']}:a{attempt_index:02d}"
+    result["attempt_index"] = attempt_index
+    result["replacement_of_sha256"] = None if prior is None else digest(prior)
+    validate_observation(result)
+    return result
+
+
+def _performance_invalid_block(
+    *,
+    runtime: _PerformanceRuntime,
+    slots: Sequence[dict[str, object]],
+    prior_by_slot: dict[str, dict[str, object]],
+) -> list[dict[str, object]]:
+    from locus.performance_collection import build_observation
+    from locus.performance_evidence import digest
+
+    bindings = _performance_bindings(
+        base=runtime.base_bindings,
+        project=runtime.project,
+        host_id=runtime.host_id,
+        client_session=None,
+        packages=[],
+    )
+    result: list[dict[str, object]] = []
+    for slot in slots:
+        slot_id = cast(str, slot["slot_id"])
+        prior = prior_by_slot.get(slot_id)
+        invalid = build_observation(
+            slot=slot,
+            bindings=bindings,
+            metrics=None,
+            status="infrastructure-invalid",
+            attempt_index=(
+                1 if prior is None else cast(int, prior["attempt_index"]) + 1
+            ),
+            replacement_of_sha256=(None if prior is None else digest(prior)),
+            invalid_category="orchestrator-failure",
+            cleanup_complete=True,
+        )
+        result.append(invalid)
+    return result
+
+
+def _performance_project_name(arm_id: str, block: int, attempt: int) -> str:
+    return _project(
+        f"locus-perf-{arm_id.replace('of', '')}-b{block:02d}-a{attempt:02d}"
+    )
+
+
+def _collect_performance_observations(
+    *, provenance: dict[str, object]
+) -> list[dict[str, object]]:
+    """Execute the exact D028 schedule with fresh projects per arm/block."""
+
+    from locus.performance_collection import common_block_slots, ordered_arm_block_slots
+    from locus.performance_evidence import ARMS, process_observations
+
+    global _PERFORMANCE_EVIDENCE_ACTIVE
+    if _PERFORMANCE_EVIDENCE_ACTIVE:
+        raise RuntimeError("performance collection is already active")
+    _PERFORMANCE_EVIDENCE_ACTIVE = True
+    observations: list[dict[str, object]] = []
+    prior_by_slot: dict[str, dict[str, object]] = {}
+    try:
+        for block in range(1, 11):
+            for arm_id, arm in ARMS.items():
+                arm_slots = list(ordered_arm_block_slots(arm_id, block))
+                common_slots = (
+                    list(common_block_slots(block)) if arm_id == "yi-2of3" else []
+                )
+                project_slots = [*common_slots, *arm_slots]
+                for attempt in range(1, 4):
+                    project = _performance_project_name(arm_id, block, attempt)
+                    manager_port = DEFAULT_MANAGER_PORT
+                    environment = _environment(project, manager_port)
+                    topology_id = cast(str, arm["topology_id"])
+                    environment["LOCUS_PERFORMANCE_FIXTURE_ID"] = (
+                        f"{topology_id}:block-{block:02d}"
+                    )
+                    runtime: _PerformanceRuntime | None = None
+                    project_observations: list[dict[str, object]] = []
+                    operation_error: BaseException | None = None
+                    startup_timing: list[int] = []
+                    try:
+                        status = _start_project(
+                            project=project,
+                            manager_port=manager_port,
+                            environment=environment,
+                            startup_timing=startup_timing,
+                        )
+                        manager_csrf = _manager_session(manager_port)
+                        base = _performance_base_bindings(
+                            project=project,
+                            environment=environment,
+                            status=status,
+                            provenance=provenance,
+                        )
+                        runtime = _PerformanceRuntime(
+                            project=project,
+                            manager_port=manager_port,
+                            manager_csrf=manager_csrf,
+                            environment=environment,
+                            base_bindings=base,
+                            host_id=cast(str, provenance["pseudonymous_host_id"]),
+                        )
+                        if common_slots:
+                            if len(startup_timing) != 1:
+                                raise RuntimeError("startup timing was not observed")
+                            project_observations.extend(
+                                _performance_lifecycle_block(
+                                    runtime, common_slots, startup_timing[0]
+                                )
+                            )
+                        project_observations.append(
+                            _performance_warmup(runtime, arm_slots[0])
+                        )
+                        for slot in arm_slots[1:]:
+                            project_observations.append(
+                                _performance_measure_arm_slot(runtime, slot)
+                            )
+                    except BaseException as error:
+                        operation_error = error
+
+                    if runtime is None:
+                        try:
+                            _cleanup_smoke_project(project, environment)
+                        except BaseException as cleanup_error:
+                            if operation_error is not None:
+                                operation_error.add_note(
+                                    "startup cleanup also failed: "
+                                    f"{type(cleanup_error).__name__}: {cleanup_error}"
+                                )
+                        assert operation_error is not None
+                        raise operation_error
+
+                    try:
+                        _performance_output_scan(runtime)
+                    except BaseException as scan_error:
+                        operation_error = scan_error
+                    try:
+                        _cleanup_smoke_project(project, environment)
+                    except BaseException as cleanup_error:
+                        if operation_error is None:
+                            operation_error = cleanup_error
+                        else:
+                            operation_error.add_note(
+                                "performance cleanup also failed: "
+                                f"{type(cleanup_error).__name__}: {cleanup_error}"
+                            )
+
+                    if operation_error is not None:
+                        if "output scan" in str(operation_error) or "cleanup" in str(
+                            operation_error
+                        ):
+                            raise operation_error
+                        invalid = _performance_invalid_block(
+                            runtime=runtime,
+                            slots=project_slots,
+                            prior_by_slot=prior_by_slot,
+                        )
+                        for item in invalid:
+                            slot_id = cast(
+                                str, cast(dict[str, object], item["slot"])["slot_id"]
+                            )
+                            prior_by_slot[slot_id] = item
+                        observations.extend(invalid)
+                        print(
+                            json.dumps(
+                                {
+                                    "arm": arm_id,
+                                    "attempt": attempt,
+                                    "block": block,
+                                    "category": "infrastructure-invalid",
+                                    "status": "retrying",
+                                },
+                                sort_keys=True,
+                            ),
+                            flush=True,
+                        )
+                        if attempt == 3:
+                            raise RuntimeError(
+                                "performance arm/block exhausted bounded retries"
+                            ) from operation_error
+                        continue
+
+                    for item in project_observations:
+                        slot_id = cast(
+                            str, cast(dict[str, object], item["slot"])["slot_id"]
+                        )
+                        chained = _performance_chain_observation(
+                            item, prior_by_slot.get(slot_id)
+                        )
+                        prior_by_slot[slot_id] = chained
+                        observations.append(chained)
+                    print(
+                        json.dumps(
+                            {
+                                "arm": arm_id,
+                                "attempt": attempt,
+                                "block": block,
+                                "slots": len(project_observations),
+                                "status": "passed",
+                            },
+                            sort_keys=True,
+                        ),
+                        flush=True,
+                    )
+                    break
+        process_observations(observations)
+        return observations
+    finally:
+        _PERFORMANCE_EVIDENCE_ACTIVE = False
+
+
+def integrated_performance_evidence(*, retain: bool) -> None:
+    """Execute P9.3 and optionally publish its one append-only corpus."""
+
+    from locus.performance_evidence import (
+        assert_retained_target_absent,
+        build_comparison,
+        process_observations,
+        publish_corpus,
+    )
+
+    provenance = _tracked_source_provenance(require_clean=retain)
+    if retain:
+        assert_retained_target_absent(ROOT)
+    observations = _collect_performance_observations(provenance=provenance)
+    summary = process_observations(observations)
+    comparison = build_comparison(summary)
+    result: dict[str, object] = {
+        "comparison_sha256": hashlib.sha256(
+            json.dumps(comparison, sort_keys=True, separators=(",", ":")).encode()
+            + b"\n"
+        ).hexdigest(),
+        "invalid_attempt_count": summary["invalid_attempt_count"],
+        "measured_observation_count": summary["measured_observation_count"],
+        "raw_record_count": len(observations),
+        "retained": False,
+        "scheduled_slot_count": summary["scheduled_slot_count"],
+        "status": "passed",
+    }
+    if retain:
+        manifest = publish_corpus(workspace=ROOT, observations=observations)
+        result.update(
+            {
+                "comparison_sha256": manifest["comparison_sha256"],
+                "raw_records_sha256": manifest["raw_records_sha256"],
+                "retained": True,
+                "summary_sha256": manifest["summary_sha256"],
+            }
+        )
+    print(json.dumps(result, sort_keys=True))
+
+
 def integrated_state_evidence(*, retain: bool) -> None:
     """Run D026's fixed aggregate-only state scenario corpus."""
 
@@ -2624,6 +4090,15 @@ def build_integrated_parser() -> argparse.ArgumentParser:
         action="store_true",
         help="publish the complete corpus exclusively from a clean commit",
     )
+    performance = subparsers.add_parser(
+        "integrated-performance-evidence",
+        help="run the exact P9.3 managed performance schedule",
+    )
+    performance.add_argument(
+        "--retain",
+        action="store_true",
+        help="publish the complete corpus exclusively from a clean commit",
+    )
     return parser
 
 
@@ -2647,6 +4122,8 @@ def main() -> int:
             integrated_state_evidence(retain=args.retain)
         elif args.command == "integrated-flow-evidence":
             integrated_flow_evidence(retain=args.retain)
+        elif args.command == "integrated-performance-evidence":
+            integrated_performance_evidence(retain=args.retain)
         else:  # pragma: no cover
             raise AssertionError(f"Unhandled command: {args.command}")
     except subprocess.CalledProcessError as error:

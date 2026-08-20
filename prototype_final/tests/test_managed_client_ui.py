@@ -205,6 +205,47 @@ class ManagedClientApiTests(unittest.TestCase):
             successor.client_status()["client_identity"], status["client_identity"]
         )
 
+    def test_performance_observation_fails_closed_when_not_enabled(self) -> None:
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            self.assertRaises(ManagedClientError),
+        ):
+            self.api.performance_observation(
+                {
+                    "api_version": MANAGED_CLIENT_API_VERSION,
+                    "instrumentation_id": (
+                        "LOCUS-managed-performance-instrumentation-v1"
+                    ),
+                }
+            )
+
+    def test_successor_route_fails_closed_when_not_enabled(self) -> None:
+        with (
+            patch.dict("os.environ", {}, clear=True),
+            self.assertRaises(ManagedClientError),
+        ):
+            self.api.create_successor(
+                {
+                    "api_version": MANAGED_CLIENT_API_VERSION,
+                    "operation_id": "successor-disabled",
+                    "recovery_input": [],
+                    "rotate_protected_key": False,
+                    "successor_deployment_profile_id": PAIRED_DEPLOYMENT_2_OF_3,
+                    "successor_suite_id": YI_SUITE_ID,
+                }
+            )
+
+    def test_performance_fixture_key_is_reproducible_and_scoped(self) -> None:
+        environment = {
+            "LOCUS_PERFORMANCE_EVIDENCE": "1",
+            "LOCUS_PERFORMANCE_FIXTURE_ID": "topology:block-01",
+        }
+        with patch.dict("os.environ", environment, clear=True):
+            first = self.api.generate_key(self.operation("fixture-1"))
+            self.api.clear()
+            second = self.api.generate_key(self.operation("fixture-2"))
+        self.assertEqual(first["private_key"], second["private_key"])
+
     def test_enrollment_uses_current_volatile_key_and_exports_package(self) -> None:
         generated = self.api.generate_key(self.operation("generate-1"))
         generated_private_key = str(generated["private_key"])

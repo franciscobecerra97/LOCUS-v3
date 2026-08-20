@@ -372,7 +372,9 @@ resilience result family is assigned by D028.
 | `LOCUS-managed-performance-comparison-v1` | 28 shared-metric matched Yi/aPPSS pairs, side-by-side only | No sample pooling, hypothesis test, suite-specific-phase comparison, or advantage claim is permitted |
 | `LOCUS-managed-performance-corpus-manifest-v1` | Closing hash manifest over append-only raw attempts, summary, and comparison | Until it exists and validates, the reserved directory is unsealed and cannot support a result |
 
-P9.2 creates no retained directory or timing result. P9.3 alone may populate
+P9.2 created no retained directory or timing result. The owner opened P9.3 on
+2026-08-20, and its new collector command is confined to the same assigned v1
+contracts and exact local D025/D028 graph. P9.3 alone may populate
 `prototype_final/evidence/retained/managed-performance-v1/` with exclusive-
 create raw attempts, processed summary, derived comparison, and closing
 manifest. An old record is never overwritten; an explicit replacement binds
