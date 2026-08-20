@@ -74,6 +74,13 @@ class PerformanceCollectionTests(unittest.TestCase):
         self.assertFalse(exploratory.retain)
         self.assertTrue(retained.retain)
 
+    def test_project_stop_waits_for_asynchronous_controller_shutdown(self) -> None:
+        with (
+            patch("tasks.run_capture", side_effect=["controller-id\n", ""]),
+            patch("tasks.time.sleep"),
+        ):
+            tasks._wait_project_stopped("locus-perf-test", {}, timeout=1)
+
     def test_publication_uses_exclusive_staging_and_closing_manifest(self) -> None:
         observation = {"attempt_index": 1, "slot": {"slot_id": "MP00:test"}}
         summary = {"format_id": "summary"}

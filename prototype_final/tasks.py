@@ -752,6 +752,31 @@ def _stop_through_manager(port: int, csrf: str, *, label: str) -> None:
     raise RuntimeError("Manager stop did not make the system unavailable")
 
 
+def _wait_project_stopped(
+    project: str, environment: dict[str, str], *, timeout: float = 90
+) -> None:
+    """Wait until the asynchronous Manager shutdown has stopped every static role."""
+
+    deadline = time.monotonic() + timeout
+    while time.monotonic() < deadline:
+        running = run_capture(
+            [
+                require("docker"),
+                "ps",
+                "--filter",
+                f"label=com.docker.compose.project={project}",
+                "--format",
+                "{{.ID}}",
+            ],
+            env=environment,
+            visible=False,
+        ).strip()
+        if not running:
+            return
+        time.sleep(0.25)
+    raise RuntimeError("Manager shutdown left a static role running")
+
+
 def _wait_role(
     port: int,
     role: str,
@@ -3377,6 +3402,7 @@ def _performance_measure_arm_slot(
             runtime.manager_csrf,
             label="performance-preserved-system-stop",
         )
+        _wait_project_stopped(runtime.project, runtime.environment)
         _performance_clear_client(runtime)
         _status, runtime.manager_csrf = _resume_project(
             project=runtime.project,
