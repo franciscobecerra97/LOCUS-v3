@@ -240,6 +240,30 @@ class ManagedControllerTests(unittest.TestCase):
         )
         self.assertNotIn("management", CLIENT_NETWORKS)
 
+    def test_performance_client_environment_is_exact_and_revalidated(self) -> None:
+        engine = _FakeEngine()
+        environment = {
+            "LOCUS_PERFORMANCE_EVIDENCE": "1",
+            "LOCUS_PERFORMANCE_FIXTURE_ID": "topology:block-01",
+        }
+        with patch.dict("os.environ", environment, clear=False):
+            controller = self.controller(engine)
+            controller.create_client()
+            inspection = next(iter(engine.inspections.values()))
+            observed = {
+                item
+                for item in inspection["Config"]["Env"]
+                if item.startswith("LOCUS_PERFORMANCE_")
+            }
+            self.assertEqual(
+                observed,
+                {
+                    "LOCUS_PERFORMANCE_EVIDENCE=1",
+                    "LOCUS_PERFORMANCE_FIXTURE_ID=topology:block-01",
+                },
+            )
+            controller._validate_client_inspection(inspection)
+
     def test_controller_mutations_replay_once_and_reject_changed_reuse(self) -> None:
         engine = _FakeEngine()
         controller = self.controller(engine)

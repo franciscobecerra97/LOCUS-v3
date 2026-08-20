@@ -601,6 +601,15 @@ class ManagedContainerController:
         }
         if os.environ.get("LOCUS_FLOW_AUDIT") == "1":
             expected_environment["LOCUS_FLOW_AUDIT"] = "LOCUS_FLOW_AUDIT=1"
+        if os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") == "1":
+            expected_environment["LOCUS_PERFORMANCE_EVIDENCE"] = (
+                "LOCUS_PERFORMANCE_EVIDENCE=1"
+            )
+            fixture_id = os.environ.get("LOCUS_PERFORMANCE_FIXTURE_ID")
+            if fixture_id:
+                expected_environment["LOCUS_PERFORMANCE_FIXTURE_ID"] = (
+                    f"LOCUS_PERFORMANCE_FIXTURE_ID={fixture_id}"
+                )
         if locus_environment != expected_environment:
             raise ControllerError("managed client environment changed")
         role_mounts = [
