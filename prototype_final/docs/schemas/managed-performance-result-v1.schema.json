@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-performance-result-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attempt_id", "attempt_index", "bindings", "cleanup", "evidence_profile_id", "format_id", "infrastructure_invalid", "instrumentation_id", "limitations", "methodology_id", "methodology_sha256", "metrics", "outcome", "output_safety", "positive_controls", "replacement_of_sha256", "scenario_manifest_id", "scenario_manifest_sha256", "slot", "status"],
+  "properties": {
+    "attempt_id": {"type": "string", "pattern": "^MP[0-1][0-9]:[a-z0-9:-]+:a[0-9]{2}$"},
+    "attempt_index": {"type": "integer", "minimum": 1, "maximum": 99},
+    "bindings": {"type": "object"},
+    "cleanup": {"type": "object", "additionalProperties": false, "required": ["complete", "resources_remaining"], "properties": {"complete": {"type": "boolean"}, "resources_remaining": {"type": "integer", "minimum": 0, "maximum": 1}}},
+    "evidence_profile_id": {"const": "LOCUS-managed-performance-evidence-profile-v1"},
+    "format_id": {"enum": ["LOCUS-managed-performance-result-yi-v1", "LOCUS-managed-performance-result-appss-v1", "LOCUS-managed-performance-result-common-v1"]},
+    "infrastructure_invalid": {"type": ["object", "null"]},
+    "instrumentation_id": {"const": "LOCUS-managed-performance-instrumentation-v1"},
+    "limitations": {"type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true},
+    "methodology_id": {"const": "LOCUS-managed-performance-methodology-v1"},
+    "methodology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "metrics": {"type": ["object", "null"]},
+    "outcome": {"enum": ["warmup-passed", "valid-success", "valid-expected-rejection", "infrastructure-invalid"]},
+    "output_safety": {"const": {"prohibited_findings": 0, "scan": "passed"}},
+    "positive_controls": {"type": "object", "minProperties": 15, "maxProperties": 15},
+    "replacement_of_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+    "scenario_manifest_id": {"const": "LOCUS-managed-performance-scenario-manifest-v1"},
+    "scenario_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "slot": {"type": "object"},
+    "status": {"enum": ["warmup-passed", "valid-success", "valid-expected-rejection", "infrastructure-invalid"]}
+  }
+}

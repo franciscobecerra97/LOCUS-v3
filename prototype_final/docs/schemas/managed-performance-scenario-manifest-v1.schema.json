@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-performance-scenario-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["attempt_statuses", "evidence_profile_id", "format_id", "invalid_categories", "measured_slot_count", "methodology_id", "methodology_sha256", "scenario_slot_counts", "scenarios", "scheduled_slot_count", "slot_digest", "status"],
+  "properties": {
+    "attempt_statuses": {"const": ["warmup-passed", "valid-success", "valid-expected-rejection", "infrastructure-invalid"]},
+    "evidence_profile_id": {"const": "LOCUS-managed-performance-evidence-profile-v1"},
+    "format_id": {"const": "LOCUS-managed-performance-scenario-manifest-v1"},
+    "invalid_categories": {"type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true},
+    "measured_slot_count": {"const": 1180},
+    "methodology_id": {"const": "LOCUS-managed-performance-methodology-v1"},
+    "methodology_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "scenario_slot_counts": {"type": "object", "minProperties": 20, "maxProperties": 20},
+    "scenarios": {"type": "object", "minProperties": 20, "maxProperties": 20},
+    "scheduled_slot_count": {"const": 1220},
+    "slot_digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "status": {"const": "assigned"}
+  }
+}

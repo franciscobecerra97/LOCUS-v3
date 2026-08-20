@@ -42,7 +42,10 @@ attempt-control boundaries. D028/P9.1 now assigns only the exact non-collecting
 managed performance/resilience methodology. It freezes the D025 four-arm
 block, sample, failure, metric, and statistical boundary but adds no result,
 retained path, claim support, or manuscript authorization. CLM-18 remains
-`Partial` pending P9.2/P9.3 and later artifact reproduction.
+`Partial` pending P9.3 and later artifact reproduction. D029/P9.2 now supplies
+strict non-collecting observation, invalid-attempt, processing, comparison, and
+hash-closure contracts; schemas and synthetic tests add no measured result or
+claim support by themselves.
 
 ## Claim Matrix
 

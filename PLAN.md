@@ -22,9 +22,9 @@ controlled deployment and dynamic Client UI workflow inside that same source
 boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
-predecessor. P8.1 through P8.4 and P9.1 are complete; P9.2 is the next proposed
-step and remains an owner gate. Architecture decisions listed in
-`DECISIONS.md` remain owner gates.
+predecessor. P8.1 through P8.4 and P9.1--P9.2 are complete; P9.3 is the next
+proposed step and remains an owner and clean-collector gate. Architecture
+decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
 
@@ -2966,18 +2966,115 @@ Completion record:
 
 ### P9.2 Implement new evidence schemas
 
-Status: `Proposed`
+Status: `Complete`
 
-Readiness: P9.1 is complete. Before implementation, the owner must approve the
-exact result identifiers, schemas, privacy/provenance fields, positive
-controls, invalid-run representation, processors, and append-only paths. P9.2
-must not collect measurements.
+Readiness: P9.1 is complete and the owner approved D029 exactly as proposed on
+2026-08-20. P9.2 is non-collecting; P9.3 remains a separate owner and clean-
+collector gate.
+
+Decision gate: D029 is approved and its exact contracts are Assigned. It does
+not authorize a performance collector or creation of the retained directory.
 
 Implement only the performance and resilience result families needed by the
 P9.1 methodology, including end-to-end integrated performance, failure and
 restart schedules, concurrency/throughput, role/storage bytes, and any
 separately labeled browser-observed latency. P8.2 owns security/state result
 schemas and P8.3 owns network-flow trace schemas.
+
+#### Work package 1 — Freeze identifiers and the exclusive path
+
+Assigned under D029:
+
+- `LOCUS-managed-performance-evidence-profile-v1`;
+- `LOCUS-managed-performance-instrumentation-v1`;
+- `LOCUS-managed-performance-scenario-manifest-v1`;
+- `LOCUS-managed-performance-result-common-v1`;
+- `LOCUS-managed-performance-result-yi-v1`;
+- `LOCUS-managed-performance-result-appss-v1`;
+- `LOCUS-managed-performance-processor-v1`;
+- `LOCUS-managed-performance-summary-v1`, preserving suite/common groups;
+- `LOCUS-managed-performance-comparison-v1`; and
+- `LOCUS-managed-performance-corpus-manifest-v1`.
+
+Reserve only
+`prototype_final/evidence/retained/managed-performance-v1/`, with append-only
+`raw/<slot-id>/attempt-<NN>.json`, `processed/summary.json`,
+`derived/comparison.json`, and one closing corpus manifest. P9.2 tests the
+layout without creating the retained target. Every later P9.3 file is
+exclusive-create and the directory remains unsealed until its manifest exists.
+
+#### Work package 2 — Define the observation and provenance schemas
+
+- Give every warm-up, measured operation, batch, structural scenario,
+  successor direction, and lifecycle action a deterministic scheduled
+  observation identifier.
+- Bind each record to the D028 methodology and scenario manifest; exact source,
+  deployment/configuration, canonical manifest, resolved/live graph and image
+  digests; service identities, networks, provider and host tier; Client/UI/API
+  profiles; suite, topology, policy/resolver, holders and 4-of-5 authorization
+  quorum; block, seed, order, fixture class, failure schedule, instrumentation,
+  cleanup, and output-safety status.
+- Permit only bounded aggregate outcome, monotonic timing, non-overlapping
+  phase, application-body-byte, aggregate persisted-byte, lifecycle,
+  concurrency, and public provenance fields.
+- Prohibit payloads, cues, canonical cue bytes, passwords, recovery secrets,
+  protected keys, credentials, logs, packet traces, host paths, and stable
+  machine/account identifiers.
+- Keep suite-neutral Manager/system and Client lifecycle records in the common
+  family. Yi and aPPSS operation records always use their separate family.
+
+#### Work package 3 — Define valid and infrastructure-invalid records
+
+- Mark every attempt exactly `warmup-passed`, `valid-success`,
+  `valid-expected-rejection`, or `infrastructure-invalid`; expected protocol
+  rejection is a valid scenario outcome, not infrastructure invalidity.
+- Retain a bounded public invalid category, include every
+  invalid record in corpus accounting, exclude it from valid distributions,
+  and disclose invalid counts.
+- Represent a deliberate replacement as a new observation that references one
+  immutable invalid observation. Never mutate or remove the original.
+- Reject silent retry, omission, overwrite, duplicate identifiers, unlinked
+  replacement, outlier deletion, and reclassification of a slow valid result.
+
+#### Work package 4 — Implement deterministic processors
+
+- Validate the entire frozen schedule before emitting a summary.
+- Apply the D028 Type-7 quantiles, n=30 and n=10 summaries, deterministic
+  10,000-resample 95% median interval, secondary-only means, no-outlier rule,
+  and disclosed invalid counts exactly.
+- Emit one summary whose groups preserve Yi, aPPSS, and common identities.
+  Permit the comparative processor only for exactly matched topology, policy/resolver,
+  graph, provider, fixture class, block, warm-up, failure schedule, sample
+  count, metric, and processor identities; preserve both provenance records
+  and never pool samples.
+- Digest-close observation, processed summary, comparison, and corpus-manifest
+  inputs and outputs.
+- Reject frozen historical results, P8 state/flow records, component/P6/P7
+  profiles, incomplete blocks, changed metrics, or an unapproved provider or
+  host tier.
+
+#### Work package 5 — Add positive controls and synthetic objects
+
+Require controls for changed manifest/resolved/live graph and image identity;
+wrong suite, topology, policy, resolver, provider, quorum, holders, schedule,
+seed, count, or instrumentation; overlapping/invalid phases; missing/duplicate
+observation identifiers; omitted or silently replaced invalid runs; outlier
+deletion; cross-suite pooling/relabeling; historical/P8 input; prohibited
+synthetic output markers; incomplete cleanup; and an existing retained target.
+Construct deterministic valid, expected-failure, infrastructure-invalid,
+explicit-replacement, matched-comparison, and closing-manifest objects in the
+test suite without retaining them as measurements.
+
+#### Work package 6 — Close the non-collecting P9.2 gate
+
+- Add strict schemas, canonical contracts, validators, processor code, tests,
+  technical documentation, and registry/governance updates inside the active
+  `prototype_final/` boundary.
+- The automatically discovered P9.2 tests make `integrated-check` validate
+  every contract and positive control. Do not add a collection command in P9.2.
+- Confirm the retained path does not exist and no timing corpus was collected.
+- Mark P9.2 complete only after the approved D029 text, all checks, exact
+  documentation synchronization, and a clean non-collecting commit.
 
 Acceptance:
 
@@ -2996,6 +3093,37 @@ Acceptance:
   frozen Compose v2 identifier where an integrated-system result is required.
 - P9.2 cannot redefine, broaden, or retroactively authorize a P8.2 security/
   state result or P8.3 flow trace.
+- The approved identifiers, instrumentation, scenario manifest, result and
+  summary schemas, comparison preconditions, deterministic processor, invalid-
+  run semantics, positive controls, and exclusive path are fail-closed and
+  checked without creating a retained result.
+- `integrated-check` passes and repository inspection confirms that P9.2 added
+  no collector, measurement corpus, external-service dependency, runtime
+  protocol change, or manuscript edit.
+
+Completion record:
+
+- Ten D029 identifiers are Assigned with four canonical profiles, seven strict
+  schemas, exact registry rules, and a fail-closed Python implementation under
+  `prototype_final/`.
+- The compact MP00--MP19 manifest deterministically expands to 1,220 unique
+  slots: 40 unmeasured warm-ups and 1,180 measured observations. It preserves
+  Yi, aPPSS, successor-direction, concurrency-level, and common lifecycle
+  boundaries.
+- Observation validation binds the exact D025/D028 graph, source, image,
+  identities, networks, provider, arm, schedule, roles, phases, positive
+  controls, output scan, and limitations. Four statuses and eight bounded
+  infrastructure categories implement immutable cryptographically linked
+  replacement attempts.
+- The processor requires every terminal slot, emits 70 separate groups with
+  the exact Type-7/bootstrap/no-outlier rules, derives 28 shared-metric
+  side-by-side comparisons without pooling or hypothesis tests, and closes raw,
+  summary, comparison, and manifest digests.
+- Synthetic tests exercise a complete 1,221-attempt corpus containing one
+  invalid attempt and explicit replacement, plus suite/common separation,
+  mutation rejection, comparison, closure, and retained-target refusal. P9.2
+  creates no collector, retained directory, runtime change, external-service
+  dependency, or manuscript edit.
 
 ### P9.3 Collect the same-host integrated baseline
 
@@ -3155,10 +3283,14 @@ the honest same-host managed integrated profile.
 
 The next sequence is:
 
-1. P9 — first freeze the revised methodology and result schemas, then collect
-   new suite/topology-specific performance/resilience results
-   from that system; and
-2. P10 — complete independent review, integrated artifact reproduction, claim
+1. P9.2 — approve D029, then implement and verify the non-collecting result
+   schemas, invalid-run contract, processors, controls, and exclusive path;
+2. P9.3 — implement the separately gated collector, validate it exploratorily,
+   and collect new suite/topology-specific same-host performance/resilience
+   results only from a clean committed source state;
+3. P9.4 — optionally evaluate separately authorized multi-host or external-
+   provider profiles under new identities; and
+4. P10 — complete independent review, integrated artifact reproduction, claim
    closure, and separately owner-approved manuscript changes.
 
 Do not collect retained P8/P9 evidence, promote a system result, or propose a

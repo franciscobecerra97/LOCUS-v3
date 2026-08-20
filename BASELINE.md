@@ -422,9 +422,19 @@ same-host/local-provider four-arm block design, seeds, warm-up, n=30/n=10 and
 successor/concurrency/lifecycle schedules, party failure/restart schedules,
 metric meanings, Type-7/bootstrap summaries, no-outlier policy, invalid-run
 handling, and interpretation limits. It assigns no P9 result identifier or
-retained path. P9.2 remains a separate owner-approved schema/control gate
-before any P9.3 measurement; P9.4 external/multi-host work and all manuscript
-wording remain separately gated.
+retained path. At that milestone P9.2 remained a separate owner-approved
+schema/control gate before any P9.3 measurement; P9.4 external/multi-host work
+and all manuscript wording remain separately gated.
+
+D029 completed the non-collecting P9.2 schema/processor gate on 2026-08-20.
+Ten Assigned identifiers now bind the exact 1,220-slot MP00--MP19 expansion,
+suite/common raw families, client-monotonic instrumentation, immutable linked
+invalid attempts, seven strict schemas, 70 deterministic summary groups, 28
+matched non-pooled comparisons, positive controls, and a closing corpus
+manifest. Synthetic tests exercise the complete schedule but the reserved
+`prototype_final/evidence/retained/managed-performance-v1/` directory does not
+exist. No collector, measured result, runtime behavior, external provider, or
+manuscript wording is added; P9.3 remains separately gated.
 
 ## Excluded material
 

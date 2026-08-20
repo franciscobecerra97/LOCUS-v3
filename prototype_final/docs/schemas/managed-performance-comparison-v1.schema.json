@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-performance-comparison-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["comparison_count", "format_id", "hypothesis_test", "interpretation", "limitations", "pairs", "pooling", "processor_id", "status", "summary_id", "summary_sha256"],
+  "properties": {
+    "comparison_count": {"const": 28},
+    "format_id": {"const": "LOCUS-managed-performance-comparison-v1"},
+    "hypothesis_test": {"const": false},
+    "interpretation": {"const": "matched-side-by-side-descriptive-only"},
+    "limitations": {"type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true},
+    "pairs": {"type": "array", "minItems": 28, "maxItems": 28},
+    "pooling": {"const": false},
+    "processor_id": {"const": "LOCUS-managed-performance-processor-v1"},
+    "status": {"const": "derived"},
+    "summary_id": {"const": "LOCUS-managed-performance-summary-v1"},
+    "summary_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

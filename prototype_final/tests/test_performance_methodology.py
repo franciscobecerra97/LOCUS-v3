@@ -69,15 +69,32 @@ class PerformanceMethodologyTests(unittest.TestCase):
                 with self.assertRaises(PerformanceMethodologyError):
                     validate_methodology(changed)
 
-    def test_schema_is_strict_and_registry_contains_only_methodology_id(self) -> None:
+    def test_schema_is_strict_and_registry_contains_d028_and_d029_ids(self) -> None:
         schema = json.loads(SCHEMA.read_bytes())
         self.assertFalse(schema["additionalProperties"])
         self.assertEqual(schema["properties"]["format_id"]["const"], METHODOLOGY_ID)
         registry = json.loads((ROOT / "docs" / "version-registry-v1.json").read_bytes())
         protected = registry["protected_identifiers"]
         self.assertIn(METHODOLOGY_ID, protected)
-        self.assertFalse(
-            any("managed-performance-result" in item for item in protected)
+        self.assertEqual(
+            {
+                item
+                for item in protected
+                if item.startswith("LOCUS-managed-performance-")
+            },
+            {
+                METHODOLOGY_ID,
+                "LOCUS-managed-performance-evidence-profile-v1",
+                "LOCUS-managed-performance-instrumentation-v1",
+                "LOCUS-managed-performance-scenario-manifest-v1",
+                "LOCUS-managed-performance-result-common-v1",
+                "LOCUS-managed-performance-result-yi-v1",
+                "LOCUS-managed-performance-result-appss-v1",
+                "LOCUS-managed-performance-processor-v1",
+                "LOCUS-managed-performance-summary-v1",
+                "LOCUS-managed-performance-comparison-v1",
+                "LOCUS-managed-performance-corpus-manifest-v1",
+            },
         )
 
 

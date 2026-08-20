@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-performance-corpus-manifest-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["comparison_path", "comparison_sha256", "evidence_profile_id", "format_id", "infrastructure_invalid_count", "measured_slot_count", "positive_controls", "publication", "raw_attempt_count", "raw_records_sha256", "retained_root", "scheduled_slot_count", "status", "summary_path", "summary_sha256", "terminal_slot_count"],
+  "properties": {
+    "comparison_path": {"const": "derived/comparison.json"},
+    "comparison_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidence_profile_id": {"const": "LOCUS-managed-performance-evidence-profile-v1"},
+    "format_id": {"const": "LOCUS-managed-performance-corpus-manifest-v1"},
+    "infrastructure_invalid_count": {"type": "integer", "minimum": 0},
+    "measured_slot_count": {"const": 1180},
+    "positive_controls": {"type": "object", "minProperties": 15, "maxProperties": 15},
+    "publication": {"const": "append-only-exclusive-create"},
+    "raw_attempt_count": {"type": "integer", "minimum": 1220},
+    "raw_records_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "retained_root": {"const": "evidence/retained/managed-performance-v1"},
+    "scheduled_slot_count": {"const": 1220},
+    "status": {"const": "sealed"},
+    "summary_path": {"const": "processed/summary.json"},
+    "summary_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "terminal_slot_count": {"const": 1220}
+  }
+}

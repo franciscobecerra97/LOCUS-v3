@@ -34,6 +34,7 @@ gates before their affected implementation work.
 | D026 | Managed aggregate-only state-evidence contract | Assign the exact 42-report P8.2 managed-state contract and exclusive retained path | Approved |
 | D027 | Managed privacy-safe flow-evidence contract | Assign the exact 30-report P8.3 payload-free application-flow contract and exclusive retained path | Approved |
 | D028 | Managed performance and resilience methodology | Freeze the exact four-arm D025 same-host blocked design, sample/failure schedules, metric meanings, statistics, and interpretation limits before P9 collection | Approved |
+| D029 | Managed performance and resilience evidence contracts | Assign suite-separated observation families, deterministic processing, explicit invalid-run records, positive controls, and one exclusive append-only same-host result path before P9 collection | Approved |
 
 ## Approved architecture records
 
@@ -1388,6 +1389,145 @@ external service, runtime protocol change, or paper edit is authorized.
 Manuscript implication: None authorized. No CPU, energy, WAN, real-provider,
 production-capacity, scalability, independent-administration, usability, or
 comparative-advantage claim follows from P9.1.
+
+### D029 — Managed performance and resilience evidence contracts
+
+Decision ID: D029
+
+Date: 2026-08-20
+
+Status: Approved
+
+Chosen option: Assign the exact non-collecting P9.2 contract presented to and
+approved verbatim by the owner for the D028 methodology. The identifiers are:
+
+- `LOCUS-managed-performance-evidence-profile-v1`;
+- `LOCUS-managed-performance-instrumentation-v1`;
+- `LOCUS-managed-performance-scenario-manifest-v1`;
+- `LOCUS-managed-performance-result-yi-v1`;
+- `LOCUS-managed-performance-result-appss-v1`;
+- `LOCUS-managed-performance-result-common-v1`;
+- `LOCUS-managed-performance-processor-v1`;
+- `LOCUS-managed-performance-summary-v1`;
+- `LOCUS-managed-performance-comparison-v1`; and
+- `LOCUS-managed-performance-corpus-manifest-v1`.
+
+The Yi and aPPSS observation identifiers remain disjoint, and the common
+family accepts only suite-neutral Manager/system and managed-Client lifecycle
+observations. The single summary preserves each group family. The comparison
+family may consume Yi and aPPSS groups only
+when their topology, policy/resolver pairing, deployment graph, provider,
+synthetic fixture class, block, warm-up, failure schedule, sample count,
+metric definitions, and processor identity match exactly. It preserves both
+input provenance records and never pools samples or relabels either suite.
+
+Retained boundary: Reserve exactly
+`prototype_final/evidence/retained/managed-performance-v1/` for P9.3. Its
+layout contains append-only `raw/<slot-id>/attempt-<NN>.json`,
+`processed/summary.json`, `derived/comparison.json`, and one closing
+`corpus-manifest.json`. The directory remains explicitly unsealed until the
+manifest hash-closes it. Every file uses exclusive creation; an existing
+attempt, summary, comparison, or manifest is never overwritten. P9.2 creates
+schemas, canonical profiles, validators, synthetic processor tests, and
+positive controls only and must not create that retained directory or collect
+timings.
+
+Schedule boundary: MP00 records 40 unmeasured warm-up controls; MP01--MP06
+record 720 central observations; MP07--MP11 record 200 structural/restart/
+storage observations; MP12 records 80 successor observations; MP13 records 120
+concurrency observations; and MP14--MP19 record 60 suite-neutral lifecycle
+observations. The immutable total is 1,220 scheduled slots, of which 1,180 are
+measured. Infrastructure-invalid attempts may add records but never replace or
+reduce a scheduled slot.
+
+Observation contract: Every scheduled warm-up, measured observation, batch,
+structural scenario, successor direction, and lifecycle action receives a
+deterministic observation identifier bound to the methodology, scenario
+manifest, arm or common family, block/seed/order, deployment/configuration and
+graph digests, immutable image identities, service identities and networks,
+provider, host tier, Client/API profiles, suite/topology/policy/resolver,
+holder set, 4-of-5 authorization quorum, failure schedule, synthetic fixture
+class, source commit, instrumentation identity, and output-safety result.
+Retained fields are bounded aggregate timing, outcome, application-body-byte,
+persisted-byte, lifecycle, concurrency, and public provenance data only. Raw
+payloads, cues, canonical cue bytes, passwords, recovery secrets, protected
+keys, credentials, request/response bodies, logs, traces, host paths, and
+stable machine/account identifiers are prohibited.
+
+Invalid-run contract: Every attempt is immutable and uses exactly one of
+`warmup-passed`, `valid-success`, `valid-expected-rejection`, or
+`infrastructure-invalid`. Invalid records retain a bounded public category,
+remain in corpus accounting, and are always
+excluded from valid distributions with their count disclosed. A deliberate
+replacement is a new attempt record that references exactly one immediately
+prior invalid observation digest; the original remains present. Silent retry,
+omission, mutation, overwrite, or reuse of an observation identifier is
+rejected. Slow
+valid observations and expected protocol failures remain valid and are never
+treated as outliers.
+
+Processor contract: The deterministic processor enforces the complete D028
+schedule before producing any output. It uses Type-7 quantiles, the frozen
+n=30 and n=10 summaries, the seeded 10,000-resample 95% median interval, no
+outlier removal, disclosed invalid counts, and separate suite/common outputs.
+Every observation-to-summary-to-comparison-to-corpus edge is digest-closed.
+Means remain secondary. The processor rejects historical v1/v2 results, P8
+state/flow reports, component/P6/P7 profiles, mismatched arms, incomplete
+blocks, changed metric meanings, or an unapproved provider/host tier.
+
+Required positive controls: Freeze and check monotonic-clock semantics, phase
+non-overlap and end-to-end bounds, body/persisted byte reconciliation, warm-up
+ordering, graph/arm and failure-schedule binding, expected outcomes, Client
+identity rotation, one-Client serialization, invalid-attempt linkage,
+prohibited-output canaries, cleanup, and raw-to-processed hash closure. Tests
+use complete synthetic valid, expected-rejection, infrastructure-invalid,
+explicit-replacement, suite-comparison, and closing-manifest objects; they
+also reject mutations and an existing retained target.
+
+Alternatives considered: One pooled Yi/aPPSS family; treating all failure
+schedules as ordinary successful timing rows; discarding or silently retrying
+infrastructure failures; reusing the historical v2 result formats or P8
+schemas; retaining developer logs or per-request payload traces; allocating a
+real-provider or multi-host family now; and implementing the collector before
+the contracts. All are rejected by the chosen option.
+
+New trust assumptions: None beyond D025 and D028. The same measurement host,
+single operator, monotonic Client clock, Docker engine, synthetic fixtures,
+and local S3-compatible provider remain trusted for this exact experiment.
+The schemas do not establish clock integrity against a malicious host,
+independent administration, or Internet/provider realism.
+
+Privacy implications: The contracts accept synthetic aggregate-only records.
+Pseudonyms and public digests bind runs without retaining credentials, real
+identities, secret-bearing values, payloads, logs, packet captures, or stable
+host/account identifiers. Output scanning and positive controls fail the whole
+publication for prohibited content.
+
+Compatibility/version impact: The ten identifiers are Assigned, not Frozen,
+at P9.2. Any change to the D028 methodology or to the schemas, validity
+semantics, processor, comparison preconditions, instrumentation, or retained
+layout requires a new identifier and path. The retained v2, P8.2, and P8.3
+families remain immutable and non-transferable.
+
+Required evidence: Strict schemas, canonical profiles, validators,
+deterministic full-schedule synthetic processor tests, positive controls,
+exact registry closure, and `integrated-check` must pass without collecting or
+retaining a measurement. P9.3 later requires a clean collector commit,
+exploratory non-retaining validation, the exact D028 schedule, and one
+exclusive retained publication.
+
+Files or components authorized: P9.2 may change only
+`prototype_final/docs/`, `prototype_final/locus/`, `prototype_final/tests/`,
+the `integrated-check` gate in `prototype_final/tasks.py`, and the necessary
+PLAN, baseline, evidence-policy, version-registry, and technical status
+documentation. It may not add or run a performance collector, create retained
+results, change runtime protocol behavior, use an external provider, or edit
+the manuscript.
+
+Manuscript implication: None authorized. P9.2 schemas and tests are not
+performance evidence and support no Yi/aPPSS advantage, scalability,
+production-capacity, real-provider, multi-host, usability, or manuscript
+claim.
 
 ## Decision record template
 

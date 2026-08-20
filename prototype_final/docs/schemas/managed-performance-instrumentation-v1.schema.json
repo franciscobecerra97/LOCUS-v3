@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-performance-instrumentation-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["application_body_roles", "clock", "concurrency_observation", "end_to_end", "format_id", "persisted_roles", "phase_rule", "phases", "positive_controls", "prohibited_content", "status", "ui_observation"],
+  "properties": {
+    "application_body_roles": {"type": "array", "minItems": 15, "maxItems": 15, "uniqueItems": true},
+    "clock": {"const": "client-monotonic-nanoseconds"},
+    "concurrency_observation": {"const": ["batch-completion-nanoseconds", "operations-per-second-milli"]},
+    "end_to_end": {"const": "client-observed"},
+    "format_id": {"const": "LOCUS-managed-performance-instrumentation-v1"},
+    "persisted_roles": {"type": "array", "minItems": 16, "maxItems": 16, "uniqueItems": true},
+    "phase_rule": {"const": "fixed-applicable-non-overlapping-and-bounded-by-end-to-end"},
+    "phases": {"type": "array", "minItems": 10, "maxItems": 10, "uniqueItems": true},
+    "positive_controls": {"type": "array", "minItems": 15, "maxItems": 15, "uniqueItems": true},
+    "prohibited_content": {"type": "array", "minItems": 8, "maxItems": 8, "uniqueItems": true},
+    "status": {"const": "assigned"},
+    "ui_observation": {"const": "host-loopback-http-round-trip-browser-rendering-excluded"}
+  }
+}

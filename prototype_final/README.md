@@ -17,7 +17,13 @@ evidence; collection still requires the applicable later PLAN gates.
 
 D028/P9.1 is also complete. It freezes the exact managed performance and
 resilience methodology but intentionally provides no collector, result
-identifier, or retained path. P9.2 remains the next approval gate.
+identifier, or retained path. D029 subsequently closes the separate P9.2 gate.
+
+D029/P9.2 is complete and non-collecting. Ten managed-performance identifiers,
+the 1,220-slot scenario expansion, strict observation/invalid-attempt schemas,
+deterministic processor, matched comparison, closing manifest, and synthetic
+positive controls are checked by `integrated-check`. No collection command or
+retained performance directory exists; P9.3 remains separately gated.
 
 ## Scope
 
@@ -214,6 +220,7 @@ control gate.
 | `docs/security-matrix-v2.json` | Assigned additive managed-system security contract; not retained evidence |
 | `docs/ATTEMPT-CONTROL-BOUNDARY.md` | Frozen negative model and local signed-certificate boundary |
 | `docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` | D028/P9.1 non-collecting managed evaluation design |
+| `docs/MANAGED-PERFORMANCE-EVIDENCE-v1.md` | D029/P9.2 non-collecting schemas, processor, and retention gate |
 | `docs/schemas/` | Integrated configuration, package, and assigned security-matrix schemas |
 
 ## Evidence boundary

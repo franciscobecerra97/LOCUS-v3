@@ -20,9 +20,10 @@ with the inherited corpora.
 P1.4 records protected identifiers and reserved evidence families in
 `docs/version-registry-v1.json`. Reservation is not evidence authorization.
 D027 assigns only P8.3's exact managed-flow trace/result family. D028 assigns
-the non-collecting P9.1 methodology; P9.2 performance/resilience result
-identifiers remain unassigned until their exact privacy boundary, schema,
-positive controls, metrics, and provenance are approved.
+the non-collecting P9.1 methodology. D029 now assigns P9.2's non-collecting
+performance/resilience contracts after their privacy boundary, schemas,
+positive controls, metrics, provenance, processor, and path were approved;
+P9.3 collection remains separately gated.
 
 P1.5's `docs/security-matrix-v1.json` supplies the minimum security contract
 for every C01--C26 row. Before implementing or collecting a scenario, copy its
@@ -335,6 +336,17 @@ privacy-safe fields, provenance/hash closure, invalid-run representation,
 processors, and exclusive append-only paths before P9.3. No P8 or historical
 v2 corpus may be pooled or relabeled. P9.4 external-provider, WAN, and
 multi-host collection remains separately authorized.
+
+D029 assigns P9.2's ten non-collecting managed-performance contracts. MP00--
+MP19 expand deterministically to 1,220 scheduled slots, including 40
+unmeasured warm-ups and 1,180 measurements. Yi, aPPSS, and common observations
+remain separate. Infrastructure-invalid attempts are immutable, excluded with
+counts disclosed, and may be followed only by a new record binding the prior
+SHA-256 digest. The deterministic processor refuses incomplete schedules,
+silent retries, outlier removal, mismatched provenance, historical/P8 inputs,
+pooling, and unsealed output. P9.2 creates no retained directory. P9.3 alone
+may exclusive-create append-only raw attempts, summary, comparison, and closing
+manifest under `prototype_final/evidence/retained/managed-performance-v1/`.
 
 ## External services
 

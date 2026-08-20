@@ -46,7 +46,14 @@ D028 assigns `LOCUS-managed-performance-methodology-v1` after its exact
 four-arm D025 system boundary, block/sample schedule, seeds, warm-up, failure
 schedule, metric meanings, statistics, exclusions, and limitations were
 approved and implemented as a canonical checked contract. It assigns no P9
-result identifier or retained path; those remain a separate P9.2 owner gate.
+result identifier or retained path at P9.1; D029 later closes the separate
+non-collecting P9.2 gate.
+
+D029 assigns the ten managed-performance evidence, instrumentation, scenario,
+suite/common result, processor, summary, comparison, and corpus-manifest
+identifiers after their exact 1,220-slot schedule, schemas, invalid-attempt
+semantics, positive controls, deterministic processing, and reserved path were
+approved and implemented without collection. They are Assigned, not Frozen.
 
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
@@ -350,6 +357,27 @@ The canonical contract and validator live under `prototype_final/docs/` and
 result-identifier and retained-path lists and requires P9.2. No performance or
 resilience result family is assigned by D028.
 
+### D029/P9.2 assigned managed-performance evidence family
+
+| Assigned identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-managed-performance-evidence-profile-v1` | Non-collecting D025/D028 evidence contract over exactly 1,220 MP00--MP19 slots | A changed deployment, schedule, validity, publication, or interpretation boundary requires a new profile |
+| `LOCUS-managed-performance-instrumentation-v1` | Client-monotonic end-to-end/applicable phase, fixed role-byte, loopback UI, lifecycle, and serialized concurrency observations | Changed clock, observation point, role/phase set, byte meaning, UI boundary, or concurrency meaning requires a new identifier |
+| `LOCUS-managed-performance-scenario-manifest-v1` | Compact canonical schedule whose expansion has 40 warm-ups and 1,180 measured slots | Any changed scenario, arm, direction, level, block, seed, repetition, or status/category set requires a new manifest |
+| `LOCUS-managed-performance-result-yi-v1` | Yi observation or source-suite successor attempt under one exact scheduled slot | Yi remains separate from aPPSS, common, P8, D023, and historical results |
+| `LOCUS-managed-performance-result-appss-v1` | aPPSS observation or source-suite successor attempt under one exact scheduled slot | aPPSS remains separate from Yi/common; its per-server initialization phase is suite-specific |
+| `LOCUS-managed-performance-result-common-v1` | Suite-neutral Manager/system and Client lifecycle attempts only | Common results cannot contain or substitute for suite recovery/enrollment observations |
+| `LOCUS-managed-performance-processor-v1` | Type-7, deterministic 10,000-resample interval, no-outlier, linked-invalid, 70-group processing | Changed statistic, seed/domain, invalid rule, grouping, or accepted input family requires a new processor |
+| `LOCUS-managed-performance-summary-v1` | Suite/common-preserving processed groups with disclosed invalid counts | Summaries never pool or relabel suites/topologies/policies/providers |
+| `LOCUS-managed-performance-comparison-v1` | 28 shared-metric matched Yi/aPPSS pairs, side-by-side only | No sample pooling, hypothesis test, suite-specific-phase comparison, or advantage claim is permitted |
+| `LOCUS-managed-performance-corpus-manifest-v1` | Closing hash manifest over append-only raw attempts, summary, and comparison | Until it exists and validates, the reserved directory is unsealed and cannot support a result |
+
+P9.2 creates no retained directory or timing result. P9.3 alone may populate
+`prototype_final/evidence/retained/managed-performance-v1/` with exclusive-
+create raw attempts, processed summary, derived comparison, and closing
+manifest. An old record is never overwritten; an explicit replacement binds
+the immediately prior infrastructure-invalid record digest.
+
 P8.4 assigns no new identifier and does not reinterpret the frozen attempt
 family. `prototype_final/` preserves the historical attempt-model source,
 signed-certificate implementation, and strict report schema under normalized
@@ -525,12 +553,13 @@ separate suite/topology evidence paths before collection.
 | Admission | P3.3 provider-neutral binding/capability/proof/replay and local synthetic issuer identifiers | Any OIDC or other provider adapter requires a distinct profile, schema, vector, and evidence path without changing the core binding |
 | Deployment | Frozen same-host Yi profile plus P6.3 matched same-host process profiles for Yi/aPPSS 2-of-3 and 3-of-5 | P6.4 host separation is a distinct profile; independent administration requires actual operators and separate approval |
 | Integrated reference deployment | Assigned D023 reference deployment/config v1 predecessor; Assigned D025 Manager deployment/config/API/UI, controller API/profile, Client API/UI, managed-instance, package, clean-client-v2, and security-matrix-v2 profiles | P7.7 passed strict schemas/profiles, vectors, compatibility rules, negative tests, complete managed smoke, and documentation; D023 v1 remains immutable |
-| Measurement methodology | Assigned D028 managed-performance methodology v1; no result identifier or retained path | P9.2 separately approves performance/resilience schemas, controls, processors, and paths before collection; semantic methodology changes require a new identifier |
+| Measurement methodology | Assigned D028 managed-performance methodology v1 | Semantic methodology changes require a new identifier and invalidate D029 compatibility; D029/P9.2 now supplies the separate non-collecting evidence contracts |
+| Performance evidence | Assigned D029 evidence/instrumentation/scenario, Yi/aPPSS/common result, processor, summary, comparison, and manifest v1 contracts; no retained measurement | P9.3 separately approves/implements a clean collector and may populate only the exclusive append-only unsealed-until-manifest path |
 | Client and UI | Assigned client API v1/local research UI v1 and D025 client API v2, managed Client UI v1, Manager API/UI, controller API/profile, and managed-instance profiles | P7.7 preserved thin-UI separation, exact route semantics, output safety, and old-profile immutability; further semantic changes require distinct versions |
 | Clean-client isolation | Assigned process/persistent-surface isolation v1 and D025 dynamic managed-client isolation v2 | V2 binds exact allowed inputs/state, fresh-instance proof, inherited-state positive control, and explicit non-erasure limitation; later changes require a new version |
 | Security contract | Assigned governance-only security matrix v1 over C01--C26 and additive D025 matrix v2 with M01--M05 | Matrix v2 preserves all v1 row meanings and adds Manager/controller, package, dynamic-client/key-display, network/reset, and credential contracts; it is not evidence |
 | Trace | Frozen retained trace-policy identifier plus D027's Assigned managed-flow trace policy | P8.3 assigned and collected the separate payload-free 30-report application-boundary corpus; changed graph/category/observation semantics require a new profile |
-| Result | Frozen retained attack/performance/evidence families plus D026 managed-state and D027 managed-flow result families | P8.2/P8.3 collected disjoint 42-report state and 30-report flow corpora; P9.2 later assigns performance/resilience schemas and must keep all metric families disjoint |
+| Result | Frozen retained attack/performance/evidence families plus D026 managed-state, D027 managed-flow, and D029 non-collecting managed-performance contracts | P8.2/P8.3 corpora remain disjoint; P9.3 may collect only under D029 and cannot pool or reinterpret historical/P8 results |
 | Artifact | Frozen v1 and active-audit v2 anonymous package identifiers | After P7.7/P8/P9, P10.3 assigns a later portable-artifact identifier with a managed-system manifest and allowlist |
 
 ### Upgrade and compatibility rules

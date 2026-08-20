@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:locus:schema:managed-performance-summary-v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["binding_set_sha256", "evidence_profile_id", "format_id", "groups", "infrastructure_invalid_count", "limitations", "measured_slot_count", "methodology_id", "outlier_removal", "processor_id", "raw_attempt_count", "scenario_manifest_sha256", "scheduled_slot_count", "status"],
+  "properties": {
+    "binding_set_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidence_profile_id": {"const": "LOCUS-managed-performance-evidence-profile-v1"},
+    "format_id": {"const": "LOCUS-managed-performance-summary-v1"},
+    "groups": {"type": "array", "minItems": 70, "maxItems": 70},
+    "infrastructure_invalid_count": {"type": "integer", "minimum": 0},
+    "limitations": {"type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true},
+    "measured_slot_count": {"const": 1180},
+    "methodology_id": {"const": "LOCUS-managed-performance-methodology-v1"},
+    "outlier_removal": {"const": "none"},
+    "processor_id": {"const": "LOCUS-managed-performance-processor-v1"},
+    "raw_attempt_count": {"type": "integer", "minimum": 1220},
+    "scenario_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "scheduled_slot_count": {"const": 1220},
+    "status": {"const": "processed"}
+  }
+}
