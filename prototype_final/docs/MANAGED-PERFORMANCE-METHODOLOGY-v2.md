@@ -42,4 +42,3 @@ The checked contract records `collection_authorized=false`. Before any run, a
 later owner instruction must authorize execution of the prepared tests and
 `integrated-check`; a complete exploratory non-retaining run must pass before
 retention is considered. No manuscript change is authorized.
-

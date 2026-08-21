@@ -94,6 +94,17 @@ class PerformanceMethodologyTests(unittest.TestCase):
                 "LOCUS-managed-performance-summary-v1",
                 "LOCUS-managed-performance-comparison-v1",
                 "LOCUS-managed-performance-corpus-manifest-v1",
+                "LOCUS-managed-performance-methodology-v2",
+                "LOCUS-managed-performance-evidence-profile-v2",
+                "LOCUS-managed-performance-instrumentation-v2",
+                "LOCUS-managed-performance-scenario-manifest-v2",
+                "LOCUS-managed-performance-result-yi-v2",
+                "LOCUS-managed-performance-result-appss-v2",
+                "LOCUS-managed-performance-processor-v2",
+                "LOCUS-managed-performance-summary-v2",
+                "LOCUS-managed-performance-comparison-v2",
+                "LOCUS-managed-performance-corpus-manifest-v2",
+                "LOCUS-managed-performance-checkpoint-v1",
             },
         )
 

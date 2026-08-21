@@ -58,7 +58,12 @@ from .redaction import validate_public_output
 MANAGED_CLIENT_API_VERSION = "LOCUS-client-api-v2"
 MANAGED_CLIENT_UI_PROFILE = "LOCUS-managed-client-ui-v1"
 MANAGED_CLIENT_INSTANCE_PROFILE = "LOCUS-managed-client-instance-v1"
-PERFORMANCE_INSTRUMENTATION_ID = "LOCUS-managed-performance-instrumentation-v1"
+PERFORMANCE_INSTRUMENTATION_IDS = frozenset(
+    {
+        "LOCUS-managed-performance-instrumentation-v1",
+        "LOCUS-managed-performance-instrumentation-v2",
+    }
+)
 MAX_JSON_REQUEST_BYTES = 128 * 1024
 MAX_ASSET_BYTES = 512 * 1024
 MAX_CLIENT_OPERATIONS = 1024
@@ -246,14 +251,14 @@ class ManagedClientApi:
         )
         if (
             parsed["api_version"] != MANAGED_CLIENT_API_VERSION
-            or parsed["instrumentation_id"] != PERFORMANCE_INSTRUMENTATION_ID
+            or parsed["instrumentation_id"] not in PERFORMANCE_INSTRUMENTATION_IDS
             or os.environ.get("LOCUS_PERFORMANCE_EVIDENCE") != "1"
         ):
             raise ManagedClientError("input_rejected")
         value = self.protocol.consume_performance_observation()
         result = {
             "api_version": MANAGED_CLIENT_API_VERSION,
-            "instrumentation_id": PERFORMANCE_INSTRUMENTATION_ID,
+            "instrumentation_id": parsed["instrumentation_id"],
             "observation": value,
             "status": "observed",
         }

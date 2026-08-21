@@ -40,6 +40,7 @@ IMAGE_ID_PATTERN = re.compile(r"sha256:[0-9a-f]{64}\Z")
 PROJECT_PATTERN = re.compile(r"[a-z0-9][a-z0-9-]{0,47}\Z")
 _FLOW_EVIDENCE_ACTIVE = False
 _PERFORMANCE_EVIDENCE_ACTIVE = False
+_PERFORMANCE_INSTRUMENTATION_ID = "LOCUS-managed-performance-instrumentation-v1"
 _FLOW_CONTEXT = ""
 _FLOW_HOST_EVENTS: list[dict[str, object]] = []
 _FLOW_HOST_SEQUENCE = 0
@@ -833,24 +834,26 @@ def _start_project(
     manager_port: int,
     environment: dict[str, str],
     startup_timing: list[int] | None = None,
+    build_image: bool = True,
 ) -> dict[str, object]:
     if _dynamic_client_ids(project, environment):
         raise RuntimeError(
             "an orphaned managed client exists; run integrated-stop for this project"
         )
     command = _compose(project)
-    run(
-        [
-            require("docker"),
-            "build",
-            "--file",
-            str(ROOT / "deploy" / "Dockerfile"),
-            "--tag",
-            environment["LOCUS_INTEGRATED_IMAGE"],
-            str(ROOT),
-        ],
-        env=environment,
-    )
+    if build_image:
+        run(
+            [
+                require("docker"),
+                "build",
+                "--file",
+                str(ROOT / "deploy" / "Dockerfile"),
+                "--tag",
+                environment["LOCUS_INTEGRATED_IMAGE"],
+                str(ROOT),
+            ],
+            env=environment,
+        )
     environment["LOCUS_INTEGRATED_IMAGE_ID"] = _image_id(environment)
     startup_started = time.perf_counter_ns()
     _ensure_browser_edge_network(project, environment)
@@ -1363,40 +1366,44 @@ def _volume_file_digest(
     return output
 
 
-def _cleanup_smoke_project(project: str, environment: dict[str, str]) -> None:
+def _cleanup_smoke_project(
+    project: str, environment: dict[str, str], *, remove_image: bool = True
+) -> None:
     failures: list[str] = []
     try:
         _remove_dynamic_clients(project, environment)
     except BaseException as error:
         failures.append(f"clients:{type(error).__name__}")
     try:
+        down_command = [
+            *_compose(project),
+            "down",
+            "--volumes",
+            "--remove-orphans",
+        ]
+        if remove_image:
+            down_command.extend(["--rmi", "local"])
         run_capture(
-            [
-                *_compose(project),
-                "down",
-                "--volumes",
-                "--remove-orphans",
-                "--rmi",
-                "local",
-            ],
+            down_command,
             env=environment,
             check=False,
         )
     except BaseException as error:
         failures.append(f"compose:{type(error).__name__}")
-    try:
-        run_capture(
-            [
-                require("docker"),
-                "image",
-                "rm",
-                environment["LOCUS_INTEGRATED_IMAGE"],
-            ],
-            env=environment,
-            check=False,
-        )
-    except BaseException as error:
-        failures.append(f"image:{type(error).__name__}")
+    if remove_image:
+        try:
+            run_capture(
+                [
+                    require("docker"),
+                    "image",
+                    "rm",
+                    environment["LOCUS_INTEGRATED_IMAGE"],
+                ],
+                env=environment,
+                check=False,
+            )
+        except BaseException as error:
+            failures.append(f"image:{type(error).__name__}")
     try:
         _remove_browser_edge_network(project, environment)
     except BaseException as error:
@@ -1430,15 +1437,16 @@ def _cleanup_smoke_project(project: str, environment: dict[str, str]) -> None:
             "--format",
             "{{.Name}}",
         ],
-        "images": [
+    }
+    if remove_image:
+        queries["images"] = [
             require("docker"),
             "images",
             "--filter",
             f"reference={environment['LOCUS_INTEGRATED_IMAGE']}",
             "--format",
             "{{.ID}}",
-        ],
-    }
+        ]
     for label, command in queries.items():
         try:
             leftovers[label] = run_capture(command, env=environment).strip()
@@ -2554,7 +2562,7 @@ def _performance_client_observation(port: int, csrf: str) -> dict[str, object]:
         "/api/v2/performance-observation",
         {
             "api_version": CLIENT_API_VERSION,
-            "instrumentation_id": "LOCUS-managed-performance-instrumentation-v1",
+            "instrumentation_id": _PERFORMANCE_INSTRUMENTATION_ID,
         },
     )
     observation = result.get("observation")
@@ -3093,9 +3101,8 @@ def _performance_record(
     persisted: dict[str, int] | None = None,
     concurrency: dict[str, int] | None = None,
 ) -> dict[str, object]:
-    from locus.performance_collection import build_metrics, build_observation
-
     scenario_id = cast(str, slot["scenario_id"])
+    affordable = scenario_id.startswith("AP")
     if persisted is None:
         persisted = _performance_persisted_bytes(
             runtime.project, runtime.environment, runtime.client
@@ -3115,16 +3122,35 @@ def _performance_record(
         "MP19",
     }
     lifecycle = cast(str, slot["category"]) == "lifecycle"
-    metrics = build_metrics(
-        slot=slot,
-        end_to_end_ns=elapsed_ns,
-        phase_latency_ns=phases,
-        application_body_bytes_by_role=bodies,
-        persisted_bytes_by_role=persisted,
-        ui_http_round_trip_ns=elapsed_ns if ui_required else None,
-        lifecycle_ns=elapsed_ns if lifecycle else None,
-        concurrency=concurrency,
-    )
+    if affordable:
+        from locus.affordable_performance_evidence import (
+            build_metrics as affordable_build_metrics,
+            build_observation as affordable_build_observation,
+        )
+
+        metrics = affordable_build_metrics(
+            slot=slot,
+            end_to_end_ns=elapsed_ns,
+            phase_latency_ns=phases,
+            application_body_bytes_by_role=bodies,
+            persisted_bytes_by_role=persisted,
+        )
+    else:
+        from locus.performance_collection import (
+            build_metrics as legacy_build_metrics,
+            build_observation as legacy_build_observation,
+        )
+
+        metrics = legacy_build_metrics(
+            slot=slot,
+            end_to_end_ns=elapsed_ns,
+            phase_latency_ns=phases,
+            application_body_bytes_by_role=bodies,
+            persisted_bytes_by_role=persisted,
+            ui_http_round_trip_ns=elapsed_ns if ui_required else None,
+            lifecycle_ns=elapsed_ns if lifecycle else None,
+            concurrency=concurrency,
+        )
     bindings = _performance_bindings(
         base=runtime.base_bindings,
         project=runtime.project,
@@ -3132,11 +3158,12 @@ def _performance_record(
         client_session=runtime.client_session,
         packages=packages,
     )
-    return build_observation(
-        slot=slot,
-        bindings=bindings,
-        metrics=metrics,
-        status=status,
+    if affordable:
+        return affordable_build_observation(
+            slot=slot, bindings=bindings, metrics=metrics, status=status
+        )
+    return legacy_build_observation(
+        slot=slot, bindings=bindings, metrics=metrics, status=status
     )
 
 
@@ -3156,8 +3183,6 @@ def _performance_enroll_request(
 def _performance_warmup(
     runtime: _PerformanceRuntime, slot: dict[str, object]
 ) -> dict[str, object]:
-    from locus.performance_collection import build_observation
-
     arm = cast(dict[str, object], slot["arm"])
     _performance_new_active(runtime, generate_key=True)
     assert runtime.client_port is not None and runtime.client_csrf is not None
@@ -3200,11 +3225,20 @@ def _performance_warmup(
         client_session=None,
         packages=[package],
     )
-    return build_observation(
-        slot=slot,
-        bindings=bindings,
-        metrics=None,
-        status="warmup-passed",
+    if str(slot["scenario_id"]).startswith("AP"):
+        from locus.affordable_performance_evidence import (
+            build_observation as affordable_build_observation,
+        )
+
+        return affordable_build_observation(
+            slot=slot, bindings=bindings, metrics=None, status="warmup-passed"
+        )
+    from locus.performance_collection import (
+        build_observation as legacy_build_observation,
+    )
+
+    return legacy_build_observation(
+        slot=slot, bindings=bindings, metrics=None, status="warmup-passed"
     )
 
 
@@ -3243,6 +3277,14 @@ def _performance_measure_arm_slot(
     runtime: _PerformanceRuntime, slot: dict[str, object]
 ) -> dict[str, object]:
     scenario = cast(str, slot["scenario_id"])
+    scenario = {
+        "AP01": "MP01",
+        "AP02": "MP02",
+        "AP03": "MP04",
+        "AP04": "MP05",
+        "AP05": "MP06",
+        "AP06": "MP11",
+    }.get(scenario, scenario)
     arm = cast(dict[str, object], slot["arm"])
     base_package = runtime.base_package
     if base_package is None:
@@ -3715,7 +3757,12 @@ def _performance_chain_observation(
     observation: dict[str, object],
     prior: dict[str, object] | None,
 ) -> dict[str, object]:
-    from locus.performance_evidence import digest, validate_observation
+    slot = cast(dict[str, object], observation["slot"])
+    if str(slot["scenario_id"]).startswith("AP"):
+        from locus.affordable_performance_evidence import validate_observation
+        from locus.performance_evidence import digest
+    else:
+        from locus.performance_evidence import digest, validate_observation
 
     result = dict(observation)
     attempt_index = 1 if prior is None else cast(int, prior["attempt_index"]) + 1
@@ -3732,9 +3779,24 @@ def _performance_invalid_block(
     runtime: _PerformanceRuntime,
     slots: Sequence[dict[str, object]],
     prior_by_slot: dict[str, dict[str, object]],
+    invalid_category: str = "orchestrator-failure",
 ) -> list[dict[str, object]]:
-    from locus.performance_collection import build_observation
     from locus.performance_evidence import digest
+
+    affordable = bool(slots) and str(slots[0]["scenario_id"]).startswith("AP")
+    observation_builder: Any
+    if affordable:
+        from locus.affordable_performance_evidence import (
+            build_observation as affordable_build_observation,
+        )
+
+        observation_builder = affordable_build_observation
+    else:
+        from locus.performance_collection import (
+            build_observation as legacy_build_observation,
+        )
+
+        observation_builder = legacy_build_observation
 
     bindings = _performance_bindings(
         base=runtime.base_bindings,
@@ -3747,18 +3809,19 @@ def _performance_invalid_block(
     for slot in slots:
         slot_id = cast(str, slot["slot_id"])
         prior = prior_by_slot.get(slot_id)
-        invalid = build_observation(
-            slot=slot,
-            bindings=bindings,
-            metrics=None,
-            status="infrastructure-invalid",
-            attempt_index=(
+        arguments = {
+            "slot": slot,
+            "bindings": bindings,
+            "metrics": None,
+            "status": "infrastructure-invalid",
+            "attempt_index": (
                 1 if prior is None else cast(int, prior["attempt_index"]) + 1
             ),
-            replacement_of_sha256=(None if prior is None else digest(prior)),
-            invalid_category="orchestrator-failure",
-            cleanup_complete=True,
-        )
+            "replacement_of_sha256": None if prior is None else digest(prior),
+            "invalid_category": invalid_category,
+            "cleanup_complete": True,
+        }
+        invalid = observation_builder(**arguments)
         result.append(invalid)
     return result
 
@@ -3934,6 +3997,288 @@ def _collect_performance_observations(
         _PERFORMANCE_EVIDENCE_ACTIVE = False
 
 
+def _affordable_checkpoint_write(path: Path, value: dict[str, object]) -> None:
+    """Atomically replace coordination metadata; it is never retained evidence."""
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary = path.with_suffix(".tmp")
+    temporary.write_bytes(
+        json.dumps(value, sort_keys=True, separators=(",", ":")).encode() + b"\n"
+    )
+    os.replace(temporary, path)
+
+
+def _affordable_staged_observations(staging: Path) -> list[dict[str, object]]:
+    from locus.affordable_performance_evidence import validate_observation
+
+    raw = staging / "raw"
+    if not raw.exists():
+        return []
+    observations: list[dict[str, object]] = []
+    for path in sorted(raw.rglob("attempt-*.json")):
+        value = json.loads(path.read_bytes())
+        if not isinstance(value, dict):
+            raise RuntimeError("affordable staging contains a non-object")
+        observations.append(validate_observation(value))
+    return observations
+
+
+def _collect_affordable_performance_observations(
+    *, provenance: dict[str, object], retain: bool
+) -> list[dict[str, object]]:
+    """Execute D030's 12-project/324-slot schedule with resumable block staging."""
+
+    from locus.affordable_performance_collection import ordered_arm_block_slots
+    from locus.affordable_performance_evidence import (
+        ARMS,
+        STAGING_ROOT,
+        checkpoint_profile,
+        exclusive_write,
+        process_observations,
+    )
+    from locus.affordable_performance_methodology import methodology_contract
+    from locus.performance_evidence import digest
+
+    global _PERFORMANCE_EVIDENCE_ACTIVE, _PERFORMANCE_INSTRUMENTATION_ID
+    if _PERFORMANCE_EVIDENCE_ACTIVE:
+        raise RuntimeError("performance collection is already active")
+    _PERFORMANCE_EVIDENCE_ACTIVE = True
+    _PERFORMANCE_INSTRUMENTATION_ID = "LOCUS-managed-performance-instrumentation-v2"
+    shared_image = "locus-managed-performance-v2:local"
+    staging = ROOT / STAGING_ROOT
+    checkpoint_path = staging / "checkpoint.json"
+    observations: list[dict[str, object]] = []
+    prior_by_slot: dict[str, dict[str, object]] = {}
+    completed: set[str] = set()
+    interrupted: set[str] = set()
+    shared_environment = _environment(
+        "locus-perf-affordable-build", DEFAULT_MANAGER_PORT
+    )
+    shared_environment["LOCUS_INTEGRATED_IMAGE"] = shared_image
+    try:
+        run(
+            [
+                require("docker"),
+                "build",
+                "--file",
+                str(ROOT / "deploy" / "Dockerfile"),
+                "--tag",
+                shared_image,
+                str(ROOT),
+            ],
+            env=shared_environment,
+        )
+        shared_image_id = _image_id(shared_environment)
+        resume_bindings = {
+            "source_commit": provenance["source_commit"],
+            "source_tree_sha256": provenance["source_tree_sha256"],
+            "methodology_sha256": digest(methodology_contract()),
+            "image_id": shared_image_id,
+            "host_tier": provenance["host_tier"],
+            "pseudonymous_host_id": provenance["pseudonymous_host_id"],
+        }
+        if retain and checkpoint_path.exists():
+            checkpoint = json.loads(checkpoint_path.read_bytes())
+            if (
+                not isinstance(checkpoint, dict)
+                or checkpoint.get("bindings") != resume_bindings
+            ):
+                raise RuntimeError(
+                    "affordable checkpoint does not match the clean source/host/image"
+                )
+            completed = set(cast(list[str], checkpoint["completed_arm_blocks"]))
+            observations = _affordable_staged_observations(staging)
+            prior_by_slot = {
+                cast(str, cast(dict[str, object], item["slot"])["slot_id"]): item
+                for item in observations
+            }
+            active = checkpoint.get("active_arm_block")
+            if isinstance(active, str):
+                interrupted.add(active)
+                active_arm, encoded_block = active.split(":b", 1)
+                active_block = int(encoded_block)
+                for active_attempt in range(1, 4):
+                    orphan = _performance_project_name(
+                        active_arm, active_block, active_attempt
+                    )
+                    orphan_environment = _environment(orphan, DEFAULT_MANAGER_PORT)
+                    orphan_environment["LOCUS_INTEGRATED_IMAGE"] = shared_image
+                    _cleanup_smoke_project(
+                        orphan, orphan_environment, remove_image=False
+                    )
+        elif retain:
+            staging.mkdir(parents=True, exist_ok=False)
+            _affordable_checkpoint_write(
+                checkpoint_path,
+                checkpoint_profile(resume_bindings, [], None),
+            )
+
+        for block in range(1, 4):
+            for arm_id, arm in ARMS.items():
+                block_id = f"{arm_id}:b{block:02d}"
+                if block_id in completed:
+                    continue
+                arm_slots = list(ordered_arm_block_slots(arm_id, block))
+                if retain:
+                    _affordable_checkpoint_write(
+                        checkpoint_path,
+                        checkpoint_profile(
+                            resume_bindings, sorted(completed), block_id
+                        ),
+                    )
+                for attempt in range(1, 4):
+                    project = _performance_project_name(arm_id, block, attempt)
+                    environment = _environment(project, DEFAULT_MANAGER_PORT)
+                    environment["LOCUS_INTEGRATED_IMAGE"] = shared_image
+                    environment["LOCUS_INTEGRATED_IMAGE_ID"] = shared_image_id
+                    environment["LOCUS_PERFORMANCE_FIXTURE_ID"] = (
+                        f"{arm['topology_id']}:block-{block:02d}"
+                    )
+                    runtime: _PerformanceRuntime | None = None
+                    project_observations: list[dict[str, object]] = []
+                    operation_error: BaseException | None = None
+                    try:
+                        status = _start_project(
+                            project=project,
+                            manager_port=DEFAULT_MANAGER_PORT,
+                            environment=environment,
+                            build_image=False,
+                        )
+                        base = _performance_base_bindings(
+                            project=project,
+                            environment=environment,
+                            status=status,
+                            provenance=provenance,
+                        )
+                        runtime = _PerformanceRuntime(
+                            project=project,
+                            manager_port=DEFAULT_MANAGER_PORT,
+                            manager_csrf=_manager_session(DEFAULT_MANAGER_PORT),
+                            environment=environment,
+                            base_bindings=base,
+                            host_id=cast(str, provenance["pseudonymous_host_id"]),
+                        )
+                        if block_id in interrupted:
+                            interruption_records = _performance_invalid_block(
+                                runtime=runtime,
+                                slots=arm_slots,
+                                prior_by_slot=prior_by_slot,
+                                invalid_category="host-interruption",
+                            )
+                            for item in interruption_records:
+                                slot_id = cast(
+                                    str,
+                                    cast(dict[str, object], item["slot"])["slot_id"],
+                                )
+                                prior_by_slot[slot_id] = item
+                            observations.extend(interruption_records)
+                            interrupted.remove(block_id)
+                        project_observations.append(
+                            _performance_warmup(runtime, arm_slots[0])
+                        )
+                        for slot in arm_slots[1:]:
+                            project_observations.append(
+                                _performance_measure_arm_slot(runtime, slot)
+                            )
+                    except BaseException as error:
+                        operation_error = error
+                    if runtime is not None:
+                        try:
+                            _performance_output_scan(runtime)
+                        except BaseException as error:
+                            operation_error = error
+                    try:
+                        _cleanup_smoke_project(project, environment, remove_image=False)
+                    except BaseException as error:
+                        if operation_error is None:
+                            operation_error = error
+                        else:
+                            operation_error.add_note(
+                                f"affordable cleanup also failed: {type(error).__name__}"
+                            )
+                    if operation_error is not None:
+                        if (
+                            runtime is None
+                            or "output scan" in str(operation_error)
+                            or "cleanup" in str(operation_error)
+                        ):
+                            raise operation_error
+                        invalid = _performance_invalid_block(
+                            runtime=runtime,
+                            slots=arm_slots,
+                            prior_by_slot=prior_by_slot,
+                        )
+                        for item in invalid:
+                            slot_id = cast(
+                                str, cast(dict[str, object], item["slot"])["slot_id"]
+                            )
+                            prior_by_slot[slot_id] = item
+                        observations.extend(invalid)
+                        if attempt == 3:
+                            raise RuntimeError(
+                                "affordable arm/block exhausted bounded retries"
+                            ) from operation_error
+                        continue
+                    block_records: list[dict[str, object]] = []
+                    for item in project_observations:
+                        slot_id = cast(
+                            str, cast(dict[str, object], item["slot"])["slot_id"]
+                        )
+                        chained = _performance_chain_observation(
+                            item, prior_by_slot.get(slot_id)
+                        )
+                        prior_by_slot[slot_id] = chained
+                        observations.append(chained)
+                        block_records.append(chained)
+                    if retain:
+                        block_attempts = [
+                            item
+                            for item in observations
+                            if cast(dict[str, object], item["slot"])["arm_id"] == arm_id
+                            and cast(dict[str, object], item["slot"])["block"] == block
+                        ]
+                        for item in block_attempts:
+                            slot = cast(dict[str, object], item["slot"])
+                            path = (
+                                staging
+                                / "raw"
+                                / cast(str, slot["slot_id"]).replace(":", "/")
+                                / f"attempt-{cast(int, item['attempt_index']):02d}.json"
+                            )
+                            if not path.exists():
+                                exclusive_write(path, item)
+                        completed.add(block_id)
+                        _affordable_checkpoint_write(
+                            checkpoint_path,
+                            checkpoint_profile(
+                                resume_bindings, sorted(completed), None
+                            ),
+                        )
+                    print(
+                        json.dumps(
+                            {
+                                "arm": arm_id,
+                                "block": block,
+                                "slots": len(block_records),
+                                "status": "passed",
+                            },
+                            sort_keys=True,
+                        ),
+                        flush=True,
+                    )
+                    break
+        process_observations(observations)
+        return observations
+    finally:
+        run_capture(
+            [require("docker"), "image", "rm", shared_image],
+            env=shared_environment,
+            check=False,
+        )
+        _PERFORMANCE_INSTRUMENTATION_ID = "LOCUS-managed-performance-instrumentation-v1"
+        _PERFORMANCE_EVIDENCE_ACTIVE = False
+
+
 def _performance_command_result(
     *,
     summary: dict[str, object],
@@ -3956,19 +4301,26 @@ def _performance_command_result(
 
 
 def integrated_performance_evidence(*, retain: bool) -> None:
-    """Execute P9.3 and optionally publish its one append-only corpus."""
+    """Execute the affordable D030 P9.3 profile and optionally seal its corpus."""
 
-    from locus.performance_evidence import (
-        assert_retained_target_absent,
+    from locus.affordable_performance_evidence import (
+        RETAINED_ROOT,
+        STAGING_ROOT,
         build_comparison,
+        build_corpus_manifest,
+        exclusive_write,
         process_observations,
-        publish_corpus,
+        validate_staged_corpus,
     )
 
     provenance = _tracked_source_provenance(require_clean=retain)
-    if retain:
-        assert_retained_target_absent(ROOT)
-    observations = _collect_performance_observations(provenance=provenance)
+    target = ROOT / RETAINED_ROOT
+    staging = ROOT / STAGING_ROOT
+    if retain and target.exists():
+        raise RuntimeError("managed-performance-v2 retained target already exists")
+    observations = _collect_affordable_performance_observations(
+        provenance=provenance, retain=retain
+    )
     summary = process_observations(observations)
     comparison = build_comparison(summary)
     result = _performance_command_result(
@@ -3977,7 +4329,16 @@ def integrated_performance_evidence(*, retain: bool) -> None:
         raw_record_count=len(observations),
     )
     if retain:
-        manifest = publish_corpus(workspace=ROOT, observations=observations)
+        manifest = build_corpus_manifest(observations, summary, comparison)
+        exclusive_write(staging / "processed" / "summary.json", summary)
+        exclusive_write(staging / "derived" / "comparison.json", comparison)
+        exclusive_write(staging / "corpus-manifest.json", manifest)
+        validate_staged_corpus(staging)
+        checkpoint = staging / "checkpoint.json"
+        if not checkpoint.is_file():
+            raise RuntimeError("affordable staging checkpoint disappeared")
+        checkpoint.unlink()
+        os.rename(staging, target)
         result.update(
             {
                 "comparison_sha256": manifest["comparison_sha256"],
@@ -4132,12 +4493,12 @@ def build_integrated_parser() -> argparse.ArgumentParser:
     )
     performance = subparsers.add_parser(
         "integrated-performance-evidence",
-        help="run the exact P9.3 managed performance schedule",
+        help="run D030's affordable P9.3 schedule (execution separately gated)",
     )
     performance.add_argument(
         "--retain",
         action="store_true",
-        help="publish the complete corpus exclusively from a clean commit",
+        help="resume/stage and atomically publish v2 from a clean commit",
     )
     return parser
 
