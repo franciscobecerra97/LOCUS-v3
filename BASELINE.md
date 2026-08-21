@@ -439,6 +439,22 @@ memory-only aggregate instrumentation, output scans, linked invalid retries,
 and exact-project cleanup. It has not yet produced a measured result. No
 external provider, multi-host profile, or manuscript wording is added.
 
+The owner stopped that v1 collector before publication; no retained or
+recoverable P9 timing corpus was created. D030, approved on 2026-08-21,
+supersedes only the uncollected execution plan with the disjoint
+`LOCUS-managed-performance-methodology-v2` family. The affordable profile
+keeps the exact D025 graph and all four paired arms but uses three blocks per
+arm, twelve fresh projects, 12 warm-ups, and 312 measurements (324 total
+slots). It measures enrollment, package transfer plus clean bootstrap,
+successful recovery, wrong-input rejection, one-party-unavailable recovery,
+and storage/role bytes. It reports descriptive Type-7 quartiles, median,
+min/max, and secondary mean only. Restart, below-threshold, successor,
+concurrency, and lifecycle timings are excluded; their existing functional
+controls are not relabelled as performance evidence. Resumable arm/block
+staging and one shared image are prepared under new identifiers, but the owner
+authorized preparation and commits only: no tests, exploratory run, retained
+directory, or v2 result has been produced.
+
 ## Excluded material
 
 The portable copy excludes:

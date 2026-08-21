@@ -23,8 +23,9 @@ boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
 predecessor. P8.1 through P8.4 and P9.1--P9.2 are complete. The owner opened
-P9.3 on 2026-08-20; its clean-collector implementation and validation are in
-progress. Architecture
+P9.3 on 2026-08-20, stopped its uncollected v1 run, and approved D030's
+affordable v2 preparation on 2026-08-21. Source/contracts/tests are in progress,
+but test and collector execution are not authorized in this slice. Architecture
 decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -3128,23 +3129,46 @@ Completion record:
 
 ### P9.3 Collect the same-host integrated baseline
 
-Status: `In progress`
+Status: `In progress — D030 preparation only; execution not authorized`
 
-The collector is implemented only in `prototype_final/` behind
-`integrated-performance-evidence`. Its default form is exploratory and
-non-retaining. The retained form requires a clean source commit, the exact
-D028/D029 1,220-slot schedule, a nonexistent exclusive target, successful
-ephemeral-output scans, and exact cleanup of every fresh arm/block project.
-P9.4 profiles are not accepted by this command.
+The owner stopped the original D028/D029 run before any retained publication
+and approved D030's affordable replacement on 2026-08-21. The v1 1,220-slot,
+40-project plan is historical uncollected preparation and its reserved path
+remains absent. It is not rewritten or used by the active command.
+
+The prepared `integrated-performance-evidence` command now targets only the
+new v2 profile: four paired suite/topology arms, three blocks per arm, twelve
+fresh projects, 12 unmeasured warm-ups, and 312 measured slots across five
+central scenarios plus one storage/role snapshot per arm/block. Total: 324
+slots, 73.4% fewer than v1. One image is built and digest-bound for the run.
+
+Completed arm/blocks may be staged immutably and resumed only under identical
+clean source, methodology/scenario, image, graph, host-tier, and host-pseudonym
+bindings. Coordination checkpoints are not evidence. Final retention remains
+exclusive and atomic under `managed-performance-v2/` only after complete
+validation and hash closure.
 
 Acceptance:
 
-- New versioned result paths.
+- New v2 identifiers and disjoint result/staging paths.
 - No v2 overwrite or mixed-profile processing.
 - Complete raw-to-processed-to-derived hash closure.
-- Successful, wrong-input, below-threshold, unavailable-party, restart,
-  successor, concurrency, storage/role-byte, and clean-client rows all execute
-  through the container-backed client API under the same validated graph.
+- Enrollment, package transfer/clean bootstrap, successful recovery,
+  wrong-input rejection, unavailable-party recovery, and storage/role-byte
+  rows execute through the container-backed client API under the same graph.
+- Descriptive statistics are count, Type-7 median/Q1/Q3, min/max, and
+  secondary mean; no bootstrap interval, hypothesis test, pooling, outlier
+  removal, or suite-advantage claim.
+- Below-threshold, restart, successor, concurrency, and lifecycle behaviors
+  remain functional P7/P8/smoke controls and are not timing distributions in
+  this affordable corpus.
+- Before any collection: run the newly prepared tests and `integrated-check`,
+  commit a clean collector state, then obtain/confirm execution authorization
+  for one exploratory non-retaining run. Retention remains a later gate.
+
+Preparation status on 2026-08-21: source, contracts, tests, documentation, and
+commits are authorized; running tests or either collector mode is explicitly
+not authorized in this slice.
 
 ### P9.4 Collect supplemental integrated multi-host and provider profiles
 
@@ -3291,9 +3315,10 @@ the honest same-host managed integrated profile.
 
 The next sequence is:
 
-1. P9.3 — finish validation of the separately gated collector, commit its
-   clean source state, validate it exploratorily, and collect one new suite/
-   topology-specific same-host performance/resilience corpus;
+1. P9.3 — after a later execution instruction, run D030's prepared checks,
+   validate the 324-slot collector exploratorily, review the result, and only
+   then separately authorize one retained suite/topology-specific same-host
+   descriptive corpus;
 2. stop for owner review before any separately gated P9.4 work;
 3. P9.4 — optionally evaluate separately authorized multi-host or external-
    provider profiles under new identities; and

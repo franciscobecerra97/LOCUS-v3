@@ -108,6 +108,12 @@ but no retained measurement exists. The owner opened P9.3 on 2026-08-20; its
 collector is confined to the exact same-host/local-provider profile and must
 pass the clean-source, exploratory, output-safety, and exclusive-publication
 gates before any result exists.
+The initial run was stopped before retention. D030 now assigns a disjoint,
+affordable 324-slot/12-project v2 descriptive profile that preserves the exact
+D025 graph and four paired arms, removes repeated resilience/lifecycle timing,
+and adds resumable arm/block staging plus one shared image. Preparation and
+commits are authorized; tests and collection remain unexecuted and require a
+later explicit instruction. No P9 result exists.
 
 The managed control plane uses internal `management` (Manager/controller) and
 `client-lifecycle` (Client/controller) networks plus separate `manager-edge`

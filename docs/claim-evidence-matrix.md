@@ -47,6 +47,12 @@ strict non-collecting observation, invalid-attempt, processing, comparison, and
 hash-closure contracts; schemas and synthetic tests add no measured result or
 claim support by themselves.
 
+D030 supersedes only the uncollected P9.3 execution plan with a disjoint
+324-slot descriptive profile. It preserves paired arms and the D025 graph but
+cannot support scalability, suite advantage, or excluded resilience/lifecycle
+latency claims. Preparation is not evidence; no v2 tests or collection have
+run.
+
 ## Claim Matrix
 
 | ID | Paper claim and location | Exact property and adversary | Provenance | State | Current evidence | Required evidence or paper action | Residual risk / limitation |

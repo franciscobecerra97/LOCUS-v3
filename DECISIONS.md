@@ -35,6 +35,7 @@ gates before their affected implementation work.
 | D027 | Managed privacy-safe flow-evidence contract | Assign the exact 30-report P8.3 payload-free application-flow contract and exclusive retained path | Approved |
 | D028 | Managed performance and resilience methodology | Freeze the exact four-arm D025 same-host blocked design, sample/failure schedules, metric meanings, statistics, and interpretation limits before P9 collection | Approved |
 | D029 | Managed performance and resilience evidence contracts | Assign suite-separated observation families, deterministic processing, explicit invalid-run records, positive controls, and one exclusive append-only same-host result path before P9 collection | Approved |
+| D030 | Affordable managed performance evidence profile | Supersede the uncollected D028/D029 execution plan with a new 324-slot, 12-project, resumable descriptive profile while preserving the four paired arms and D025 graph | Approved |
 
 ## Approved architecture records
 
@@ -1528,6 +1529,115 @@ Manuscript implication: None authorized. P9.2 schemas and tests are not
 performance evidence and support no Yi/aPPSS advantage, scalability,
 production-capacity, real-provider, multi-host, usability, or manuscript
 claim.
+
+### D030 — Affordable managed performance evidence profile
+
+Decision ID: D030
+
+Date: 2026-08-21
+
+Status: Approved
+
+Chosen option: The owner approved replacing the unaffordable, uncollected
+D028/D029 P9.3 execution plan with a separately versioned affordable profile.
+D028/D029 and every v1 identifier remain immutable historical preparation;
+their reserved target was never created and they support no result. Assign:
+
+- `LOCUS-managed-performance-methodology-v2`;
+- `LOCUS-managed-performance-evidence-profile-v2`;
+- `LOCUS-managed-performance-instrumentation-v2`;
+- `LOCUS-managed-performance-scenario-manifest-v2`;
+- `LOCUS-managed-performance-result-yi-v2`;
+- `LOCUS-managed-performance-result-appss-v2`;
+- `LOCUS-managed-performance-processor-v2`;
+- `LOCUS-managed-performance-summary-v2`;
+- `LOCUS-managed-performance-comparison-v2`;
+- `LOCUS-managed-performance-corpus-manifest-v2`; and
+- coordination-only `LOCUS-managed-performance-checkpoint-v1`.
+
+The exact D025 Manager-created Client graph, local S3-compatible provider,
+single-host/single-operator tier, paired Yi/aPPSS 2-of-3 and 3-of-5 arms,
+matched policy/resolver pairings, and distinct 4-of-5 authorization quorum are
+unchanged. Three fresh-project blocks per arm give twelve projects. Each
+arm/block has one unmeasured complete warm-up, five repetitions of enrollment,
+package transfer plus clean bootstrap, successful recovery, wrong-input
+rejection, and one-party-unavailable recovery, plus one storage/role snapshot.
+The immutable schedule is 324 slots: 12 warm-ups and 312 measurements.
+
+Statistics are descriptive only: count, Type-7 median/Q1/Q3, min, max, and a
+secondary arithmetic mean. There is no p5/p95 reporting, bootstrap interval,
+hypothesis test, sample pooling, outlier removal, suite-superiority inference,
+or power claim. Yi and aPPSS remain distinct raw and summary families; twelve
+topology/scenario pairs may show matched side-by-side medians only.
+
+Repeated timing of below-threshold rejection, party/Client/system restart,
+successor transition, concurrency, Manager lifecycle, and Client lifecycle is
+removed from this performance corpus. Existing P7/P8 and integrated-smoke
+controls continue to validate those functional behaviors, but they are not
+relabelled or pooled as v2 timing evidence. Consequently v2 cannot support
+scalability, throughput, lifecycle/restart/successor latency distributions,
+WAN, external-provider, multi-host, production-capacity, or suite-advantage
+claims.
+
+Publication uses
+`prototype_final/evidence/retained/managed-performance-v2/`. Collection builds
+one image and reuses its immutable image digest across all twelve projects.
+After each completed arm/block, immutable raw attempt files are
+exclusive-created under a hidden v2 staging directory and coordination-only
+checkpoint metadata is updated. Resume is permitted only when clean source,
+methodology, scenario, image, graph, host-tier, and pseudonymous-host bindings
+match. An interrupted active block is cleaned exactly, classified as a linked
+`host-interruption`, and retried within the bounded attempt policy. The final
+directory is published atomically only after all 324 terminal slots, output
+safety, cleanup, processing, comparison, and hash closure validate; checkpoint
+metadata is excluded from the retained corpus.
+
+The owner's 2026-08-21 instruction authorizes preparation and commits only.
+It explicitly does not authorize running checks, exploratory collection, or
+retained collection in this change set. The methodology/evidence profiles
+therefore record `collection_authorized=false`. A later explicit execution
+instruction must first run the prepared tests and an exploratory non-retaining
+gate before any retained publication.
+
+Alternatives considered: Continue the 1,220-slot/40-project plan; reduce only
+repetitions while retaining all latency scenarios; use one pooled suite family;
+reuse or reinterpret v1 identifiers; discard partial blocks; publish an
+unsealed partial corpus; or claim resilience timing from functional controls.
+These alternatives are rejected.
+
+New trust assumptions: None beyond D025's exact same-host/single-operator
+deployment and the measurement host, Docker engine, synthetic fixtures,
+monotonic Client clock, local provider, and shared immutable image. Resumption
+adds trust in bounded local coordination metadata, which cannot itself support
+evidence and is excluded from the sealed corpus.
+
+Privacy implications: Only aggregate timings, aggregate role-byte counts,
+bounded outcomes, pseudonyms, and public provenance digests are accepted.
+Checkpoint and retained output prohibit secret-bearing values, payloads,
+credentials, logs, traces, packet captures, host paths, stable identities, and
+request/response bodies. Existing output scans remain mandatory.
+
+Compatibility/version impact: D028/D029 v1 contracts and their unused path are
+not edited, populated, migrated, or interpreted. All changed schedule,
+statistics, instrumentation, processor, resumption, and publication semantics
+receive v2 identifiers and a disjoint path. The checkpoint receives its own
+coordination-only identifier and is never a result.
+
+Required evidence: Before execution, strict contracts, schedule/processor/
+resumption tests, registry closure, client instrumentation acceptance, shared-
+image cleanup behavior, and `integrated-check` must pass. A complete
+exploratory non-retaining run must then pass before separately authorized
+retention. No test or collector execution is part of D030 preparation.
+
+Files or components authorized: Governance/status documents and the active
+`prototype_final/docs/`, `prototype_final/locus/`, `prototype_final/tests/`,
+and `prototype_final/tasks.py` command surface may change. No runtime protocol,
+external provider, retained evidence, legacy source, frozen evidence, or
+manuscript file may change.
+
+Manuscript implication: None authorized. D030 preparation is not evidence, and
+even a later complete v2 corpus would support only scoped descriptive
+same-host core-operation costs under its stated limitations.
 
 ## Decision record template
 

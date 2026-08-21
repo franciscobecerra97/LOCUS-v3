@@ -1,0 +1,1 @@
+{"comparison_rule":"matched-side-by-side-no-pooling-or-advantage-claim","confidence_intervals":false,"format_id":"LOCUS-managed-performance-processor-v2","hypothesis_tests":false,"methodology_id":"LOCUS-managed-performance-methodology-v2","outlier_removal":"none","quantile_method":"linear-type-7","reported":["count","median","q1","q3","min","max","mean"],"status":"assigned"}

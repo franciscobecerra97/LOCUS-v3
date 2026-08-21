@@ -55,6 +55,12 @@ identifiers after their exact 1,220-slot schedule, schemas, invalid-attempt
 semantics, positive controls, deterministic processing, and reserved path were
 approved and implemented without collection. They are Assigned, not Frozen.
 
+D030 preserves those unused v1 contracts and separately assigns the affordable
+v2 methodology/evidence family plus a coordination-only checkpoint. Its exact
+three-block, 324-slot descriptive schedule, disjoint staging/final paths, and
+shared-image/resumption rules are prepared but unexecuted. The owner authorized
+commits only; no v2 test, staging directory, retained corpus, or result exists.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
@@ -379,6 +385,28 @@ contracts and exact local D025/D028 graph. P9.3 alone may populate
 create raw attempts, processed summary, derived comparison, and closing
 manifest. An old record is never overwritten; an explicit replacement binds
 the immediately prior infrastructure-invalid record digest.
+
+### D030 affordable managed-performance family
+
+| Assigned identifier | Exact semantic boundary | Compatibility rule |
+| --- | --- | --- |
+| `LOCUS-managed-performance-methodology-v2` | Exact D025 four-arm design with three blocks, 12 projects, five central scenarios, one structural snapshot, 324 total/312 measured slots, descriptive statistics, shared image, and resumable block publication | Any changed graph, arm, block/sample plan, scenario, metric, statistic, resumption, or interpretation boundary requires a new methodology |
+| `LOCUS-managed-performance-evidence-profile-v2` | Preparation-only v2 evidence contract and disjoint retained/staging boundary | It accepts no v1, P8, historical, partial, or external-profile result |
+| `LOCUS-managed-performance-instrumentation-v2` | Client-monotonic core-operation phases and aggregate application/persisted role bytes; no UI/lifecycle/concurrency/successor metric | Changed clock, phase/role set, observation point, or excluded metric requires a new identifier |
+| `LOCUS-managed-performance-scenario-manifest-v2` | AP00--AP06 expansion with 12 warm-ups and 312 measurements | Any changed scenario, seed, arm, block, repetition, status, or failure schedule requires a new manifest |
+| `LOCUS-managed-performance-result-yi-v2` | Yi-only AP observation | Never pool or relabel with aPPSS, v1, P8, or historical data |
+| `LOCUS-managed-performance-result-appss-v2` | aPPSS-only AP observation | Never pool or relabel with Yi, v1, P8, or historical data |
+| `LOCUS-managed-performance-processor-v2` | Type-7 quartiles/median, min/max, secondary mean, no interval/test/outlier removal, 24 groups | Any changed statistic, grouping, invalid rule, or accepted family requires a new processor |
+| `LOCUS-managed-performance-summary-v2` | 24 suite/topology/scenario-preserving descriptive groups | Summary cannot support suite advantage, scalability, or excluded latency claims |
+| `LOCUS-managed-performance-comparison-v2` | 12 matched topology/scenario side-by-side median pairs | No pooling, hypothesis test, or advantage inference |
+| `LOCUS-managed-performance-corpus-manifest-v2` | Closing hash manifest for the exclusive atomic v2 publication | No partial or checkpoint-bearing directory is a corpus |
+| `LOCUS-managed-performance-checkpoint-v1` | Mutable local coordination metadata for exact-binding arm/block resume | Never retained, cited, processed, or treated as evidence |
+
+D030 leaves D028/D029 and the absent `managed-performance-v1/` target intact.
+The prepared v2 target is `managed-performance-v2/`; neither its hidden staging
+directory nor its retained directory exists at preparation time. The owner
+authorized code/documentation commits only on 2026-08-21, so tests,
+exploratory collection, and retained collection remain pending.
 
 P8.4 assigns no new identifier and does not reinterpret the frozen attempt
 family. `prototype_final/` preserves the historical attempt-model source,

@@ -352,6 +352,26 @@ validated cleanly, then pass a complete exploratory non-retaining run before
 the one retained publication. Output-scan, cleanup, startup, or binding failure
 aborts publication; P9.4 inputs remain rejected.
 
+D030 supersedes that uncollected execution plan without changing or populating
+the D028/D029 v1 contracts. Its v2 family has 324 slots over twelve fresh
+arm/block projects: 12 complete warm-ups, 300 central measurements across five
+scenarios, and 12 storage/role snapshots. Yi/aPPSS and 2-of-3/3-of-5 groups
+remain separate and matched. The processor reports count, Type-7 median/Q1/Q3,
+min/max, and secondary mean, with no interval, hypothesis test, pooling,
+outlier removal, or advantage inference.
+
+The v2 retained boundary is
+`prototype_final/evidence/retained/managed-performance-v2/`. A hidden staging
+directory may exclusive-create complete arm/block raw records and maintain a
+coordination-only checkpoint. Resume requires exact clean-source,
+methodology/scenario, image, graph, host-tier, and pseudonymous-host equality;
+an active interrupted block is exact-cleaned and recorded as a linked bounded
+failure before retry. Checkpoints are not evidence and must be absent from the
+atomically published, manifest-sealed corpus. D030 preparation creates neither
+staging nor retained output. The owner explicitly withheld test and collector
+execution on 2026-08-21; a later instruction must first authorize prepared
+checks and an exploratory non-retaining run.
+
 ## External services
 
 External provider experiments are benign functional/performance operations

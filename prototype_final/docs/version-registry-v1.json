@@ -105,16 +105,27 @@
     "LOCUS-managed-client-instance-v1",
     "LOCUS-managed-client-ui-v1",
     "LOCUS-managed-performance-comparison-v1",
+    "LOCUS-managed-performance-comparison-v2",
+    "LOCUS-managed-performance-checkpoint-v1",
     "LOCUS-managed-performance-corpus-manifest-v1",
+    "LOCUS-managed-performance-corpus-manifest-v2",
     "LOCUS-managed-performance-evidence-profile-v1",
+    "LOCUS-managed-performance-evidence-profile-v2",
     "LOCUS-managed-performance-instrumentation-v1",
+    "LOCUS-managed-performance-instrumentation-v2",
     "LOCUS-managed-performance-methodology-v1",
+    "LOCUS-managed-performance-methodology-v2",
     "LOCUS-managed-performance-processor-v1",
+    "LOCUS-managed-performance-processor-v2",
     "LOCUS-managed-performance-result-appss-v1",
+    "LOCUS-managed-performance-result-appss-v2",
     "LOCUS-managed-performance-result-common-v1",
     "LOCUS-managed-performance-result-yi-v1",
+    "LOCUS-managed-performance-result-yi-v2",
     "LOCUS-managed-performance-scenario-manifest-v1",
+    "LOCUS-managed-performance-scenario-manifest-v2",
     "LOCUS-managed-performance-summary-v1",
+    "LOCUS-managed-performance-summary-v2",
     "LOCUS-managed-state-corpus-manifest-v1",
     "LOCUS-managed-state-evidence-profile-v1",
     "LOCUS-managed-state-result-appss-v1",
@@ -263,9 +274,10 @@
       "family": "measurement-methodology",
       "allocation_phase": "P9.1",
       "decisions": [
-        "D028"
+        "D028",
+        "D030"
       ],
-      "required_gate": "D028 assigned the exact managed same-host four-arm block design, sample schedule, failure schedule, metric meanings, statistics, exclusions, and interpretation limits before collection.",
+      "required_gate": "D028 assigned the uncollected v1 design. D030 separately assigned the affordable v2 four-arm, three-block, 324-slot descriptive design and preparation-only execution gate.",
       "compatibility_rule": "Any changed deployment, arm, policy/resolver pairing, provider, sample count, seed, warm-up, failure schedule, metric, statistic, exclusion, or interpretation boundary requires a new methodology identifier; v1 assigns no result identifier or retained path."
     },
     {
@@ -273,9 +285,10 @@
       "allocation_phase": "P9.2",
       "decisions": [
         "D028",
-        "D029"
+        "D029",
+        "D030"
       ],
-      "required_gate": "D029 assigned the exact 1,220-slot scenario expansion, suite/common result families, instrumentation, invalid-attempt linkage, deterministic processor, matched comparison, positive controls, strict schemas, and append-only unsealed-until-manifest path without collecting measurements.",
+      "required_gate": "D029 assigned the uncollected v1 evidence family. D030 assigned disjoint v2 contracts for 324 slots, suite-separated descriptive processing, shared-image binding, resumable block staging, and atomic sealing; execution remains unauthorized.",
       "compatibility_rule": "Any changed schedule, status, binding, role/phase metric, invalid-run rule, processor, comparison, publication, provider, host tier, or retained layout requires a new evidence family and path; P8 and historical v2 remain disjoint."
     },
     {
@@ -307,9 +320,10 @@
         "D023",
         "D025",
         "D026",
-        "D029"
+        "D029",
+        "D030"
       ],
-      "required_gate": "D026 assigned and P8.2 collected the separate security/state profile. D029 assigned the non-collecting P9.2 performance/resilience observation, processor, summary, comparison, and corpus contracts; P9.3 remains the separate collection gate.",
+      "required_gate": "D026 assigned and P8.2 collected the separate security/state profile. D029 remains uncollected historical preparation; D030 assigns the affordable v2 preparation contracts, while testing and P9.3 collection remain separate gates.",
       "compatibility_rule": "Security/state and performance/resilience results remain distinct; D025 managed, D023 predecessor, suite, and topology results use separate bindings, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
     },
     {

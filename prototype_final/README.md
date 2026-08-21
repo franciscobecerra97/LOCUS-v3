@@ -26,6 +26,14 @@ positive controls are checked by `integrated-check`. The owner has now opened
 P9.3, and its separately gated collector is implemented for clean-source
 exploratory validation. No retained performance directory exists yet.
 
+The original run was stopped before retention. D030 now preserves those v1
+contracts as uncollected historical preparation and assigns a disjoint,
+affordable v2 plan: 324 slots over 12 projects, four paired arms, five central
+scenarios, storage/role snapshots, descriptive statistics only, one shared
+image, and resumable completed-block staging. The owner authorized preparation
+and commits only on 2026-08-21. The new tests and collector have not been run,
+and no v2 staging or retained path exists.
+
 ## Scope
 
 The managed implementation provides one same-host Docker system with:
@@ -200,22 +208,23 @@ The sole v1 `--retain` run completed on 2026-08-17 from clean source commit
 `1deb49fcf5a7550f16da28702d1364ce20603f573d872cf811f631d331cf842c`.
 The exclusive target cannot be replaced by another v1 run.
 
-The checked P9.1 methodology is documented in
-`docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` and encoded canonically in
-`docs/managed-performance-methodology-v1.json`. Its validator is exercised by
-`integrated-check`. P9.3's exploratory collector executes all 40 fresh
-arm/block projects and writes no retained output:
+The preserved v1 methodology and evidence contracts remain documented in their
+v1 files and must not be populated or reinterpreted. D030's active preparation
+is documented in `docs/MANAGED-PERFORMANCE-METHODOLOGY-v2.md` and
+`docs/MANAGED-PERFORMANCE-EVIDENCE-v2.md`, with canonical JSON profiles and
+strict schemas. After a later execution authorization, its exploratory form
+will execute 12 fresh arm/block projects and write no retained output:
 
 ```console
 uv run --frozen python tasks.py integrated-performance-evidence
 ```
 
-Only after the collector source is committed and clean may the one explicit
-`--retain` run exclusively publish
-`evidence/retained/managed-performance-v1/`. The target must not already
-exist. The command uses only synthetic fixtures and the exact local-provider,
-same-host D025 graph; it does not authorize P9.4 external-provider or
-multi-host work.
+Do not run that command yet. A later instruction must first authorize the
+prepared checks and exploratory run. Retention remains a subsequent review
+gate; its resumable staging and atomic final path are disjoint under
+`managed-performance-v2`. The command uses only synthetic fixtures and the
+exact local-provider, same-host D025 graph; it does not authorize P9.4,
+external-provider, multi-host, scalability, or suite-advantage claims.
 
 ## Directory layout
 
@@ -232,6 +241,8 @@ multi-host work.
 | `docs/ATTEMPT-CONTROL-BOUNDARY.md` | Frozen negative model and local signed-certificate boundary |
 | `docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md` | D028/P9.1 non-collecting managed evaluation design |
 | `docs/MANAGED-PERFORMANCE-EVIDENCE-v1.md` | D029 schemas, P9.3 collector boundary, processor, and retention gate |
+| `docs/MANAGED-PERFORMANCE-METHODOLOGY-v2.md` | D030 affordable preparation-only methodology |
+| `docs/MANAGED-PERFORMANCE-EVIDENCE-v2.md` | D030 v2 schemas, resumption, processor, and publication boundary |
 | `docs/schemas/` | Integrated configuration, package, and assigned security-matrix schemas |
 
 ## Evidence boundary

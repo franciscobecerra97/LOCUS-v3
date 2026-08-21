@@ -5,7 +5,11 @@
 > `prototype_final/docs/MANAGED-PERFORMANCE-METHODOLOGY-v1.md`. The two profiles
 > cannot be pooled or reinterpreted. D029/P9.2 now supplies the non-collecting
 > schemas and processor for that managed methodology; P9.3 remains required
-> before new collection.
+> for a result. D030 supersedes only the uncollected execution plan with the
+> affordable `LOCUS-managed-performance-methodology-v2`: 324 total slots over
+> 12 projects, descriptive statistics only, resumable block staging, and no
+> scalability or suite-advantage interpretation. No v2 execution has occurred;
+> the new profile must pass its later execution gates before collection.
 
 Status: the frozen minimum P7.1-P7.3 methodology is unchanged. The original v1
 collection is archived; corrected v2 collection is required for the
