@@ -53,6 +53,10 @@ cannot support scalability, suite advantage, or excluded resilience/lifecycle
 latency claims. Preparation is not evidence; no v2 tests or collection have
 run.
 
+D031 reduces duplicate execution only: one 27-slot non-evidence preflight now
+precedes one validating retained run. It adds no claim support, changes no v2
+result meaning, and has not been executed.
+
 ## Claim Matrix
 
 | ID | Paper claim and location | Exact property and adversary | Provenance | State | Current evidence | Required evidence or paper action | Residual risk / limitation |

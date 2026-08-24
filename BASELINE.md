@@ -455,6 +455,13 @@ staging and one shared image are prepared under new identifiers, but the owner
 authorized preparation and commits only: no tests, exploratory run, retained
 directory, or v2 result has been produced.
 
+D031, approved on 2026-08-24, removes the mandatory duplicate 324-slot
+non-retaining run. The prepared affordable execution path is now targeted
+checks, one ephemeral 27-slot `appss-3of5` block-1 preflight, then one complete
+324-slot retained run that validates each staged block and seals only after
+full closure. The ordinary full non-retaining mode remains optional. D031 has
+not been tested or executed and creates no evidence.
+
 ## Excluded material
 
 The portable copy excludes:

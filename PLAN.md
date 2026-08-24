@@ -23,9 +23,10 @@ boundary. P7.7 completed that migration and its new security/version gates
 before P8. The twelve D025 managed identifiers
 are Assigned; the completed D023 deployment remains an immutable supporting
 predecessor. P8.1 through P8.4 and P9.1--P9.2 are complete. The owner opened
-P9.3 on 2026-08-20, stopped its uncollected v1 run, and approved D030's
-affordable v2 preparation on 2026-08-21. Source/contracts/tests are in progress,
-but test and collector execution are not authorized in this slice. Architecture
+P9.3 on 2026-08-20, stopped its uncollected v1 run, approved D030's affordable
+v2 preparation on 2026-08-21, and approved D031's one-preflight/one-retained-
+run gate on 2026-08-24. Source/contracts/tests are in progress, but test and
+collector execution are not authorized in this slice. Architecture
 decisions listed in `DECISIONS.md` remain owner gates.
 
 ## Status model
@@ -3129,7 +3130,7 @@ Completion record:
 
 ### P9.3 Collect the same-host integrated baseline
 
-Status: `In progress — D030 preparation only; execution not authorized`
+Status: `In progress — D031 preparation only; execution not authorized`
 
 The owner stopped the original D028/D029 run before any retained publication
 and approved D030's affordable replacement on 2026-08-21. The v1 1,220-slot,
@@ -3162,13 +3163,16 @@ Acceptance:
 - Below-threshold, restart, successor, concurrency, and lifecycle behaviors
   remain functional P7/P8/smoke controls and are not timing distributions in
   this affordable corpus.
-- Before any collection: run the newly prepared tests and `integrated-check`,
-  commit a clean collector state, then obtain/confirm execution authorization
-  for one exploratory non-retaining run. Retention remains a later gate.
+- Before retention: run the newly prepared targeted checks, commit a clean
+  collector state, then obtain/confirm execution authorization for D031's exact
+  27-slot `appss-3of5` preflight. After it passes, one separately authorized
+  324-slot retained run performs complete validation and atomic sealing.
+- The ordinary full non-retaining mode is optional and is not a prerequisite
+  in the affordable path.
 
-Preparation status on 2026-08-21: source, contracts, tests, documentation, and
-commits are authorized; running tests or either collector mode is explicitly
-not authorized in this slice.
+Preparation status on 2026-08-24: D031 source, contracts, tests, documentation,
+and commits are authorized; running tests, preflight, or either full collector
+mode is explicitly not authorized in this slice.
 
 ### P9.4 Collect supplemental integrated multi-host and provider profiles
 
@@ -3315,10 +3319,9 @@ the honest same-host managed integrated profile.
 
 The next sequence is:
 
-1. P9.3 — after a later execution instruction, run D030's prepared checks,
-   validate the 324-slot collector exploratorily, review the result, and only
-   then separately authorize one retained suite/topology-specific same-host
-   descriptive corpus;
+1. P9.3 — after a later execution instruction, run D031's prepared targeted
+   checks and exact 27-slot preflight; if they pass, separately authorize one
+   validating/resumable 324-slot retained same-host descriptive corpus;
 2. stop for owner review before any separately gated P9.4 work;
 3. P9.4 — optionally evaluate separately authorized multi-host or external-
    provider profiles under new identities; and

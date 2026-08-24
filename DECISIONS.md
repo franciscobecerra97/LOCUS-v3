@@ -36,6 +36,7 @@ gates before their affected implementation work.
 | D028 | Managed performance and resilience methodology | Freeze the exact four-arm D025 same-host blocked design, sample/failure schedules, metric meanings, statistics, and interpretation limits before P9 collection | Approved |
 | D029 | Managed performance and resilience evidence contracts | Assign suite-separated observation families, deterministic processing, explicit invalid-run records, positive controls, and one exclusive append-only same-host result path before P9 collection | Approved |
 | D030 | Affordable managed performance evidence profile | Supersede the uncollected D028/D029 execution plan with a new 324-slot, 12-project, resumable descriptive profile while preserving the four paired arms and D025 graph | Approved |
+| D031 | Affordable performance execution gate | Replace D030's duplicate full exploratory run with one exact 27-slot preflight followed by one validating, resumable 324-slot retained run | Approved |
 
 ## Approved architecture records
 
@@ -1638,6 +1639,82 @@ manuscript file may change.
 Manuscript implication: None authorized. D030 preparation is not evidence, and
 even a later complete v2 corpus would support only scoped descriptive
 same-host core-operation costs under its stated limitations.
+
+### D031 — Affordable performance execution gate
+
+Decision ID: D031
+
+Date: 2026-08-24
+
+Status: Approved
+
+Chosen option: Supersede only D030's requirement for a complete 324-slot
+non-retaining exploratory run before retention. Preserve every v2 methodology,
+scenario, result, instrumentation, processor, comparison, corpus, path,
+privacy, invalid-attempt, resumption, and interpretation semantic. Assign the
+non-evidence execution control `LOCUS-managed-performance-preflight-v1`.
+
+The preflight executes exactly block 1 of the `appss-3of5` arm: one complete
+unmeasured warm-up, five repetitions of each AP01--AP05 central scenario, and
+one AP06 storage/role snapshot. Its immutable total is 27 slots, of which 26
+are measured. This arm is selected because it exercises the five-holder,
+resolver-backed, aPPSS per-server-initialization, unavailable-party, package,
+clean-bootstrap, recovery, rejection, storage, shared-image, and cleanup paths
+in one disposable project. Preflight output is ephemeral, cannot be retained,
+cannot satisfy a paper claim, and cannot be pooled with the v2 corpus.
+
+After targeted static/unit/contract checks and the passing preflight, one
+explicitly authorized `--retain` run executes all 324 v2 slots. That run is
+itself the complete performance validation: each finished arm/block is
+validated before immutable staging, an interrupted block is exactly cleaned
+and linked as `host-interruption`, and the final corpus is atomically sealed
+only after all terminal slots, output-safety checks, cleanup, deterministic
+processing, comparison, and hash closure pass. A failed or interrupted staging
+directory is not evidence and may resume only under D030's exact binding rules.
+
+`--preflight` and `--retain` are mutually exclusive. The ordinary command
+without either option remains a non-retaining full-schedule developer mode but
+is no longer a mandatory gate and should not be run in the affordable path.
+The intended execution cost is therefore one 27-slot preflight plus one
+324-slot validating retained run, expected around two hours on the previously
+observed host; runtime is hardware-dependent and not guaranteed.
+
+This approval authorizes preparation and commits only. It does not authorize
+running checks, the preflight, full developer collection, or retained
+collection in this change set. A later explicit execution instruction remains
+required.
+
+Alternatives considered: Preserve the mandatory full non-retaining run and
+repeat all 324 slots; omit operational preflight entirely; retain the preflight;
+use partial preflight data in the final corpus; or weaken final hash/cleanup
+validation. All are rejected.
+
+New trust assumptions: None. The preflight uses the exact D025 local graph and
+the same trusted host, Docker engine, synthetic fixtures, Client clock, and
+local provider already recorded by D030.
+
+Privacy implications: The preflight uses the same synthetic aggregate-only
+instrumentation and prohibited-output scan as v2, retains nothing, and creates
+no result identifier or evidence path.
+
+Compatibility/version impact: D030's v2 evidence family remains immutable.
+D031 changes only the prerequisite execution sequence and adds one explicitly
+non-evidence preflight identifier. It does not change the 324-slot corpus or
+authorize reinterpretation of v1, v2, P8, or historical evidence.
+
+Required evidence: Before retention, the prepared targeted checks and exact
+27-slot preflight must pass. The retained command must then validate and seal
+the complete 324-slot v2 corpus from a clean committed source state. The
+preflight result is never retained or cited.
+
+Files or components authorized: Governance/status documents and the active
+`prototype_final/docs/`, `prototype_final/tasks.py`, and
+`prototype_final/tests/` may change. No runtime protocol, result schema,
+external provider, retained evidence, legacy source, frozen evidence, or
+manuscript file may change.
+
+Manuscript implication: None authorized. D031 reduces execution duplication;
+it creates no evidence and changes no paper claim.
 
 ## Decision record template
 

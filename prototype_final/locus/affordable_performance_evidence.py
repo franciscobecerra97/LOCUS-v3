@@ -32,6 +32,7 @@ SUMMARY_ID = "LOCUS-managed-performance-summary-v2"
 COMPARISON_ID = "LOCUS-managed-performance-comparison-v2"
 CORPUS_MANIFEST_ID = "LOCUS-managed-performance-corpus-manifest-v2"
 CHECKPOINT_ID = "LOCUS-managed-performance-checkpoint-v1"
+PREFLIGHT_ID = "LOCUS-managed-performance-preflight-v1"
 
 RETAINED_ROOT = Path("evidence/retained/managed-performance-v2")
 STAGING_ROOT = Path("evidence/retained/.managed-performance-v2-staging")
@@ -470,8 +471,14 @@ def _statistics(values: list[int]) -> dict[str, object]:
 
 def _terminal_attempts(
     observations: list[dict[str, object]],
+    *,
+    expected_slot_ids: set[str] | None = None,
 ) -> tuple[list[dict[str, object]], int]:
-    scheduled = {cast(str, slot["slot_id"]) for slot in scheduled_slots()}
+    scheduled = (
+        {cast(str, slot["slot_id"]) for slot in scheduled_slots()}
+        if expected_slot_ids is None
+        else expected_slot_ids
+    )
     grouped: dict[str, list[dict[str, object]]] = defaultdict(list)
     for item in observations:
         validate_observation(item)
@@ -502,6 +509,68 @@ def _terminal_attempts(
             )
         terminal.append(attempts[-1])
     return terminal, invalid_count
+
+
+def preflight_profile() -> dict[str, object]:
+    return {
+        "format_id": PREFLIGHT_ID,
+        "decision_id": "D031",
+        "arm_id": "appss-3of5",
+        "block": 1,
+        "scenario_ids": ["AP00", "AP01", "AP02", "AP03", "AP04", "AP05", "AP06"],
+        "scheduled_slot_count": 27,
+        "measured_slot_count": 26,
+        "evidence_eligible": False,
+        "retention": "prohibited",
+        "prerequisite_for_retention": True,
+        "collection_authorized": False,
+        "status": "assigned-preparation-only",
+    }
+
+
+def validate_preflight_observations(
+    observations: list[dict[str, object]],
+) -> dict[str, object]:
+    expected = {
+        cast(str, slot["slot_id"])
+        for slot in scheduled_slots()
+        if slot["arm_id"] == "appss-3of5" and slot["block"] == 1
+    }
+    terminal, invalid_count = _terminal_attempts(
+        observations, expected_slot_ids=expected
+    )
+    if (
+        len(terminal) != 27
+        or sum(
+            bool(cast(dict[str, object], item["slot"])["measured"]) for item in terminal
+        )
+        != 26
+    ):
+        raise AffordablePerformanceEvidenceError("preflight coverage changed")
+    warmup_position = next(
+        index
+        for index, item in enumerate(observations)
+        if cast(dict[str, object], item["slot"])["scenario_id"] == "AP00"
+        and item["status"] != "infrastructure-invalid"
+    )
+    if any(
+        cast(dict[str, object], item["slot"])["measured"]
+        and observations.index(item) <= warmup_position
+        for item in terminal
+    ):
+        raise AffordablePerformanceEvidenceError(
+            "preflight measurement preceded warmup"
+        )
+    return {
+        "format_id": PREFLIGHT_ID,
+        "scheduled_slot_count": 27,
+        "measured_slot_count": 26,
+        "raw_attempt_count": len(observations),
+        "infrastructure_invalid_count": invalid_count,
+        "evidence_eligible": False,
+        "retained": False,
+        "status": "passed",
+    }
 
 
 def process_observations(observations: list[dict[str, object]]) -> dict[str, object]:
@@ -824,6 +893,7 @@ __all__ = [
     "EVIDENCE_PROFILE_ID",
     "INSTRUMENTATION_ID",
     "PROCESSOR_ID",
+    "PREFLIGHT_ID",
     "RETAINED_ROOT",
     "SCENARIO_MANIFEST_ID",
     "STAGING_ROOT",
@@ -838,9 +908,11 @@ __all__ = [
     "exclusive_write",
     "instrumentation_profile",
     "process_observations",
+    "preflight_profile",
     "processor_profile",
     "scenario_manifest",
     "scheduled_slots",
     "validate_observation",
+    "validate_preflight_observations",
     "validate_staged_corpus",
 ]

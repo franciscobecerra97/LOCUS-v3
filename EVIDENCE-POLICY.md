@@ -372,6 +372,16 @@ staging nor retained output. The owner explicitly withheld test and collector
 execution on 2026-08-21; a later instruction must first authorize prepared
 checks and an exploratory non-retaining run.
 
+D031 supersedes the final sentence above for the affordable v2 family only.
+Instead of a duplicate complete exploratory corpus, it requires targeted
+checks and `LOCUS-managed-performance-preflight-v1`: exactly 27 ephemeral,
+non-retainable `appss-3of5` block-1 slots. A later authorized 324-slot retained
+run is itself the complete validation; each block must validate before staging
+and the directory remains non-evidence until final processing and atomic
+manifest sealing. Preflight output cannot be pooled, cited, or retained. The
+full non-retaining mode remains optional. D031 preparation authorizes no
+execution.
+
 ## External services
 
 External provider experiments are benign functional/performance operations

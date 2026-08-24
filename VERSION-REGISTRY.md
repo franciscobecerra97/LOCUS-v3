@@ -61,6 +61,12 @@ three-block, 324-slot descriptive schedule, disjoint staging/final paths, and
 shared-image/resumption rules are prepared but unexecuted. The owner authorized
 commits only; no v2 test, staging directory, retained corpus, or result exists.
 
+D031 assigns the non-evidence `LOCUS-managed-performance-preflight-v1` and
+supersedes only D030's duplicate full exploratory prerequisite. It changes no
+v2 result semantic: after targeted checks and the 27-slot preflight, one
+complete retained run performs validation and sealing. D031 is prepared but
+unexecuted.
+
 The table highlights the principal upstream boundaries. The complete protected
 ledger, including superseded development, internal wire, lifecycle, snapshot,
 trace, result, and synthetic-fixture identifiers, is
@@ -401,12 +407,20 @@ the immediately prior infrastructure-invalid record digest.
 | `LOCUS-managed-performance-comparison-v2` | 12 matched topology/scenario side-by-side median pairs | No pooling, hypothesis test, or advantage inference |
 | `LOCUS-managed-performance-corpus-manifest-v2` | Closing hash manifest for the exclusive atomic v2 publication | No partial or checkpoint-bearing directory is a corpus |
 | `LOCUS-managed-performance-checkpoint-v1` | Mutable local coordination metadata for exact-binding arm/block resume | Never retained, cited, processed, or treated as evidence |
+| `LOCUS-managed-performance-preflight-v1` | D031 one-project `appss-3of5` block-1 operational gate: 27 slots, 26 measured | Ephemeral and non-evidence; cannot be retained, pooled, or substitute for any v2 corpus slot |
 
 D030 leaves D028/D029 and the absent `managed-performance-v1/` target intact.
 The prepared v2 target is `managed-performance-v2/`; neither its hidden staging
 directory nor its retained directory exists at preparation time. The owner
 authorized code/documentation commits only on 2026-08-21, so tests,
 exploratory collection, and retained collection remain pending.
+
+D031 assigns `LOCUS-managed-performance-preflight-v1` as a non-evidence,
+non-retainable 27-slot `appss-3of5` block-1 operational gate. It supersedes
+only D030's duplicate complete exploratory prerequisite. After targeted checks
+and preflight pass, one 324-slot `--retain` run performs the full validation,
+resumable staging, processing, and atomic sealing. The ordinary full
+non-retaining mode remains optional and is not part of the affordable path.
 
 P8.4 assigns no new identifier and does not reinterpret the frozen attempt
 family. `prototype_final/` preserves the historical attempt-model source,

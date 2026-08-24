@@ -34,6 +34,11 @@ image, and resumable completed-block staging. The owner authorized preparation
 and commits only on 2026-08-21. The new tests and collector have not been run,
 and no v2 staging or retained path exists.
 
+D031 removes the duplicate full exploratory prerequisite. The affordable
+execution path is now targeted checks, one exact 27-slot non-evidence
+`appss-3of5` preflight, and one validating/resumable 324-slot retained run.
+These D031 changes are preparation only and have not been executed.
+
 ## Scope
 
 The managed implementation provides one same-host Docker system with:
@@ -212,19 +217,22 @@ The preserved v1 methodology and evidence contracts remain documented in their
 v1 files and must not be populated or reinterpreted. D030's active preparation
 is documented in `docs/MANAGED-PERFORMANCE-METHODOLOGY-v2.md` and
 `docs/MANAGED-PERFORMANCE-EVIDENCE-v2.md`, with canonical JSON profiles and
-strict schemas. After a later execution authorization, its exploratory form
-will execute 12 fresh arm/block projects and write no retained output:
+strict schemas. After a later execution authorization, run only the exact
+one-project preflight:
 
 ```console
-uv run --frozen python tasks.py integrated-performance-evidence
+uv run --frozen python tasks.py integrated-performance-evidence --preflight
 ```
 
-Do not run that command yet. A later instruction must first authorize the
-prepared checks and exploratory run. Retention remains a subsequent review
-gate; its resumable staging and atomic final path are disjoint under
-`managed-performance-v2`. The command uses only synthetic fixtures and the
-exact local-provider, same-host D025 graph; it does not authorize P9.4,
-external-provider, multi-host, scalability, or suite-advantage claims.
+Do not run that command yet. It executes 27 slots and retains nothing. After
+the prepared checks and preflight pass, a separate instruction may authorize
+one `--retain` run. That run executes and validates all 324 slots, stages
+complete blocks resumably, and atomically seals `managed-performance-v2` only
+after full closure. Running without an option still performs an optional full
+non-retaining developer run, but D031 does not require it. The command uses
+only synthetic fixtures and the exact local-provider, same-host D025 graph; it
+does not authorize P9.4, external-provider, multi-host, scalability, or suite-
+advantage claims.
 
 ## Directory layout
 
@@ -243,6 +251,7 @@ external-provider, multi-host, scalability, or suite-advantage claims.
 | `docs/MANAGED-PERFORMANCE-EVIDENCE-v1.md` | D029 schemas, P9.3 collector boundary, processor, and retention gate |
 | `docs/MANAGED-PERFORMANCE-METHODOLOGY-v2.md` | D030 affordable preparation-only methodology |
 | `docs/MANAGED-PERFORMANCE-EVIDENCE-v2.md` | D030 v2 schemas, resumption, processor, and publication boundary |
+| `docs/MANAGED-PERFORMANCE-PREFLIGHT-v1.md` | D031 non-evidence 27-slot operational gate |
 | `docs/schemas/` | Integrated configuration, package, and assigned security-matrix schemas |
 
 ## Evidence boundary

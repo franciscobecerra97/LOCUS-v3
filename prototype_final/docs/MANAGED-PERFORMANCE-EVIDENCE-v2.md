@@ -3,6 +3,10 @@
 Status: Assigned by D030 for preparation only. No staging directory, retained
 directory, test execution, exploratory run, or P9 result exists.
 
+D031 changes only the execution prerequisite. It requires the separate
+non-evidence `LOCUS-managed-performance-preflight-v1` instead of a duplicate
+complete non-retaining run. The v2 formats and 324-slot corpus are unchanged.
+
 ## Contract family
 
 - `LOCUS-managed-performance-evidence-profile-v2`

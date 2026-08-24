@@ -117,6 +117,7 @@
     "LOCUS-managed-performance-methodology-v2",
     "LOCUS-managed-performance-processor-v1",
     "LOCUS-managed-performance-processor-v2",
+    "LOCUS-managed-performance-preflight-v1",
     "LOCUS-managed-performance-result-appss-v1",
     "LOCUS-managed-performance-result-appss-v2",
     "LOCUS-managed-performance-result-common-v1",
@@ -275,9 +276,10 @@
       "allocation_phase": "P9.1",
       "decisions": [
         "D028",
-        "D030"
+        "D030",
+        "D031"
       ],
-      "required_gate": "D028 assigned the uncollected v1 design. D030 separately assigned the affordable v2 four-arm, three-block, 324-slot descriptive design and preparation-only execution gate.",
+      "required_gate": "D028 assigned the uncollected v1 design. D030 separately assigned the affordable v2 four-arm, three-block, 324-slot descriptive design. D031 replaces the duplicate full exploratory prerequisite with one exact non-evidence preflight and one validating retained run.",
       "compatibility_rule": "Any changed deployment, arm, policy/resolver pairing, provider, sample count, seed, warm-up, failure schedule, metric, statistic, exclusion, or interpretation boundary requires a new methodology identifier; v1 assigns no result identifier or retained path."
     },
     {
@@ -286,9 +288,10 @@
       "decisions": [
         "D028",
         "D029",
-        "D030"
+        "D030",
+        "D031"
       ],
-      "required_gate": "D029 assigned the uncollected v1 evidence family. D030 assigned disjoint v2 contracts for 324 slots, suite-separated descriptive processing, shared-image binding, resumable block staging, and atomic sealing; execution remains unauthorized.",
+      "required_gate": "D029 assigned the uncollected v1 evidence family. D030 assigned disjoint v2 contracts for 324 slots, suite-separated descriptive processing, shared-image binding, resumable block staging, and atomic sealing. D031 adds only the non-evidence preflight execution gate; execution remains unauthorized.",
       "compatibility_rule": "Any changed schedule, status, binding, role/phase metric, invalid-run rule, processor, comparison, publication, provider, host tier, or retained layout requires a new evidence family and path; P8 and historical v2 remain disjoint."
     },
     {
@@ -321,9 +324,10 @@
         "D025",
         "D026",
         "D029",
-        "D030"
+        "D030",
+        "D031"
       ],
-      "required_gate": "D026 assigned and P8.2 collected the separate security/state profile. D029 remains uncollected historical preparation; D030 assigns the affordable v2 preparation contracts, while testing and P9.3 collection remain separate gates.",
+      "required_gate": "D026 assigned and P8.2 collected the separate security/state profile. D029 remains uncollected historical preparation; D030 assigns affordable v2 contracts and D031 removes the duplicate full exploratory run. Testing, preflight, and P9.3 retention remain separate gates.",
       "compatibility_rule": "Security/state and performance/resilience results remain distinct; D025 managed, D023 predecessor, suite, and topology results use separate bindings, and retained v1/v2 evidence is append-only and cannot be pooled or reinterpreted."
     },
     {

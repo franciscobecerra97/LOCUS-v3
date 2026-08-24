@@ -114,6 +114,10 @@ D025 graph and four paired arms, removes repeated resilience/lifecycle timing,
 and adds resumable arm/block staging plus one shared image. Preparation and
 commits are authorized; tests and collection remain unexecuted and require a
 later explicit instruction. No P9 result exists.
+D031 further removes the duplicate full exploratory run: the affordable path
+is targeted checks, one non-evidence 27-slot preflight, and one validating
+324-slot retained run. Preparation is committed separately; no D031 execution
+or P9 result exists.
 
 The managed control plane uses internal `management` (Manager/controller) and
 `client-lifecycle` (Client/controller) networks plus separate `manager-edge`

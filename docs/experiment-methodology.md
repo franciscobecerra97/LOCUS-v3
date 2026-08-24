@@ -9,7 +9,9 @@
 > affordable `LOCUS-managed-performance-methodology-v2`: 324 total slots over
 > 12 projects, descriptive statistics only, resumable block staging, and no
 > scalability or suite-advantage interpretation. No v2 execution has occurred;
-> the new profile must pass its later execution gates before collection.
+> D031 requires targeted checks and one 27-slot non-evidence preflight before
+> one complete validating retained run. The duplicate full exploratory run is
+> no longer mandatory.
 
 Status: the frozen minimum P7.1-P7.3 methodology is unchanged. The original v1
 collection is archived; corrected v2 collection is required for the
