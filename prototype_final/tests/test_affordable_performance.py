@@ -16,9 +16,11 @@ from locus.affordable_performance_evidence import (
     build_metrics,
     build_observation,
     evidence_profile,
+    preflight_profile,
     process_observations,
     scenario_manifest,
     scheduled_slots,
+    validate_preflight_observations,
 )
 from locus.affordable_performance_methodology import (
     methodology_contract,
@@ -104,6 +106,23 @@ class AffordablePerformanceTests(unittest.TestCase):
             self.assertEqual(len(slots), 27)
             self.assertEqual(slots[0]["scenario_id"], "AP00")
             self.assertEqual(sum(bool(slot["measured"]) for slot in slots), 26)
+
+    def test_d031_preflight_is_exact_and_never_evidence(self) -> None:
+        profile = preflight_profile()
+        self.assertEqual(profile["arm_id"], "appss-3of5")
+        self.assertEqual(profile["block"], 1)
+        self.assertEqual(profile["scheduled_slot_count"], 27)
+        self.assertEqual(profile["measured_slot_count"], 26)
+        self.assertFalse(profile["evidence_eligible"])
+        self.assertEqual(profile["retention"], "prohibited")
+        selected = [
+            observation(slot)
+            for slot in scheduled_slots()
+            if slot["arm_id"] == "appss-3of5" and slot["block"] == 1
+        ]
+        result = validate_preflight_observations(selected)
+        self.assertEqual(result["scheduled_slot_count"], 27)
+        self.assertFalse(result["retained"])
 
     def test_semantic_mutation_fails_closed(self) -> None:
         changed = copy.deepcopy(methodology_contract())

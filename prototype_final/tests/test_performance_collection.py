@@ -71,8 +71,18 @@ class PerformanceCollectionTests(unittest.TestCase):
         parser = tasks.build_integrated_parser()
         exploratory = parser.parse_args(["integrated-performance-evidence"])
         retained = parser.parse_args(["integrated-performance-evidence", "--retain"])
+        preflight = parser.parse_args(
+            ["integrated-performance-evidence", "--preflight"]
+        )
         self.assertFalse(exploratory.retain)
         self.assertTrue(retained.retain)
+        self.assertFalse(retained.preflight)
+        self.assertTrue(preflight.preflight)
+        self.assertFalse(preflight.retain)
+        with self.assertRaises(SystemExit):
+            parser.parse_args(
+                ["integrated-performance-evidence", "--preflight", "--retain"]
+            )
 
     def test_command_result_uses_processor_summary_field_names(self) -> None:
         result = tasks._performance_command_result(

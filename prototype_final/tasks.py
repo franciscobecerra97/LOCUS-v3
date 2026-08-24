@@ -4024,9 +4024,9 @@ def _affordable_staged_observations(staging: Path) -> list[dict[str, object]]:
 
 
 def _collect_affordable_performance_observations(
-    *, provenance: dict[str, object], retain: bool
+    *, provenance: dict[str, object], retain: bool, preflight: bool = False
 ) -> list[dict[str, object]]:
-    """Execute D030's 12-project/324-slot schedule with resumable block staging."""
+    """Execute D030's schedule or D031's exact one-project preflight."""
 
     from locus.affordable_performance_collection import ordered_arm_block_slots
     from locus.affordable_performance_evidence import (
@@ -4113,161 +4113,173 @@ def _collect_affordable_performance_observations(
                 checkpoint_profile(resume_bindings, [], None),
             )
 
-        for block in range(1, 4):
-            for arm_id, arm in ARMS.items():
-                block_id = f"{arm_id}:b{block:02d}"
-                if block_id in completed:
-                    continue
-                arm_slots = list(ordered_arm_block_slots(arm_id, block))
-                if retain:
-                    _affordable_checkpoint_write(
-                        checkpoint_path,
-                        checkpoint_profile(
-                            resume_bindings, sorted(completed), block_id
-                        ),
+        arm_blocks = (
+            ((1, "appss-3of5"),)
+            if preflight
+            else tuple((block, arm_id) for block in range(1, 4) for arm_id in ARMS)
+        )
+        for block, arm_id in arm_blocks:
+            arm = ARMS[arm_id]
+            block_id = f"{arm_id}:b{block:02d}"
+            if block_id in completed:
+                continue
+            arm_slots = list(ordered_arm_block_slots(arm_id, block))
+            if retain:
+                _affordable_checkpoint_write(
+                    checkpoint_path,
+                    checkpoint_profile(resume_bindings, sorted(completed), block_id),
+                )
+            for attempt in range(1, 4):
+                project = (
+                    _project(f"locus-perf-preflight-appss-35-a{attempt:02d}")
+                    if preflight
+                    else _performance_project_name(arm_id, block, attempt)
+                )
+                environment = _environment(project, DEFAULT_MANAGER_PORT)
+                environment["LOCUS_INTEGRATED_IMAGE"] = shared_image
+                environment["LOCUS_INTEGRATED_IMAGE_ID"] = shared_image_id
+                environment["LOCUS_PERFORMANCE_FIXTURE_ID"] = (
+                    f"{arm['topology_id']}:block-{block:02d}"
+                )
+                runtime: _PerformanceRuntime | None = None
+                project_observations: list[dict[str, object]] = []
+                operation_error: BaseException | None = None
+                try:
+                    status = _start_project(
+                        project=project,
+                        manager_port=DEFAULT_MANAGER_PORT,
+                        environment=environment,
+                        build_image=False,
                     )
-                for attempt in range(1, 4):
-                    project = _performance_project_name(arm_id, block, attempt)
-                    environment = _environment(project, DEFAULT_MANAGER_PORT)
-                    environment["LOCUS_INTEGRATED_IMAGE"] = shared_image
-                    environment["LOCUS_INTEGRATED_IMAGE_ID"] = shared_image_id
-                    environment["LOCUS_PERFORMANCE_FIXTURE_ID"] = (
-                        f"{arm['topology_id']}:block-{block:02d}"
+                    base = _performance_base_bindings(
+                        project=project,
+                        environment=environment,
+                        status=status,
+                        provenance=provenance,
                     )
-                    runtime: _PerformanceRuntime | None = None
-                    project_observations: list[dict[str, object]] = []
-                    operation_error: BaseException | None = None
-                    try:
-                        status = _start_project(
-                            project=project,
-                            manager_port=DEFAULT_MANAGER_PORT,
-                            environment=environment,
-                            build_image=False,
-                        )
-                        base = _performance_base_bindings(
-                            project=project,
-                            environment=environment,
-                            status=status,
-                            provenance=provenance,
-                        )
-                        runtime = _PerformanceRuntime(
-                            project=project,
-                            manager_port=DEFAULT_MANAGER_PORT,
-                            manager_csrf=_manager_session(DEFAULT_MANAGER_PORT),
-                            environment=environment,
-                            base_bindings=base,
-                            host_id=cast(str, provenance["pseudonymous_host_id"]),
-                        )
-                        if block_id in interrupted:
-                            interruption_records = _performance_invalid_block(
-                                runtime=runtime,
-                                slots=arm_slots,
-                                prior_by_slot=prior_by_slot,
-                                invalid_category="host-interruption",
-                            )
-                            for item in interruption_records:
-                                slot_id = cast(
-                                    str,
-                                    cast(dict[str, object], item["slot"])["slot_id"],
-                                )
-                                prior_by_slot[slot_id] = item
-                            observations.extend(interruption_records)
-                            interrupted.remove(block_id)
-                        project_observations.append(
-                            _performance_warmup(runtime, arm_slots[0])
-                        )
-                        for slot in arm_slots[1:]:
-                            project_observations.append(
-                                _performance_measure_arm_slot(runtime, slot)
-                            )
-                    except BaseException as error:
-                        operation_error = error
-                    if runtime is not None:
-                        try:
-                            _performance_output_scan(runtime)
-                        except BaseException as error:
-                            operation_error = error
-                    try:
-                        _cleanup_smoke_project(project, environment, remove_image=False)
-                    except BaseException as error:
-                        if operation_error is None:
-                            operation_error = error
-                        else:
-                            operation_error.add_note(
-                                f"affordable cleanup also failed: {type(error).__name__}"
-                            )
-                    if operation_error is not None:
-                        if (
-                            runtime is None
-                            or "output scan" in str(operation_error)
-                            or "cleanup" in str(operation_error)
-                        ):
-                            raise operation_error
-                        invalid = _performance_invalid_block(
+                    runtime = _PerformanceRuntime(
+                        project=project,
+                        manager_port=DEFAULT_MANAGER_PORT,
+                        manager_csrf=_manager_session(DEFAULT_MANAGER_PORT),
+                        environment=environment,
+                        base_bindings=base,
+                        host_id=cast(str, provenance["pseudonymous_host_id"]),
+                    )
+                    if block_id in interrupted:
+                        interruption_records = _performance_invalid_block(
                             runtime=runtime,
                             slots=arm_slots,
                             prior_by_slot=prior_by_slot,
+                            invalid_category="host-interruption",
                         )
-                        for item in invalid:
+                        for item in interruption_records:
                             slot_id = cast(
-                                str, cast(dict[str, object], item["slot"])["slot_id"]
+                                str,
+                                cast(dict[str, object], item["slot"])["slot_id"],
                             )
                             prior_by_slot[slot_id] = item
-                        observations.extend(invalid)
-                        if attempt == 3:
-                            raise RuntimeError(
-                                "affordable arm/block exhausted bounded retries"
-                            ) from operation_error
-                        continue
-                    block_records: list[dict[str, object]] = []
-                    for item in project_observations:
+                        observations.extend(interruption_records)
+                        interrupted.remove(block_id)
+                    project_observations.append(
+                        _performance_warmup(runtime, arm_slots[0])
+                    )
+                    for slot in arm_slots[1:]:
+                        project_observations.append(
+                            _performance_measure_arm_slot(runtime, slot)
+                        )
+                except BaseException as error:
+                    operation_error = error
+                if runtime is not None:
+                    try:
+                        _performance_output_scan(runtime)
+                    except BaseException as error:
+                        operation_error = error
+                try:
+                    _cleanup_smoke_project(project, environment, remove_image=False)
+                except BaseException as error:
+                    if operation_error is None:
+                        operation_error = error
+                    else:
+                        operation_error.add_note(
+                            f"affordable cleanup also failed: {type(error).__name__}"
+                        )
+                if operation_error is not None:
+                    if (
+                        runtime is None
+                        or "output scan" in str(operation_error)
+                        or "cleanup" in str(operation_error)
+                    ):
+                        raise operation_error
+                    invalid = _performance_invalid_block(
+                        runtime=runtime,
+                        slots=arm_slots,
+                        prior_by_slot=prior_by_slot,
+                    )
+                    for item in invalid:
                         slot_id = cast(
                             str, cast(dict[str, object], item["slot"])["slot_id"]
                         )
-                        chained = _performance_chain_observation(
-                            item, prior_by_slot.get(slot_id)
-                        )
-                        prior_by_slot[slot_id] = chained
-                        observations.append(chained)
-                        block_records.append(chained)
-                    if retain:
-                        block_attempts = [
-                            item
-                            for item in observations
-                            if cast(dict[str, object], item["slot"])["arm_id"] == arm_id
-                            and cast(dict[str, object], item["slot"])["block"] == block
-                        ]
-                        for item in block_attempts:
-                            slot = cast(dict[str, object], item["slot"])
-                            path = (
-                                staging
-                                / "raw"
-                                / cast(str, slot["slot_id"]).replace(":", "/")
-                                / f"attempt-{cast(int, item['attempt_index']):02d}.json"
-                            )
-                            if not path.exists():
-                                exclusive_write(path, item)
-                        completed.add(block_id)
-                        _affordable_checkpoint_write(
-                            checkpoint_path,
-                            checkpoint_profile(
-                                resume_bindings, sorted(completed), None
-                            ),
-                        )
-                    print(
-                        json.dumps(
-                            {
-                                "arm": arm_id,
-                                "block": block,
-                                "slots": len(block_records),
-                                "status": "passed",
-                            },
-                            sort_keys=True,
-                        ),
-                        flush=True,
+                        prior_by_slot[slot_id] = item
+                    observations.extend(invalid)
+                    if attempt == 3:
+                        raise RuntimeError(
+                            "affordable arm/block exhausted bounded retries"
+                        ) from operation_error
+                    continue
+                block_records: list[dict[str, object]] = []
+                for item in project_observations:
+                    slot_id = cast(
+                        str, cast(dict[str, object], item["slot"])["slot_id"]
                     )
-                    break
-        process_observations(observations)
+                    chained = _performance_chain_observation(
+                        item, prior_by_slot.get(slot_id)
+                    )
+                    prior_by_slot[slot_id] = chained
+                    observations.append(chained)
+                    block_records.append(chained)
+                if retain:
+                    block_attempts = [
+                        item
+                        for item in observations
+                        if cast(dict[str, object], item["slot"])["arm_id"] == arm_id
+                        and cast(dict[str, object], item["slot"])["block"] == block
+                    ]
+                    for item in block_attempts:
+                        slot = cast(dict[str, object], item["slot"])
+                        path = (
+                            staging
+                            / "raw"
+                            / cast(str, slot["slot_id"]).replace(":", "/")
+                            / f"attempt-{cast(int, item['attempt_index']):02d}.json"
+                        )
+                        if not path.exists():
+                            exclusive_write(path, item)
+                    completed.add(block_id)
+                    _affordable_checkpoint_write(
+                        checkpoint_path,
+                        checkpoint_profile(resume_bindings, sorted(completed), None),
+                    )
+                print(
+                    json.dumps(
+                        {
+                            "arm": arm_id,
+                            "block": block,
+                            "slots": len(block_records),
+                            "status": "passed",
+                        },
+                        sort_keys=True,
+                    ),
+                    flush=True,
+                )
+                break
+        if preflight:
+            from locus.affordable_performance_evidence import (
+                validate_preflight_observations,
+            )
+
+            validate_preflight_observations(observations)
+        else:
+            process_observations(observations)
         return observations
     finally:
         run_capture(
@@ -4300,8 +4312,8 @@ def _performance_command_result(
     }
 
 
-def integrated_performance_evidence(*, retain: bool) -> None:
-    """Execute the affordable D030 P9.3 profile and optionally seal its corpus."""
+def integrated_performance_evidence(*, retain: bool, preflight: bool = False) -> None:
+    """Execute D030's corpus or D031's non-retaining operational preflight."""
 
     from locus.affordable_performance_evidence import (
         RETAINED_ROOT,
@@ -4310,17 +4322,23 @@ def integrated_performance_evidence(*, retain: bool) -> None:
         build_corpus_manifest,
         exclusive_write,
         process_observations,
+        validate_preflight_observations,
         validate_staged_corpus,
     )
 
+    if retain and preflight:
+        raise RuntimeError("performance preflight cannot be retained")
     provenance = _tracked_source_provenance(require_clean=retain)
     target = ROOT / RETAINED_ROOT
     staging = ROOT / STAGING_ROOT
     if retain and target.exists():
         raise RuntimeError("managed-performance-v2 retained target already exists")
     observations = _collect_affordable_performance_observations(
-        provenance=provenance, retain=retain
+        provenance=provenance, retain=retain, preflight=preflight
     )
+    if preflight:
+        print(json.dumps(validate_preflight_observations(observations), sort_keys=True))
+        return
     summary = process_observations(observations)
     comparison = build_comparison(summary)
     result = _performance_command_result(
@@ -4493,12 +4511,18 @@ def build_integrated_parser() -> argparse.ArgumentParser:
     )
     performance = subparsers.add_parser(
         "integrated-performance-evidence",
-        help="run D030's affordable P9.3 schedule (execution separately gated)",
+        help="run D031 preflight or D030's affordable P9.3 schedule",
     )
-    performance.add_argument(
+    performance_mode = performance.add_mutually_exclusive_group()
+    performance_mode.add_argument(
         "--retain",
         action="store_true",
         help="resume/stage and atomically publish v2 from a clean commit",
+    )
+    performance_mode.add_argument(
+        "--preflight",
+        action="store_true",
+        help="run D031's exact 27-slot one-project non-evidence preflight",
     )
     return parser
 
@@ -4524,7 +4548,9 @@ def main() -> int:
         elif args.command == "integrated-flow-evidence":
             integrated_flow_evidence(retain=args.retain)
         elif args.command == "integrated-performance-evidence":
-            integrated_performance_evidence(retain=args.retain)
+            integrated_performance_evidence(
+                retain=args.retain, preflight=args.preflight
+            )
         else:  # pragma: no cover
             raise AssertionError(f"Unhandled command: {args.command}")
     except subprocess.CalledProcessError as error:

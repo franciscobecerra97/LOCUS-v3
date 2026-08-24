@@ -105,6 +105,7 @@ class PerformanceMethodologyTests(unittest.TestCase):
                 "LOCUS-managed-performance-comparison-v2",
                 "LOCUS-managed-performance-corpus-manifest-v2",
                 "LOCUS-managed-performance-checkpoint-v1",
+                "LOCUS-managed-performance-preflight-v1",
             },
         )
 
